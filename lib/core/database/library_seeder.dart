@@ -45,18 +45,23 @@ class LibrarySeeder {
     await _db.transaction(() async {
       // Upsert vehicle row
       int dbVehicleId;
+      final vehicleName =
+          (vehicleJson['name'] ?? vehicleJson['vehicle_name'] ?? vehicleId)
+              as String;
+      final vehicleType =
+          (vehicleJson['type'] ?? vehicleJson['vehicle_type'] ?? vehicleId)
+              as String;
       final vehicles = await _db.vehicleDao.getAll();
       final existing = vehicles
-          .where((v) =>
-              v.name == (vehicleJson['vehicle_name'] as String))
+          .where((v) => v.name == vehicleName)
           .firstOrNull;
       if (existing != null) {
         dbVehicleId = existing.id;
       } else {
         dbVehicleId = await _db.vehicleDao.insertVehicle(
           VehiclesCompanion.insert(
-            name: vehicleJson['vehicle_name'] as String,
-            type: vehicleJson['vehicle_type'] as String,
+            name: vehicleName,
+            type: vehicleType,
           ),
         );
       }

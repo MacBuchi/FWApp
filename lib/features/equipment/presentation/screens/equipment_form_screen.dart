@@ -3,9 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:fwapp/core/database/database_providers.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
-import 'package:fwapp/core/utils/json_utils.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_enums.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_item.dart';
 import 'package:fwapp/features/equipment/presentation/providers/equipment_providers.dart';
@@ -28,7 +26,21 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
   final Set<String> _scenarios = {};
   bool _isSubmitting = false;
   String? _error;
-  bool _loaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.editId != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (!mounted) return;
+        final item =
+            await ref.read(equipmentDetailProvider(widget.editId!).future);
+        if (item != null && mounted) {
+          _loadExisting(item);
+        }
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -101,17 +113,6 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.editId != null && !_loaded) {
-      ref.listen(equipmentDetailProvider(widget.editId!), (_, next) {
-        next.whenData((item) {
-          if (item != null && !_loaded) {
-            _loaded = true;
-            _loadExisting(item);
-          }
-        });
-      });
-    }
-
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -124,10 +125,22 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
             onTap: _pickImage,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: resolveImage(
-                path: _imagePath ?? kPlaceholderAsset,
-                width: double.infinity,
-                height: 140,
+              child: Stack(
+                children: [
+                  resolveImage(
+                    path: _imagePath ?? kPlaceholderAsset,
+                    width: double.infinity,
+                    height: 180,
+                  ),
+                  Positioned(
+                    bottom: 8,
+                    right: 8,
+                    child: CircleAvatar(
+                      backgroundColor: Colors.black54,
+                      child: const Icon(Icons.edit, color: Colors.white, size: 20),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

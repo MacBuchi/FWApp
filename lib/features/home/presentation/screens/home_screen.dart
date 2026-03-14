@@ -84,7 +84,7 @@ class HomeScreen extends ConsumerWidget {
                 icon: Icons.upload_file,
                 label: 'Beladeplan\nimportieren',
                 color: Colors.blue.shade700,
-                onTap: () => context.go('/import'),
+                onTap: () => context.push('/import'),
               ),
             ],
           ),

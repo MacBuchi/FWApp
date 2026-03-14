@@ -4,6 +4,7 @@ import 'package:excel/excel.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:fwapp/core/database/database_providers.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:drift/drift.dart' show Value;
@@ -229,51 +230,84 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Beladeplan importieren')),
+      appBar: AppBar(
+        title: const Text('Beladeplan importieren'),
+        leading: BackButton(onPressed: () {
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go('/');
+          }
+        }),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Erwartete Spalten:',
-                        style: Theme.of(context).textTheme.titleSmall),
-                    const SizedBox(height: 8),
-                    const Text(
-                        '• Fahrzeug (vehicle)\n'
-                        '• Fach (compartment)\n'
-                        '• Gerät (equipment)\n'
-                        '• Menge / quantity (optional)',
-                        style: TextStyle(fontSize: 13)),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            FilledButton.icon(
-              icon: _importing
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white))
-                  : const Icon(Icons.upload_file),
-              label: const Text('Excel / CSV auswählen'),
-              onPressed: _importing ? null : _pickAndImport,
-            ),
-            if (_result != null) ...[
-              const SizedBox(height: 20),
-              _ImportSummary(result: _result!),
-            ],
+            if (_result == null) ..._buildPickerView(context),
+            if (_result != null) ..._buildResultView(context),
           ],
         ),
       ),
     );
+  }
+
+  List<Widget> _buildPickerView(BuildContext context) {
+    return [
+      Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Erwartete Spalten:',
+                  style: Theme.of(context).textTheme.titleSmall),
+              const SizedBox(height: 8),
+              const Text(
+                  '• Fahrzeug (vehicle)\n'
+                  '• Fach (compartment)\n'
+                  '• Gerät (equipment)\n'
+                  '• Menge / quantity (optional)',
+                  style: TextStyle(fontSize: 13)),
+            ],
+          ),
+        ),
+      ),
+      const SizedBox(height: 20),
+      FilledButton.icon(
+        icon: _importing
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                    strokeWidth: 2, color: Colors.white))
+            : const Icon(Icons.upload_file),
+        label: const Text('Excel / CSV auswählen'),
+        onPressed: _importing ? null : _pickAndImport,
+      ),
+    ];
+  }
+
+  List<Widget> _buildResultView(BuildContext context) {
+    return [
+      _ImportSummary(result: _result!),
+      const SizedBox(height: 20),
+      FilledButton.icon(
+        icon: const Icon(Icons.upload_file),
+        label: const Text('Weitere Datei importieren'),
+        onPressed: _importing ? null : () {
+          setState(() => _result = null);
+          _pickAndImport();
+        },
+      ),
+      const SizedBox(height: 12),
+      OutlinedButton.icon(
+        icon: const Icon(Icons.home),
+        label: const Text('Zurück zur Startseite'),
+        onPressed: () => context.go('/'),
+      ),
+    ];
   }
 }
 

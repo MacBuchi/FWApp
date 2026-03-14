@@ -18,7 +18,26 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
   final _nameCtrl = TextEditingController();
   final _typeCtrl = TextEditingController();
   final _plateCtrl = TextEditingController();
-  bool _loaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.editId != null) {
+      // Load existing vehicle data once, after the first frame so that
+      // Riverpod providers are fully wired up.
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (!mounted) return;
+        final vehicle =
+            await ref.read(vehicleDetailProvider(widget.editId!).future);
+        if (vehicle != null && mounted) {
+          ref.read(vehicleFormProvider.notifier).load(vehicle);
+          _nameCtrl.text = vehicle.name;
+          _typeCtrl.text = vehicle.type;
+          _plateCtrl.text = vehicle.licensePlate ?? '';
+        }
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -29,9 +48,21 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
   }
 
   Future<void> _pickImage() async {
+    // Ask for desired size/quality before opening the gallery
+    final sizeOption = await showModalBottomSheet<_ImageSize>(
+      context: context,
+      builder: (_) => const _ImageSizeSheet(),
+    );
+    if (sizeOption == null || !mounted) return;
+
     final picker = ImagePicker();
-    final file = await picker.pickImage(source: ImageSource.gallery);
-    if (file != null) {
+    final file = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: sizeOption.maxDim,
+      maxHeight: sizeOption.maxDim,
+      imageQuality: sizeOption.quality,
+    );
+    if (file != null && mounted) {
       ref.read(vehicleFormProvider.notifier).setImagePath(file.path);
     }
   }
@@ -47,21 +78,6 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(vehicleFormProvider);
 
-    // Load existing vehicle data once
-    if (widget.editId != null && !_loaded) {
-      ref.listen(vehicleDetailProvider(widget.editId!), (_, next) {
-        next.whenData((v) {
-          if (v != null && !_loaded) {
-            _loaded = true;
-            ref.read(vehicleFormProvider.notifier).load(v);
-            _nameCtrl.text = v.name;
-            _typeCtrl.text = v.type;
-            _plateCtrl.text = v.licensePlate ?? '';
-          }
-        });
-      });
-    }
-
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.editId == null ? 'Fahrzeug anlegen' : 'Fahrzeug bearbeiten'),
@@ -69,15 +85,27 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // Image picker
+          // Image preview – tap to change
           GestureDetector(
             onTap: _pickImage,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: resolveImage(
-                path: state.imagePath ?? kPlaceholderAsset,
-                width: double.infinity,
-                height: 160,
+              child: Stack(
+                children: [
+                  resolveImage(
+                    path: state.imagePath ?? kPlaceholderAsset,
+                    width: double.infinity,
+                    height: 180,
+                  ),
+                  Positioned(
+                    bottom: 8,
+                    right: 8,
+                    child: CircleAvatar(
+                      backgroundColor: Colors.black54,
+                      child: const Icon(Icons.edit, color: Colors.white, size: 20),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -86,7 +114,7 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
             child: TextButton.icon(
               onPressed: _pickImage,
               icon: const Icon(Icons.photo_library),
-              label: const Text('Bild auswählen'),
+              label: const Text('Bild auswählen / ändern'),
             ),
           ),
           const SizedBox(height: 16),
@@ -131,4 +159,60 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
       ),
     );
   }
+}
+
+// ─── Image size selection ──────────────────────────────────────────────────
+
+enum _ImageSize {
+  original(null, null, 'Original', 'Volle Auflösung, keine Komprimierung'),
+  large(1024, 85, 'Groß', 'Max. 1024 × 1024 px  –  empfohlen'),
+  medium(600, 80, 'Mittel', 'Max. 600 × 600 px'),
+  small(300, 75, 'Klein', 'Max. 300 × 300 px');
+
+  const _ImageSize(this.maxDim, this.quality, this.label, this.sublabel);
+  final double? maxDim;
+  final int? quality;
+  final String label;
+  final String sublabel;
+}
+
+class _ImageSizeSheet extends StatelessWidget {
+  const _ImageSizeSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: Text(
+                'Bildgröße wählen',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+            for (final size in _ImageSize.values)
+              ListTile(
+                leading: Icon(_sizeIcon(size)),
+                title: Text(size.label),
+                subtitle: Text(size.sublabel),
+                onTap: () => Navigator.of(context).pop(size),
+              ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  IconData _sizeIcon(_ImageSize size) => switch (size) {
+        _ImageSize.original => Icons.image_outlined,
+        _ImageSize.large    => Icons.photo_size_select_large,
+        _ImageSize.medium   => Icons.photo_size_select_actual,
+        _ImageSize.small    => Icons.photo_size_select_small,
+      };
 }

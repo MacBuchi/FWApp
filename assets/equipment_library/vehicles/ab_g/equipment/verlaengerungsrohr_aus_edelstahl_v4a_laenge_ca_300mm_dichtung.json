@@ -1,0 +1,32 @@
+{
+  "id": "verlaengerungsrohr_aus_edelstahl_v4a_laenge_ca_300mm_dichtung",
+  "name": "Verlängerungsrohr aus Edelstahl V4A, Länge ca. 300mm, Dichtung aus Viton, zur Entladung von\nDeep Sea Containern, einerseits 3\" Innengewinde flachdichtend, andererseits Tankwagenkupplung VK50",
+  "short_name": "Verlängerungsrohr aus Edelstahl V4A, Länge",
+  "equipment_functions": [
+    "ARMATUREN"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_PUMPEN"
+  ],
+  "description": "Verlängerungsrohr aus Edelstahl V4A, Länge ca. 300mm, Dichtung aus Viton, zur Entladung von\nDeep Sea Containern, einerseits 3\" Innengewinde flachdichtend, andererseits Tankwagenkupplung VK50. Armatur bzw. Kupplungsstück für Gefahrstoff-Schlauchsysteme am AB-G.",
+  "technical_data": {
+    "material": "Edelstahl V4A",
+    "kupplungen": [
+      "VK50"
+    ]
+  },
+  "typical_use": [
+    "Verbinden von Pumpen, Schläuchen und Behältern",
+    "Umpumpen und Absperren von Gefahrflüssigkeiten",
+    "Aufbau von Pumpenstrecken an der Einsatzstelle"
+  ],
+  "training_questions": [
+    "Für welche Kupplungsarten ist diese Armatur geeignet?",
+    "Welche Dichtungswerkstoffe sind für den Gefahrguteinsatz (Säuren, Laugen) zugelassen?",
+    "Wie wird die Armatur vor der Verwendung auf Dichtigkeit geprüft?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

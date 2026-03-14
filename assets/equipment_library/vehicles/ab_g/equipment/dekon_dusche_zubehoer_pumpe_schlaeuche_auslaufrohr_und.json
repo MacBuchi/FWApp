@@ -1,0 +1,26 @@
+{
+  "id": "dekon_dusche_zubehoer_pumpe_schlaeuche_auslaufrohr_und",
+  "name": "Dekon-Dusche Zubehör Pumpe,Schläuche, Auslaufrohr, und Druckminderer Elektrisches Füll- und Entleerungsgebläse für Duschzelt",
+  "short_name": "Dekon-Dusche Zubehör Pumpe,Schläuche, Auslaufrohr, und",
+  "equipment_functions": [
+    "DEKON"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_DEKON"
+  ],
+  "description": "Mobile Dekon-Dusche Isotemp zur Personendekontamination nach dem Gefahrguteinsatz. Aufblasbar mit Gebläse, beheiztes Wasser über integrierte Pumpe und Druckminderer. Aufbauzeit ca. 5 Minuten.",
+  "technical_data": {},
+  "typical_use": [
+    "Grob-Dekontamination kontaminierter Einsatzkräfte (gelbe Zone)",
+    "Fein-Dekontamination (rote Zone) mit Dekon-Planen-Satz"
+  ],
+  "training_questions": [
+    "Wie wird der Dekon-Platz nach FwDV 500 aufgebaut (Zonen, Abfolge)?",
+    "Welche Dekon-Stufen gibt es und welche Schritte enthält jede Stufe?",
+    "Welche PSA trägt das Dekon-Personal?",
+    "Welche Besonderheiten gelten bei der Dekon von gasdichten Anzügen?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

@@ -1,0 +1,28 @@
+{
+  "id": "schoepfkelle_1_l_edelstahl_mit_stil",
+  "name": "Schöpfkelle 1 l Edelstahl mit Stil",
+  "short_name": "Schöpfkelle 1 l Edelstahl mit Stil",
+  "equipment_functions": [
+    "LOGISTIK"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_DEKON"
+  ],
+  "description": "Schöpfkelle 1 l Edelstahl mit Stil. Sonderausstattung des AB-G für spezifische Gefahrgutlagen.",
+  "technical_data": {
+    "volumen_liter": 1.0,
+    "material": "Edelstahl V4A"
+  },
+  "typical_use": [
+    "Einsatz bei Gefahrgutvorfällen",
+    "Aufbau der Einsatzstelle (TW-Bereiche)"
+  ],
+  "training_questions": [
+    "Welchem TW-Bereich (TW-1 bis TW-6) ist dieses Gerät zuzuordnen?",
+    "Bei welchen Gefahrgutszenarien kommt es zum Einsatz?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

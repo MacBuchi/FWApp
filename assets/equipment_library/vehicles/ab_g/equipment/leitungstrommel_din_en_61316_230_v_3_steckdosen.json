@@ -1,0 +1,31 @@
+{
+  "id": "leitungstrommel_din_en_61316_230_v_3_steckdosen",
+  "name": "Leitungstrommel DIN EN 61316 230 V / 3 Steckdosen",
+  "short_name": "Leitungstrommel DIN EN 61316 230 V / 3 Steckdosen",
+  "equipment_functions": [
+    "STROM"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_AUFFANGEN",
+    "GEFAHRGUT_DEKON",
+    "GEFAHRGUT_PUMPEN"
+  ],
+  "description": "Leitungstrommel DIN EN 61316 230 V / 3 Steckdosen. Mittel für Beleuchtung, Strom, Signalgebung oder Funk an der Einsatzstelle.",
+  "technical_data": {
+    "normen": [
+      "DIN EN 61316"
+    ]
+  },
+  "typical_use": [
+    "Ausleuchtung der Einsatzstelle",
+    "Energieversorgung für Pumpen und Dekon-Einrichtungen"
+  ],
+  "training_questions": [
+    "Welche Schutzart (IP) bzw. ATEX-Kategorie hat dieses Gerät?",
+    "Was ist beim Betrieb in explosionsgefährdeten Atmosphären (ATEX) zu beachten?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

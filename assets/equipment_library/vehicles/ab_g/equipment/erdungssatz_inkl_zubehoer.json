@@ -1,0 +1,26 @@
+{
+  "id": "erdungssatz_inkl_zubehoer",
+  "name": "Erdungssatz inkl. Zubehör",
+  "short_name": "Erdungssatz",
+  "equipment_functions": [
+    "STROM"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_PUMPEN"
+  ],
+  "description": "Erdungssatz zur elektrostatischen Erdung von Tanks, Behältern, Fässern und Pumpen beim Umpumpen brennbarer oder elektrisch leitfähiger Flüssigkeiten. Verhindert elektrostatische Entladungen als Zündquelle.",
+  "technical_data": {},
+  "typical_use": [
+    "Erdung von Tankwagen und Behältern vor dem Umpumpen",
+    "Potenzialausgleich zwischen Pumpe, Schlauch und Behälter"
+  ],
+  "training_questions": [
+    "Warum ist eine Erdung beim Umpumpen brennbarer Flüssigkeiten gesetzlich vorgeschrieben?",
+    "Wie wird die Erdungsverbindung korrekt hergestellt und geprüft?",
+    "Was ist der Unterschied zwischen Schutzerdung und Potentialausgleich?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

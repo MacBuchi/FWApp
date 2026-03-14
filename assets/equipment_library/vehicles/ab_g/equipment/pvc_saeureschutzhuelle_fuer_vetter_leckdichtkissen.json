@@ -1,0 +1,27 @@
+{
+  "id": "pvc_saeureschutzhuelle_fuer_vetter_leckdichtkissen",
+  "name": "PVC-Säureschutzhülle für Vetter Leckdichtkissen",
+  "short_name": "PVC-Säureschutzhülle für Vetter Leckdichtkissen",
+  "equipment_functions": [
+    "ABDICHTEN"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_AUFFANGEN"
+  ],
+  "description": "PVC-Säureschutzhülle für Vetter Leckdichtkissen. Sonderausstattung des AB-G für spezifische Gefahrgutlagen.",
+  "technical_data": {
+    "material": "PVC"
+  },
+  "typical_use": [
+    "Einsatz bei Gefahrgutvorfällen",
+    "Aufbau der Einsatzstelle (TW-Bereiche)"
+  ],
+  "training_questions": [
+    "Welchem TW-Bereich (TW-1 bis TW-6) ist dieses Gerät zuzuordnen?",
+    "Bei welchen Gefahrgutszenarien kommt es zum Einsatz?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

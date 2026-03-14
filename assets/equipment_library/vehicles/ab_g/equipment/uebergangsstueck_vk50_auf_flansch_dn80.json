@@ -1,0 +1,34 @@
+{
+  "id": "uebergangsstueck_vk50_auf_flansch_dn80",
+  "name": "Übergangsstück VK50 auf Flansch DN80",
+  "short_name": "Übergangsstück VK50 auf Flansch DN80",
+  "equipment_functions": [
+    "ARMATUREN"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_PUMPEN"
+  ],
+  "description": "Edelstahl-V4A-Übergangsstück zum Verbinden verschiedener Kupplungssysteme in Gefahrstoff-Pumpenstrecken. Einsatz am AB-G für das Umpumpen aus Tanks, Containern, Fässern und Tankwagen.",
+  "technical_data": {
+    "nennweite_dn": 80,
+    "kupplungen": [
+      "Flansch",
+      "VK50"
+    ]
+  },
+  "typical_use": [
+    "Verbinden verschiedener Kupplungssysteme (VK50, MK50, KAMLOK, Guillemin, Storz, Flansch)",
+    "Anpassung zwischen Fahrzeug- und Behälterkupplungen",
+    "Aufbau von Pumpenstrecken für Gefahrstoffe"
+  ],
+  "training_questions": [
+    "Welche Kupplungssysteme werden im GW-Gefahrgut-Betrieb typischerweise verwendet?",
+    "Was ist der Unterschied zwischen VK50 (Verteiler-Kupplung) und MK50 (Muttergewinde)?",
+    "Welches Werkzeug wird zum Anziehen von Tankwagenkupplungen benötigt?",
+    "Warum sind die Übergangsstücke aus V4A-Edelstahl gefertigt?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

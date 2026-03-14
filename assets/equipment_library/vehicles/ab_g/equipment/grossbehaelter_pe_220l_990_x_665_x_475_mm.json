@@ -1,0 +1,28 @@
+{
+  "id": "grossbehaelter_pe_220l_990_x_665_x_475_mm",
+  "name": "Großbehälter PE,  220l   990 x 665 x 475 mm",
+  "short_name": "Großbehälter PE,  220l",
+  "equipment_functions": [
+    "LOGISTIK"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_AUFFANGEN"
+  ],
+  "description": "Großbehälter PE,  220l   990 x 665 x 475 mm. Sonderausstattung des AB-G für spezifische Gefahrgutlagen.",
+  "technical_data": {
+    "volumen_liter": 220.0,
+    "abmessungen_mm": "990 x 665 x 475",
+    "material": "Polyethylen (PE)"
+  },
+  "typical_use": [
+    "Einsatz bei Gefahrgutvorfällen",
+    "Aufbau der Einsatzstelle (TW-Bereiche)"
+  ],
+  "training_questions": [
+    "Welchem TW-Bereich (TW-1 bis TW-6) ist dieses Gerät zuzuordnen?",
+    "Bei welchen Gefahrgutszenarien kommt es zum Einsatz?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

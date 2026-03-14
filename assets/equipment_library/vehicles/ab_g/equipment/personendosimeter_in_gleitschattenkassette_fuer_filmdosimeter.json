@@ -1,0 +1,24 @@
+{
+  "id": "personendosimeter_in_gleitschattenkassette_fuer_filmdosimeter",
+  "name": "Personendosimeter in Gleitschattenkassette für Filmdosimeter",
+  "short_name": "Personendosimeter in Gleitschattenkassette für",
+  "equipment_functions": [
+    "MESSGERAETE"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_MESSEN"
+  ],
+  "description": "Filmdosimeter-Personendosimeter in Selbstablesung-Gleitschattenkassette zur Messung der empfangenen Strahlendosis des Trägers. Zur amtlichen Auswertung vorgesehen – Pflichtausstattung für Einsatzkräfte im Strahlenschutzbereich.",
+  "technical_data": {},
+  "typical_use": [
+    "Erkundung der Gefahrstoffsituation",
+    "Kontinuierliche Überwachung von Messwerten an der Einsatzstelle"
+  ],
+  "training_questions": [
+    "Wie wird ein Filmdosimeter nach dem Einsatz ausgewertet?",
+    "Welchen Dosisgrenzwert nach §78 StrlSchV darf eine Einsatzkraft erhalten?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

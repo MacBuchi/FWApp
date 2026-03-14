@@ -1,0 +1,28 @@
+{
+  "id": "kunststoffkanister_20l_din_14452_gelb_leer",
+  "name": "Kunststoffkanister 20l, DIN 14452, gelb, leer",
+  "short_name": "Kunststoffkanister 20l, DIN 14452, gelb, leer",
+  "equipment_functions": [
+    "LOGISTIK"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_DEKON"
+  ],
+  "description": "Kunststoffkanister 20l, DIN 14452, gelb, leer. Sonderausstattung des AB-G für spezifische Gefahrgutlagen.",
+  "technical_data": {
+    "normen": [
+      "DIN 14452"
+    ]
+  },
+  "typical_use": [
+    "Einsatz bei Gefahrgutvorfällen",
+    "Aufbau der Einsatzstelle (TW-Bereiche)"
+  ],
+  "training_questions": [
+    "Welchem TW-Bereich (TW-1 bis TW-6) ist dieses Gerät zuzuordnen?",
+    "Bei welchen Gefahrgutszenarien kommt es zum Einsatz?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

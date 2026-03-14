@@ -1,0 +1,26 @@
+{
+  "id": "mehrzweckstrahlrohr_d",
+  "name": "Mehrzweckstrahlrohr D",
+  "short_name": "Mehrzweckstrahlrohr D",
+  "equipment_functions": [
+    "ARMATUREN"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_DEKON"
+  ],
+  "description": "Mehrzweckstrahlrohr D. Armatur bzw. Kupplungsstück für Gefahrstoff-Schlauchsysteme am AB-G.",
+  "technical_data": {},
+  "typical_use": [
+    "Verbinden von Pumpen, Schläuchen und Behältern",
+    "Umpumpen und Absperren von Gefahrflüssigkeiten",
+    "Aufbau von Pumpenstrecken an der Einsatzstelle"
+  ],
+  "training_questions": [
+    "Für welche Kupplungsarten ist diese Armatur geeignet?",
+    "Welche Dichtungswerkstoffe sind für den Gefahrguteinsatz (Säuren, Laugen) zugelassen?",
+    "Wie wird die Armatur vor der Verwendung auf Dichtigkeit geprüft?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

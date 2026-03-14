@@ -1,0 +1,29 @@
+{
+  "id": "schutzanzug_leichte_ausfuehrung_typ_tychem_3",
+  "name": "Schutzanzug  leichte Ausführung Typ Tychem 3",
+  "short_name": "Schutzanzug  leichte Ausführung Typ Tychem 3",
+  "equipment_functions": [
+    "PSA"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_DEKON"
+  ],
+  "description": "Leichter Chemieschutzanzug DuPont™ Tychem® 3000, Typ 3 nach EN 14605. Schutz gegen flüssige Chemikalien durch gesprühte oder verspritzte Medien (Spritzschutz). Einwegprodukt mit versiegelten Nähten.",
+  "technical_data": {
+    "norm": "EN 14605 Typ 3",
+    "hersteller": "DuPont"
+  },
+  "typical_use": [
+    "Schutz der Einsatzkräfte beim Kontakt mit Gefahrstoffen",
+    "Einsatz im kontaminierten Bereich"
+  ],
+  "training_questions": [
+    "Welchen Schutz bietet Tychem 3000 – was schützt es, was nicht?",
+    "Was ist der Unterschied zwischen Chemikalienanzug Typ 1 und Typ 3?",
+    "Wird ein Atemschutz zum Tychem-3-Anzug benötigt?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

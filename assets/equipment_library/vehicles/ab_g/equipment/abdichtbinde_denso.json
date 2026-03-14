@@ -1,0 +1,25 @@
+{
+  "id": "abdichtbinde_denso",
+  "name": "Abdichtbinde DENSO",
+  "short_name": "Abdichtbinde DENSO",
+  "equipment_functions": [
+    "ABDICHTEN"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_AUFFANGEN"
+  ],
+  "description": "DENSO-Abdichtbinde (selbstklebende Butylkautschuk-Binde) zum schnellen Abdichten von Rissen und Leckagen an Rohren und Behältern. Chemikalienbeständig gegen viele Mineralöle und Kraftstoffe.",
+  "technical_data": {},
+  "typical_use": [
+    "Einsatz bei Gefahrgutvorfällen",
+    "Aufbau der Einsatzstelle (TW-Bereiche)"
+  ],
+  "training_questions": [
+    "Wie wird die DENSO-Abdichtbinde korrekt aufgebracht?",
+    "Für welche Temperaturbereiche und Medien ist sie geeignet?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

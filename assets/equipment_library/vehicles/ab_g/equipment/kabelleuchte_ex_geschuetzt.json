@@ -1,0 +1,27 @@
+{
+  "id": "kabelleuchte_ex_geschuetzt",
+  "name": "Kabelleuchte ex geschützt",
+  "short_name": "Kabelleuchte ex geschützt",
+  "equipment_functions": [
+    "BELEUCHTUNG"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_PUMPEN"
+  ],
+  "description": "Kabelleuchte ex geschützt. Mittel für Beleuchtung, Strom, Signalgebung oder Funk an der Einsatzstelle.",
+  "technical_data": {
+    "atex_zertifiziert": true
+  },
+  "typical_use": [
+    "Ausleuchtung der Einsatzstelle",
+    "Energieversorgung für Pumpen und Dekon-Einrichtungen"
+  ],
+  "training_questions": [
+    "Welche Schutzart (IP) bzw. ATEX-Kategorie hat dieses Gerät?",
+    "Was ist beim Betrieb in explosionsgefährdeten Atmosphären (ATEX) zu beachten?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

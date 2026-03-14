@@ -1,0 +1,27 @@
+{
+  "id": "kontaminationsmonitor",
+  "name": "Kontaminationsmonitor",
+  "short_name": "Kontaminationsmonitor",
+  "equipment_functions": [
+    "MESSGERAETE"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_DEKON",
+    "GEFAHRGUT_MESSEN"
+  ],
+  "description": "Gerät zur Messung von Oberflächenkontaminationen durch Alpha-, Beta- und Gammastrahlung. Einsatz zur Freigabemessung nach Dekontamination sowie zur Umfeldüberwachung an der Einsatzstelle.",
+  "technical_data": {},
+  "typical_use": [
+    "Erkundung der Gefahrstoffsituation",
+    "Kontinuierliche Überwachung von Messwerten an der Einsatzstelle"
+  ],
+  "training_questions": [
+    "Für welche Strahlungsarten ist der Kontaminationsmonitor geeignet?",
+    "Wie wird die Sonde korrekt über die zu messende Fläche geführt?",
+    "Welche Messwerte sigalisieren einen kontaminierten Zustand?",
+    "Wie wird das Gerät auf Nullrate (Hintergrundstrahlung) kalibriert?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

@@ -1,0 +1,26 @@
+{
+  "id": "fuss_verzinkt_fuer_absperrstuetzen",
+  "name": "Fuß verzinkt für Absperrstützen",
+  "short_name": "Fuß verzinkt für Absperrstützen",
+  "equipment_functions": [
+    "BELEUCHTUNG"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_AUFFANGEN",
+    "GEFAHRGUT_PUMPEN"
+  ],
+  "description": "Fuß verzinkt für Absperrstützen. Mittel für Beleuchtung, Strom, Signalgebung oder Funk an der Einsatzstelle.",
+  "technical_data": {},
+  "typical_use": [
+    "Ausleuchtung der Einsatzstelle",
+    "Energieversorgung für Pumpen und Dekon-Einrichtungen"
+  ],
+  "training_questions": [
+    "Welche Schutzart (IP) bzw. ATEX-Kategorie hat dieses Gerät?",
+    "Was ist beim Betrieb in explosionsgefährdeten Atmosphären (ATEX) zu beachten?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

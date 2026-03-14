@@ -1,0 +1,27 @@
+{
+  "id": "led_akku_scheinwerfer_atex_peli_9455_rals_atex_390_x_200_x_230",
+  "name": "LED-Akku-Scheinwerfer ATEX PELI 9455 RALS ATEX 390 x 200 x 230 mm",
+  "short_name": "LED-Akku-Scheinwerfer ATEX PELI 9455 RALS ATEX",
+  "equipment_functions": [
+    "BELEUCHTUNG"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_MESSEN"
+  ],
+  "description": "LED-Akku-Scheinwerfer ATEX PELI 9455 RALS ATEX 390 x 200 x 230 mm. Mittel für Beleuchtung, Strom, Signalgebung oder Funk an der Einsatzstelle.",
+  "technical_data": {
+    "abmessungen_mm": "390 x 200 x 230",
+    "atex_zertifiziert": true
+  },
+  "typical_use": [
+    "Ausleuchtung der Einsatzstelle",
+    "Energieversorgung für Pumpen und Dekon-Einrichtungen"
+  ],
+  "training_questions": [
+    "Welche Schutzart (IP) bzw. ATEX-Kategorie hat dieses Gerät?",
+    "Was ist beim Betrieb in explosionsgefährdeten Atmosphären (ATEX) zu beachten?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

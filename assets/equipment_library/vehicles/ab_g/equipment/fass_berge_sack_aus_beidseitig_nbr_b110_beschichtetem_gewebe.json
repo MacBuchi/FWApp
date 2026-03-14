@@ -1,0 +1,28 @@
+{
+  "id": "fass_berge_sack_aus_beidseitig_nbr_b110_beschichtetem_gewebe",
+  "name": "Fass-Berge-Sack aus beidseitig NBR (B110) beschichtetem Gewebe, (/) 800 mm, Höhe 1300 mm, ableitfähig, mit Ösen und Kordel, Saum 5 cm",
+  "short_name": "Fass-Berge-Sack aus beidseitig NBR (B110)",
+  "equipment_functions": [
+    "GEFAHRGUT_AUFFANGEN"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_AUFFANGEN"
+  ],
+  "description": "Bergungssack aus beidseitig NBR-beschichtetem Gewebe (B110), ableitfähig, für die Aufnahme undichter oder beschädigter Fässer (Ø 800 mm, H 1300 mm). Mit Ösen, Kordel und 5-cm-Saum. Elektrisch ableitfähig gegen Statik.",
+  "technical_data": {
+    "material": "NBR-Gummi"
+  },
+  "typical_use": [
+    "Einsatz bei Gefahrgutvorfällen",
+    "Aufbau der Einsatzstelle (TW-Bereiche)"
+  ],
+  "training_questions": [
+    "Warum ist der Fass-Berge-Sack elektrisch ableitfähig?",
+    "Wie wird ein kontaminierter Fass-Berge-Sack nach dem Einsatz behandelt?",
+    "Welche maximale Fassgröße passt in den Berge-Sack?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

@@ -1,0 +1,26 @@
+{
+  "id": "kombinationsfilter",
+  "name": "Kombinationsfilter",
+  "short_name": "Kombinationsfilter",
+  "equipment_functions": [
+    "PSA"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_DEKON"
+  ],
+  "description": "Kombinationsfilter für Filtergeräte oder Halbmasken. Schützt vor Gasen, Dämpfen und Partikeln. Standardtyp A2B2E2K2P3 für den Gefahrguteinsatz. Einsatzgrenzwert beachten – nicht für O₂-Mangel-Situationen geeignet.",
+  "technical_data": {},
+  "typical_use": [
+    "Schutz der Einsatzkräfte beim Kontakt mit Gefahrstoffen",
+    "Einsatz im kontaminierten Bereich"
+  ],
+  "training_questions": [
+    "Was bedeuten die Buchstaben A, B, E, K und P am Kombinationsfilter?",
+    "Ab welcher Gefahrstoffkonzentration darf kein Filtergerät mehr verwendet werden?",
+    "Wie wird der Filter auf Unversehrtheit und Ablaufdatum geprüft?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

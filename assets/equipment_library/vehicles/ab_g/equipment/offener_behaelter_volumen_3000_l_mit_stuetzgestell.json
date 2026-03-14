@@ -1,0 +1,26 @@
+{
+  "id": "offener_behaelter_volumen_3000_l_mit_stuetzgestell",
+  "name": "Offener Behälter Volumen 3000 l mit Stützgestell",
+  "short_name": "Offener Behälter Volumen 3000 l mit Stützgestell",
+  "equipment_functions": [
+    "LOGISTIK"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_AUFFANGEN"
+  ],
+  "description": "Offener Behälter Volumen 3000 l mit Stützgestell. Sonderausstattung des AB-G für spezifische Gefahrgutlagen.",
+  "technical_data": {
+    "volumen_liter": 3000.0
+  },
+  "typical_use": [
+    "Einsatz bei Gefahrgutvorfällen",
+    "Aufbau der Einsatzstelle (TW-Bereiche)"
+  ],
+  "training_questions": [
+    "Welchem TW-Bereich (TW-1 bis TW-6) ist dieses Gerät zuzuordnen?",
+    "Bei welchen Gefahrgutszenarien kommt es zum Einsatz?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

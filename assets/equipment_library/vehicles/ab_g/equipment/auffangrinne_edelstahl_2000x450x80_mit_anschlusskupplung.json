@@ -1,0 +1,27 @@
+{
+  "id": "auffangrinne_edelstahl_2000x450x80_mit_anschlusskupplung",
+  "name": "Auffangrinne Edelstahl 2000x450x80 mit Anschlußkupplung",
+  "short_name": "Auffangrinne Edelstahl 2000x450x80 mit Anschlußkupplung",
+  "equipment_functions": [
+    "LOGISTIK"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_AUFFANGEN"
+  ],
+  "description": "Auffangrinne Edelstahl 2000x450x80 mit Anschlußkupplung. Sonderausstattung des AB-G für spezifische Gefahrgutlagen.",
+  "technical_data": {
+    "material": "Edelstahl V4A"
+  },
+  "typical_use": [
+    "Einsatz bei Gefahrgutvorfällen",
+    "Aufbau der Einsatzstelle (TW-Bereiche)"
+  ],
+  "training_questions": [
+    "Welchem TW-Bereich (TW-1 bis TW-6) ist dieses Gerät zuzuordnen?",
+    "Bei welchen Gefahrgutszenarien kommt es zum Einsatz?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

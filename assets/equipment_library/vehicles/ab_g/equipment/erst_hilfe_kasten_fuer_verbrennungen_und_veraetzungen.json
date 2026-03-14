@@ -1,0 +1,25 @@
+{
+  "id": "erst_hilfe_kasten_fuer_verbrennungen_und_veraetzungen",
+  "name": "Erst Hilfe-Kasten für Verbrennungen und Verätzungen",
+  "short_name": "Erst Hilfe-Kasten für Verbrennungen und Verätzungen",
+  "equipment_functions": [
+    "RETTUNG"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_AUFFANGEN"
+  ],
+  "description": "Erst Hilfe-Kasten für Verbrennungen und Verätzungen. Rettungs- oder Erste-Hilfe-Ausrüstung für den Gefahrguteinsatz.",
+  "technical_data": {},
+  "typical_use": [
+    "Menschenrettung und Erste Hilfe",
+    "Notfallversorgung bei Verätzungen oder Verletzungen"
+  ],
+  "training_questions": [
+    "Wann und wie wird dieses Gerät eingesetzt?",
+    "Welche Erste-Hilfe-Maßnahmen haben bei Gefahrstoffunfällen Priorität?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

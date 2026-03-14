@@ -1,0 +1,24 @@
+{
+  "id": "handsprechfunkgeraete_inkl_ladeschale",
+  "name": "Handsprechfunkgeräte   inkl. Ladeschale",
+  "short_name": "Handsprechfunkgeräte",
+  "equipment_functions": [
+    "KOMMUNIKATION"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_MESSEN"
+  ],
+  "description": "Handsprechfunkgeräte   inkl. Ladeschale. Mittel für Beleuchtung, Strom, Signalgebung oder Funk an der Einsatzstelle.",
+  "technical_data": {},
+  "typical_use": [
+    "Ausleuchtung der Einsatzstelle",
+    "Energieversorgung für Pumpen und Dekon-Einrichtungen"
+  ],
+  "training_questions": [
+    "Welche Schutzart (IP) bzw. ATEX-Kategorie hat dieses Gerät?",
+    "Was ist beim Betrieb in explosionsgefährdeten Atmosphären (ATEX) zu beachten?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

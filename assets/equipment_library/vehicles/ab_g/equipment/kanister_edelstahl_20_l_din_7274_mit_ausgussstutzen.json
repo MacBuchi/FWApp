@@ -1,0 +1,31 @@
+{
+  "id": "kanister_edelstahl_20_l_din_7274_mit_ausgussstutzen",
+  "name": "Kanister Edelstahl 20 l DIN 7274 mit Ausgußstutzen",
+  "short_name": "Kanister Edelstahl 20 l DIN 7274 mit Ausgußstutzen",
+  "equipment_functions": [
+    "LOGISTIK"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_DEKON"
+  ],
+  "description": "Kanister Edelstahl 20 l DIN 7274 mit Ausgußstutzen. Sonderausstattung des AB-G für spezifische Gefahrgutlagen.",
+  "technical_data": {
+    "volumen_liter": 20.0,
+    "normen": [
+      "DIN 7274"
+    ],
+    "material": "Edelstahl V4A"
+  },
+  "typical_use": [
+    "Einsatz bei Gefahrgutvorfällen",
+    "Aufbau der Einsatzstelle (TW-Bereiche)"
+  ],
+  "training_questions": [
+    "Welchem TW-Bereich (TW-1 bis TW-6) ist dieses Gerät zuzuordnen?",
+    "Bei welchen Gefahrgutszenarien kommt es zum Einsatz?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

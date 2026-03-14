@@ -1,0 +1,25 @@
+{
+  "id": "festzeltgarnitur_kurz_1x_tisch_2x_bank",
+  "name": "Festzeltgarnitur kurz (1x Tisch, 2x Bank)",
+  "short_name": "Festzeltgarnitur kurz (1x Tisch, 2x Bank)",
+  "equipment_functions": [
+    "LOGISTIK"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_AUFFANGEN"
+  ],
+  "description": "Festzeltgarnitur kurz (1x Tisch, 2x Bank). Sonderausstattung des AB-G für spezifische Gefahrgutlagen.",
+  "technical_data": {},
+  "typical_use": [
+    "Einsatz bei Gefahrgutvorfällen",
+    "Aufbau der Einsatzstelle (TW-Bereiche)"
+  ],
+  "training_questions": [
+    "Welchem TW-Bereich (TW-1 bis TW-6) ist dieses Gerät zuzuordnen?",
+    "Bei welchen Gefahrgutszenarien kommt es zum Einsatz?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

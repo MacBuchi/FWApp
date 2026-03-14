@@ -1,0 +1,24 @@
+{
+  "id": "set_zur_aufnahme_von_quecksilber_spill_kit",
+  "name": "Set zur Aufnahme von Quecksilber Spill-Kit",
+  "short_name": "Set zur Aufnahme von Quecksilber Spill-Kit",
+  "equipment_functions": [
+    "LOGISTIK"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_MESSEN"
+  ],
+  "description": "Set zur Aufnahme von Quecksilber Spill-Kit. Sonderausstattung des AB-G für spezifische Gefahrgutlagen.",
+  "technical_data": {},
+  "typical_use": [
+    "Einsatz bei Gefahrgutvorfällen",
+    "Aufbau der Einsatzstelle (TW-Bereiche)"
+  ],
+  "training_questions": [
+    "Welchem TW-Bereich (TW-1 bis TW-6) ist dieses Gerät zuzuordnen?",
+    "Bei welchen Gefahrgutszenarien kommt es zum Einsatz?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "pruefroehrchen",
+  "name": "Prüfröhrchen",
+  "short_name": "Prüfröhrchen",
+  "equipment_functions": [
+    "MESSGERAETE"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_MESSEN"
+  ],
+  "description": "Prüfröhrchen-Sortiment zur qualitativen und semiquantitativen Bestimmung von Gasen und Dämpfen in der Luft. Gasspezifische Röhrchen für häufige Gefahrstoffe (z. B. Chlor, Ammoniak, H₂S, CO). Einsatz mit Handpumpe (Dräger Accuro o. ä.).",
+  "technical_data": {},
+  "typical_use": [
+    "Erkundung der Gefahrstoffsituation",
+    "Kontinuierliche Überwachung von Messwerten an der Einsatzstelle"
+  ],
+  "training_questions": [
+    "Wie wird ein Prüfröhrchen korrekt verwendet (Hübe, Ablesung)?",
+    "Welche Gefahrstoffe können im AB-G-Einsatz typischerweise auftreten?",
+    "Was ist die Nachweisgrenze eines Prüfröhrchens und welche Genauigkeit hat es?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

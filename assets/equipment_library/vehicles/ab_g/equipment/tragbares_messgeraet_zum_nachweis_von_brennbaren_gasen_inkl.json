@@ -1,0 +1,36 @@
+{
+  "id": "tragbares_messgeraet_zum_nachweis_von_brennbaren_gasen_inkl",
+  "name": "Tragbares Messgerät zum Nachweis von brennbaren Gasen inkl. Ladestation Ventis 4/5",
+  "short_name": "Tragbares Messgerät zum Nachweis von brennbaren Gasen",
+  "equipment_functions": [
+    "MESSGERAETE"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_MESSEN"
+  ],
+  "description": "Mehrgasmessgerät Industrial Scientific Ventis MX4/5 zur kontinuierlichen Überwachung von O₂, CO, H₂S und brennbaren Gasen (% LEL) sowie optional VOC. ATEX-zertifiziert für Zone 1/2. Inklusive Ladestation.",
+  "technical_data": {
+    "messparameter": [
+      "O2",
+      "CO",
+      "H2S",
+      "LEL",
+      "optional VOC"
+    ],
+    "norm": "ATEX Kategorie 1G/2G",
+    "hersteller": "Industrial Scientific"
+  },
+  "typical_use": [
+    "Erkundung der Gefahrstoffsituation",
+    "Kontinuierliche Überwachung von Messwerten an der Einsatzstelle"
+  ],
+  "training_questions": [
+    "Welche Gase misst das Ventis-Gerät gleichzeitig?",
+    "Was bedeutet '% LEL' und ab welchem Wert ist eine Evakuierung einzuleiten?",
+    "Wie wird das Gerät vor dem Einsatz auf Funktion geprüft (Bump-Test)?",
+    "Wie lange dauert die Einschaltphase (Kalibrierungsphase) des Geräts?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

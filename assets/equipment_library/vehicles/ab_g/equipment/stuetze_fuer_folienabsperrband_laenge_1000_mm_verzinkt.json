@@ -1,0 +1,25 @@
+{
+  "id": "stuetze_fuer_folienabsperrband_laenge_1000_mm_verzinkt",
+  "name": "Stütze für Folienabsperrband, Länge 1000 mm verzinkt",
+  "short_name": "Stütze für Folienabsperrband, Länge 1000 mm verzinkt",
+  "equipment_functions": [
+    "BELEUCHTUNG"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_DEKON"
+  ],
+  "description": "Stütze für Folienabsperrband, Länge 1000 mm verzinkt. Mittel für Beleuchtung, Strom, Signalgebung oder Funk an der Einsatzstelle.",
+  "technical_data": {},
+  "typical_use": [
+    "Ausleuchtung der Einsatzstelle",
+    "Energieversorgung für Pumpen und Dekon-Einrichtungen"
+  ],
+  "training_questions": [
+    "Welche Schutzart (IP) bzw. ATEX-Kategorie hat dieses Gerät?",
+    "Was ist beim Betrieb in explosionsgefährdeten Atmosphären (ATEX) zu beachten?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

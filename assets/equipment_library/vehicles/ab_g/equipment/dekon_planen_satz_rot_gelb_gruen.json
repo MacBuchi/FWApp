@@ -1,0 +1,24 @@
+{
+  "id": "dekon_planen_satz_rot_gelb_gruen",
+  "name": "Dekon-Planen-Satz rot/gelb/grün",
+  "short_name": "Dekon-Planen-Satz rot/gelb/grün",
+  "equipment_functions": [
+    "DEKON"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_DEKON"
+  ],
+  "description": "Dekon-Planen-Satz rot/gelb/grün. Sonderausstattung des AB-G für spezifische Gefahrgutlagen.",
+  "technical_data": {},
+  "typical_use": [
+    "Einsatz bei Gefahrgutvorfällen",
+    "Aufbau der Einsatzstelle (TW-Bereiche)"
+  ],
+  "training_questions": [
+    "Welchem TW-Bereich (TW-1 bis TW-6) ist dieses Gerät zuzuordnen?",
+    "Bei welchen Gefahrgutszenarien kommt es zum Einsatz?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

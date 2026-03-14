@@ -1,0 +1,27 @@
+{
+  "id": "vetter_luftzufuehrungsschlauch_10m_gruen",
+  "name": "Vetter-Luftzuführungsschlauch 10m, grün",
+  "short_name": "Vetter-Luftzuführungsschlauch 10m, grün",
+  "equipment_functions": [
+    "ABDICHTEN"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_AUFFANGEN"
+  ],
+  "description": "Vetter-Luftzuführungsschlauch (10 m) zur Druckluftversorgung von Vetter-Leck- und Rohrdichtkissen. Farbcodiert: blau für Kissen 1, grün für Kissen 2 (Zwei-Kissen-System). Anschluss am Einzel-Steuerorgan.",
+  "technical_data": {},
+  "typical_use": [
+    "Einsatz bei Gefahrgutvorfällen",
+    "Aufbau der Einsatzstelle (TW-Bereiche)"
+  ],
+  "training_questions": [
+    "Welche Farbcodierung haben Vetter-Luftzuführungsschläuche und warum?",
+    "Wie werden die Schläuche am Steuerorgan angeschlossen?"
+  ],
+  "images": [],
+  "manuals": [
+    "https://www.vetter-group.com/"
+  ],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

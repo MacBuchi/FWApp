@@ -1,0 +1,31 @@
+{
+  "id": "vetter_druckminderer_200_300_bar_12_bar",
+  "name": "Vetter-Druckminderer 200/300 bar, 12 bar",
+  "short_name": "Vetter-Druckminderer 200/300 bar, 12 bar",
+  "equipment_functions": [
+    "ABDICHTEN"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_AUFFANGEN"
+  ],
+  "description": "Vetter-Druckminderer für den Anschluss an Druckluftflaschen (200/300 bar). Reduziert den Flaschendruck auf den Betriebsdruck der Vetter-Kissen (max. 1,5 bar). Eingangsdruck 200/300 bar, Ausgangsdruck bis 12 bar einstellbar.",
+  "technical_data": {
+    "eingangsdruck_bar": "200/300",
+    "ausgangsdruck_max_bar": 12,
+    "hersteller": "Vetter GmbH"
+  },
+  "typical_use": [
+    "Einsatz bei Gefahrgutvorfällen",
+    "Aufbau der Einsatzstelle (TW-Bereiche)"
+  ],
+  "training_questions": [
+    "Warum wird ein Druckminderer bei Vetter-Kissen benötigt?",
+    "Auf welchen Ausgangsdruck wird der Druckminderer für Kissen-Systeme eingestellt?"
+  ],
+  "images": [],
+  "manuals": [
+    "https://www.vetter-group.com/"
+  ],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

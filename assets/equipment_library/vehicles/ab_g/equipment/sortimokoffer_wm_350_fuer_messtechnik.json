@@ -1,0 +1,25 @@
+{
+  "id": "sortimokoffer_wm_350_fuer_messtechnik",
+  "name": "Sortimokoffer WM 350 für Messtechnik",
+  "short_name": "Sortimokoffer WM 350 für Messtechnik",
+  "equipment_functions": [
+    "MESSGERAETE"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_MESSEN"
+  ],
+  "description": "Sortimokoffer WM 350 für Messtechnik. Messgerät zur Erkundung und Überwachung an der Gefahrguteinsatzstelle.",
+  "technical_data": {},
+  "typical_use": [
+    "Erkundung der Gefahrstoffsituation",
+    "Kontinuierliche Überwachung von Messwerten an der Einsatzstelle"
+  ],
+  "training_questions": [
+    "Was misst dieses Gerät und in welcher Einheit?",
+    "In welchem Intervall wird das Gerät kalibriert?",
+    "Welche Grenz- und Alarmwerte sind beim Gefahrguteinsatz relevant?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

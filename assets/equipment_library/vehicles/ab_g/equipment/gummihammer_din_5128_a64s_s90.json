@@ -1,0 +1,30 @@
+{
+  "id": "gummihammer_din_5128_a64s_s90",
+  "name": "Gummihammer DIN 5128 -A64S-S90",
+  "short_name": "Gummihammer DIN 5128 -A64S-S90",
+  "equipment_functions": [
+    "HANDWERKZEUG"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_AUFFANGEN"
+  ],
+  "description": "Gummihammer DIN 5128 -A64S-S90. Handwerkzeug in funkenarmer/-freier Ausführung für den Einsatz in ATEX-Zonen.",
+  "technical_data": {
+    "normen": [
+      "DIN 5128"
+    ]
+  },
+  "typical_use": [
+    "Öffnen und Schließen von Behälterverschlüssen und Armaturen",
+    "Arbeiten in explosionsgefährdeter Umgebung (ATEX)"
+  ],
+  "training_questions": [
+    "Warum ist dieses Werkzeug funkenarm/-frei ausgeführt?",
+    "In welchen ATEX-Gerätekategorien (Zonen 0–2) darf funkenarmes Werkzeug eingesetzt werden?",
+    "Wie wird funkenarmes Werkzeug auf Beschädigungen und Ermüdung kontrolliert?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

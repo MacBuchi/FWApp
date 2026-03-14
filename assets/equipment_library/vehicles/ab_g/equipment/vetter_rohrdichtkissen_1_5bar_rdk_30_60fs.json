@@ -1,0 +1,32 @@
+{
+  "id": "vetter_rohrdichtkissen_1_5bar_rdk_30_60fs",
+  "name": "Vetter-Rohrdichtkissen 1,5bar-RDK 30/60FS",
+  "short_name": "Vetter-Rohrdichtkissen 1,5bar-RDK 30/60FS",
+  "equipment_functions": [
+    "ABDICHTEN"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_AUFFANGEN"
+  ],
+  "description": "Pneumatisches Vetter-Rohrdichtkissen zum Abdichten von Rohrbrüchen und undichten Rohrleitungen von innen. Die Kissen werden in das Rohr eingeführt und mit Druckluft aufgepumpt. Betriebsdruck 1,5 bar. Lieferbar in verschiedenen Nennweiten (RDK 7/15, 10/20, 20/40, 30/60).",
+  "technical_data": {
+    "betriebsdruck_max_bar": 1.5,
+    "hersteller": "Vetter GmbH"
+  },
+  "typical_use": [
+    "Innenseitiges Abdichten gebrochener oder undichter Rohre",
+    "Einsatz mit Vetter-Luftzuführungsschlauch und Einzel-Steuerorgan"
+  ],
+  "training_questions": [
+    "Welche RDK-Größe wird für welche Rohrnennweite benötigt?",
+    "Wie wird das Rohrdichtkissen korrekt in das Rohr eingebracht?",
+    "Was ist bei Kissen mit 'FS'-Kennung besonders zu beachten (Flachstoff-Schutzschicht)?",
+    "Wie wird der Luftdruck beim Aufpumpen kontrolliert?"
+  ],
+  "images": [],
+  "manuals": [
+    "https://www.vetter-group.com/en/products/pipe-sealing-bags/"
+  ],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

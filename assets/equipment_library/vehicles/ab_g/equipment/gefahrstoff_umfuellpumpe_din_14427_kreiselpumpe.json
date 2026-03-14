@@ -1,0 +1,31 @@
+{
+  "id": "gefahrstoff_umfuellpumpe_din_14427_kreiselpumpe",
+  "name": "Gefahrstoff Umfüllpumpe DIN 14427 Kreiselpumpe",
+  "short_name": "Gefahrstoff Umfüllpumpe DIN 14427 Kreiselpumpe",
+  "equipment_functions": [
+    "PUMPEN"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_AUFFANGEN",
+    "GEFAHRGUT_PUMPEN"
+  ],
+  "description": "Gefahrstoff-Umfüllpumpe nach DIN 14427 als Kreiselpumpe für dünnflüssige Medien. Motorisch angetrieben, geeignet für aggressive Flüssigkeiten und wässrige Lösungen mit niedriger Viskosität.",
+  "technical_data": {
+    "normen": [
+      "DIN 14427"
+    ]
+  },
+  "typical_use": [
+    "Unterstützung beim Umpumpen und Auffangen",
+    "Transport von Ausrüstung an der Einsatzstelle"
+  ],
+  "training_questions": [
+    "Welche Norm gilt für Feuerwehr-Gefahrstoff-Umfüllpumpen (DIN 14427)?",
+    "Für welche Medien ist die Kreiselpumpe geeignet – gibt es Einschränkungen?",
+    "Wie wird die Pumpe auf Saug- und Druckseite angeschlossen?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

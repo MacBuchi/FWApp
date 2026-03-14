@@ -1,0 +1,31 @@
+{
+  "id": "kesselwagen_zwischenstueck_kwz_gewindestutzen_vk_50",
+  "name": "Kesselwagen-Zwischenstück KWZ Gewindestutzen VK 50",
+  "short_name": "Kesselwagen-Zwischenstück KWZ Gewindestutzen VK 50",
+  "equipment_functions": [
+    "ARMATUREN"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_PUMPEN"
+  ],
+  "description": "Kesselwagen-Zwischenstück KWZ Gewindestutzen VK 50. Armatur bzw. Kupplungsstück für Gefahrstoff-Schlauchsysteme am AB-G.",
+  "technical_data": {
+    "kupplungen": [
+      "VK50"
+    ]
+  },
+  "typical_use": [
+    "Verbinden von Pumpen, Schläuchen und Behältern",
+    "Umpumpen und Absperren von Gefahrflüssigkeiten",
+    "Aufbau von Pumpenstrecken an der Einsatzstelle"
+  ],
+  "training_questions": [
+    "Für welche Kupplungsarten ist diese Armatur geeignet?",
+    "Welche Dichtungswerkstoffe sind für den Gefahrguteinsatz (Säuren, Laugen) zugelassen?",
+    "Wie wird die Armatur vor der Verwendung auf Dichtigkeit geprüft?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

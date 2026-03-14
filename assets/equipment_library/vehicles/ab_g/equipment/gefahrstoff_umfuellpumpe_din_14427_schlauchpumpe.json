@@ -1,0 +1,30 @@
+{
+  "id": "gefahrstoff_umfuellpumpe_din_14427_schlauchpumpe",
+  "name": "Gefahrstoff Umfüllpumpe DIN 14427 Schlauchpumpe",
+  "short_name": "Gefahrstoff Umfüllpumpe DIN 14427 Schlauchpumpe",
+  "equipment_functions": [
+    "PUMPEN"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_PUMPEN"
+  ],
+  "description": "Gefahrstoff-Umfüllpumpe nach DIN 14427 als Schlauchpumpe (Peristaltikpumpe) für zähflüssige oder aggressive Medien. Geeignet für Konzentrate, Säuren, Laugen und viskose Gefahrstoffe.",
+  "technical_data": {
+    "normen": [
+      "DIN 14427"
+    ]
+  },
+  "typical_use": [
+    "Unterstützung beim Umpumpen und Auffangen",
+    "Transport von Ausrüstung an der Einsatzstelle"
+  ],
+  "training_questions": [
+    "Welchen Vorteil bietet die Schlauchpumpe gegenüber der Kreiselpumpe bei Gefahrstoffen?",
+    "Was ist das Funktionsprinzip einer Peristaltikpumpe?",
+    "Welcher Schlauchtyp muss dem Gefahrstoff entsprechend ausgewählt werden?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

@@ -1,0 +1,28 @@
+{
+  "id": "fasskarre_1100x700x200mm",
+  "name": "Fasskarre 1100x700x200mm",
+  "short_name": "Fasskarre",
+  "equipment_functions": [
+    "LOGISTIK"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_AUFFANGEN",
+    "GEFAHRGUT_PUMPEN"
+  ],
+  "description": "Fasskarre 1100x700x200mm. Arbeitsmittel des AB-G für den Einsatz an der Gefahrguteinsatzstelle.",
+  "technical_data": {
+    "abmessungen_mm": "1100 x 700 x 200"
+  },
+  "typical_use": [
+    "Unterstützung beim Umpumpen und Auffangen",
+    "Transport von Ausrüstung an der Einsatzstelle"
+  ],
+  "training_questions": [
+    "Wo ist dieses Arbeitsmittel im AB-G verlastet und welchem TW-Bereich gehört es an?",
+    "Welche PSA ist beim Umgang mit Gefahrstoffen Pflicht?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

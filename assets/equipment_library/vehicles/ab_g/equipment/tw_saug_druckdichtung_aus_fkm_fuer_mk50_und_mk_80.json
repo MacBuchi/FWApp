@@ -1,0 +1,33 @@
+{
+  "id": "tw_saug_druckdichtung_aus_fkm_fuer_mk50_und_mk_80",
+  "name": "TW Saug-/Druckdichtung aus FKM für MK50 und MK 80",
+  "short_name": "TW Saug-/Druckdichtung aus FKM für MK50 und MK 80",
+  "equipment_functions": [
+    "ARMATUREN"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_PUMPEN"
+  ],
+  "description": "TW Saug-/Druckdichtung aus FKM für MK50 und MK 80. Armatur bzw. Kupplungsstück für Gefahrstoff-Schlauchsysteme am AB-G.",
+  "technical_data": {
+    "material": "FKM / Viton®",
+    "kupplungen": [
+      "MK50",
+      "MK80"
+    ]
+  },
+  "typical_use": [
+    "Verbinden von Pumpen, Schläuchen und Behältern",
+    "Umpumpen und Absperren von Gefahrflüssigkeiten",
+    "Aufbau von Pumpenstrecken an der Einsatzstelle"
+  ],
+  "training_questions": [
+    "Für welche Kupplungsarten ist diese Armatur geeignet?",
+    "Welche Dichtungswerkstoffe sind für den Gefahrguteinsatz (Säuren, Laugen) zugelassen?",
+    "Wie wird die Armatur vor der Verwendung auf Dichtigkeit geprüft?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

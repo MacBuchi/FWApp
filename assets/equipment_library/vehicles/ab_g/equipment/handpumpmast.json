@@ -1,0 +1,28 @@
+{
+  "id": "handpumpmast",
+  "name": "Handpumpmast",
+  "short_name": "Handpumpmast",
+  "equipment_functions": [
+    "LOGISTIK"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_AUFFANGEN",
+    "GEFAHRGUT_DEKON",
+    "GEFAHRGUT_MESSEN",
+    "GEFAHRGUT_PUMPEN"
+  ],
+  "description": "Handpumpmast. Sonderausstattung des AB-G für spezifische Gefahrgutlagen.",
+  "technical_data": {},
+  "typical_use": [
+    "Einsatz bei Gefahrgutvorfällen",
+    "Aufbau der Einsatzstelle (TW-Bereiche)"
+  ],
+  "training_questions": [
+    "Welchem TW-Bereich (TW-1 bis TW-6) ist dieses Gerät zuzuordnen?",
+    "Bei welchen Gefahrgutszenarien kommt es zum Einsatz?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

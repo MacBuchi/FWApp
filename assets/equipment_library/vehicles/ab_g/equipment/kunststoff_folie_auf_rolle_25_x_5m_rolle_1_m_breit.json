@@ -1,0 +1,25 @@
+{
+  "id": "kunststoff_folie_auf_rolle_25_x_5m_rolle_1_m_breit",
+  "name": "Kunststoff-Folie auf Rolle 25 x 5m (Rolle 1 m breit)",
+  "short_name": "Kunststoff-Folie",
+  "equipment_functions": [
+    "LOGISTIK"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_AUFFANGEN"
+  ],
+  "description": "Kunststoff-Folie auf Rolle 25 x 5m (Rolle 1 m breit). Sonderausstattung des AB-G für spezifische Gefahrgutlagen.",
+  "technical_data": {},
+  "typical_use": [
+    "Einsatz bei Gefahrgutvorfällen",
+    "Aufbau der Einsatzstelle (TW-Bereiche)"
+  ],
+  "training_questions": [
+    "Welchem TW-Bereich (TW-1 bis TW-6) ist dieses Gerät zuzuordnen?",
+    "Bei welchen Gefahrgutszenarien kommt es zum Einsatz?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

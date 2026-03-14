@@ -1,0 +1,25 @@
+{
+  "id": "verteiler_explosionsgschuetzt_2x_230_v_1x_400v",
+  "name": "Verteiler explosionsgschützt 2x 230 V 1x 400V",
+  "short_name": "Verteiler explosionsgschützt 2x 230 V 1x 400V",
+  "equipment_functions": [
+    "STROM"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_PUMPEN"
+  ],
+  "description": "Verteiler explosionsgschützt 2x 230 V 1x 400V. Mittel für Beleuchtung, Strom, Signalgebung oder Funk an der Einsatzstelle.",
+  "technical_data": {},
+  "typical_use": [
+    "Ausleuchtung der Einsatzstelle",
+    "Energieversorgung für Pumpen und Dekon-Einrichtungen"
+  ],
+  "training_questions": [
+    "Welche Schutzart (IP) bzw. ATEX-Kategorie hat dieses Gerät?",
+    "Was ist beim Betrieb in explosionsgefährdeten Atmosphären (ATEX) zu beachten?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

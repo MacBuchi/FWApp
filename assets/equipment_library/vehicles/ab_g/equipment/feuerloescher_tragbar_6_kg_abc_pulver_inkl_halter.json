@@ -1,0 +1,27 @@
+{
+  "id": "feuerloescher_tragbar_6_kg_abc_pulver_inkl_halter",
+  "name": "Feuerlöscher tragbar 6 kg (ABC Pulver) inkl. Halter",
+  "short_name": "Feuerlöscher tragbar 6 kg (ABC Pulver)",
+  "equipment_functions": [
+    "BRAND"
+  ],
+  "deployment_scenarios": [
+    "BRAND_AUSSEN",
+    "BRAND_FAHRZEUG",
+    "BRAND_INNEN"
+  ],
+  "description": "Feuerlöscher tragbar 6 kg (ABC Pulver) inkl. Halter. Tragbarer Feuerlöscher für Entstehungsbrände an der Einsatzstelle.",
+  "technical_data": {},
+  "typical_use": [
+    "Bekämpfung von Entstehungsbränden",
+    "Brandsicherung an der Einsatzstelle"
+  ],
+  "training_questions": [
+    "Für welche Brandklassen ist dieser Feuerlöscher zugelassen?",
+    "Wie wird der Feuerlöscher auf Einsatzbereitschaft geprüft (Plomben, Druck, Gewicht)?",
+    "Welche Sicherheitsmaßnahmen gelten beim Einsatz in Gefahrstoffbereichen?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

@@ -1,0 +1,28 @@
+{
+  "id": "dichtungskeil_schaumstoff_800x500x200mm",
+  "name": "Dichtungskeil Schaumstoff 800x500x200mm",
+  "short_name": "Dichtungskeil Schaumstoff",
+  "equipment_functions": [
+    "ABDICHTEN"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_AUFFANGEN",
+    "GEFAHRGUT_PUMPEN"
+  ],
+  "description": "Dichtungskeil Schaumstoff 800x500x200mm. Sonderausstattung des AB-G für spezifische Gefahrgutlagen.",
+  "technical_data": {
+    "abmessungen_mm": "800 x 500 x 200"
+  },
+  "typical_use": [
+    "Einsatz bei Gefahrgutvorfällen",
+    "Aufbau der Einsatzstelle (TW-Bereiche)"
+  ],
+  "training_questions": [
+    "Welchem TW-Bereich (TW-1 bis TW-6) ist dieses Gerät zuzuordnen?",
+    "Bei welchen Gefahrgutszenarien kommt es zum Einsatz?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

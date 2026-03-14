@@ -1,0 +1,28 @@
+{
+  "id": "flammschutz_unterzieh_overall_nomex_comfort",
+  "name": "Flammschutz-Unterzieh-Overall Nomex Comfort",
+  "short_name": "Flammschutz-Unterzieh-Overall Nomex Comfort",
+  "equipment_functions": [
+    "PSA"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_DEKON"
+  ],
+  "description": "Flammschutz-Unterzieh-Overall Nomex Comfort. Persönliche Schutzausrüstung (PSA) für den Gefahrguteinsatz.",
+  "technical_data": {
+    "material": "Nomex®-Aramid"
+  },
+  "typical_use": [
+    "Schutz der Einsatzkräfte beim Kontakt mit Gefahrstoffen",
+    "Einsatz im kontaminierten Bereich"
+  ],
+  "training_questions": [
+    "Welchen Schutzbereich bietet diese PSA und welche Normen gelten?",
+    "Wie wird die PSA nach dem Einsatz dekontaminiert oder entsorgt?",
+    "Wie überprüft man die PSA vor dem Anlegen auf Unversehrtheit?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

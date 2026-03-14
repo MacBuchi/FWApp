@@ -1,0 +1,59 @@
+{
+  "equipment": [
+    {
+      "id": "arm_saugdruckschlauch_dn32_5m",
+      "name": "Saug-/Druckschlauch DN32 5 m",
+      "short_name": "SD-Schlauch DN32 5 m",
+      "category": "Armaturen",
+      "function": [
+        "Flüssigkeitsförderung"
+      ],
+      "quantity": 1,
+      "location": "Dach",
+      "deployment_scenarios": [
+        "TH_KLEMMT",
+        "VU_PKW",
+        "VU_LKW"
+      ],
+      "description": "Saug- und Druckschlauch DN32 zur Förderung von Wasser und Gefahrstoffen.",
+      "technical_data": {
+        "diameter": "DN32",
+        "length": "5 m"
+      },
+      "typical_use": [
+        "Umpumpen von Flüssigkeiten"
+      ],
+      "training_questions": [],
+      "images": [
+        "https://pixabay.com/de/photos/feuerwehrschlauch-ausr%C3%BCstung-feuerwehr-6511428/"
+      ],
+      "manuals": []
+    },
+    {
+      "id": "arm_saugdruckschlauch_dn32_21m_vk50",
+      "name": "Saug-/Druckschlauch DN32 2,1 m VK50",
+      "short_name": "SD-Schlauch DN32 2,1 m",
+      "category": "Armaturen",
+      "function": [
+        "Flüssigkeitsförderung"
+      ],
+      "quantity": 1,
+      "location": "Dach",
+      "deployment_scenarios": [
+        "TH_KLEMMT",
+        "VU_PKW",
+        "VU_LKW"
+      ],
+      "description": "Kurzer Saug- und Druckschlauch mit VK50‑Kupplung.",
+      "technical_data": {
+        "diameter": "DN32",
+        "length": "2,1 m",
+        "coupling": "VK50"
+      },
+      "typical_use": [],
+      "training_questions": [],
+      "images": [],
+      "manuals": []
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "dosisleistungswarngeraet_fuer_feuerwehren_geeignet",
+  "name": "Dosisleistungswarngerät für Feuerwehren geeignet,",
+  "short_name": "Dosisleistungswarngerät für Feuerwehren geeignet",
+  "equipment_functions": [
+    "MESSGERAETE"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_MESSEN"
+  ],
+  "description": "Tragbares Dosisleistungswarngerät für Feuerwehren mit auditivem und visuellem Alarm bei Überschreitung eingestellter Grenzwerte. Persönlicher Strahlungsschutz bei der Erkundung möglicher Strahlungsquellen.",
+  "technical_data": {},
+  "typical_use": [
+    "Erkundung der Gefahrstoffsituation",
+    "Kontinuierliche Überwachung von Messwerten an der Einsatzstelle"
+  ],
+  "training_questions": [
+    "Was ist der Unterschied zwischen Dosisleistungsmessgerät und Dosisleistungswarngerät?",
+    "Ab welchem Messwert ist die Einsatzstelle als Strahlungszone zu klassifizieren?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

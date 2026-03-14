@@ -1,0 +1,28 @@
+{
+  "id": "eimer_aus_edelstahl_schwere_ausfuehrung_15_l",
+  "name": "Eimer aus Edelstahl schwere Ausführung 15 l",
+  "short_name": "Eimer aus Edelstahl schwere Ausführung 15 l",
+  "equipment_functions": [
+    "LOGISTIK"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_DEKON"
+  ],
+  "description": "Eimer aus Edelstahl schwere Ausführung 15 l. Sonderausstattung des AB-G für spezifische Gefahrgutlagen.",
+  "technical_data": {
+    "volumen_liter": 15.0,
+    "material": "Edelstahl V4A"
+  },
+  "typical_use": [
+    "Einsatz bei Gefahrgutvorfällen",
+    "Aufbau der Einsatzstelle (TW-Bereiche)"
+  ],
+  "training_questions": [
+    "Welchem TW-Bereich (TW-1 bis TW-6) ist dieses Gerät zuzuordnen?",
+    "Bei welchen Gefahrgutszenarien kommt es zum Einsatz?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

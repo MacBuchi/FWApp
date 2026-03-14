@@ -1,0 +1,26 @@
+{
+  "id": "stomax_wasserschieber_ii_typ_a_600_mm_breit",
+  "name": "STOMAX Wasserschieber II Typ A, 600 mm breit",
+  "short_name": "STOMAX Wasserschieber II Typ A, 600 mm breit",
+  "equipment_functions": [
+    "HANDWERKZEUG"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_DEKON"
+  ],
+  "description": "STOMAX Wasserschieber II Typ A, 600 mm breit. Handwerkzeug in funkenarmer/-freier Ausführung für den Einsatz in ATEX-Zonen.",
+  "technical_data": {},
+  "typical_use": [
+    "Öffnen und Schließen von Behälterverschlüssen und Armaturen",
+    "Arbeiten in explosionsgefährdeter Umgebung (ATEX)"
+  ],
+  "training_questions": [
+    "Warum ist dieses Werkzeug funkenarm/-frei ausgeführt?",
+    "In welchen ATEX-Gerätekategorien (Zonen 0–2) darf funkenarmes Werkzeug eingesetzt werden?",
+    "Wie wird funkenarmes Werkzeug auf Beschädigungen und Ermüdung kontrolliert?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

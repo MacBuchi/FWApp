@@ -1,0 +1,33 @@
+{
+  "id": "luefter_leader_esx_230_atex_550_x_550_x_490_mm",
+  "name": "Lüfter Leader ESX 230 ATEX 550 x 550 x 490 mm",
+  "short_name": "Lüfter Leader ESX 230 ATEX",
+  "equipment_functions": [
+    "LUEFTUNG"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_AUFFANGEN",
+    "GEFAHRGUT_PUMPEN"
+  ],
+  "description": "Überdrucklüfter Leader ESX 230, ATEX-zertifiziert (Zone 1/21), 230 V elektrisch. Geeignet für den Einsatz in explosionsgefährdeten Atmosphären (brennbare Dämpfe, Gase). Einsatz zur Belüftung kontaminierter Bereiche und zum Verdünnen von Gefahrstoffwolken.",
+  "technical_data": {
+    "spannung_v": 230,
+    "atex_zertifiziert": true,
+    "abmessungen_mm": "550 x 550 x 490",
+    "hersteller": "Leader SAS"
+  },
+  "typical_use": [
+    "Unterstützung beim Umpumpen und Auffangen",
+    "Transport von Ausrüstung an der Einsatzstelle"
+  ],
+  "training_questions": [
+    "Was bedeutet die ATEX-Zertifizierung des Lüfters?",
+    "Wie wird der Lüfter für eine effektive Überdruckbelüftung positioniert?",
+    "Welche Schutzausrüstung ist beim Aufbau in explosionsgefährdeter Umgebung Pflicht?",
+    "Darf ein nicht-ATEX-Lüfter in einer Gas-Wolke eingesetzt werden?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

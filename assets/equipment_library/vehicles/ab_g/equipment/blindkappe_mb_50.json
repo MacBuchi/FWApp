@@ -1,0 +1,30 @@
+{
+  "id": "blindkappe_mb_50",
+  "name": "Blindkappe MB 50",
+  "short_name": "Blindkappe MB 50",
+  "equipment_functions": [
+    "ARMATUREN"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_PUMPEN"
+  ],
+  "description": "Blindkappe zum Verschließen offener Kupplungsenden und Flanschanschlüsse. Verhindert das Austreten von Gefahrstoffen aus nicht genutzten Anschlüssen in der Pumpenstrecke.",
+  "technical_data": {
+    "kupplungen": [
+      "MB50"
+    ]
+  },
+  "typical_use": [
+    "Verbinden von Pumpen, Schläuchen und Behältern",
+    "Umpumpen und Absperren von Gefahrflüssigkeiten",
+    "Aufbau von Pumpenstrecken an der Einsatzstelle"
+  ],
+  "training_questions": [
+    "Wann und warum werden Blindkappen an Kupplungen eingesetzt?",
+    "Welche Dichtungswerkstoffe werden für Blindkappen im Gefahrguteinsatz verwendet?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

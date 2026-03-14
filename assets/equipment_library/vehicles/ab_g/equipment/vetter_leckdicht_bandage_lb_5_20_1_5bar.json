@@ -1,0 +1,31 @@
+{
+  "id": "vetter_leckdicht_bandage_lb_5_20_1_5bar",
+  "name": "Vetter-Leckdicht-Bandage LB 5-20, 1,5bar",
+  "short_name": "Vetter-Leckdicht-Bandage LB 5-20, 1,5bar",
+  "equipment_functions": [
+    "ABDICHTEN"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_AUFFANGEN"
+  ],
+  "description": "Vetter-Leckdicht-Bandage zum Abdichten von Rissen und Leckagen an Rohrleitungen durch Umwickeln. Geeignet für zylindrische Flächen mit definierten Rohrdurchmessern. Typ LB mit Angabe des Durchmesserbereichs (z. B. LB 5-20 für DN 5–20 mm, LB 20-48 für DN 20–48 mm).",
+  "technical_data": {
+    "betriebsdruck_max_bar": 1.5,
+    "hersteller": "Vetter GmbH"
+  },
+  "typical_use": [
+    "Einsatz bei Gefahrgutvorfällen",
+    "Aufbau der Einsatzstelle (TW-Bereiche)"
+  ],
+  "training_questions": [
+    "Wie wird die Leckdicht-Bandage korrekt angelegt und fixiert?",
+    "Für welche Rohrdurchmesser ist die jeweilige LB-Größe geeignet?",
+    "Was ist der Unterschied zwischen Leckdicht-Bandage und Rohrdichtkissen?"
+  ],
+  "images": [],
+  "manuals": [
+    "https://www.vetter-group.com/de/produkte/leckdicht-bandage/"
+  ],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

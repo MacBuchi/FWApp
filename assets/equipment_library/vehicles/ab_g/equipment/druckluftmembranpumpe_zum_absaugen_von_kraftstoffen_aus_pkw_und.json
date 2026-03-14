@@ -1,0 +1,30 @@
+{
+  "id": "druckluftmembranpumpe_zum_absaugen_von_kraftstoffen_aus_pkw_und",
+  "name": "Druckluftmembranpumpe zum Absaugen von Kraftstoffen aus Pkw- und Lkw-Tanks, explosionsgeschützt. Inkl. Schläuche, Druckminderer und Pistole",
+  "short_name": "Druckluftmembranpumpe zum Absaugen von Kraftstoffen",
+  "equipment_functions": [
+    "PUMPEN"
+  ],
+  "deployment_scenarios": [
+    "GEFAHRGUT_ABDICHTEN",
+    "GEFAHRGUT_AUFFANGEN",
+    "GEFAHRGUT_PUMPEN",
+    "VU_LKW",
+    "VU_PKW"
+  ],
+  "description": "Druckluftbetriebene Membranpumpe, ATEX-zertifiziert (Zone 1), zum Absaugen und Umpumpen von Kraftstoffen aus PKW- und LKW-Tanks nach Verkehrsunfällen. Inklusive Schläuchen, Druckminderer und Abzapfpistole.",
+  "technical_data": {},
+  "typical_use": [
+    "Unterstützung beim Umpumpen und Auffangen",
+    "Transport von Ausrüstung an der Einsatzstelle"
+  ],
+  "training_questions": [
+    "Warum muss die Membranpumpe ATEX-zertifiziert sein?",
+    "Wie wird eine PKW/LKW-Tankentleerung mit der Membranpumpe sicher durchgeführt?",
+    "Welche Erdungsmaßnahmen sind beim Umpumpen von Kraftstoffen Pflicht?",
+    "Für welche anderen Flüssigkeiten als Kraftstoff ist die Pumpe geeignet?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "Beladeliste AB-G, Stand 2025-01-29"
+}

@@ -1,0 +1,62 @@
+{
+  "aliases": {
+    "hydraulischer_spreizer": [
+      "Hydr. Spreizer",
+      "Spreizer",
+      "Rettungsspreizer",
+      "Hydraulic Spreader",
+      "Hydraulischer Spreizer"
+    ],
+    "hydraulische_rettungsschere": [
+      "Rettungsschere",
+      "Schere",
+      "Hydraulische Schere",
+      "Hydraulic Cutter"
+    ],
+    "tragkraftspritze": [
+      "TS 8/8",
+      "TS",
+      "Tragkraftspritze",
+      "Pumpe"
+    ],
+    "feuerloescher_abc": [
+      "Feuerlöscher",
+      "ABC Löscher",
+      "Handfeuerlöscher",
+      "ABC-Pulverlöscher"
+    ],
+    "atemschutzgeraet": [
+      "PA",
+      "Atemschutzgerät",
+      "Pressluftatmer",
+      "Atemluftgerät"
+    ],
+    "schlauch_b75": [
+      "B-Schlauch",
+      "B 75",
+      "Druckschlauch B"
+    ],
+    "schlauch_c42": [
+      "C-Schlauch",
+      "C 42",
+      "Druckschlauch C"
+    ],
+    "ueberdruckluefter": [
+      "Überdrucklüfter",
+      "Lüfter",
+      "Hochdrucklüfter",
+      "Belüftungsgerät"
+    ],
+    "kettensaege": [
+      "Kettensäge",
+      "Motorsäge",
+      "Säge"
+    ],
+    "stromerzeuger": [
+      "Stromerzeuger",
+      "Generator",
+      "Notstromaggregat",
+      "Aggregat"
+    ]
+  }
+}

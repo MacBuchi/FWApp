@@ -1,0 +1,73 @@
+name: fwapp
+description: Feuerwehr-Lernapp – Fahrzeuge, Geräte, Beladepläne und Trainings-Spielmodi.
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.7.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^3.0.0
+  riverpod_annotation: ^4.0.0
+
+  # Local database
+  drift: ^2.21.0
+  sqlite3_flutter_libs: ^0.5.29
+  path_provider: ^2.1.5
+  path: ^1.9.1
+
+  # Navigation
+  go_router: ^14.6.3
+
+  # Domain models
+  freezed_annotation: ^3.0.0
+  json_annotation: ^4.9.0
+
+  # File handling / images
+  file_picker: ^8.1.7
+  image_picker: ^1.1.2
+  cached_network_image: ^3.4.1
+
+  # Excel import
+  excel: ^4.0.6
+
+  # Cloud sync (optional)
+  supabase_flutter: ^2.8.4
+
+  # Localisation
+  intl: ^0.20.2
+
+  # Utilities
+  logger: ^2.5.0
+  uuid: ^4.5.1
+  shared_preferences: ^2.3.5
+  package_info_plus: ^8.3.0
+  url_launcher: ^6.3.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  build_runner: ^2.4.14
+  drift_dev: ^2.21.0
+  riverpod_generator: ^4.0.0
+  freezed: ^3.0.0
+  json_serializable: ^6.8.0
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/equipment_library/metadata.json
+    - assets/equipment_library/aliases.json
+    - assets/equipment_library/vehicles/ab_g/vehicle.json
+    - assets/equipment_library/vehicles/ab_g/loading_plan.json
+    - assets/equipment_library/vehicles/ab_g/equipment/
+    - assets/images/placeholder_equipment.png
+

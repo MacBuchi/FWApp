@@ -1,5 +1,22 @@
 # Feuerwehr Learning App – Copilot Agent Instructions
 
+---
+
+## 0. Critical Planning Agent Role
+
+Before writing any code, act as a **critical and constructive planning agent**. Your responsibilities:
+
+1. **Cross-reference all sections** — ensure DB schema (§4), domain entities (§5), category enums (§9), JSON library schemas (§24–§25), and route definitions (§15) are internally consistent. Surface every discrepancy before implementation begins.
+2. **Validate the tech stack** — check that the packages in §2 and §21 are mutually compatible and that no package solves the same problem twice. Remove or flag redundant entries.
+3. **Identify schema gaps** — point out missing columns (e.g., `updatedAt` needed by Supabase sync), incorrect types, or broken foreign-key chains before generating any Drift table definitions.
+4. **Clarify ambiguous requirements** — if a requirement is underspecified (e.g., "admin role", "drag-drop schematic", quiz vehicle scope), ask a targeted question rather than assuming.
+5. **Reject over-engineering** — do not add features, helper abstractions, or generalisations beyond what is explicitly required.
+6. **One approval gate** — present a concise implementation plan with a numbered checklist to the user. Wait for explicit approval before generating code.
+
+This role applies at the start of **every new feature** and when editing a section that may affect other sections.
+
+---
+
 You are a **senior Flutter software architect**.  
 Build a cross-platform **Feuerwehr (firefighter) learning app** that targets:
 
@@ -26,7 +43,7 @@ Users manage their fire-station vehicle fleet, assign equipment to compartments,
 | Navigation | GoRouter |
 | Optional Cloud | Supabase (auth + sync) |
 | Import | `excel` package + `file_picker` |
-| Drag & Drop | `flutter_draggable_gridview` or native Flutter `Draggable` / `DragTarget` |
+| Drag & Drop | Native Flutter `Draggable` / `DragTarget` (no external package) |
 | Image Handling | `image_picker`, `cached_network_image` |
 | Code Generation | `build_runner`, `drift_dev`, `riverpod_generator`, `freezed`, `json_serializable` |
 
@@ -99,19 +116,30 @@ class Vehicles extends Table {
 class EquipmentItems extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text()();
-  TextColumn get category => text()();      // TH, Brand, Gefahrgut, Sonstiges
+  // Two-axis classification – stored as JSON arrays of string tags
+  TextColumn get equipmentFunctionsJson => text().withDefault(const Constant('[]'))();
+  TextColumn get deploymentScenariosJson => text().withDefault(const Constant('[]'))();
   TextColumn get description => text().withDefault(const Constant(''))();
   TextColumn get imagePath => text().nullable()();
   TextColumn get trainingUrl => text().nullable()();
-  TextColumn get extraAttributesJson => text().withDefault(const Constant('{}'))(); // JSON map for extendable attributes
+  // Links item to the JSON equipment library (null = user-created custom item)
+  TextColumn get libraryEquipmentId => text().nullable()();
+  BoolColumn get isCustom => boolean().withDefault(const Constant(false))();
+  TextColumn get extraAttributesJson => text().withDefault(const Constant('{}'))();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 }
 
 // Compartments
 class Compartments extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get vehicleId => integer().references(Vehicles, #id)();
-  TextColumn get label => text()(); // G1, G2, G3, G4, Dach, Heck
+  TextColumn get label => text()(); // G1, G2, G3, G4, Dach, Heck, TW-1 Auffangen …
   IntColumn get position => integer().withDefault(const Constant(0))();
+  // Optional grid layout hints for drag-drop schematic (null = auto-generated)
+  IntColumn get gridRow => integer().nullable()();
+  IntColumn get gridCol => integer().nullable()();
+  IntColumn get gridColSpan => integer().withDefault(const Constant(1))();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 }
 
 // Equipment Assignments
@@ -120,6 +148,7 @@ class EquipmentAssignments extends Table {
   IntColumn get compartmentId => integer().references(Compartments, #id)();
   IntColumn get equipmentId => integer().references(EquipmentItems, #id)();
   IntColumn get quantity => integer().withDefault(const Constant(1))();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 }
 
 // Quiz Results (for progress tracking)
@@ -128,8 +157,13 @@ class QuizResults extends Table {
   TextColumn get quizType => text()();      // 'compartment', 'image_recognition'
   IntColumn get score => integer()();
   IntColumn get total => integer()();
+  // null = all-vehicles mode; non-null = single-vehicle quiz
+  IntColumn get vehicleId => integer().nullable().references(Vehicles, #id)();
   DateTimeColumn get playedAt => dateTime().withDefault(currentDateAndTime)();
 }
+
+// Vehicles table also needs updatedAt for Supabase last-write-wins sync (§18)
+// Add to Vehicles: DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 ```
 
 ---
@@ -156,11 +190,15 @@ class EquipmentItem with _$EquipmentItem {
   const factory EquipmentItem({
     required int id,
     required String name,
-    required String category,
+    required List<String> equipmentFunctions,   // EquipmentFunction tag strings
+    required List<String> deploymentScenarios,  // DeploymentScenario tag strings
     required String description,
     String? imagePath,
     String? trainingUrl,
+    String? libraryEquipmentId,
+    required bool isCustom,
     required Map<String, dynamic> extraAttributes,
+    required DateTime updatedAt,
   }) = _EquipmentItem;
 }
 
@@ -171,6 +209,11 @@ class Compartment with _$Compartment {
     required int vehicleId,
     required String label,
     required int position,
+    // Optional grid hints for drag-drop schematic layout
+    int? gridRow,
+    int? gridCol,
+    required int gridColSpan,
+    required DateTime updatedAt,
   }) = _Compartment;
 }
 
@@ -259,25 +302,89 @@ class VehicleFormNotifier extends _$VehicleFormNotifier {
 - `EquipmentDetailScreen` – image, description, attributes, training link
 - `EquipmentFormScreen` – create / edit equipment item
 
-**Categories enum:**
+### Equipment classification: two independent tag systems
+
+Equipment is classified along **two orthogonal axes**. Both are stored as JSON arrays in the database and the JSON library.
+
+#### Equipment Functions (what the device technically does)
 
 ```dart
-enum EquipmentCategory {
-  technischeHilfeleistung,
-  brandeinsatz,
-  gefahrguteinsatz,
-  rettung,
-  sonstiges;
+enum EquipmentFunction {
+  rettung, brand, wasser, pumpen, beleuchtung, strom, lueftung,
+  kommunikation, messgeraete, absperren, logistik, fuehrung,
+  psa, armaturen, abdichten, dekon, handwerkzeug;
 
   String get label => switch (this) {
-    technischeHilfeleistung => 'Technische Hilfeleistung',
-    brandeinsatz => 'Brandeinsatz',
-    gefahrguteinsatz => 'Gefahrguteinsatz',
-    rettung => 'Rettung',
-    sonstiges => 'Sonstiges',
+    rettung       => 'Rettung',
+    brand         => 'Brand',
+    wasser        => 'Wasser',
+    pumpen        => 'Pumpen',
+    beleuchtung   => 'Beleuchtung',
+    strom         => 'Strom / Energie',
+    lueftung      => 'Lüftung',
+    kommunikation => 'Kommunikation',
+    messgeraete   => 'Messgeräte',
+    absperren     => 'Absperren',
+    logistik      => 'Logistik',
+    fuehrung      => 'Führung',
+    psa           => 'Persönliche Schutzausrüstung',
+    armaturen     => 'Armaturen / Kupplungen',
+    abdichten     => 'Abdichten / Leckdichtung',
+    dekon         => 'Dekontamination',
+    handwerkzeug  => 'Handwerkzeug',
   };
 }
 ```
+
+#### Deployment Scenarios (in which incident type the equipment is used)
+
+```dart
+enum DeploymentScenario {
+  // Brand
+  brandInnen, brandAussen, brandVegetation, brandFahrzeug,
+  // Verkehrsunfall
+  vuPkw, vuLkw, vuBus, vuBahn,
+  // Technische Hilfeleistung
+  thKlemmt, thSturm, thBaum, thEinsturz, thTier, thWasser,
+  // Gefahrgut
+  gefahrgutMessen, gefahrgutAbdichten, gefahrgutPumpen,
+  gefahrgutAuffangen, gefahrgutDekon,
+  // Wasser / Sonstiges
+  hochwasser, wasserrettung, absturzsicherung, hoehenrettung;
+
+  String get label => switch (this) {
+    brandInnen          => 'Brand Innen',
+    brandAussen         => 'Brand Außen',
+    brandVegetation     => 'Vegetationsbrand',
+    brandFahrzeug       => 'Fahrzeugbrand',
+    vuPkw               => 'VU PKW',
+    vuLkw               => 'VU LKW',
+    vuBus               => 'VU Bus',
+    vuBahn              => 'VU Bahn / Schiene',
+    thKlemmt            => 'TH – Person eingeklemmt',
+    thSturm             => 'TH – Sturm',
+    thBaum              => 'TH – Baum',
+    thEinsturz          => 'TH – Einsturz',
+    thTier              => 'TH – Tier in Not',
+    thWasser            => 'TH – Wasser',
+    gefahrgutMessen     => 'Gefahrgut – Messen / Erkunden',
+    gefahrgutAbdichten  => 'Gefahrgut – Abdichten',
+    gefahrgutPumpen     => 'Gefahrgut – Umpumpen',
+    gefahrgutAuffangen  => 'Gefahrgut – Auffangen',
+    gefahrgutDekon      => 'Gefahrgut – Dekontamination',
+    hochwasser          => 'Hochwasser',
+    wasserrettung       => 'Wasserrettung',
+    absturzsicherung    => 'Absturzsicherung',
+    hoehenrettung       => 'Höhenrettung',
+  };
+}
+```
+
+**Design rules:**
+- Equipment may have **multiple deployment scenarios** and **multiple functions**.
+- Scenario and function identifiers are **stable** – never change a value once published.
+- The JSON library (§24–§25) uses the UPPER_SNAKE_CASE string form of these enums.
+- The app filters the equipment list by either axis independently or combined.
 
 ---
 
@@ -480,12 +587,16 @@ dependencies:
   excel: ^4.0.0
   # Cloud (optional)
   supabase_flutter: ^2.5.0
+  # Localisation (German locale)
+  intl: ^0.19.0
   # Utils
   logger: ^2.4.0
   uuid: ^4.4.0
 
 dev_dependencies:
   flutter_test:
+    sdk: flutter
+  flutter_localizations:
     sdk: flutter
   build_runner: ^2.4.0
   drift_dev: ^2.18.0
@@ -503,8 +614,10 @@ dev_dependencies:
 Always run after modifying annotated files:
 
 ```bash
-flutter pub run build_runner build --delete-conflicting-outputs
+dart run build_runner build --delete-conflicting-outputs
 ```
+
+> `flutter pub run` is deprecated as of Dart 2.18 — always use `dart run`.
 
 ---
 
@@ -516,5 +629,507 @@ flutter pub run build_runner build --delete-conflicting-outputs
 4. **Drag & Drop**: track `isDraggingOver` state per compartment in a local `StateProvider` for visual feedback
 5. **Deployment Mode**: aggregate assignments by `equipmentId` across all selected vehicles; group result by `category`
 6. **Import transaction**: wrap entire Excel import in a single Drift `transaction()` to ensure atomicity
-7. **Web support**: use `drift/web.dart` with `WasmDatabase` for web builds
-8. **Seed data**: provide at least 2 sample vehicles (HLF 20, TLF 3000) each with 4 compartments and 10+ equipment items so the app is usable immediately after install
+7. **Web support**: use `drift/web.dart` with `WasmDatabase` for web builds — requires a conditional database factory: `DatabaseConnection.fromExecutor(isWeb ? WasmDatabase(...) : NativeDatabase(...))`
+8. **Image-path resolution**: check the path prefix to determine the rendering widget — `assets/` prefix → `Image.asset()`; all other paths (user-captured, in appDocDir) → `Image.file()`
+9. **Library seeding**: on first launch, run an idempotent upsert from the JSON equipment library into `EquipmentItems`. Only insert rows where `libraryEquipmentId` is not yet present.
+10. **Custom import items**: when an Excel row's equipment name cannot be resolved via `aliases.json`, create an `EquipmentItem` with `isCustom = true` and `libraryEquipmentId = null`. Show a post-import review prompt listing all custom-created items. The `EquipmentDetailScreen` shows a "Mit Bibliothekseintrag verknüpfen" action for custom items.
+
+---
+
+## 24. Equipment Content Library (JSON-based)
+
+The app ships with a **structured equipment knowledge base** stored as JSON files.
+
+This library provides:
+
+- device descriptions
+- technical specifications
+- operation instructions
+- images
+- manufacturer references
+- training information
+
+The library is **independent of vehicles** and represents the canonical source for equipment knowledge.
+
+### Folder Structure
+
+assets/equipment_library/
+
+  metadata.json
+
+  equipment/
+    fire_extinguisher.json
+    hydraulic_spreader.json
+    chainsaw.json
+    portable_generator.json
+
+  manufacturers/
+    rosenbauer.json
+    ziegler.json
+    magirus.json
+
+  images/
+    equipment/
+      fire_extinguisher.webp
+      hydraulic_spreader.webp
+
+    manufacturers/
+      rosenbauer_spreader.webp
+
+---
+
+## 25. Equipment JSON Schema
+
+Example structure for an equipment definition:
+
+```json
+{
+  "id": "hydraulischer_spreizer",
+  "name": "Hydraulischer Spreizer",
+  "short_name": "Spreizer",
+  "equipment_functions": ["RETTUNG"],
+  "deployment_scenarios": ["VU_PKW", "VU_LKW", "TH_KLEMMT"],
+  "description": "Hydraulisches Rettungsgerät zum Spreizen von Fahrzeugteilen bei Verkehrsunfällen.",
+  "technical_data": {
+    "max_spreading_force_kN": 720,
+    "weight_kg": 18.5,
+    "operating_pressure_bar": 700
+  },
+  "typical_use": [
+    "Spreizen eingeklemmter Fahrzeugtüren und -dächer",
+    "Schaffung von Zugangswegen zu eingeklemmten Personen"
+  ],
+  "training_questions": [
+    "Wie wird der Spreizer korrekt angesetzt?",
+    "Welcher Betriebsdruck ist für hydraulische Rettungsgeräte genormt (700 bar)?"
+  ],
+  "images": [],
+  "manuals": [],
+  "source": "equipment_library_v1"
+}
+```
+
+Rules:
+
+- `id` must be **stable and never change once published**
+- names may change, IDs must remain stable
+- the JSON schema must remain backward compatible
+
+---
+
+## 26. Equipment Name Resolution (Excel Import)
+
+Excel imports may contain **different naming variations**.
+
+Example:
+
+Hydr. Spreizer  
+Spreizer  
+Rettungsspreizer  
+Hydraulic Spreader  
+
+These must resolve to a canonical equipment id:
+
+```
+hydraulic_spreader
+```
+
+Alias mapping file:
+
+```
+assets/equipment_library/aliases.json
+```
+
+Example:
+
+```json
+{
+  "aliases": {
+    "hydraulic_spreader": [
+      "Hydr. Spreizer",
+      "Spreizer",
+      "Rettungsspreizer",
+      "Hydraulic Spreader"
+    ],
+    "fire_extinguisher": [
+      "Feuerlöscher",
+      "ABC Löscher",
+      "Handfeuerlöscher"
+    ]
+  }
+}
+```
+
+Import pipeline:
+
+Excel Row  
+↓  
+Normalize Text  
+↓  
+Resolve Equipment ID via alias mapping  
+↓  
+Match with Equipment Library  
+↓  
+Insert / Upsert into local database
+
+---
+
+## 27. Manufacturer Support
+
+Some equipment exists in **multiple manufacturer variants**.
+
+Examples:
+
+- Rosenbauer
+- Magirus
+- Ziegler
+- Holmatro
+- Lukas
+
+Manufacturers are optional metadata.  
+If no manufacturer is specified, the app uses the **default equipment image**.
+
+Example manufacturer definition:
+
+```json
+{
+  "id": "rosenbauer",
+  "name": "Rosenbauer",
+  "website": "https://www.rosenbauer.com",
+  "products": {
+    "hydraulic_spreader": {
+      "model": "SP49",
+      "image": "rosenbauer_sp49.webp",
+      "product_url": "https://www.rosenbauer.com/sp49"
+    }
+  }
+}
+```
+
+Manufacturers may provide:
+
+- product image
+- product model
+- external website link
+
+---
+
+## 28. Image Strategy
+
+All images must follow these rules:
+
+Format  
+- WebP only
+
+Resolution  
+- max: 1024px  
+- thumbnail: 256px  
+
+Folder structure:
+
+assets/images/equipment/
+
+Use:
+
+- `Image.asset()` for local images
+- `cached_network_image` only for remote images
+
+Images should be optimized to reduce APK size.
+
+---
+
+## 29. Equipment Library Versioning
+
+The equipment content library must support **versioning**.
+
+metadata.json example:
+
+```json
+{
+  "version": "1.0.0",
+  "equipment_count": 120,
+  "last_updated": "2026-03-01"
+}
+```
+
+Future updates may be delivered via:
+
+- GitHub releases
+- Supabase storage
+- CDN download
+
+When a newer library version is detected, the app may offer an **optional update**.
+
+---
+
+## 30. Equipment Classification Reference
+
+The canonical classification system is defined in **§9**. This section is a quick alias reference.
+
+**Do not use a single-category field.** Always use the two-axis system:
+- `equipment_functions` → list of `EquipmentFunction` values (§9)
+- `deployment_scenarios` → list of `DeploymentScenario` values (§9)
+
+Both fields are stored as JSON arrays of UPPER_SNAKE_CASE strings in the DB and in the JSON library files.
+
+---
+
+## 31. Future Game Mode – Equipment Recognition
+
+
+Possible additional game mode:
+
+The user sees:
+
+- a description  
+- or technical specification  
+
+Example:
+
+"700 bar hydraulisches Rettungsgerät zum Spreizen von Fahrzeugteilen"
+
+The user must identify the correct equipment.
+
+Answer:
+
+Hydraulischer Spreizer
+
+This mode improves deeper learning of equipment capabilities rather than visual recognition alone.
+
+---
+
+## 32. Equipment Classification Model (Scenarios vs Functions)
+
+Equipment must be classified using **two separate classification systems**.
+
+This prevents mixing **deployment scenarios** with **technical equipment functions**.
+
+The system enables:
+
+- scenario-based training (e.g. VU_LKW)
+- virtual vehicle unloading
+- intelligent equipment filtering
+- future readiness analysis for vehicles
+
+### 1. Deployment Scenarios (Use Cases)
+
+Deployment scenarios describe **in which type of incident the equipment is used**.
+
+Examples:
+
+Brand:
+
+BRAND_INNEN  
+BRAND_AUSSEN  
+BRAND_VEGETATION  
+BRAND_FAHRZEUG  
+
+Traffic accidents:
+
+VU_PKW  
+VU_LKW  
+VU_BUS  
+VU_BAHN  
+
+Technical rescue:
+
+TH_KLEMMT  
+TH_STURM  
+TH_BAUM  
+TH_EINSTURZ  
+TH_TIER  
+TH_WASSER  
+
+Water related incidents:
+
+HOCHWASSER  
+WASSERRETTUNG  
+
+Hazmat:
+
+GEFAHRGUT_MESSEN  
+GEFAHRGUT_ABDICHTEN  
+GEFAHRGUT_PUMPEN  
+
+Special rescue:
+
+ABSTURZSICHERUNG  
+HOEHENRETTUNG  
+
+These scenario tags are used for:
+
+- **virtual unloading exercises**
+- **scenario-based quizzes**
+- **vehicle deployment analysis**
+
+Example:
+
+If a user selects the scenario:
+
+```
+VU_LKW
+```
+
+the app must show all equipment items whose `deployment_scenarios` contain this tag.
+
+---
+
+### 2. Equipment Functions (Technical Category)
+
+Equipment functions describe **what the device technically does**, independent of the scenario.
+
+Recommended base categories:
+
+RETTUNG  
+BRAND  
+WASSER  
+PUMPEN  
+BELEUCHTUNG  
+STROM  
+LUEFTUNG  
+KOMMUNIKATION  
+MESSGERAETE  
+ABSPERREN  
+LOGISTIK  
+FUEHRUNG  
+
+These are primarily used for:
+
+- equipment database filtering
+- quiz generation
+- logical grouping in the UI
+
+---
+
+### 3. Equipment JSON Example
+
+Equipment definitions in the equipment library must support both classifications.
+
+Example:
+
+```json
+{
+  "id": "hydraulic_spreader",
+  "name": "Hydraulischer Spreizer",
+
+  "equipment_functions": [
+    "RETTUNG"
+  ],
+
+  "deployment_scenarios": [
+    "VU_PKW",
+    "VU_LKW",
+    "TH_KLEMMT"
+  ]
+}
+```
+
+Example:
+
+```json
+{
+  "id": "ventilation_fan",
+  "name": "Überdrucklüfter",
+
+  "equipment_functions": [
+    "LUEFTUNG"
+  ],
+
+  "deployment_scenarios": [
+    "BRAND_INNEN"
+  ]
+}
+```
+
+---
+
+### 4. Design Rules
+
+1. Equipment may have **multiple deployment scenarios**.
+2. Equipment may have **multiple technical functions**, but usually only one primary function.
+3. Scenario tags must remain **stable identifiers**.
+4. UI labels for scenarios must be localized in German.
+5. Scenario tags are intended to support **training simulations** and **virtual equipment selection**.
+
+This classification model is the foundation for:
+
+- the training game modes
+- the virtual vehicle unloading exercises
+- future capability analysis of fire vehicles.
+
+---
+
+## 33. Vehicle Data Source: JSON Library per Vehicle
+
+Each vehicle's equipment data is stored as two JSON files in:
+
+```
+assets/equipment_library/vehicles/{vehicle_id}/
+  vehicle.json          # vehicle metadata (name, type, deployment scenarios)
+  loading_plan.json     # compartment list with equipment_id + quantity per slot
+  equipment/
+    {equipment_id}.json # one file per unique equipment item (knowledge only)
+```
+
+**Key separation:** equipment JSON files contain **only knowledge** (description, functions, scenarios, training questions). Quantity and compartment location are **exclusively** in `loading_plan.json`.
+
+### `loading_plan.json` structure
+
+```json
+{
+  "vehicle_id": "ab_g",
+  "vehicle_name": "AB-G (Abrollbehälter Gefahrgut)",
+  "vehicle_type": "AB-G",
+  "compartments": [
+    {
+      "id": "tw3_umpumpen",
+      "label": "TW-3 Umpumpen",
+      "position": 8,
+      "items": [
+        { "equipment_id": "uebergangsstueck_vk50_vk50", "quantity": 2 }
+      ]
+    }
+  ]
+}
+```
+
+### Seeding from Library on First Launch
+
+On first launch the app runs an idempotent upsert:
+1. Read all `vehicle.json` + `loading_plan.json` files from assets
+2. For each compartment item: look up `{equipment_id}.json`, insert into `EquipmentItems` if `libraryEquipmentId` not yet present
+3. Create `Vehicles`, `Compartments`, and `EquipmentAssignments` rows from the loading plan
+4. `isCustom = false`, `libraryEquipmentId = equipment_id` for all seeded items
+
+### AB-G: Initial Dataset (v1.0.0)
+
+The first complete vehicle dataset is the **AB-G (Abrollbehälter Gefahrgut)**:
+- Source: Beladeliste AB-G, Stand 2025-01-29
+- **257 unique equipment items** across 13 compartments (Dach, G1–G4, Heck, TW-1 through TW-6)
+- Generated by `tools/generate_ab_g_data.py`
+
+---
+
+## 34. Admin Role (Deferred – v2)
+
+Admin functionality is **not implemented in v1**. All users have full access to all features.
+
+**Planned for v2:**
+- PIN-protected admin mode in Settings
+- Admin-only actions: delete vehicles, bulk import, link custom items to library
+- Future: Supabase role claims for multi-user/team setups
+
+---
+
+## 35. Settings Screen
+
+`SettingsScreen` (route `/settings`) must contain:
+
+| Setting | Description |
+|---|---|
+| Dark / Light Mode | Toggle theme brightness |
+| Supabase Sync | Enable / disable cloud sync |
+| Supabase URL | Server URL (only shown when sync is enabled) |
+| Supabase Anon Key | Credential (only shown when sync is enabled) |
+| Equipment Library | Installed version + "Nach Updates suchen" button |
+| App Version | App version and build number (read-only) |

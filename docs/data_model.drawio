@@ -1,0 +1,385 @@
+<mxfile host="app.diagrams.net" modified="2026-03-14T00:00:00.000Z" agent="GitHub Copilot" version="24.0.0" type="device">
+  <diagram name="FWApp Data Model" id="fwapp-data-model">
+    <mxGraphModel dx="1800" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2400" pageHeight="1800" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- TITLE -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <mxCell id="title" value="FWApp – Full Data Model (Drift/SQLite + JSON Library)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1;fontColor=#B71C1C;" vertex="1" parent="1">
+          <mxGeometry x="600" y="20" width="1000" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- SECTION LABELS -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <mxCell id="label_db" value="SQLite / Drift Database" style="text;html=1;strokeColor=#B71C1C;fillColor=#FFEBEE;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=13;fontStyle=1;fontColor=#B71C1C;" vertex="1" parent="1">
+          <mxGeometry x="60" y="80" width="260" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="label_lib" value="JSON Equipment Library (Assets)" style="text;html=1;strokeColor=#1565C0;fillColor=#E3F2FD;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=13;fontStyle=1;fontColor=#1565C0;" vertex="1" parent="1">
+          <mxGeometry x="1600" y="80" width="300" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="label_domain" value="Domain Entities (Dart / freezed)" style="text;html=1;strokeColor=#2E7D32;fillColor=#E8F5E9;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=13;fontStyle=1;fontColor=#2E7D32;" vertex="1" parent="1">
+          <mxGeometry x="900" y="80" width="300" height="34" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- DB TABLE: Vehicles -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <mxCell id="tbl_vehicles_header" value="Vehicles" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B71C1C;strokeColor=#7F0000;fontColor=#FFFFFF;fontStyle=1;fontSize=13;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="60" y="140" width="260" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_vehicles_body" value="🔑 id : INTEGER (PK, autoIncrement)&#xa;📝 name : TEXT (NOT NULL)&#xa;📝 type : TEXT (NOT NULL)&#xa;📝 licensePlate : TEXT (nullable)&#xa;🖼 imagePath : TEXT (nullable)&#xa;🕐 createdAt : DATETIME (default: now)&#xa;🕐 updatedAt : DATETIME (default: now)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEBEE;strokeColor=#B71C1C;fontColor=#1A1A1A;fontSize=11;align=left;verticalAlign=top;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="60" y="176" width="260" height="126" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- DB TABLE: Compartments -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <mxCell id="tbl_compartments_header" value="Compartments" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B71C1C;strokeColor=#7F0000;fontColor=#FFFFFF;fontStyle=1;fontSize=13;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="60" y="360" width="260" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_compartments_body" value="🔑 id : INTEGER (PK, autoIncrement)&#xa;🔗 vehicleId : INTEGER (FK → Vehicles.id)&#xa;📝 label : TEXT (NOT NULL)&#xa;🔢 position : INTEGER (default: 0)&#xa;🔢 gridRow : INTEGER (nullable)&#xa;🔢 gridCol : INTEGER (nullable)&#xa;🔢 gridColSpan : INTEGER (default: 1)&#xa;🕐 updatedAt : DATETIME (default: now)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEBEE;strokeColor=#B71C1C;fontColor=#1A1A1A;fontSize=11;align=left;verticalAlign=top;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="60" y="396" width="260" height="144" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- DB TABLE: EquipmentItems -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <mxCell id="tbl_equipment_header" value="EquipmentItems" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B71C1C;strokeColor=#7F0000;fontColor=#FFFFFF;fontStyle=1;fontSize=13;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="60" y="600" width="260" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_equipment_body" value="🔑 id : INTEGER (PK, autoIncrement)&#xa;📝 name : TEXT (NOT NULL)&#xa;📋 equipmentFunctionsJson : TEXT (default: '[]')&#xa;📋 deploymentScenariosJson : TEXT (default: '[]')&#xa;📝 description : TEXT (default: '')&#xa;🖼 imagePath : TEXT (nullable)&#xa;🔗 trainingUrl : TEXT (nullable)&#xa;🔗 libraryEquipmentId : TEXT (nullable)&#xa;✅ isCustom : BOOLEAN (default: false)&#xa;📋 extraAttributesJson : TEXT (default: '{}')&#xa;🕐 updatedAt : DATETIME (default: now)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEBEE;strokeColor=#B71C1C;fontColor=#1A1A1A;fontSize=11;align=left;verticalAlign=top;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="60" y="636" width="260" height="198" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- DB TABLE: EquipmentAssignments -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <mxCell id="tbl_assignments_header" value="EquipmentAssignments" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B71C1C;strokeColor=#7F0000;fontColor=#FFFFFF;fontStyle=1;fontSize=13;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="60" y="900" width="260" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_assignments_body" value="🔑 id : INTEGER (PK, autoIncrement)&#xa;🔗 compartmentId : INTEGER (FK → Compartments.id)&#xa;🔗 equipmentId : INTEGER (FK → EquipmentItems.id)&#xa;🔢 quantity : INTEGER (default: 1)&#xa;🕐 updatedAt : DATETIME (default: now)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEBEE;strokeColor=#B71C1C;fontColor=#1A1A1A;fontSize=11;align=left;verticalAlign=top;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="60" y="936" width="260" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- DB TABLE: QuizResults -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <mxCell id="tbl_quiz_header" value="QuizResults" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B71C1C;strokeColor=#7F0000;fontColor=#FFFFFF;fontStyle=1;fontSize=13;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="60" y="1100" width="260" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_quiz_body" value="🔑 id : INTEGER (PK, autoIncrement)&#xa;📝 quizType : TEXT ('compartment' | 'image_recognition')&#xa;🔢 score : INTEGER (NOT NULL)&#xa;🔢 total : INTEGER (NOT NULL)&#xa;🔗 vehicleId : INTEGER (nullable FK → Vehicles.id)&#xa;🕐 playedAt : DATETIME (default: now)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEBEE;strokeColor=#B71C1C;fontColor=#1A1A1A;fontSize=11;align=left;verticalAlign=top;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="60" y="1136" width="260" height="116" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- RELATIONSHIP ARROWS (DB) -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- Vehicles → Compartments (1:N) -->
+        <mxCell id="rel_v_c" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#7F0000;strokeWidth=2;endArrow=ERmany;endFill=1;startArrow=ERone;startFill=0;" edge="1" parent="1" source="tbl_vehicles_body" target="tbl_compartments_header">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_v_c_label" value="1 : N" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontStyle=1;fontColor=#7F0000;" vertex="1" connectable="0" parent="rel_v_c">
+          <mxGeometry x="-0.2" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+
+        <!-- Compartments → EquipmentAssignments (1:N) -->
+        <mxCell id="rel_c_a" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#7F0000;strokeWidth=2;endArrow=ERmany;endFill=1;startArrow=ERone;startFill=0;" edge="1" parent="1" source="tbl_compartments_body" target="tbl_assignments_header">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_c_a_label" value="1 : N" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontStyle=1;fontColor=#7F0000;" vertex="1" connectable="0" parent="rel_c_a">
+          <mxGeometry x="-0.2" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+
+        <!-- EquipmentItems → EquipmentAssignments (1:N) -->
+        <mxCell id="rel_e_a" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#7F0000;strokeWidth=2;endArrow=ERmany;endFill=1;startArrow=ERone;startFill=0;" edge="1" parent="1" source="tbl_equipment_body" target="tbl_assignments_body">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_e_a_label" value="1 : N" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontStyle=1;fontColor=#7F0000;" vertex="1" connectable="0" parent="rel_e_a">
+          <mxGeometry x="-0.2" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+
+        <!-- Vehicles → QuizResults (0..1 : N) -->
+        <mxCell id="rel_v_q" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#7F0000;strokeWidth=2;endArrow=ERmany;endFill=1;startArrow=ERzeroToOne;startFill=0;dashed=1;" edge="1" parent="1" source="tbl_vehicles_body" target="tbl_quiz_body">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="400" y="239" />
+              <mxPoint x="400" y="1194" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel_v_q_label" value="0..1 : N&#xa;(nullable)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontStyle=2;fontColor=#7F0000;" vertex="1" connectable="0" parent="rel_v_q">
+          <mxGeometry x="0.2" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- DOMAIN ENTITIES (center column) -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+
+        <!-- Entity: Vehicle -->
+        <mxCell id="ent_vehicle_header" value="Vehicle (Entity)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=#1B5E20;fontColor=#FFFFFF;fontStyle=1;fontSize=13;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="900" y="140" width="260" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="ent_vehicle_body" value="id : int&#xa;name : String&#xa;type : String&#xa;licensePlate : String?&#xa;imagePath : String?&#xa;createdAt : DateTime" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontColor=#1A1A1A;fontSize=11;align=left;verticalAlign=top;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="900" y="176" width="260" height="108" as="geometry" />
+        </mxCell>
+
+        <!-- Entity: EquipmentItem -->
+        <mxCell id="ent_equipment_header" value="EquipmentItem (Entity)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=#1B5E20;fontColor=#FFFFFF;fontStyle=1;fontSize=13;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="900" y="360" width="260" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="ent_equipment_body" value="id : int&#xa;name : String&#xa;equipmentFunctions : List&lt;String&gt;&#xa;deploymentScenarios : List&lt;String&gt;&#xa;description : String&#xa;imagePath : String?&#xa;trainingUrl : String?&#xa;libraryEquipmentId : String?&#xa;isCustom : bool&#xa;extraAttributes : Map&lt;String, dynamic&gt;&#xa;updatedAt : DateTime" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontColor=#1A1A1A;fontSize=11;align=left;verticalAlign=top;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="900" y="396" width="260" height="198" as="geometry" />
+        </mxCell>
+
+        <!-- Entity: Compartment -->
+        <mxCell id="ent_compartment_header" value="Compartment (Entity)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=#1B5E20;fontColor=#FFFFFF;fontStyle=1;fontSize=13;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="900" y="660" width="260" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="ent_compartment_body" value="id : int&#xa;vehicleId : int&#xa;label : String&#xa;position : int&#xa;gridRow : int?&#xa;gridCol : int?&#xa;gridColSpan : int&#xa;updatedAt : DateTime" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontColor=#1A1A1A;fontSize=11;align=left;verticalAlign=top;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="900" y="696" width="260" height="144" as="geometry" />
+        </mxCell>
+
+        <!-- Entity: EquipmentAssignment -->
+        <mxCell id="ent_assignment_header" value="EquipmentAssignment (Entity)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=#1B5E20;fontColor=#FFFFFF;fontStyle=1;fontSize=13;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="900" y="900" width="260" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="ent_assignment_body" value="id : int&#xa;compartmentId : int&#xa;equipmentId : int&#xa;quantity : int" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontColor=#1A1A1A;fontSize=11;align=left;verticalAlign=top;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="900" y="936" width="260" height="82" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- MAPPING ARROWS: DB ↔ Domain -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <mxCell id="map_v" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#757575;strokeWidth=1;dashed=1;endArrow=open;endFill=0;startArrow=open;startFill=0;" edge="1" parent="1" source="tbl_vehicles_header" target="ent_vehicle_header">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="map_v_label" value="maps to" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontColor=#757575;fontStyle=2;" vertex="1" connectable="0" parent="map_v">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="map_e" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#757575;strokeWidth=1;dashed=1;endArrow=open;endFill=0;startArrow=open;startFill=0;" edge="1" parent="1" source="tbl_equipment_header" target="ent_equipment_header">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="map_e_label" value="maps to" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontColor=#757575;fontStyle=2;" vertex="1" connectable="0" parent="map_e">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="map_c" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#757575;strokeWidth=1;dashed=1;endArrow=open;endFill=0;startArrow=open;startFill=0;" edge="1" parent="1" source="tbl_compartments_header" target="ent_compartment_header">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="map_c_label" value="maps to" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontColor=#757575;fontStyle=2;" vertex="1" connectable="0" parent="map_c">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="map_a" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#757575;strokeWidth=1;dashed=1;endArrow=open;endFill=0;startArrow=open;startFill=0;" edge="1" parent="1" source="tbl_assignments_header" target="ent_assignment_header">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="map_a_label" value="maps to" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontColor=#757575;fontStyle=2;" vertex="1" connectable="0" parent="map_a">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- JSON LIBRARY (right column) -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+
+        <!-- LibraryMetadata -->
+        <mxCell id="lib_meta_header" value="metadata.json" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1565C0;strokeColor=#0D47A1;fontColor=#FFFFFF;fontStyle=1;fontSize=13;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="1600" y="140" width="260" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="lib_meta_body" value='version : String&#xa;equipment_count : int&#xa;vehicles : List&lt;String&gt;&#xa;last_updated : String&#xa;&#xa;Example:&#xa;{ "version": "1.0.0",&#xa;  "equipment_count": 257,&#xa;  "vehicles": ["ab_g"] }' style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontColor=#1A1A1A;fontSize=11;align=left;verticalAlign=top;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="1600" y="176" width="260" height="144" as="geometry" />
+        </mxCell>
+
+        <!-- LibraryVehicle -->
+        <mxCell id="lib_vehicle_header" value="vehicles/{id}/vehicle.json" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1565C0;strokeColor=#0D47A1;fontColor=#FFFFFF;fontStyle=1;fontSize=13;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="1600" y="380" width="260" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="lib_vehicle_body" value="vehicle_id : String&#xa;vehicle_name : String&#xa;vehicle_type : String&#xa;deployment_scenarios : List&lt;String&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontColor=#1A1A1A;fontSize=11;align=left;verticalAlign=top;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="1600" y="416" width="260" height="82" as="geometry" />
+        </mxCell>
+
+        <!-- LibraryLoadingPlan -->
+        <mxCell id="lib_plan_header" value="vehicles/{id}/loading_plan.json" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1565C0;strokeColor=#0D47A1;fontColor=#FFFFFF;fontStyle=1;fontSize=13;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="1600" y="560" width="260" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="lib_plan_body" value="vehicle_id : String&#xa;vehicle_name : String&#xa;vehicle_type : String&#xa;compartments : List&lt;CompartmentSlot&gt;&#xa;&#xa;CompartmentSlot {&#xa;  id : String&#xa;  label : String&#xa;  position : int&#xa;  items : List&lt;ItemSlot&gt;&#xa;}&#xa;&#xa;ItemSlot {&#xa;  equipment_id : String&#xa;  quantity : int&#xa;}" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontColor=#1A1A1A;fontSize=11;align=left;verticalAlign=top;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="1600" y="596" width="260" height="234" as="geometry" />
+        </mxCell>
+
+        <!-- LibraryEquipment -->
+        <mxCell id="lib_equip_header" value="vehicles/{id}/equipment/{equip_id}.json" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1565C0;strokeColor=#0D47A1;fontColor=#FFFFFF;fontStyle=1;fontSize=13;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="1600" y="900" width="260" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="lib_equip_body" value="id : String (stable, snake_case)&#xa;name : String&#xa;short_name : String&#xa;equipment_functions : List&lt;String&gt;&#xa;deployment_scenarios : List&lt;String&gt;&#xa;description : String&#xa;technical_data : Map&lt;String, dynamic&gt;&#xa;typical_use : List&lt;String&gt;&#xa;training_questions : List&lt;String&gt;&#xa;images : List&lt;String&gt;&#xa;manuals : List&lt;String&gt;&#xa;source : String" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontColor=#1A1A1A;fontSize=11;align=left;verticalAlign=top;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="1600" y="936" width="260" height="216" as="geometry" />
+        </mxCell>
+
+        <!-- aliases.json -->
+        <mxCell id="lib_aliases_header" value="aliases.json" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1565C0;strokeColor=#0D47A1;fontColor=#FFFFFF;fontStyle=1;fontSize=13;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="1600" y="1220" width="260" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="lib_aliases_body" value='{ "aliases": {&#xa;  "&lt;equipment_id&gt;": [&#xa;    "Alias 1",&#xa;    "Alias 2"&#xa;  ]&#xa;}}&#xa;&#xa;Used during Excel import to&#xa;resolve name variants to stable IDs.' style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontColor=#1A1A1A;fontSize=11;align=left;verticalAlign=top;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="1600" y="1256" width="260" height="144" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- JSON LIBRARY internal arrows -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <mxCell id="lib_plan_equip" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#1565C0;strokeWidth=2;endArrow=ERmany;endFill=1;startArrow=ERone;startFill=0;" edge="1" parent="1" source="lib_plan_body" target="lib_equip_header">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lib_plan_equip_label" value="references by&#xa;equipment_id" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontColor=#1565C0;" vertex="1" connectable="0" parent="lib_plan_equip">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="lib_vehicle_plan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#1565C0;strokeWidth=2;endArrow=ERone;endFill=1;startArrow=ERone;startFill=0;" edge="1" parent="1" source="lib_vehicle_body" target="lib_plan_header">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lib_vehicle_plan_label" value="1 : 1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontColor=#1565C0;" vertex="1" connectable="0" parent="lib_vehicle_plan">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- SEEDING ARROW: JSON Library → DB -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <mxCell id="seed_equip" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#E65100;strokeWidth=2;dashed=1;endArrow=block;endFill=1;startArrow=none;" edge="1" parent="1" source="lib_equip_header" target="tbl_equipment_header">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1530" y="918" />
+              <mxPoint x="530" y="918" />
+              <mxPoint x="530" y="618" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="seed_equip_label" value="first-launch seed&#xa;(idempotent upsert)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontStyle=1;fontColor=#E65100;" vertex="1" connectable="0" parent="seed_equip">
+          <mxGeometry x="-0.2" y="-10" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="seed_plan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#E65100;strokeWidth=2;dashed=1;endArrow=block;endFill=1;startArrow=none;" edge="1" parent="1" source="lib_plan_body" target="tbl_assignments_header">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1530" y="713" />
+              <mxPoint x="500" y="713" />
+              <mxPoint x="500" y="918" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="seed_plan_label" value="seeds Compartments +&#xa;EquipmentAssignments" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontStyle=1;fontColor=#E65100;" vertex="1" connectable="0" parent="seed_plan">
+          <mxGeometry x="-0.1" y="-10" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- ENUMS (right side, below library) -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <mxCell id="enum_func_header" value="EquipmentFunction (enum)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#4A148C;strokeColor=#311B92;fontColor=#FFFFFF;fontStyle=1;fontSize=12;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="1300" y="140" width="240" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="enum_func_body" value="rettung – Rettung&#xa;brand – Brand&#xa;wasser – Wasser&#xa;pumpen – Pumpen&#xa;beleuchtung – Beleuchtung&#xa;strom – Strom / Energie&#xa;lueftung – Lüftung&#xa;kommunikation – Kommunikation&#xa;messgeraete – Messgeräte&#xa;absperren – Absperren&#xa;logistik – Logistik&#xa;fuehrung – Führung&#xa;psa – Pers. Schutzausrüstung&#xa;armaturen – Armaturen / Kuppl.&#xa;abdichten – Abdichten&#xa;dekon – Dekontamination&#xa;handwerkzeug – Handwerkzeug" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#4A148C;fontColor=#1A1A1A;fontSize=11;align=left;verticalAlign=top;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="1300" y="176" width="240" height="306" as="geometry" />
+        </mxCell>
+
+        <mxCell id="enum_scenario_header" value="DeploymentScenario (enum)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#4A148C;strokeColor=#311B92;fontColor=#FFFFFF;fontStyle=1;fontSize=12;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="1300" y="560" width="240" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="enum_scenario_body" value="brandInnen – Brand Innen&#xa;brandAussen – Brand Außen&#xa;brandVegetation – Vegetationsbrand&#xa;brandFahrzeug – Fahrzeugbrand&#xa;vuPkw – VU PKW&#xa;vuLkw – VU LKW&#xa;vuBus – VU Bus&#xa;vuBahn – VU Bahn / Schiene&#xa;thKlemmt – TH Person eingeklemmt&#xa;thSturm – TH Sturm&#xa;thBaum – TH Baum&#xa;thEinsturz – TH Einsturz&#xa;thTier – TH Tier in Not&#xa;thWasser – TH Wasser&#xa;gefahrgutMessen – GG Messen&#xa;gefahrgutAbdichten – GG Abdichten&#xa;gefahrgutPumpen – GG Umpumpen&#xa;gefahrgutAuffangen – GG Auffangen&#xa;gefahrgutDekon – GG Dekontamination&#xa;hochwasser – Hochwasser&#xa;wasserrettung – Wasserrettung&#xa;absturzsicherung – Absturzsicherung&#xa;hoehenrettung – Höhenrettung" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#4A148C;fontColor=#1A1A1A;fontSize=11;align=left;verticalAlign=top;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="1300" y="596" width="240" height="396" as="geometry" />
+        </mxCell>
+
+        <!-- enum usage arrows -->
+        <mxCell id="enum_func_use" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#4A148C;strokeWidth=1;dashed=1;endArrow=open;endFill=0;" edge="1" parent="1" source="enum_func_body" target="tbl_equipment_body">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="enum_func_use_label" value="stored as JSON array&#xa;UPPER_SNAKE_CASE" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontColor=#4A148C;fontStyle=2;" vertex="1" connectable="0" parent="enum_func_use">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="enum_scen_use" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#4A148C;strokeWidth=1;dashed=1;endArrow=open;endFill=0;" edge="1" parent="1" source="enum_scenario_body" target="tbl_equipment_body">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1240" y="794" />
+              <mxPoint x="220" y="794" />
+              <mxPoint x="220" y="735" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="enum_scen_use_label" value="stored as JSON array&#xa;UPPER_SNAKE_CASE" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontColor=#4A148C;fontStyle=2;" vertex="1" connectable="0" parent="enum_scen_use">
+          <mxGeometry x="-0.2" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- EXCEL IMPORT FLOW -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <mxCell id="import_header" value="Excel / CSV Import Flow" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E65100;strokeColor=#BF360C;fontColor=#FFFFFF;fontStyle=1;fontSize=13;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="560" y="1340" width="280" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="import_body" value="1. file_picker → bytes&#xa;2. excel.decodeBytes(bytes)&#xa;3. Normalize row text&#xa;4. Resolve ID via aliases.json&#xa;   → if not found: isCustom = true&#xa;5. Upsert in Drift transaction:&#xa;   Vehicles → Compartments&#xa;   → EquipmentItems → Assignments&#xa;6. Show post-import review prompt&#xa;   for all custom-created items" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FBE9E7;strokeColor=#E65100;fontColor=#1A1A1A;fontSize=11;align=left;verticalAlign=top;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="560" y="1376" width="280" height="180" as="geometry" />
+        </mxCell>
+
+        <mxCell id="import_to_db" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#E65100;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="import_body" target="tbl_assignments_body">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="700" y="1600" />
+              <mxPoint x="190" y="1600" />
+              <mxPoint x="190" y="986" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="import_to_db_label" value="writes to DB" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#E65100;" vertex="1" connectable="0" parent="import_to_db">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="import_alias_link" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#E65100;strokeWidth=1;dashed=1;endArrow=open;endFill=0;" edge="1" parent="1" source="import_body" target="lib_aliases_body">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="840" y="1466" />
+              <mxPoint x="1730" y="1466" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="import_alias_label" value="resolves via" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#E65100;" vertex="1" connectable="0" parent="import_alias_link">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- SUPABASE SYNC NOTE -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <mxCell id="supabase_header" value="Supabase Sync (optional)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#006064;strokeColor=#004D40;fontColor=#FFFFFF;fontStyle=1;fontSize=13;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="960" y="1340" width="260" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="supabase_body" value="Strategy: last-write-wins&#xa;Sync column: updatedAt on all tables&#xa;&#xa;Mirrored tables:&#xa;• vehicles&#xa;• equipment_items&#xa;• compartments&#xa;• equipment_assignments&#xa;&#xa;Auth: email/password or anonymous&#xa;Only active if user enables in Settings" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0F2F1;strokeColor=#006064;fontColor=#1A1A1A;fontSize=11;align=left;verticalAlign=top;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="960" y="1376" width="260" height="180" as="geometry" />
+        </mxCell>
+
+        <!-- Supabase sync arrows -->
+        <mxCell id="sync_v" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#006064;strokeWidth=1;dashed=1;endArrow=open;endFill=0;startArrow=open;startFill=0;" edge="1" parent="1" source="supabase_body" target="tbl_vehicles_body">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="850" y="1466" />
+              <mxPoint x="190" y="1466" />
+              <mxPoint x="190" y="239" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sync_v_label" value="syncs ↕" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#006064;" vertex="1" connectable="0" parent="sync_v">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- LEGEND -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <mxCell id="legend_header" value="Legend" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#455A64;strokeColor=#263238;fontColor=#FFFFFF;fontStyle=1;fontSize=12;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="60" y="1340" width="440" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="legend_body" value="🔑  Primary Key (PK)&#xa;🔗  Foreign Key (FK) / URL reference&#xa;📝  Text field&#xa;🔢  Numeric field&#xa;📋  JSON-encoded field (array or object)&#xa;✅  Boolean flag&#xa;🖼  File path (local) or URL&#xa;🕐  Timestamp&#xa;&#xa;—— solid arrow  FK relationship (1:N or 1:1)&#xa;- - dashed arrow  logical / seeding relationship&#xa;           Orange dashed  First-launch DB seeding from JSON library&#xa;           Grey dashed  DAO ↔ Domain entity mapping&#xa;           Purple dashed  Enum value stored in DB field" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECEFF1;strokeColor=#455A64;fontColor=#1A1A1A;fontSize=11;align=left;verticalAlign=top;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="60" y="1376" width="440" height="216" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

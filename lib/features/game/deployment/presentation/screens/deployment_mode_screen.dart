@@ -1,8 +1,10 @@
-/// deployment_mode_screen.dart – Multi-vehicle deployment analysis.
+ /// deployment_mode_screen.dart – Multi-vehicle deployment analysis.
+library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/database/database_providers.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
+import 'package:fwapp/core/utils/json_utils.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_enums.dart';
 import 'package:fwapp/features/vehicle/domain/entities/vehicle.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';
@@ -138,15 +140,7 @@ class _DeploymentModeState extends ConsumerState<DeploymentModeScreen> {
             equipmentId: eq.id,
             name: eq.name,
             imagePath: eq.imagePath,
-            functions: eq.equipmentFunctionsJson.isEmpty
-                ? []
-                : (eq.equipmentFunctionsJson
-                    .replaceAll('[', '')
-                    .replaceAll(']', '')
-                    .replaceAll('"', '')
-                    .split(',')
-                    .where((s) => s.trim().isNotEmpty)
-                    .toList()),
+            functions: jsonToStringList(eq.equipmentFunctionsJson),
             totalQuantity: a.quantity,
           );
         }

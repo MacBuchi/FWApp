@@ -28,7 +28,9 @@
     "Welche Einsatzzeit ist im gasdichten Anzug realistisch und von was ist sie abhängig?",
     "Wie erfolgt die Notfallöffnung (Fremdöffnung) von außen?"
   ],
-  "images": [],
+  "images": [
+    "assets/images/equipment/chemikalienanzug_typ_1a_et_modell_onesuit_pro_in_tasche.webp"
+  ],
   "manuals": [],
   "source": "Beladeliste AB-G, Stand 2025-01-29"
 }

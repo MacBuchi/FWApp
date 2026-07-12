@@ -1,12 +1,17 @@
-/// vehicle_detail_screen.dart – Vehicle detail with compartments list.
+/// vehicle_detail_screen.dart – Vehicle detail with cutaway view and
+/// compartments list.
+library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
 import 'package:fwapp/features/assignment/presentation/providers/assignment_providers.dart';
+import 'package:fwapp/features/compartment/domain/entities/compartment.dart';
 import 'package:fwapp/features/compartment/presentation/providers/compartment_providers.dart';
 import 'package:fwapp/features/equipment/presentation/providers/equipment_providers.dart';
+import 'package:fwapp/features/inspection/presentation/providers/inspection_providers.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';
+import 'package:fwapp/features/vehicle/presentation/widgets/vehicle_cutaway_view.dart';
 
 class VehicleDetailScreen extends ConsumerWidget {
   final int vehicleId;
@@ -34,7 +39,7 @@ class VehicleDetailScreen extends ConsumerWidget {
               IconButton(
                 icon: const Icon(Icons.edit),
                 tooltip: 'Bearbeiten',
-                onPressed: () => context.push('/vehicles/${vehicleId}/edit'),
+                onPressed: () => context.push('/vehicles/$vehicleId/edit'),
               ),
               IconButton(
                 icon: const Icon(Icons.view_module),
@@ -67,6 +72,22 @@ class VehicleDetailScreen extends ConsumerWidget {
                         _InfoRow('Kennzeichen', vehicle.licensePlate!),
                     ],
                   ),
+                ),
+              ),
+              // Cutaway view (Schnittdarstellung)
+              SliverToBoxAdapter(
+                child: compartmentsAsync.when(
+                  loading: () => const SizedBox.shrink(),
+                  error: (_, __) => const SizedBox.shrink(),
+                  data: (compartments) => compartments.isEmpty
+                      ? const SizedBox.shrink()
+                      : Padding(
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 16),
+                          child: _VehicleCutaway(
+                              vehicleId: vehicleId,
+                              compartments: compartments),
+                        ),
                 ),
               ),
               // Compartments
@@ -121,6 +142,102 @@ class VehicleDetailScreen extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// Cutaway with per-compartment item counts and inspection due badges;
+/// tapping a tile opens its contents as a bottom sheet.
+class _VehicleCutaway extends ConsumerWidget {
+  final int vehicleId;
+  final List<Compartment> compartments;
+  const _VehicleCutaway(
+      {required this.vehicleId, required this.compartments});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final assignments =
+        ref.watch(assignmentsByVehicleProvider(vehicleId)).value ?? const [];
+    final dues = ref.watch(dueInspectionsStreamProvider()).value ?? const [];
+
+    final itemCounts = <int, int>{};
+    for (final a in assignments) {
+      itemCounts[a.compartmentId] = (itemCounts[a.compartmentId] ?? 0) + 1;
+    }
+    final now = DateTime.now();
+    final dueCounts = <int, int>{};
+    final overdueByCompartment = <int, bool>{};
+    for (final due in dues) {
+      final compartmentId = due.instance.compartmentId;
+      if (compartmentId == null) continue;
+      dueCounts[compartmentId] = (dueCounts[compartmentId] ?? 0) + 1;
+      if (due.isOverdue(now)) overdueByCompartment[compartmentId] = true;
+    }
+
+    return VehicleCutawayView(
+      compartments: compartments,
+      tileStates: {
+        for (final c in compartments)
+          c.id: CutawayTileState(
+            itemCount: itemCounts[c.id] ?? 0,
+            dueBadgeCount: dueCounts[c.id] ?? 0,
+            dueBadgeIsOverdue: overdueByCompartment[c.id] ?? false,
+          ),
+      },
+      onTapCompartment: (c) => showModalBottomSheet(
+        context: context,
+        showDragHandle: true,
+        builder: (_) => _CompartmentSheet(compartment: c),
+      ),
+    );
+  }
+}
+
+/// Bottom sheet listing the equipment of one compartment.
+class _CompartmentSheet extends ConsumerWidget {
+  final Compartment compartment;
+  const _CompartmentSheet({required this.compartment});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final assignmentsAsync =
+        ref.watch(assignmentListStreamProvider(compartment.id));
+    return SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(compartment.label,
+                style: Theme.of(context).textTheme.titleLarge),
+          ),
+          const SizedBox(height: 8),
+          Flexible(
+            child: assignmentsAsync.when(
+              loading: () => const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: LinearProgressIndicator()),
+              error: (e, _) => Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text('Fehler: $e')),
+              data: (assignments) => assignments.isEmpty
+                  ? const Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Text('Kein Gerät zugewiesen.',
+                          style: TextStyle(color: Colors.grey)))
+                  : ListView(
+                      shrinkWrap: true,
+                      children: assignments
+                          .map((a) => _AssignmentRow(
+                              equipmentId: a.equipmentId,
+                              quantity: a.quantity))
+                          .toList(),
+                    ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

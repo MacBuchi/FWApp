@@ -1,4 +1,5 @@
 /// app_router.dart – GoRouter configuration for all app routes.
+library;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fwapp/features/home/presentation/screens/home_screen.dart';
@@ -11,10 +12,13 @@ import 'package:fwapp/features/equipment/presentation/screens/equipment_detail_s
 import 'package:fwapp/features/equipment/presentation/screens/equipment_form_screen.dart';
 import 'package:fwapp/features/game/presentation/screens/game_menu_screen.dart';
 import 'package:fwapp/features/game/quiz/presentation/screens/compartment_quiz_screen.dart';
+import 'package:fwapp/features/game/quiz/presentation/screens/cutaway_quiz_screen.dart';
 import 'package:fwapp/features/game/quiz/presentation/screens/drag_drop_screen.dart';
+import 'package:fwapp/features/game/quiz/presentation/screens/flashcard_screen.dart';
 import 'package:fwapp/features/game/quiz/presentation/screens/image_quiz_screen.dart';
 import 'package:fwapp/features/game/deployment/presentation/screens/deployment_mode_screen.dart';
 import 'package:fwapp/features/import/presentation/screens/import_screen.dart';
+import 'package:fwapp/features/inspection/presentation/screens/inspection_dashboard_screen.dart';
 import 'package:fwapp/features/settings/presentation/screens/settings_screen.dart';
 
 final appRouter = GoRouter(
@@ -90,6 +94,14 @@ final appRouter = GoRouter(
               builder: (_, __) => const CompartmentQuizScreen(),
             ),
             GoRoute(
+              path: 'cutaway-quiz',
+              builder: (_, __) => const CutawayQuizScreen(),
+            ),
+            GoRoute(
+              path: 'flashcards',
+              builder: (_, __) => const FlashcardScreen(),
+            ),
+            GoRoute(
               path: 'drag-drop',
               builder: (_, __) => const DragDropScreen(),
             ),
@@ -102,6 +114,10 @@ final appRouter = GoRouter(
               builder: (_, __) => const DeploymentModeScreen(),
             ),
           ],
+        ),
+        GoRoute(
+          path: '/inspections',
+          builder: (_, __) => const InspectionDashboardScreen(),
         ),
         GoRoute(
           path: '/import',

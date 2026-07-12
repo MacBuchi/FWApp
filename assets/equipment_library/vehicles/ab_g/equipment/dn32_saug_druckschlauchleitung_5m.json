@@ -23,7 +23,7 @@
     "Welche Dichtungswerkstoffe sind für den Gefahrguteinsatz (Säuren, Laugen) zugelassen?",
     "Wie wird die Armatur vor der Verwendung auf Dichtigkeit geprüft?"
   ],
-  "images": [],
+  "images": ["assets/images/equipment/dn32_saug_druckschlauchleitung_5m.webp"],
   "manuals": [],
   "source": "Beladeliste AB-G, Stand 2025-01-29"
 }

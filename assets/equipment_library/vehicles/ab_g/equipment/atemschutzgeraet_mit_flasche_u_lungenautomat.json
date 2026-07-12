@@ -10,7 +10,9 @@
     "GEFAHRGUT_MESSEN"
   ],
   "description": "Pressluftatmer (PA) als umluftunabhängiges Atemschutzgerät (uA-Gerät) mit Druckluftflasche (300 bar) und Lungenautomaten. Standardausrüstung für den Innenangriff und den Einsatz in sauerstoffarmer oder schadstoffhaltiger Atmosphäre.",
-  "technical_data": {},
+  "technical_data": {
+    "image_todo": true
+  },
   "typical_use": [
     "Innenangriff bei Bränden in Gebäuden und Fahrzeugen",
     "Erkundung und Arbeiten in kontaminierten Gefahrgutzonen",

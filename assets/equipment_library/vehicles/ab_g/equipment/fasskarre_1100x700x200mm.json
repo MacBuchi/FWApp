@@ -12,7 +12,8 @@
   ],
   "description": "Fasskarre 1100x700x200mm. Arbeitsmittel des AB-G für den Einsatz an der Gefahrguteinsatzstelle.",
   "technical_data": {
-    "abmessungen_mm": "1100 x 700 x 200"
+    "abmessungen_mm": "1100 x 700 x 200",
+    "image_todo": true
   },
   "typical_use": [
     "Unterstützung beim Umpumpen und Auffangen",

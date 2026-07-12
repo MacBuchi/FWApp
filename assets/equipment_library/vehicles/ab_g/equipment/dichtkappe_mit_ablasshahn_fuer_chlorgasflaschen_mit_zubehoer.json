@@ -20,7 +20,7 @@
     "Welchem TW-Bereich (TW-1 bis TW-6) ist dieses Gerät zuzuordnen?",
     "Bei welchen Gefahrgutszenarien kommt es zum Einsatz?"
   ],
-  "images": [],
+  "images": ["assets/images/equipment/dichtkappe_mit_ablasshahn_fuer_chlorgasflaschen_mit_zubehoer.webp"],
   "manuals": [],
   "source": "Beladeliste AB-G, Stand 2025-01-29"
 }

@@ -14,7 +14,8 @@
   "technical_data": {
     "normen": [
       "DIN 14427"
-    ]
+    ],
+    "image_todo": true
   },
   "typical_use": [
     "Unterstützung beim Umpumpen und Auffangen",

@@ -25,7 +25,9 @@
     "In welchen ATEX-Gerätekategorien (Zonen 0–2) darf funkenarmes Werkzeug eingesetzt werden?",
     "Wie wird funkenarmes Werkzeug auf Beschädigungen und Ermüdung kontrolliert?"
   ],
-  "images": [],
+  "images": [
+    "assets/images/equipment/feuerwehr_werkzeugkasten_nach_din_14881.webp"
+  ],
   "manuals": [],
   "source": "Beladeliste AB-G, Stand 2025-01-29"
 }

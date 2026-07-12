@@ -1,4 +1,5 @@
 /// equipment_assignment.dart – EquipmentAssignment domain entity.
+library;
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'equipment_assignment.freezed.dart';

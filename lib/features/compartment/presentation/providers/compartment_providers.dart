@@ -1,4 +1,5 @@
 /// compartment_providers.dart – Riverpod providers for compartment feature.
+library;
 import 'package:fwapp/core/database/database_providers.dart';
 import 'package:fwapp/features/compartment/data/repositories/compartment_repository_impl.dart';
 import 'package:fwapp/features/compartment/domain/entities/compartment.dart';

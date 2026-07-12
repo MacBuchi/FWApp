@@ -1,4 +1,5 @@
 /// equipment_repository_impl.dart – Drift-backed EquipmentRepository implementation.
+library;
 import 'package:drift/drift.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/utils/json_utils.dart';
@@ -35,6 +36,10 @@ class EquipmentRepositoryImpl implements EquipmentRepository {
   Future<int> insert(EquipmentItem item) => _dao.insertEquipment(
         EquipmentItemsCompanion.insert(
           name: item.name,
+          shortName: Value(item.shortName),
+          trainingQuestionsJson:
+              Value(stringListToJson(item.trainingQuestions)),
+          typicalUseJson: Value(stringListToJson(item.typicalUse)),
           equipmentFunctionsJson:
               Value(stringListToJson(item.equipmentFunctions)),
           deploymentScenariosJson:
@@ -53,6 +58,10 @@ class EquipmentRepositoryImpl implements EquipmentRepository {
         EquipmentItemsCompanion(
           id: Value(item.id),
           name: Value(item.name),
+          shortName: Value(item.shortName),
+          trainingQuestionsJson:
+              Value(stringListToJson(item.trainingQuestions)),
+          typicalUseJson: Value(stringListToJson(item.typicalUse)),
           equipmentFunctionsJson:
               Value(stringListToJson(item.equipmentFunctions)),
           deploymentScenariosJson:
@@ -82,6 +91,9 @@ class EquipmentRepositoryImpl implements EquipmentRepository {
   EquipmentItem _toEntity(EquipmentItemData row) => EquipmentItem(
         id: row.id,
         name: row.name,
+        shortName: row.shortName,
+        trainingQuestions: jsonToStringList(row.trainingQuestionsJson),
+        typicalUse: jsonToStringList(row.typicalUseJson),
         equipmentFunctions: jsonToStringList(row.equipmentFunctionsJson),
         deploymentScenarios: jsonToStringList(row.deploymentScenariosJson),
         description: row.description,

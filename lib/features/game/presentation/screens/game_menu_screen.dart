@@ -1,4 +1,5 @@
 /// game_menu_screen.dart – Navigation hub for all training game modes.
+library;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -36,6 +37,20 @@ class GameMenuScreen extends StatelessWidget {
             subtitle: 'Erkenne Geräte anhand ihrer Fotos',
             color: Colors.deepOrange,
             onTap: () => context.push('/game/image-quiz'),
+          ),
+          _GameCard(
+            icon: Icons.grid_view,
+            title: 'Wo liegt\'s?',
+            subtitle: 'Tippe das richtige Fach in der Schnittdarstellung',
+            color: Colors.blue.shade800,
+            onTap: () => context.push('/game/cutaway-quiz'),
+          ),
+          _GameCard(
+            icon: Icons.style,
+            title: 'Geräte-Wissen',
+            subtitle: 'Karteikarten mit Trainingsfragen',
+            color: Colors.purple.shade700,
+            onTap: () => context.push('/game/flashcards'),
           ),
           _GameCard(
             icon: Icons.directions_car,

@@ -1,4 +1,5 @@
 /// equipment_form_screen.dart – Create / edit an equipment item.
+library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';

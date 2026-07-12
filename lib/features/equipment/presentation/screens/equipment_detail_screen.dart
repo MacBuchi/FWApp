@@ -1,4 +1,5 @@
 /// equipment_detail_screen.dart – Full equipment detail view.
+library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_enums.dart';
 import 'package:fwapp/features/equipment/presentation/providers/equipment_providers.dart';
+import 'package:fwapp/features/inspection/presentation/widgets/equipment_instances_section.dart';
 
 class EquipmentDetailScreen extends ConsumerWidget {
   final int equipmentId;
@@ -131,6 +133,24 @@ class EquipmentDetailScreen extends ConsumerWidget {
                 ),
               ],
 
+              // Typical use (from library)
+              if (item.typicalUse.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Text('Typische Verwendung',
+                    style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 4),
+                ...item.typicalUse.map((u) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('• '),
+                          Expanded(child: Text(u)),
+                        ],
+                      ),
+                    )),
+              ],
+
               // Extra attributes (technical data)
               if (item.extraAttributes.isNotEmpty) ...[
                 const SizedBox(height: 16),
@@ -150,6 +170,29 @@ class EquipmentDetailScreen extends ConsumerWidget {
                       ),
                     )),
               ],
+
+              // Training questions (flashcard content, from library)
+              if (item.trainingQuestions.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Text('Trainingsfragen',
+                    style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 4),
+                ...item.trainingQuestions.map((q) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(Icons.help_outline, size: 18),
+                          const SizedBox(width: 6),
+                          Expanded(child: Text(q)),
+                        ],
+                      ),
+                    )),
+              ],
+
+              // Physical instances with Prüfterminen (Gerätewart)
+              const SizedBox(height: 16),
+              EquipmentInstancesSection(equipmentId: equipmentId),
 
               // Training URL
               if (item.trainingUrl != null &&

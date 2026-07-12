@@ -1,4 +1,5 @@
 /// vehicle_repository.dart – Abstract interface for vehicle data access.
+library;
 import 'package:fwapp/features/vehicle/domain/entities/vehicle.dart';
 
 abstract class VehicleRepository {

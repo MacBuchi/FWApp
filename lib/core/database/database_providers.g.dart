@@ -254,3 +254,44 @@ final class QuizDaoProvider
 }
 
 String _$quizDaoHash() => r'1f8d3bae7ec5cd3063bfb032dc7b332eabc1ceb0';
+
+@ProviderFor(inspectionDao)
+final inspectionDaoProvider = InspectionDaoProvider._();
+
+final class InspectionDaoProvider
+    extends $FunctionalProvider<InspectionDao, InspectionDao, InspectionDao>
+    with $Provider<InspectionDao> {
+  InspectionDaoProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'inspectionDaoProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$inspectionDaoHash();
+
+  @$internal
+  @override
+  $ProviderElement<InspectionDao> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  InspectionDao create(Ref ref) {
+    return inspectionDao(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(InspectionDao value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<InspectionDao>(value),
+    );
+  }
+}
+
+String _$inspectionDaoHash() => r'c78679bcf2b7f1067b9b674061fdc5787129f425';

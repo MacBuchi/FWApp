@@ -1,4 +1,5 @@
 /// compartment_repository.dart – Abstract interface for compartment data access.
+library;
 import 'package:fwapp/features/compartment/domain/entities/compartment.dart';
 
 abstract class CompartmentRepository {

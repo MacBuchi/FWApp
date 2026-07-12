@@ -1,4 +1,5 @@
 /// assignment_providers.dart – Riverpod providers for assignment feature.
+library;
 import 'package:fwapp/core/database/database_providers.dart';
 import 'package:fwapp/features/assignment/data/repositories/assignment_repository_impl.dart';
 import 'package:fwapp/features/assignment/domain/entities/equipment_assignment.dart';

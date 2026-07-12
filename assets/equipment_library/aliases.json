@@ -1,5 +1,12 @@
 {
   "aliases": {
+    "dn32_saug_druckschlauchleitung_5m": [
+      "DN32-Saug/Druckschlauchleitung 5m",
+      "Saug-Druckschlauchleitung DN32 5m",
+      "S-Druckschlauchleitung DN32 5m",
+      "Saug/Druckschlauchleitung DN32",
+      "DN32 Saug-Druckschlauch 5m"
+    ],
     "hydraulischer_spreizer": [
       "Hydr. Spreizer",
       "Spreizer",
@@ -57,6 +64,132 @@
       "Generator",
       "Notstromaggregat",
       "Aggregat"
+    ],
+    "saug_druckschlauch_dn32_2_1m_lang_eineseitig_vk50_kupplung": [
+      "Saug-Druckschlauch DN32 2,1m VK50",
+      "Saug/Druckschlauchleitung DN32 kurz",
+      "S-Druckschlauch DN32 2m VK50 Kupplung"
+    ],
+    "saug_druckschlauch_saeurefest_dn_50_5m_lang": [
+      "Saug-Druckschlauch säurefest DN50",
+      "Säurefester Schlauch DN50 5m",
+      "Chemikalienschlauch DN50 5m"
+    ],
+    "6x_stahl_cfk_druckiuftflasche_6_0_300bar_im_lager_und": [
+      "CFK Druckluftflasche 6L 300 bar",
+      "Atemluftflasche CFK 300bar",
+      "Pressluftflasche CFK 6L im Tragegestell"
+    ],
+    "dichtkappe_mit_ablasshahn_fuer_chlorgasflaschen_mit_zubehoer": [
+      "Dichtkappe Chlorgasflasche",
+      "Ablasshahn Chlorgas",
+      "Chlorgasflaschendichtkappe mit Zubehör"
+    ],
+    "dichtungskeil_schaumstoff_800x500x200mm": [
+      "Dichtungskeil Schaumstoff 800x500x200mm",
+      "Dichtungskeil Schaumstoff",
+      "Schaumstoff Dichtungskeil"
+    ],
+    "dichtungsplatte_schaumstoff_900x900x20_mm": [
+      "Dichtungsplatte Schaumstoff 900x900x20mm",
+      "Dichtungsplatte Schaumstoff",
+      "Schaumstoff-Dichtungsplatte"
+    ],
+    "druckluftmembranpumpe_zum_absaugen_von_kraftstoffen_aus_pkw_und": [
+      "Druckluftmembranpumpe explosionsgeschützt",
+      "Membranpumpe ATEX",
+      "ATEX Membranpumpe Kraftstoff",
+      "Druckluft-Membranpumpe"
+    ],
+    "esd_rollplattform_antistatisch_410x610mm": [
+      "ESD-Rollplattform antistatisch 410x610mm",
+      "ESD Rollplattform",
+      "Antistatische Rollplattform"
+    ],
+    "fasskarre_1100x700x200mm": [
+      "Fasskarre 1100x700x200mm",
+      "Fasskarre",
+      "Lagerkarre für Fässer"
+    ],
+    "feuerwehr_werkzeugkasten_nach_din_14881": [
+      "Feuerwehr Werkzeugkasten DIN 14881",
+      "Handwerkzeugkasten DIN 14881",
+      "FWKa DIN 14881",
+      "Werkzeugkasten Feuerwehr"
+    ],
+    "fuss_verzinkt_fuer_absperrstuetzen": [
+      "Fuß verzinkt Absperrstützen",
+      "Rundfuß Absperrstütze verzinkt",
+      "Stützfuß Absperrstütze"
+    ],
+    "gefahrstoff_umfuellpumpe_din_14427_kreiselpumpe": [
+      "Gefahrstoff Umfüllpumpe DIN 14427 Kreiselpumpe",
+      "Kreiselpumpe DIN 14427",
+      "Umfüllpumpe Gefahrstoff Kreiselpumpe"
+    ],
+    "iconos_duesenschlauch_inkl_zubehoer_im_tragekorb_870x145x520_mm": [
+      "ICONOS Düsenschlauch Tragekorb",
+      "Düsenschlauch ICONOS mit Zubehör",
+      "ICONOS Düsenschlauch im Tragekorb 870x145x520mm"
+    ],
+    "klappbarer_transportwagen_900x600mm_fabrikat_fetra": [
+      "Klappbarer Transportwagen Fetra 900x600mm",
+      "Fetra Transportwagen klappbar",
+      "Transportwagen Fetra 900x600"
+    ],
+    "luefter_leader_esx_230_atex_550_x_550_x_490_mm": [
+      "Lüfter Leader ESX 230 ATEX",
+      "Leader ESX 230 ATEX",
+      "ESX 230 ATEX Elektrolüfter",
+      "Hochleistungslüfter Leader ESX 230"
+    ],
+    "sackkarre_klappbar_ca_1100x460x300mm": [
+      "Sackkarre klappbar 1100x460x300mm",
+      "Sackkarre klappbar",
+      "Klappbare Sackkarre"
+    ],
+    "seitenplanen_fuer_pavillons": [
+      "Seitenplanen für Pavillons",
+      "Pavillon Seitenplane",
+      "Zeltplane Pavillon"
+    ],
+    "tafel_aus_weich_pvc_500x1000x5_mm": [
+      "Tafel Weich-PVC 500x1000x5mm",
+      "Weich-PVC Tafel",
+      "PVC Abdichtplatte 500x1000"
+    ],
+    "v4a_saugbehaelter_180ltr_870x570mm": [
+      "V4A Saugbehälter 180 Liter 870x570mm",
+      "Saugbehälter Edelstahl 180L",
+      "V4A Edelstahlbehälter 180ltr"
+    ],
+    "zeltleuchte_mit_2_nylongurten_fabrikat_aldebaran_profiline_54w": [
+      "Zeltleuchte Aldebaran Profiline 54W",
+      "Aldebaran Profiline 54W",
+      "SETOLITE Aldebaran Profiline",
+      "Zeltleuchte mit 2 Nylongurten Aldebaran"
+    ],
+    "atemschutzgeraet_mit_flasche_u_lungenautomat": [
+      "Atemschutzgerät mit Flasche und Lungenautomat",
+      "Pressluftatmer mit Flasche",
+      "PA mit Flasche und Lungenautomat"
+    ],
+    "chemikalienanzug_typ_1a_et_modell_onesuit_pro_in_tasche": [
+      "Chemikalienanzug Typ 1a-ET ONESuit Pro",
+      "ONESuit Pro Chemikalienschutzanzug",
+      "Schwerer Chemikalienschutzanzug Typ 1a-ET",
+      "Chemikalienschutzanzug Typ 1a EN 943"
+    ],
+    "digitalkamera": [
+      "Digitalkamera",
+      "Kamera Feuerwehr",
+      "Digital-Kamera Einsatz"
+    ],
+    "dosisleistungsmessgeraet_mit_einer_akustischen_und_optischen": [
+      "Dosisleistungsmessgerät akustisch/optisch",
+      "Dosisleistungsmessgerät",
+      "Strahlenmessgerät akustisch optisch",
+      "Geigerzähler Feuerwehr"
     ]
   }
 }

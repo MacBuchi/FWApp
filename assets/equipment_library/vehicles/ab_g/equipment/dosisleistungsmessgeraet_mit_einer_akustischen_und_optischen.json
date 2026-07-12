@@ -9,7 +9,9 @@
     "GEFAHRGUT_MESSEN"
   ],
   "description": "Digitaler Dosisleistungsmesser für ionisierende Strahlung (Alpha, Beta, Gamma) mit akustischer und optischer Warnschwelle. Einsatz bei Verdacht auf radioaktive oder nukleare Gefahrstoffe. Anzeigebereich in µSv/h bzw. mSv/h.",
-  "technical_data": {},
+  "technical_data": {
+    "image_todo": true
+  },
   "typical_use": [
     "Erkundung der Gefahrstoffsituation",
     "Kontinuierliche Überwachung von Messwerten an der Einsatzstelle"

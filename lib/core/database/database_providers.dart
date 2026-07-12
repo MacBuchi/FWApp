@@ -1,4 +1,5 @@
 /// database_providers.dart – Riverpod provider for the AppDatabase singleton.
+library;
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -29,3 +30,7 @@ AssignmentDao assignmentDao(Ref ref) =>
 
 @Riverpod(keepAlive: true)
 QuizDao quizDao(Ref ref) => ref.watch(appDatabaseProvider).quizDao;
+
+@Riverpod(keepAlive: true)
+InspectionDao inspectionDao(Ref ref) =>
+    ref.watch(appDatabaseProvider).inspectionDao;

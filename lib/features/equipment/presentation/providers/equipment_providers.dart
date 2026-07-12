@@ -1,4 +1,5 @@
 /// equipment_providers.dart – Riverpod providers for equipment feature.
+library;
 import 'package:fwapp/core/database/database_providers.dart';
 import 'package:fwapp/features/equipment/data/repositories/equipment_repository_impl.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_item.dart';
@@ -97,8 +98,9 @@ Future<List<EquipmentItem>> filteredEquipment(
       if (!item.equipmentFunctions.contains(filter.functionFilter)) return false;
     }
     if (filter.scenarioFilter != null) {
-      if (!item.deploymentScenarios.contains(filter.scenarioFilter))
+      if (!item.deploymentScenarios.contains(filter.scenarioFilter)) {
         return false;
+      }
     }
     return true;
   }).toList();

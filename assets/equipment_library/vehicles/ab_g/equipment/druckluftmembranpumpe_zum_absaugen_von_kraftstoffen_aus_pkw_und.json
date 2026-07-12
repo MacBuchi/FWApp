@@ -24,7 +24,9 @@
     "Welche Erdungsmaßnahmen sind beim Umpumpen von Kraftstoffen Pflicht?",
     "Für welche anderen Flüssigkeiten als Kraftstoff ist die Pumpe geeignet?"
   ],
-  "images": [],
+  "images": [
+    "assets/images/equipment/druckluftmembranpumpe_zum_absaugen_von_kraftstoffen_aus_pkw_und.webp"
+  ],
   "manuals": [],
   "source": "Beladeliste AB-G, Stand 2025-01-29"
 }

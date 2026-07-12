@@ -1,4 +1,5 @@
 /// image_quiz_screen.dart – Image recognition quiz: identify equipment from photo.
+library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/database/database_providers.dart';
@@ -140,9 +141,9 @@ class _ImageQuizState extends ConsumerState<ImageRecognitionQuizScreen> {
                       style: OutlinedButton.styleFrom(
                         backgroundColor: _answered
                             ? opt == q.correctAnswer
-                                ? Colors.green.withOpacity(0.15)
+                                ? Colors.green.withValues(alpha: 0.15)
                                 : opt == _selectedAnswer
-                                    ? Colors.red.withOpacity(0.15)
+                                    ? Colors.red.withValues(alpha: 0.15)
                                     : null
                             : null,
                         side: BorderSide(

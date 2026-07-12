@@ -1,4 +1,5 @@
 /// compartment_repository_impl.dart – Drift-backed CompartmentRepository implementation.
+library;
 import 'package:drift/drift.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/features/compartment/domain/entities/compartment.dart';

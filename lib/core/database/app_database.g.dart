@@ -20,6 +20,16 @@ mixin _$AssignmentDaoMixin on DatabaseAccessor<AppDatabase> {
   $EquipmentAssignmentsTable get equipmentAssignments =>
       attachedDatabase.equipmentAssignments;
 }
+mixin _$InspectionDaoMixin on DatabaseAccessor<AppDatabase> {
+  $EquipmentItemsTable get equipmentItems => attachedDatabase.equipmentItems;
+  $VehiclesTable get vehicles => attachedDatabase.vehicles;
+  $CompartmentsTable get compartments => attachedDatabase.compartments;
+  $EquipmentInstancesTable get equipmentInstances =>
+      attachedDatabase.equipmentInstances;
+  $InspectionSchedulesTable get inspectionSchedules =>
+      attachedDatabase.inspectionSchedules;
+  $InspectionLogTable get inspectionLog => attachedDatabase.inspectionLog;
+}
 mixin _$QuizDaoMixin on DatabaseAccessor<AppDatabase> {
   $VehiclesTable get vehicles => attachedDatabase.vehicles;
   $QuizResultsTable get quizResults => attachedDatabase.quizResults;
@@ -1025,6 +1035,17 @@ class $EquipmentItemsTable extends EquipmentItems
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _shortNameMeta = const VerificationMeta(
+    'shortName',
+  );
+  @override
+  late final GeneratedColumn<String> shortName = GeneratedColumn<String>(
+    'short_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _equipmentFunctionsJsonMeta =
       const VerificationMeta('equipmentFunctionsJson');
   @override
@@ -1121,6 +1142,30 @@ class $EquipmentItemsTable extends EquipmentItems
         requiredDuringInsert: false,
         defaultValue: const Constant('{}'),
       );
+  static const VerificationMeta _trainingQuestionsJsonMeta =
+      const VerificationMeta('trainingQuestionsJson');
+  @override
+  late final GeneratedColumn<String> trainingQuestionsJson =
+      GeneratedColumn<String>(
+        'training_questions_json',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('[]'),
+      );
+  static const VerificationMeta _typicalUseJsonMeta = const VerificationMeta(
+    'typicalUseJson',
+  );
+  @override
+  late final GeneratedColumn<String> typicalUseJson = GeneratedColumn<String>(
+    'typical_use_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
   static const VerificationMeta _updatedAtMeta = const VerificationMeta(
     'updatedAt',
   );
@@ -1137,6 +1182,7 @@ class $EquipmentItemsTable extends EquipmentItems
   List<GeneratedColumn> get $columns => [
     id,
     name,
+    shortName,
     equipmentFunctionsJson,
     deploymentScenariosJson,
     description,
@@ -1145,6 +1191,8 @@ class $EquipmentItemsTable extends EquipmentItems
     libraryEquipmentId,
     isCustom,
     extraAttributesJson,
+    trainingQuestionsJson,
+    typicalUseJson,
     updatedAt,
   ];
   @override
@@ -1169,6 +1217,12 @@ class $EquipmentItemsTable extends EquipmentItems
       );
     } else if (isInserting) {
       context.missing(_nameMeta);
+    }
+    if (data.containsKey('short_name')) {
+      context.handle(
+        _shortNameMeta,
+        shortName.isAcceptableOrUnknown(data['short_name']!, _shortNameMeta),
+      );
     }
     if (data.containsKey('equipment_functions_json')) {
       context.handle(
@@ -1236,6 +1290,24 @@ class $EquipmentItemsTable extends EquipmentItems
         ),
       );
     }
+    if (data.containsKey('training_questions_json')) {
+      context.handle(
+        _trainingQuestionsJsonMeta,
+        trainingQuestionsJson.isAcceptableOrUnknown(
+          data['training_questions_json']!,
+          _trainingQuestionsJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('typical_use_json')) {
+      context.handle(
+        _typicalUseJsonMeta,
+        typicalUseJson.isAcceptableOrUnknown(
+          data['typical_use_json']!,
+          _typicalUseJsonMeta,
+        ),
+      );
+    }
     if (data.containsKey('updated_at')) {
       context.handle(
         _updatedAtMeta,
@@ -1261,6 +1333,10 @@ class $EquipmentItemsTable extends EquipmentItems
             DriftSqlType.string,
             data['${effectivePrefix}name'],
           )!,
+      shortName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}short_name'],
+      ),
       equipmentFunctionsJson:
           attachedDatabase.typeMapping.read(
             DriftSqlType.string,
@@ -1298,6 +1374,16 @@ class $EquipmentItemsTable extends EquipmentItems
             DriftSqlType.string,
             data['${effectivePrefix}extra_attributes_json'],
           )!,
+      trainingQuestionsJson:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}training_questions_json'],
+          )!,
+      typicalUseJson:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}typical_use_json'],
+          )!,
       updatedAt:
           attachedDatabase.typeMapping.read(
             DriftSqlType.dateTime,
@@ -1316,6 +1402,7 @@ class EquipmentItemData extends DataClass
     implements Insertable<EquipmentItemData> {
   final int id;
   final String name;
+  final String? shortName;
   final String equipmentFunctionsJson;
   final String deploymentScenariosJson;
   final String description;
@@ -1324,10 +1411,13 @@ class EquipmentItemData extends DataClass
   final String? libraryEquipmentId;
   final bool isCustom;
   final String extraAttributesJson;
+  final String trainingQuestionsJson;
+  final String typicalUseJson;
   final DateTime updatedAt;
   const EquipmentItemData({
     required this.id,
     required this.name,
+    this.shortName,
     required this.equipmentFunctionsJson,
     required this.deploymentScenariosJson,
     required this.description,
@@ -1336,6 +1426,8 @@ class EquipmentItemData extends DataClass
     this.libraryEquipmentId,
     required this.isCustom,
     required this.extraAttributesJson,
+    required this.trainingQuestionsJson,
+    required this.typicalUseJson,
     required this.updatedAt,
   });
   @override
@@ -1343,6 +1435,9 @@ class EquipmentItemData extends DataClass
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['name'] = Variable<String>(name);
+    if (!nullToAbsent || shortName != null) {
+      map['short_name'] = Variable<String>(shortName);
+    }
     map['equipment_functions_json'] = Variable<String>(equipmentFunctionsJson);
     map['deployment_scenarios_json'] = Variable<String>(
       deploymentScenariosJson,
@@ -1359,6 +1454,8 @@ class EquipmentItemData extends DataClass
     }
     map['is_custom'] = Variable<bool>(isCustom);
     map['extra_attributes_json'] = Variable<String>(extraAttributesJson);
+    map['training_questions_json'] = Variable<String>(trainingQuestionsJson);
+    map['typical_use_json'] = Variable<String>(typicalUseJson);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
   }
@@ -1367,6 +1464,10 @@ class EquipmentItemData extends DataClass
     return EquipmentItemsCompanion(
       id: Value(id),
       name: Value(name),
+      shortName:
+          shortName == null && nullToAbsent
+              ? const Value.absent()
+              : Value(shortName),
       equipmentFunctionsJson: Value(equipmentFunctionsJson),
       deploymentScenariosJson: Value(deploymentScenariosJson),
       description: Value(description),
@@ -1384,6 +1485,8 @@ class EquipmentItemData extends DataClass
               : Value(libraryEquipmentId),
       isCustom: Value(isCustom),
       extraAttributesJson: Value(extraAttributesJson),
+      trainingQuestionsJson: Value(trainingQuestionsJson),
+      typicalUseJson: Value(typicalUseJson),
       updatedAt: Value(updatedAt),
     );
   }
@@ -1396,6 +1499,7 @@ class EquipmentItemData extends DataClass
     return EquipmentItemData(
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
+      shortName: serializer.fromJson<String?>(json['shortName']),
       equipmentFunctionsJson: serializer.fromJson<String>(
         json['equipmentFunctionsJson'],
       ),
@@ -1412,6 +1516,10 @@ class EquipmentItemData extends DataClass
       extraAttributesJson: serializer.fromJson<String>(
         json['extraAttributesJson'],
       ),
+      trainingQuestionsJson: serializer.fromJson<String>(
+        json['trainingQuestionsJson'],
+      ),
+      typicalUseJson: serializer.fromJson<String>(json['typicalUseJson']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
   }
@@ -1421,6 +1529,7 @@ class EquipmentItemData extends DataClass
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
+      'shortName': serializer.toJson<String?>(shortName),
       'equipmentFunctionsJson': serializer.toJson<String>(
         equipmentFunctionsJson,
       ),
@@ -1433,6 +1542,8 @@ class EquipmentItemData extends DataClass
       'libraryEquipmentId': serializer.toJson<String?>(libraryEquipmentId),
       'isCustom': serializer.toJson<bool>(isCustom),
       'extraAttributesJson': serializer.toJson<String>(extraAttributesJson),
+      'trainingQuestionsJson': serializer.toJson<String>(trainingQuestionsJson),
+      'typicalUseJson': serializer.toJson<String>(typicalUseJson),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
   }
@@ -1440,6 +1551,7 @@ class EquipmentItemData extends DataClass
   EquipmentItemData copyWith({
     int? id,
     String? name,
+    Value<String?> shortName = const Value.absent(),
     String? equipmentFunctionsJson,
     String? deploymentScenariosJson,
     String? description,
@@ -1448,10 +1560,13 @@ class EquipmentItemData extends DataClass
     Value<String?> libraryEquipmentId = const Value.absent(),
     bool? isCustom,
     String? extraAttributesJson,
+    String? trainingQuestionsJson,
+    String? typicalUseJson,
     DateTime? updatedAt,
   }) => EquipmentItemData(
     id: id ?? this.id,
     name: name ?? this.name,
+    shortName: shortName.present ? shortName.value : this.shortName,
     equipmentFunctionsJson:
         equipmentFunctionsJson ?? this.equipmentFunctionsJson,
     deploymentScenariosJson:
@@ -1465,12 +1580,15 @@ class EquipmentItemData extends DataClass
             : this.libraryEquipmentId,
     isCustom: isCustom ?? this.isCustom,
     extraAttributesJson: extraAttributesJson ?? this.extraAttributesJson,
+    trainingQuestionsJson: trainingQuestionsJson ?? this.trainingQuestionsJson,
+    typicalUseJson: typicalUseJson ?? this.typicalUseJson,
     updatedAt: updatedAt ?? this.updatedAt,
   );
   EquipmentItemData copyWithCompanion(EquipmentItemsCompanion data) {
     return EquipmentItemData(
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
+      shortName: data.shortName.present ? data.shortName.value : this.shortName,
       equipmentFunctionsJson:
           data.equipmentFunctionsJson.present
               ? data.equipmentFunctionsJson.value
@@ -1493,6 +1611,14 @@ class EquipmentItemData extends DataClass
           data.extraAttributesJson.present
               ? data.extraAttributesJson.value
               : this.extraAttributesJson,
+      trainingQuestionsJson:
+          data.trainingQuestionsJson.present
+              ? data.trainingQuestionsJson.value
+              : this.trainingQuestionsJson,
+      typicalUseJson:
+          data.typicalUseJson.present
+              ? data.typicalUseJson.value
+              : this.typicalUseJson,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
   }
@@ -1502,6 +1628,7 @@ class EquipmentItemData extends DataClass
     return (StringBuffer('EquipmentItemData(')
           ..write('id: $id, ')
           ..write('name: $name, ')
+          ..write('shortName: $shortName, ')
           ..write('equipmentFunctionsJson: $equipmentFunctionsJson, ')
           ..write('deploymentScenariosJson: $deploymentScenariosJson, ')
           ..write('description: $description, ')
@@ -1510,6 +1637,8 @@ class EquipmentItemData extends DataClass
           ..write('libraryEquipmentId: $libraryEquipmentId, ')
           ..write('isCustom: $isCustom, ')
           ..write('extraAttributesJson: $extraAttributesJson, ')
+          ..write('trainingQuestionsJson: $trainingQuestionsJson, ')
+          ..write('typicalUseJson: $typicalUseJson, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
         .toString();
@@ -1519,6 +1648,7 @@ class EquipmentItemData extends DataClass
   int get hashCode => Object.hash(
     id,
     name,
+    shortName,
     equipmentFunctionsJson,
     deploymentScenariosJson,
     description,
@@ -1527,6 +1657,8 @@ class EquipmentItemData extends DataClass
     libraryEquipmentId,
     isCustom,
     extraAttributesJson,
+    trainingQuestionsJson,
+    typicalUseJson,
     updatedAt,
   );
   @override
@@ -1535,6 +1667,7 @@ class EquipmentItemData extends DataClass
       (other is EquipmentItemData &&
           other.id == this.id &&
           other.name == this.name &&
+          other.shortName == this.shortName &&
           other.equipmentFunctionsJson == this.equipmentFunctionsJson &&
           other.deploymentScenariosJson == this.deploymentScenariosJson &&
           other.description == this.description &&
@@ -1543,12 +1676,15 @@ class EquipmentItemData extends DataClass
           other.libraryEquipmentId == this.libraryEquipmentId &&
           other.isCustom == this.isCustom &&
           other.extraAttributesJson == this.extraAttributesJson &&
+          other.trainingQuestionsJson == this.trainingQuestionsJson &&
+          other.typicalUseJson == this.typicalUseJson &&
           other.updatedAt == this.updatedAt);
 }
 
 class EquipmentItemsCompanion extends UpdateCompanion<EquipmentItemData> {
   final Value<int> id;
   final Value<String> name;
+  final Value<String?> shortName;
   final Value<String> equipmentFunctionsJson;
   final Value<String> deploymentScenariosJson;
   final Value<String> description;
@@ -1557,10 +1693,13 @@ class EquipmentItemsCompanion extends UpdateCompanion<EquipmentItemData> {
   final Value<String?> libraryEquipmentId;
   final Value<bool> isCustom;
   final Value<String> extraAttributesJson;
+  final Value<String> trainingQuestionsJson;
+  final Value<String> typicalUseJson;
   final Value<DateTime> updatedAt;
   const EquipmentItemsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
+    this.shortName = const Value.absent(),
     this.equipmentFunctionsJson = const Value.absent(),
     this.deploymentScenariosJson = const Value.absent(),
     this.description = const Value.absent(),
@@ -1569,11 +1708,14 @@ class EquipmentItemsCompanion extends UpdateCompanion<EquipmentItemData> {
     this.libraryEquipmentId = const Value.absent(),
     this.isCustom = const Value.absent(),
     this.extraAttributesJson = const Value.absent(),
+    this.trainingQuestionsJson = const Value.absent(),
+    this.typicalUseJson = const Value.absent(),
     this.updatedAt = const Value.absent(),
   });
   EquipmentItemsCompanion.insert({
     this.id = const Value.absent(),
     required String name,
+    this.shortName = const Value.absent(),
     this.equipmentFunctionsJson = const Value.absent(),
     this.deploymentScenariosJson = const Value.absent(),
     this.description = const Value.absent(),
@@ -1582,11 +1724,14 @@ class EquipmentItemsCompanion extends UpdateCompanion<EquipmentItemData> {
     this.libraryEquipmentId = const Value.absent(),
     this.isCustom = const Value.absent(),
     this.extraAttributesJson = const Value.absent(),
+    this.trainingQuestionsJson = const Value.absent(),
+    this.typicalUseJson = const Value.absent(),
     this.updatedAt = const Value.absent(),
   }) : name = Value(name);
   static Insertable<EquipmentItemData> custom({
     Expression<int>? id,
     Expression<String>? name,
+    Expression<String>? shortName,
     Expression<String>? equipmentFunctionsJson,
     Expression<String>? deploymentScenariosJson,
     Expression<String>? description,
@@ -1595,11 +1740,14 @@ class EquipmentItemsCompanion extends UpdateCompanion<EquipmentItemData> {
     Expression<String>? libraryEquipmentId,
     Expression<bool>? isCustom,
     Expression<String>? extraAttributesJson,
+    Expression<String>? trainingQuestionsJson,
+    Expression<String>? typicalUseJson,
     Expression<DateTime>? updatedAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
+      if (shortName != null) 'short_name': shortName,
       if (equipmentFunctionsJson != null)
         'equipment_functions_json': equipmentFunctionsJson,
       if (deploymentScenariosJson != null)
@@ -1612,6 +1760,9 @@ class EquipmentItemsCompanion extends UpdateCompanion<EquipmentItemData> {
       if (isCustom != null) 'is_custom': isCustom,
       if (extraAttributesJson != null)
         'extra_attributes_json': extraAttributesJson,
+      if (trainingQuestionsJson != null)
+        'training_questions_json': trainingQuestionsJson,
+      if (typicalUseJson != null) 'typical_use_json': typicalUseJson,
       if (updatedAt != null) 'updated_at': updatedAt,
     });
   }
@@ -1619,6 +1770,7 @@ class EquipmentItemsCompanion extends UpdateCompanion<EquipmentItemData> {
   EquipmentItemsCompanion copyWith({
     Value<int>? id,
     Value<String>? name,
+    Value<String?>? shortName,
     Value<String>? equipmentFunctionsJson,
     Value<String>? deploymentScenariosJson,
     Value<String>? description,
@@ -1627,11 +1779,14 @@ class EquipmentItemsCompanion extends UpdateCompanion<EquipmentItemData> {
     Value<String?>? libraryEquipmentId,
     Value<bool>? isCustom,
     Value<String>? extraAttributesJson,
+    Value<String>? trainingQuestionsJson,
+    Value<String>? typicalUseJson,
     Value<DateTime>? updatedAt,
   }) {
     return EquipmentItemsCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
+      shortName: shortName ?? this.shortName,
       equipmentFunctionsJson:
           equipmentFunctionsJson ?? this.equipmentFunctionsJson,
       deploymentScenariosJson:
@@ -1642,6 +1797,9 @@ class EquipmentItemsCompanion extends UpdateCompanion<EquipmentItemData> {
       libraryEquipmentId: libraryEquipmentId ?? this.libraryEquipmentId,
       isCustom: isCustom ?? this.isCustom,
       extraAttributesJson: extraAttributesJson ?? this.extraAttributesJson,
+      trainingQuestionsJson:
+          trainingQuestionsJson ?? this.trainingQuestionsJson,
+      typicalUseJson: typicalUseJson ?? this.typicalUseJson,
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
@@ -1654,6 +1812,9 @@ class EquipmentItemsCompanion extends UpdateCompanion<EquipmentItemData> {
     }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
+    }
+    if (shortName.present) {
+      map['short_name'] = Variable<String>(shortName.value);
     }
     if (equipmentFunctionsJson.present) {
       map['equipment_functions_json'] = Variable<String>(
@@ -1685,6 +1846,14 @@ class EquipmentItemsCompanion extends UpdateCompanion<EquipmentItemData> {
         extraAttributesJson.value,
       );
     }
+    if (trainingQuestionsJson.present) {
+      map['training_questions_json'] = Variable<String>(
+        trainingQuestionsJson.value,
+      );
+    }
+    if (typicalUseJson.present) {
+      map['typical_use_json'] = Variable<String>(typicalUseJson.value);
+    }
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
@@ -1696,6 +1865,7 @@ class EquipmentItemsCompanion extends UpdateCompanion<EquipmentItemData> {
     return (StringBuffer('EquipmentItemsCompanion(')
           ..write('id: $id, ')
           ..write('name: $name, ')
+          ..write('shortName: $shortName, ')
           ..write('equipmentFunctionsJson: $equipmentFunctionsJson, ')
           ..write('deploymentScenariosJson: $deploymentScenariosJson, ')
           ..write('description: $description, ')
@@ -1704,6 +1874,8 @@ class EquipmentItemsCompanion extends UpdateCompanion<EquipmentItemData> {
           ..write('libraryEquipmentId: $libraryEquipmentId, ')
           ..write('isCustom: $isCustom, ')
           ..write('extraAttributesJson: $extraAttributesJson, ')
+          ..write('trainingQuestionsJson: $trainingQuestionsJson, ')
+          ..write('typicalUseJson: $typicalUseJson, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
         .toString();
@@ -2484,6 +2656,2078 @@ class QuizResultsCompanion extends UpdateCompanion<QuizResultData> {
   }
 }
 
+class $EquipmentInstancesTable extends EquipmentInstances
+    with TableInfo<$EquipmentInstancesTable, EquipmentInstanceData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $EquipmentInstancesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _equipmentIdMeta = const VerificationMeta(
+    'equipmentId',
+  );
+  @override
+  late final GeneratedColumn<int> equipmentId = GeneratedColumn<int>(
+    'equipment_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES equipment_items (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _vehicleIdMeta = const VerificationMeta(
+    'vehicleId',
+  );
+  @override
+  late final GeneratedColumn<int> vehicleId = GeneratedColumn<int>(
+    'vehicle_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES vehicles (id) ON DELETE SET NULL',
+    ),
+  );
+  static const VerificationMeta _compartmentIdMeta = const VerificationMeta(
+    'compartmentId',
+  );
+  @override
+  late final GeneratedColumn<int> compartmentId = GeneratedColumn<int>(
+    'compartment_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES compartments (id) ON DELETE SET NULL',
+    ),
+  );
+  static const VerificationMeta _identifierMeta = const VerificationMeta(
+    'identifier',
+  );
+  @override
+  late final GeneratedColumn<String> identifier = GeneratedColumn<String>(
+    'identifier',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _isActiveMeta = const VerificationMeta(
+    'isActive',
+  );
+  @override
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+    'is_active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_active" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    equipmentId,
+    vehicleId,
+    compartmentId,
+    identifier,
+    notes,
+    isActive,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'equipment_instances';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<EquipmentInstanceData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('equipment_id')) {
+      context.handle(
+        _equipmentIdMeta,
+        equipmentId.isAcceptableOrUnknown(
+          data['equipment_id']!,
+          _equipmentIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_equipmentIdMeta);
+    }
+    if (data.containsKey('vehicle_id')) {
+      context.handle(
+        _vehicleIdMeta,
+        vehicleId.isAcceptableOrUnknown(data['vehicle_id']!, _vehicleIdMeta),
+      );
+    }
+    if (data.containsKey('compartment_id')) {
+      context.handle(
+        _compartmentIdMeta,
+        compartmentId.isAcceptableOrUnknown(
+          data['compartment_id']!,
+          _compartmentIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('identifier')) {
+      context.handle(
+        _identifierMeta,
+        identifier.isAcceptableOrUnknown(data['identifier']!, _identifierMeta),
+      );
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('is_active')) {
+      context.handle(
+        _isActiveMeta,
+        isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  EquipmentInstanceData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return EquipmentInstanceData(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}id'],
+          )!,
+      equipmentId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}equipment_id'],
+          )!,
+      vehicleId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}vehicle_id'],
+      ),
+      compartmentId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}compartment_id'],
+      ),
+      identifier: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}identifier'],
+      ),
+      notes:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}notes'],
+          )!,
+      isActive:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}is_active'],
+          )!,
+      updatedAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}updated_at'],
+          )!,
+    );
+  }
+
+  @override
+  $EquipmentInstancesTable createAlias(String alias) {
+    return $EquipmentInstancesTable(attachedDatabase, alias);
+  }
+}
+
+class EquipmentInstanceData extends DataClass
+    implements Insertable<EquipmentInstanceData> {
+  final int id;
+  final int equipmentId;
+  final int? vehicleId;
+  final int? compartmentId;
+  final String? identifier;
+  final String notes;
+  final bool isActive;
+  final DateTime updatedAt;
+  const EquipmentInstanceData({
+    required this.id,
+    required this.equipmentId,
+    this.vehicleId,
+    this.compartmentId,
+    this.identifier,
+    required this.notes,
+    required this.isActive,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['equipment_id'] = Variable<int>(equipmentId);
+    if (!nullToAbsent || vehicleId != null) {
+      map['vehicle_id'] = Variable<int>(vehicleId);
+    }
+    if (!nullToAbsent || compartmentId != null) {
+      map['compartment_id'] = Variable<int>(compartmentId);
+    }
+    if (!nullToAbsent || identifier != null) {
+      map['identifier'] = Variable<String>(identifier);
+    }
+    map['notes'] = Variable<String>(notes);
+    map['is_active'] = Variable<bool>(isActive);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  EquipmentInstancesCompanion toCompanion(bool nullToAbsent) {
+    return EquipmentInstancesCompanion(
+      id: Value(id),
+      equipmentId: Value(equipmentId),
+      vehicleId:
+          vehicleId == null && nullToAbsent
+              ? const Value.absent()
+              : Value(vehicleId),
+      compartmentId:
+          compartmentId == null && nullToAbsent
+              ? const Value.absent()
+              : Value(compartmentId),
+      identifier:
+          identifier == null && nullToAbsent
+              ? const Value.absent()
+              : Value(identifier),
+      notes: Value(notes),
+      isActive: Value(isActive),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory EquipmentInstanceData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return EquipmentInstanceData(
+      id: serializer.fromJson<int>(json['id']),
+      equipmentId: serializer.fromJson<int>(json['equipmentId']),
+      vehicleId: serializer.fromJson<int?>(json['vehicleId']),
+      compartmentId: serializer.fromJson<int?>(json['compartmentId']),
+      identifier: serializer.fromJson<String?>(json['identifier']),
+      notes: serializer.fromJson<String>(json['notes']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'equipmentId': serializer.toJson<int>(equipmentId),
+      'vehicleId': serializer.toJson<int?>(vehicleId),
+      'compartmentId': serializer.toJson<int?>(compartmentId),
+      'identifier': serializer.toJson<String?>(identifier),
+      'notes': serializer.toJson<String>(notes),
+      'isActive': serializer.toJson<bool>(isActive),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  EquipmentInstanceData copyWith({
+    int? id,
+    int? equipmentId,
+    Value<int?> vehicleId = const Value.absent(),
+    Value<int?> compartmentId = const Value.absent(),
+    Value<String?> identifier = const Value.absent(),
+    String? notes,
+    bool? isActive,
+    DateTime? updatedAt,
+  }) => EquipmentInstanceData(
+    id: id ?? this.id,
+    equipmentId: equipmentId ?? this.equipmentId,
+    vehicleId: vehicleId.present ? vehicleId.value : this.vehicleId,
+    compartmentId:
+        compartmentId.present ? compartmentId.value : this.compartmentId,
+    identifier: identifier.present ? identifier.value : this.identifier,
+    notes: notes ?? this.notes,
+    isActive: isActive ?? this.isActive,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  EquipmentInstanceData copyWithCompanion(EquipmentInstancesCompanion data) {
+    return EquipmentInstanceData(
+      id: data.id.present ? data.id.value : this.id,
+      equipmentId:
+          data.equipmentId.present ? data.equipmentId.value : this.equipmentId,
+      vehicleId: data.vehicleId.present ? data.vehicleId.value : this.vehicleId,
+      compartmentId:
+          data.compartmentId.present
+              ? data.compartmentId.value
+              : this.compartmentId,
+      identifier:
+          data.identifier.present ? data.identifier.value : this.identifier,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EquipmentInstanceData(')
+          ..write('id: $id, ')
+          ..write('equipmentId: $equipmentId, ')
+          ..write('vehicleId: $vehicleId, ')
+          ..write('compartmentId: $compartmentId, ')
+          ..write('identifier: $identifier, ')
+          ..write('notes: $notes, ')
+          ..write('isActive: $isActive, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    equipmentId,
+    vehicleId,
+    compartmentId,
+    identifier,
+    notes,
+    isActive,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is EquipmentInstanceData &&
+          other.id == this.id &&
+          other.equipmentId == this.equipmentId &&
+          other.vehicleId == this.vehicleId &&
+          other.compartmentId == this.compartmentId &&
+          other.identifier == this.identifier &&
+          other.notes == this.notes &&
+          other.isActive == this.isActive &&
+          other.updatedAt == this.updatedAt);
+}
+
+class EquipmentInstancesCompanion
+    extends UpdateCompanion<EquipmentInstanceData> {
+  final Value<int> id;
+  final Value<int> equipmentId;
+  final Value<int?> vehicleId;
+  final Value<int?> compartmentId;
+  final Value<String?> identifier;
+  final Value<String> notes;
+  final Value<bool> isActive;
+  final Value<DateTime> updatedAt;
+  const EquipmentInstancesCompanion({
+    this.id = const Value.absent(),
+    this.equipmentId = const Value.absent(),
+    this.vehicleId = const Value.absent(),
+    this.compartmentId = const Value.absent(),
+    this.identifier = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  EquipmentInstancesCompanion.insert({
+    this.id = const Value.absent(),
+    required int equipmentId,
+    this.vehicleId = const Value.absent(),
+    this.compartmentId = const Value.absent(),
+    this.identifier = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  }) : equipmentId = Value(equipmentId);
+  static Insertable<EquipmentInstanceData> custom({
+    Expression<int>? id,
+    Expression<int>? equipmentId,
+    Expression<int>? vehicleId,
+    Expression<int>? compartmentId,
+    Expression<String>? identifier,
+    Expression<String>? notes,
+    Expression<bool>? isActive,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (equipmentId != null) 'equipment_id': equipmentId,
+      if (vehicleId != null) 'vehicle_id': vehicleId,
+      if (compartmentId != null) 'compartment_id': compartmentId,
+      if (identifier != null) 'identifier': identifier,
+      if (notes != null) 'notes': notes,
+      if (isActive != null) 'is_active': isActive,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  EquipmentInstancesCompanion copyWith({
+    Value<int>? id,
+    Value<int>? equipmentId,
+    Value<int?>? vehicleId,
+    Value<int?>? compartmentId,
+    Value<String?>? identifier,
+    Value<String>? notes,
+    Value<bool>? isActive,
+    Value<DateTime>? updatedAt,
+  }) {
+    return EquipmentInstancesCompanion(
+      id: id ?? this.id,
+      equipmentId: equipmentId ?? this.equipmentId,
+      vehicleId: vehicleId ?? this.vehicleId,
+      compartmentId: compartmentId ?? this.compartmentId,
+      identifier: identifier ?? this.identifier,
+      notes: notes ?? this.notes,
+      isActive: isActive ?? this.isActive,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (equipmentId.present) {
+      map['equipment_id'] = Variable<int>(equipmentId.value);
+    }
+    if (vehicleId.present) {
+      map['vehicle_id'] = Variable<int>(vehicleId.value);
+    }
+    if (compartmentId.present) {
+      map['compartment_id'] = Variable<int>(compartmentId.value);
+    }
+    if (identifier.present) {
+      map['identifier'] = Variable<String>(identifier.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EquipmentInstancesCompanion(')
+          ..write('id: $id, ')
+          ..write('equipmentId: $equipmentId, ')
+          ..write('vehicleId: $vehicleId, ')
+          ..write('compartmentId: $compartmentId, ')
+          ..write('identifier: $identifier, ')
+          ..write('notes: $notes, ')
+          ..write('isActive: $isActive, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $InspectionSchedulesTable extends InspectionSchedules
+    with TableInfo<$InspectionSchedulesTable, InspectionScheduleData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $InspectionSchedulesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _instanceIdMeta = const VerificationMeta(
+    'instanceId',
+  );
+  @override
+  late final GeneratedColumn<int> instanceId = GeneratedColumn<int>(
+    'instance_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES equipment_instances (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+    'kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _intervalMonthsMeta = const VerificationMeta(
+    'intervalMonths',
+  );
+  @override
+  late final GeneratedColumn<int> intervalMonths = GeneratedColumn<int>(
+    'interval_months',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _lastDoneAtMeta = const VerificationMeta(
+    'lastDoneAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastDoneAt = GeneratedColumn<DateTime>(
+    'last_done_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _dueAtMeta = const VerificationMeta('dueAt');
+  @override
+  late final GeneratedColumn<DateTime> dueAt = GeneratedColumn<DateTime>(
+    'due_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    instanceId,
+    kind,
+    title,
+    intervalMonths,
+    lastDoneAt,
+    dueAt,
+    notes,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'inspection_schedules';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<InspectionScheduleData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('instance_id')) {
+      context.handle(
+        _instanceIdMeta,
+        instanceId.isAcceptableOrUnknown(data['instance_id']!, _instanceIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_instanceIdMeta);
+    }
+    if (data.containsKey('kind')) {
+      context.handle(
+        _kindMeta,
+        kind.isAcceptableOrUnknown(data['kind']!, _kindMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_kindMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('interval_months')) {
+      context.handle(
+        _intervalMonthsMeta,
+        intervalMonths.isAcceptableOrUnknown(
+          data['interval_months']!,
+          _intervalMonthsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('last_done_at')) {
+      context.handle(
+        _lastDoneAtMeta,
+        lastDoneAt.isAcceptableOrUnknown(
+          data['last_done_at']!,
+          _lastDoneAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('due_at')) {
+      context.handle(
+        _dueAtMeta,
+        dueAt.isAcceptableOrUnknown(data['due_at']!, _dueAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dueAtMeta);
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  InspectionScheduleData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return InspectionScheduleData(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}id'],
+          )!,
+      instanceId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}instance_id'],
+          )!,
+      kind:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}kind'],
+          )!,
+      title:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}title'],
+          )!,
+      intervalMonths: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}interval_months'],
+      ),
+      lastDoneAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_done_at'],
+      ),
+      dueAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}due_at'],
+          )!,
+      notes:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}notes'],
+          )!,
+      updatedAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}updated_at'],
+          )!,
+    );
+  }
+
+  @override
+  $InspectionSchedulesTable createAlias(String alias) {
+    return $InspectionSchedulesTable(attachedDatabase, alias);
+  }
+}
+
+class InspectionScheduleData extends DataClass
+    implements Insertable<InspectionScheduleData> {
+  final int id;
+  final int instanceId;
+  final String kind;
+  final String title;
+  final int? intervalMonths;
+  final DateTime? lastDoneAt;
+  final DateTime dueAt;
+  final String notes;
+  final DateTime updatedAt;
+  const InspectionScheduleData({
+    required this.id,
+    required this.instanceId,
+    required this.kind,
+    required this.title,
+    this.intervalMonths,
+    this.lastDoneAt,
+    required this.dueAt,
+    required this.notes,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['instance_id'] = Variable<int>(instanceId);
+    map['kind'] = Variable<String>(kind);
+    map['title'] = Variable<String>(title);
+    if (!nullToAbsent || intervalMonths != null) {
+      map['interval_months'] = Variable<int>(intervalMonths);
+    }
+    if (!nullToAbsent || lastDoneAt != null) {
+      map['last_done_at'] = Variable<DateTime>(lastDoneAt);
+    }
+    map['due_at'] = Variable<DateTime>(dueAt);
+    map['notes'] = Variable<String>(notes);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  InspectionSchedulesCompanion toCompanion(bool nullToAbsent) {
+    return InspectionSchedulesCompanion(
+      id: Value(id),
+      instanceId: Value(instanceId),
+      kind: Value(kind),
+      title: Value(title),
+      intervalMonths:
+          intervalMonths == null && nullToAbsent
+              ? const Value.absent()
+              : Value(intervalMonths),
+      lastDoneAt:
+          lastDoneAt == null && nullToAbsent
+              ? const Value.absent()
+              : Value(lastDoneAt),
+      dueAt: Value(dueAt),
+      notes: Value(notes),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory InspectionScheduleData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return InspectionScheduleData(
+      id: serializer.fromJson<int>(json['id']),
+      instanceId: serializer.fromJson<int>(json['instanceId']),
+      kind: serializer.fromJson<String>(json['kind']),
+      title: serializer.fromJson<String>(json['title']),
+      intervalMonths: serializer.fromJson<int?>(json['intervalMonths']),
+      lastDoneAt: serializer.fromJson<DateTime?>(json['lastDoneAt']),
+      dueAt: serializer.fromJson<DateTime>(json['dueAt']),
+      notes: serializer.fromJson<String>(json['notes']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'instanceId': serializer.toJson<int>(instanceId),
+      'kind': serializer.toJson<String>(kind),
+      'title': serializer.toJson<String>(title),
+      'intervalMonths': serializer.toJson<int?>(intervalMonths),
+      'lastDoneAt': serializer.toJson<DateTime?>(lastDoneAt),
+      'dueAt': serializer.toJson<DateTime>(dueAt),
+      'notes': serializer.toJson<String>(notes),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  InspectionScheduleData copyWith({
+    int? id,
+    int? instanceId,
+    String? kind,
+    String? title,
+    Value<int?> intervalMonths = const Value.absent(),
+    Value<DateTime?> lastDoneAt = const Value.absent(),
+    DateTime? dueAt,
+    String? notes,
+    DateTime? updatedAt,
+  }) => InspectionScheduleData(
+    id: id ?? this.id,
+    instanceId: instanceId ?? this.instanceId,
+    kind: kind ?? this.kind,
+    title: title ?? this.title,
+    intervalMonths:
+        intervalMonths.present ? intervalMonths.value : this.intervalMonths,
+    lastDoneAt: lastDoneAt.present ? lastDoneAt.value : this.lastDoneAt,
+    dueAt: dueAt ?? this.dueAt,
+    notes: notes ?? this.notes,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  InspectionScheduleData copyWithCompanion(InspectionSchedulesCompanion data) {
+    return InspectionScheduleData(
+      id: data.id.present ? data.id.value : this.id,
+      instanceId:
+          data.instanceId.present ? data.instanceId.value : this.instanceId,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      title: data.title.present ? data.title.value : this.title,
+      intervalMonths:
+          data.intervalMonths.present
+              ? data.intervalMonths.value
+              : this.intervalMonths,
+      lastDoneAt:
+          data.lastDoneAt.present ? data.lastDoneAt.value : this.lastDoneAt,
+      dueAt: data.dueAt.present ? data.dueAt.value : this.dueAt,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('InspectionScheduleData(')
+          ..write('id: $id, ')
+          ..write('instanceId: $instanceId, ')
+          ..write('kind: $kind, ')
+          ..write('title: $title, ')
+          ..write('intervalMonths: $intervalMonths, ')
+          ..write('lastDoneAt: $lastDoneAt, ')
+          ..write('dueAt: $dueAt, ')
+          ..write('notes: $notes, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    instanceId,
+    kind,
+    title,
+    intervalMonths,
+    lastDoneAt,
+    dueAt,
+    notes,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is InspectionScheduleData &&
+          other.id == this.id &&
+          other.instanceId == this.instanceId &&
+          other.kind == this.kind &&
+          other.title == this.title &&
+          other.intervalMonths == this.intervalMonths &&
+          other.lastDoneAt == this.lastDoneAt &&
+          other.dueAt == this.dueAt &&
+          other.notes == this.notes &&
+          other.updatedAt == this.updatedAt);
+}
+
+class InspectionSchedulesCompanion
+    extends UpdateCompanion<InspectionScheduleData> {
+  final Value<int> id;
+  final Value<int> instanceId;
+  final Value<String> kind;
+  final Value<String> title;
+  final Value<int?> intervalMonths;
+  final Value<DateTime?> lastDoneAt;
+  final Value<DateTime> dueAt;
+  final Value<String> notes;
+  final Value<DateTime> updatedAt;
+  const InspectionSchedulesCompanion({
+    this.id = const Value.absent(),
+    this.instanceId = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.title = const Value.absent(),
+    this.intervalMonths = const Value.absent(),
+    this.lastDoneAt = const Value.absent(),
+    this.dueAt = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  InspectionSchedulesCompanion.insert({
+    this.id = const Value.absent(),
+    required int instanceId,
+    required String kind,
+    required String title,
+    this.intervalMonths = const Value.absent(),
+    this.lastDoneAt = const Value.absent(),
+    required DateTime dueAt,
+    this.notes = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  }) : instanceId = Value(instanceId),
+       kind = Value(kind),
+       title = Value(title),
+       dueAt = Value(dueAt);
+  static Insertable<InspectionScheduleData> custom({
+    Expression<int>? id,
+    Expression<int>? instanceId,
+    Expression<String>? kind,
+    Expression<String>? title,
+    Expression<int>? intervalMonths,
+    Expression<DateTime>? lastDoneAt,
+    Expression<DateTime>? dueAt,
+    Expression<String>? notes,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (instanceId != null) 'instance_id': instanceId,
+      if (kind != null) 'kind': kind,
+      if (title != null) 'title': title,
+      if (intervalMonths != null) 'interval_months': intervalMonths,
+      if (lastDoneAt != null) 'last_done_at': lastDoneAt,
+      if (dueAt != null) 'due_at': dueAt,
+      if (notes != null) 'notes': notes,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  InspectionSchedulesCompanion copyWith({
+    Value<int>? id,
+    Value<int>? instanceId,
+    Value<String>? kind,
+    Value<String>? title,
+    Value<int?>? intervalMonths,
+    Value<DateTime?>? lastDoneAt,
+    Value<DateTime>? dueAt,
+    Value<String>? notes,
+    Value<DateTime>? updatedAt,
+  }) {
+    return InspectionSchedulesCompanion(
+      id: id ?? this.id,
+      instanceId: instanceId ?? this.instanceId,
+      kind: kind ?? this.kind,
+      title: title ?? this.title,
+      intervalMonths: intervalMonths ?? this.intervalMonths,
+      lastDoneAt: lastDoneAt ?? this.lastDoneAt,
+      dueAt: dueAt ?? this.dueAt,
+      notes: notes ?? this.notes,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (instanceId.present) {
+      map['instance_id'] = Variable<int>(instanceId.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (intervalMonths.present) {
+      map['interval_months'] = Variable<int>(intervalMonths.value);
+    }
+    if (lastDoneAt.present) {
+      map['last_done_at'] = Variable<DateTime>(lastDoneAt.value);
+    }
+    if (dueAt.present) {
+      map['due_at'] = Variable<DateTime>(dueAt.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('InspectionSchedulesCompanion(')
+          ..write('id: $id, ')
+          ..write('instanceId: $instanceId, ')
+          ..write('kind: $kind, ')
+          ..write('title: $title, ')
+          ..write('intervalMonths: $intervalMonths, ')
+          ..write('lastDoneAt: $lastDoneAt, ')
+          ..write('dueAt: $dueAt, ')
+          ..write('notes: $notes, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $InspectionLogTable extends InspectionLog
+    with TableInfo<$InspectionLogTable, InspectionLogData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $InspectionLogTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _scheduleIdMeta = const VerificationMeta(
+    'scheduleId',
+  );
+  @override
+  late final GeneratedColumn<int> scheduleId = GeneratedColumn<int>(
+    'schedule_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES inspection_schedules (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _doneAtMeta = const VerificationMeta('doneAt');
+  @override
+  late final GeneratedColumn<DateTime> doneAt = GeneratedColumn<DateTime>(
+    'done_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _doneByMeta = const VerificationMeta('doneBy');
+  @override
+  late final GeneratedColumn<String> doneBy = GeneratedColumn<String>(
+    'done_by',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, scheduleId, doneAt, doneBy, note];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'inspection_log';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<InspectionLogData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('schedule_id')) {
+      context.handle(
+        _scheduleIdMeta,
+        scheduleId.isAcceptableOrUnknown(data['schedule_id']!, _scheduleIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_scheduleIdMeta);
+    }
+    if (data.containsKey('done_at')) {
+      context.handle(
+        _doneAtMeta,
+        doneAt.isAcceptableOrUnknown(data['done_at']!, _doneAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_doneAtMeta);
+    }
+    if (data.containsKey('done_by')) {
+      context.handle(
+        _doneByMeta,
+        doneBy.isAcceptableOrUnknown(data['done_by']!, _doneByMeta),
+      );
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  InspectionLogData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return InspectionLogData(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}id'],
+          )!,
+      scheduleId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}schedule_id'],
+          )!,
+      doneAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}done_at'],
+          )!,
+      doneBy:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}done_by'],
+          )!,
+      note:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}note'],
+          )!,
+    );
+  }
+
+  @override
+  $InspectionLogTable createAlias(String alias) {
+    return $InspectionLogTable(attachedDatabase, alias);
+  }
+}
+
+class InspectionLogData extends DataClass
+    implements Insertable<InspectionLogData> {
+  final int id;
+  final int scheduleId;
+  final DateTime doneAt;
+  final String doneBy;
+  final String note;
+  const InspectionLogData({
+    required this.id,
+    required this.scheduleId,
+    required this.doneAt,
+    required this.doneBy,
+    required this.note,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['schedule_id'] = Variable<int>(scheduleId);
+    map['done_at'] = Variable<DateTime>(doneAt);
+    map['done_by'] = Variable<String>(doneBy);
+    map['note'] = Variable<String>(note);
+    return map;
+  }
+
+  InspectionLogCompanion toCompanion(bool nullToAbsent) {
+    return InspectionLogCompanion(
+      id: Value(id),
+      scheduleId: Value(scheduleId),
+      doneAt: Value(doneAt),
+      doneBy: Value(doneBy),
+      note: Value(note),
+    );
+  }
+
+  factory InspectionLogData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return InspectionLogData(
+      id: serializer.fromJson<int>(json['id']),
+      scheduleId: serializer.fromJson<int>(json['scheduleId']),
+      doneAt: serializer.fromJson<DateTime>(json['doneAt']),
+      doneBy: serializer.fromJson<String>(json['doneBy']),
+      note: serializer.fromJson<String>(json['note']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'scheduleId': serializer.toJson<int>(scheduleId),
+      'doneAt': serializer.toJson<DateTime>(doneAt),
+      'doneBy': serializer.toJson<String>(doneBy),
+      'note': serializer.toJson<String>(note),
+    };
+  }
+
+  InspectionLogData copyWith({
+    int? id,
+    int? scheduleId,
+    DateTime? doneAt,
+    String? doneBy,
+    String? note,
+  }) => InspectionLogData(
+    id: id ?? this.id,
+    scheduleId: scheduleId ?? this.scheduleId,
+    doneAt: doneAt ?? this.doneAt,
+    doneBy: doneBy ?? this.doneBy,
+    note: note ?? this.note,
+  );
+  InspectionLogData copyWithCompanion(InspectionLogCompanion data) {
+    return InspectionLogData(
+      id: data.id.present ? data.id.value : this.id,
+      scheduleId:
+          data.scheduleId.present ? data.scheduleId.value : this.scheduleId,
+      doneAt: data.doneAt.present ? data.doneAt.value : this.doneAt,
+      doneBy: data.doneBy.present ? data.doneBy.value : this.doneBy,
+      note: data.note.present ? data.note.value : this.note,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('InspectionLogData(')
+          ..write('id: $id, ')
+          ..write('scheduleId: $scheduleId, ')
+          ..write('doneAt: $doneAt, ')
+          ..write('doneBy: $doneBy, ')
+          ..write('note: $note')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, scheduleId, doneAt, doneBy, note);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is InspectionLogData &&
+          other.id == this.id &&
+          other.scheduleId == this.scheduleId &&
+          other.doneAt == this.doneAt &&
+          other.doneBy == this.doneBy &&
+          other.note == this.note);
+}
+
+class InspectionLogCompanion extends UpdateCompanion<InspectionLogData> {
+  final Value<int> id;
+  final Value<int> scheduleId;
+  final Value<DateTime> doneAt;
+  final Value<String> doneBy;
+  final Value<String> note;
+  const InspectionLogCompanion({
+    this.id = const Value.absent(),
+    this.scheduleId = const Value.absent(),
+    this.doneAt = const Value.absent(),
+    this.doneBy = const Value.absent(),
+    this.note = const Value.absent(),
+  });
+  InspectionLogCompanion.insert({
+    this.id = const Value.absent(),
+    required int scheduleId,
+    required DateTime doneAt,
+    this.doneBy = const Value.absent(),
+    this.note = const Value.absent(),
+  }) : scheduleId = Value(scheduleId),
+       doneAt = Value(doneAt);
+  static Insertable<InspectionLogData> custom({
+    Expression<int>? id,
+    Expression<int>? scheduleId,
+    Expression<DateTime>? doneAt,
+    Expression<String>? doneBy,
+    Expression<String>? note,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (scheduleId != null) 'schedule_id': scheduleId,
+      if (doneAt != null) 'done_at': doneAt,
+      if (doneBy != null) 'done_by': doneBy,
+      if (note != null) 'note': note,
+    });
+  }
+
+  InspectionLogCompanion copyWith({
+    Value<int>? id,
+    Value<int>? scheduleId,
+    Value<DateTime>? doneAt,
+    Value<String>? doneBy,
+    Value<String>? note,
+  }) {
+    return InspectionLogCompanion(
+      id: id ?? this.id,
+      scheduleId: scheduleId ?? this.scheduleId,
+      doneAt: doneAt ?? this.doneAt,
+      doneBy: doneBy ?? this.doneBy,
+      note: note ?? this.note,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (scheduleId.present) {
+      map['schedule_id'] = Variable<int>(scheduleId.value);
+    }
+    if (doneAt.present) {
+      map['done_at'] = Variable<DateTime>(doneAt.value);
+    }
+    if (doneBy.present) {
+      map['done_by'] = Variable<String>(doneBy.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('InspectionLogCompanion(')
+          ..write('id: $id, ')
+          ..write('scheduleId: $scheduleId, ')
+          ..write('doneAt: $doneAt, ')
+          ..write('doneBy: $doneBy, ')
+          ..write('note: $note')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $UserAliasesTable extends UserAliases
+    with TableInfo<$UserAliasesTable, UserAliasData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $UserAliasesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _aliasMeta = const VerificationMeta('alias');
+  @override
+  late final GeneratedColumn<String> alias = GeneratedColumn<String>(
+    'alias',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _equipmentIdMeta = const VerificationMeta(
+    'equipmentId',
+  );
+  @override
+  late final GeneratedColumn<int> equipmentId = GeneratedColumn<int>(
+    'equipment_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES equipment_items (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, alias, equipmentId, updatedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'user_aliases';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<UserAliasData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('alias')) {
+      context.handle(
+        _aliasMeta,
+        alias.isAcceptableOrUnknown(data['alias']!, _aliasMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_aliasMeta);
+    }
+    if (data.containsKey('equipment_id')) {
+      context.handle(
+        _equipmentIdMeta,
+        equipmentId.isAcceptableOrUnknown(
+          data['equipment_id']!,
+          _equipmentIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_equipmentIdMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  UserAliasData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return UserAliasData(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}id'],
+          )!,
+      alias:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}alias'],
+          )!,
+      equipmentId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}equipment_id'],
+          )!,
+      updatedAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}updated_at'],
+          )!,
+    );
+  }
+
+  @override
+  $UserAliasesTable createAlias(String alias) {
+    return $UserAliasesTable(attachedDatabase, alias);
+  }
+}
+
+class UserAliasData extends DataClass implements Insertable<UserAliasData> {
+  final int id;
+  final String alias;
+  final int equipmentId;
+  final DateTime updatedAt;
+  const UserAliasData({
+    required this.id,
+    required this.alias,
+    required this.equipmentId,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['alias'] = Variable<String>(alias);
+    map['equipment_id'] = Variable<int>(equipmentId);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  UserAliasesCompanion toCompanion(bool nullToAbsent) {
+    return UserAliasesCompanion(
+      id: Value(id),
+      alias: Value(alias),
+      equipmentId: Value(equipmentId),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory UserAliasData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return UserAliasData(
+      id: serializer.fromJson<int>(json['id']),
+      alias: serializer.fromJson<String>(json['alias']),
+      equipmentId: serializer.fromJson<int>(json['equipmentId']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'alias': serializer.toJson<String>(alias),
+      'equipmentId': serializer.toJson<int>(equipmentId),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  UserAliasData copyWith({
+    int? id,
+    String? alias,
+    int? equipmentId,
+    DateTime? updatedAt,
+  }) => UserAliasData(
+    id: id ?? this.id,
+    alias: alias ?? this.alias,
+    equipmentId: equipmentId ?? this.equipmentId,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  UserAliasData copyWithCompanion(UserAliasesCompanion data) {
+    return UserAliasData(
+      id: data.id.present ? data.id.value : this.id,
+      alias: data.alias.present ? data.alias.value : this.alias,
+      equipmentId:
+          data.equipmentId.present ? data.equipmentId.value : this.equipmentId,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('UserAliasData(')
+          ..write('id: $id, ')
+          ..write('alias: $alias, ')
+          ..write('equipmentId: $equipmentId, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, alias, equipmentId, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is UserAliasData &&
+          other.id == this.id &&
+          other.alias == this.alias &&
+          other.equipmentId == this.equipmentId &&
+          other.updatedAt == this.updatedAt);
+}
+
+class UserAliasesCompanion extends UpdateCompanion<UserAliasData> {
+  final Value<int> id;
+  final Value<String> alias;
+  final Value<int> equipmentId;
+  final Value<DateTime> updatedAt;
+  const UserAliasesCompanion({
+    this.id = const Value.absent(),
+    this.alias = const Value.absent(),
+    this.equipmentId = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  UserAliasesCompanion.insert({
+    this.id = const Value.absent(),
+    required String alias,
+    required int equipmentId,
+    this.updatedAt = const Value.absent(),
+  }) : alias = Value(alias),
+       equipmentId = Value(equipmentId);
+  static Insertable<UserAliasData> custom({
+    Expression<int>? id,
+    Expression<String>? alias,
+    Expression<int>? equipmentId,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (alias != null) 'alias': alias,
+      if (equipmentId != null) 'equipment_id': equipmentId,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  UserAliasesCompanion copyWith({
+    Value<int>? id,
+    Value<String>? alias,
+    Value<int>? equipmentId,
+    Value<DateTime>? updatedAt,
+  }) {
+    return UserAliasesCompanion(
+      id: id ?? this.id,
+      alias: alias ?? this.alias,
+      equipmentId: equipmentId ?? this.equipmentId,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (alias.present) {
+      map['alias'] = Variable<String>(alias.value);
+    }
+    if (equipmentId.present) {
+      map['equipment_id'] = Variable<int>(equipmentId.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('UserAliasesCompanion(')
+          ..write('id: $id, ')
+          ..write('alias: $alias, ')
+          ..write('equipmentId: $equipmentId, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SyncMetaTable extends SyncMeta
+    with TableInfo<$SyncMetaTable, SyncMetaData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SyncMetaTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _lastPulledVersionMeta = const VerificationMeta(
+    'lastPulledVersion',
+  );
+  @override
+  late final GeneratedColumn<int> lastPulledVersion = GeneratedColumn<int>(
+    'last_pulled_version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _lastPulledAtMeta = const VerificationMeta(
+    'lastPulledAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastPulledAt = GeneratedColumn<DateTime>(
+    'last_pulled_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _localDirtyMeta = const VerificationMeta(
+    'localDirty',
+  );
+  @override
+  late final GeneratedColumn<bool> localDirty = GeneratedColumn<bool>(
+    'local_dirty',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("local_dirty" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    lastPulledVersion,
+    lastPulledAt,
+    localDirty,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'sync_meta';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SyncMetaData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('last_pulled_version')) {
+      context.handle(
+        _lastPulledVersionMeta,
+        lastPulledVersion.isAcceptableOrUnknown(
+          data['last_pulled_version']!,
+          _lastPulledVersionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('last_pulled_at')) {
+      context.handle(
+        _lastPulledAtMeta,
+        lastPulledAt.isAcceptableOrUnknown(
+          data['last_pulled_at']!,
+          _lastPulledAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('local_dirty')) {
+      context.handle(
+        _localDirtyMeta,
+        localDirty.isAcceptableOrUnknown(data['local_dirty']!, _localDirtyMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SyncMetaData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SyncMetaData(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}id'],
+          )!,
+      lastPulledVersion:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}last_pulled_version'],
+          )!,
+      lastPulledAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_pulled_at'],
+      ),
+      localDirty:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}local_dirty'],
+          )!,
+    );
+  }
+
+  @override
+  $SyncMetaTable createAlias(String alias) {
+    return $SyncMetaTable(attachedDatabase, alias);
+  }
+}
+
+class SyncMetaData extends DataClass implements Insertable<SyncMetaData> {
+  final int id;
+  final int lastPulledVersion;
+  final DateTime? lastPulledAt;
+  final bool localDirty;
+  const SyncMetaData({
+    required this.id,
+    required this.lastPulledVersion,
+    this.lastPulledAt,
+    required this.localDirty,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['last_pulled_version'] = Variable<int>(lastPulledVersion);
+    if (!nullToAbsent || lastPulledAt != null) {
+      map['last_pulled_at'] = Variable<DateTime>(lastPulledAt);
+    }
+    map['local_dirty'] = Variable<bool>(localDirty);
+    return map;
+  }
+
+  SyncMetaCompanion toCompanion(bool nullToAbsent) {
+    return SyncMetaCompanion(
+      id: Value(id),
+      lastPulledVersion: Value(lastPulledVersion),
+      lastPulledAt:
+          lastPulledAt == null && nullToAbsent
+              ? const Value.absent()
+              : Value(lastPulledAt),
+      localDirty: Value(localDirty),
+    );
+  }
+
+  factory SyncMetaData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SyncMetaData(
+      id: serializer.fromJson<int>(json['id']),
+      lastPulledVersion: serializer.fromJson<int>(json['lastPulledVersion']),
+      lastPulledAt: serializer.fromJson<DateTime?>(json['lastPulledAt']),
+      localDirty: serializer.fromJson<bool>(json['localDirty']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'lastPulledVersion': serializer.toJson<int>(lastPulledVersion),
+      'lastPulledAt': serializer.toJson<DateTime?>(lastPulledAt),
+      'localDirty': serializer.toJson<bool>(localDirty),
+    };
+  }
+
+  SyncMetaData copyWith({
+    int? id,
+    int? lastPulledVersion,
+    Value<DateTime?> lastPulledAt = const Value.absent(),
+    bool? localDirty,
+  }) => SyncMetaData(
+    id: id ?? this.id,
+    lastPulledVersion: lastPulledVersion ?? this.lastPulledVersion,
+    lastPulledAt: lastPulledAt.present ? lastPulledAt.value : this.lastPulledAt,
+    localDirty: localDirty ?? this.localDirty,
+  );
+  SyncMetaData copyWithCompanion(SyncMetaCompanion data) {
+    return SyncMetaData(
+      id: data.id.present ? data.id.value : this.id,
+      lastPulledVersion:
+          data.lastPulledVersion.present
+              ? data.lastPulledVersion.value
+              : this.lastPulledVersion,
+      lastPulledAt:
+          data.lastPulledAt.present
+              ? data.lastPulledAt.value
+              : this.lastPulledAt,
+      localDirty:
+          data.localDirty.present ? data.localDirty.value : this.localDirty,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncMetaData(')
+          ..write('id: $id, ')
+          ..write('lastPulledVersion: $lastPulledVersion, ')
+          ..write('lastPulledAt: $lastPulledAt, ')
+          ..write('localDirty: $localDirty')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, lastPulledVersion, lastPulledAt, localDirty);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SyncMetaData &&
+          other.id == this.id &&
+          other.lastPulledVersion == this.lastPulledVersion &&
+          other.lastPulledAt == this.lastPulledAt &&
+          other.localDirty == this.localDirty);
+}
+
+class SyncMetaCompanion extends UpdateCompanion<SyncMetaData> {
+  final Value<int> id;
+  final Value<int> lastPulledVersion;
+  final Value<DateTime?> lastPulledAt;
+  final Value<bool> localDirty;
+  const SyncMetaCompanion({
+    this.id = const Value.absent(),
+    this.lastPulledVersion = const Value.absent(),
+    this.lastPulledAt = const Value.absent(),
+    this.localDirty = const Value.absent(),
+  });
+  SyncMetaCompanion.insert({
+    this.id = const Value.absent(),
+    this.lastPulledVersion = const Value.absent(),
+    this.lastPulledAt = const Value.absent(),
+    this.localDirty = const Value.absent(),
+  });
+  static Insertable<SyncMetaData> custom({
+    Expression<int>? id,
+    Expression<int>? lastPulledVersion,
+    Expression<DateTime>? lastPulledAt,
+    Expression<bool>? localDirty,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (lastPulledVersion != null) 'last_pulled_version': lastPulledVersion,
+      if (lastPulledAt != null) 'last_pulled_at': lastPulledAt,
+      if (localDirty != null) 'local_dirty': localDirty,
+    });
+  }
+
+  SyncMetaCompanion copyWith({
+    Value<int>? id,
+    Value<int>? lastPulledVersion,
+    Value<DateTime?>? lastPulledAt,
+    Value<bool>? localDirty,
+  }) {
+    return SyncMetaCompanion(
+      id: id ?? this.id,
+      lastPulledVersion: lastPulledVersion ?? this.lastPulledVersion,
+      lastPulledAt: lastPulledAt ?? this.lastPulledAt,
+      localDirty: localDirty ?? this.localDirty,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (lastPulledVersion.present) {
+      map['last_pulled_version'] = Variable<int>(lastPulledVersion.value);
+    }
+    if (lastPulledAt.present) {
+      map['last_pulled_at'] = Variable<DateTime>(lastPulledAt.value);
+    }
+    if (localDirty.present) {
+      map['local_dirty'] = Variable<bool>(localDirty.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncMetaCompanion(')
+          ..write('id: $id, ')
+          ..write('lastPulledVersion: $lastPulledVersion, ')
+          ..write('lastPulledAt: $lastPulledAt, ')
+          ..write('localDirty: $localDirty')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2493,6 +4737,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $EquipmentAssignmentsTable equipmentAssignments =
       $EquipmentAssignmentsTable(this);
   late final $QuizResultsTable quizResults = $QuizResultsTable(this);
+  late final $EquipmentInstancesTable equipmentInstances =
+      $EquipmentInstancesTable(this);
+  late final $InspectionSchedulesTable inspectionSchedules =
+      $InspectionSchedulesTable(this);
+  late final $InspectionLogTable inspectionLog = $InspectionLogTable(this);
+  late final $UserAliasesTable userAliases = $UserAliasesTable(this);
+  late final $SyncMetaTable syncMeta = $SyncMetaTable(this);
   late final VehicleDao vehicleDao = VehicleDao(this as AppDatabase);
   late final CompartmentDao compartmentDao = CompartmentDao(
     this as AppDatabase,
@@ -2500,6 +4751,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final EquipmentDao equipmentDao = EquipmentDao(this as AppDatabase);
   late final AssignmentDao assignmentDao = AssignmentDao(this as AppDatabase);
   late final QuizDao quizDao = QuizDao(this as AppDatabase);
+  late final InspectionDao inspectionDao = InspectionDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2510,6 +4762,11 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     equipmentItems,
     equipmentAssignments,
     quizResults,
+    equipmentInstances,
+    inspectionSchedules,
+    inspectionLog,
+    userAliases,
+    syncMeta,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -2540,6 +4797,48 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('quiz_results', kind: UpdateKind.update)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'equipment_items',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('equipment_instances', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'vehicles',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('equipment_instances', kind: UpdateKind.update)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'compartments',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('equipment_instances', kind: UpdateKind.update)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'equipment_instances',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('inspection_schedules', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'inspection_schedules',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('inspection_log', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'equipment_items',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('user_aliases', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -2600,6 +4899,33 @@ final class $$VehiclesTableReferences
     ).filter((f) => f.vehicleId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_quizResultsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $EquipmentInstancesTable,
+    List<EquipmentInstanceData>
+  >
+  _equipmentInstancesRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.equipmentInstances,
+        aliasName: $_aliasNameGenerator(
+          db.vehicles.id,
+          db.equipmentInstances.vehicleId,
+        ),
+      );
+
+  $$EquipmentInstancesTableProcessedTableManager get equipmentInstancesRefs {
+    final manager = $$EquipmentInstancesTableTableManager(
+      $_db,
+      $_db.equipmentInstances,
+    ).filter((f) => f.vehicleId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _equipmentInstancesRefsTable($_db),
+    );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -2691,6 +5017,31 @@ class $$VehiclesTableFilterComposer
           }) => $$QuizResultsTableFilterComposer(
             $db: $db,
             $table: $db.quizResults,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> equipmentInstancesRefs(
+    Expression<bool> Function($$EquipmentInstancesTableFilterComposer f) f,
+  ) {
+    final $$EquipmentInstancesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.equipmentInstances,
+      getReferencedColumn: (t) => t.vehicleId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EquipmentInstancesTableFilterComposer(
+            $db: $db,
+            $table: $db.equipmentInstances,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -2827,6 +5178,32 @@ class $$VehiclesTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> equipmentInstancesRefs<T extends Object>(
+    Expression<T> Function($$EquipmentInstancesTableAnnotationComposer a) f,
+  ) {
+    final $$EquipmentInstancesTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.equipmentInstances,
+          getReferencedColumn: (t) => t.vehicleId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$EquipmentInstancesTableAnnotationComposer(
+                $db: $db,
+                $table: $db.equipmentInstances,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$VehiclesTableTableManager
@@ -2842,7 +5219,11 @@ class $$VehiclesTableTableManager
           $$VehiclesTableUpdateCompanionBuilder,
           (VehicleData, $$VehiclesTableReferences),
           VehicleData,
-          PrefetchHooks Function({bool compartmentsRefs, bool quizResultsRefs})
+          PrefetchHooks Function({
+            bool compartmentsRefs,
+            bool quizResultsRefs,
+            bool equipmentInstancesRefs,
+          })
         > {
   $$VehiclesTableTableManager(_$AppDatabase db, $VehiclesTable table)
     : super(
@@ -2904,12 +5285,14 @@ class $$VehiclesTableTableManager
           prefetchHooksCallback: ({
             compartmentsRefs = false,
             quizResultsRefs = false,
+            equipmentInstancesRefs = false,
           }) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [
                 if (compartmentsRefs) db.compartments,
                 if (quizResultsRefs) db.quizResults,
+                if (equipmentInstancesRefs) db.equipmentInstances,
               ],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
@@ -2958,6 +5341,28 @@ class $$VehiclesTableTableManager
                           ),
                       typedResults: items,
                     ),
+                  if (equipmentInstancesRefs)
+                    await $_getPrefetchedData<
+                      VehicleData,
+                      $VehiclesTable,
+                      EquipmentInstanceData
+                    >(
+                      currentTable: table,
+                      referencedTable: $$VehiclesTableReferences
+                          ._equipmentInstancesRefsTable(db),
+                      managerFromTypedResult:
+                          (p0) =>
+                              $$VehiclesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).equipmentInstancesRefs,
+                      referencedItemsForCurrentItem:
+                          (item, referencedItems) => referencedItems.where(
+                            (e) => e.vehicleId == item.id,
+                          ),
+                      typedResults: items,
+                    ),
                 ];
               },
             );
@@ -2978,7 +5383,11 @@ typedef $$VehiclesTableProcessedTableManager =
       $$VehiclesTableUpdateCompanionBuilder,
       (VehicleData, $$VehiclesTableReferences),
       VehicleData,
-      PrefetchHooks Function({bool compartmentsRefs, bool quizResultsRefs})
+      PrefetchHooks Function({
+        bool compartmentsRefs,
+        bool quizResultsRefs,
+        bool equipmentInstancesRefs,
+      })
     >;
 typedef $$CompartmentsTableCreateCompanionBuilder =
     CompartmentsCompanion Function({
@@ -3045,6 +5454,33 @@ final class $$CompartmentsTableReferences
 
     final cache = $_typedResult.readTableOrNull(
       _equipmentAssignmentsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $EquipmentInstancesTable,
+    List<EquipmentInstanceData>
+  >
+  _equipmentInstancesRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.equipmentInstances,
+        aliasName: $_aliasNameGenerator(
+          db.compartments.id,
+          db.equipmentInstances.compartmentId,
+        ),
+      );
+
+  $$EquipmentInstancesTableProcessedTableManager get equipmentInstancesRefs {
+    final manager = $$EquipmentInstancesTableTableManager(
+      $_db,
+      $_db.equipmentInstances,
+    ).filter((f) => f.compartmentId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _equipmentInstancesRefsTable($_db),
     );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
@@ -3135,6 +5571,31 @@ class $$CompartmentsTableFilterComposer
           }) => $$EquipmentAssignmentsTableFilterComposer(
             $db: $db,
             $table: $db.equipmentAssignments,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> equipmentInstancesRefs(
+    Expression<bool> Function($$EquipmentInstancesTableFilterComposer f) f,
+  ) {
+    final $$EquipmentInstancesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.equipmentInstances,
+      getReferencedColumn: (t) => t.compartmentId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EquipmentInstancesTableFilterComposer(
+            $db: $db,
+            $table: $db.equipmentInstances,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -3293,6 +5754,32 @@ class $$CompartmentsTableAnnotationComposer
         );
     return f(composer);
   }
+
+  Expression<T> equipmentInstancesRefs<T extends Object>(
+    Expression<T> Function($$EquipmentInstancesTableAnnotationComposer a) f,
+  ) {
+    final $$EquipmentInstancesTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.equipmentInstances,
+          getReferencedColumn: (t) => t.compartmentId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$EquipmentInstancesTableAnnotationComposer(
+                $db: $db,
+                $table: $db.equipmentInstances,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$CompartmentsTableTableManager
@@ -3311,6 +5798,7 @@ class $$CompartmentsTableTableManager
           PrefetchHooks Function({
             bool vehicleId,
             bool equipmentAssignmentsRefs,
+            bool equipmentInstancesRefs,
           })
         > {
   $$CompartmentsTableTableManager(_$AppDatabase db, $CompartmentsTable table)
@@ -3378,11 +5866,13 @@ class $$CompartmentsTableTableManager
           prefetchHooksCallback: ({
             vehicleId = false,
             equipmentAssignmentsRefs = false,
+            equipmentInstancesRefs = false,
           }) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [
                 if (equipmentAssignmentsRefs) db.equipmentAssignments,
+                if (equipmentInstancesRefs) db.equipmentInstances,
               ],
               addJoins: <
                 T extends TableManagerState<
@@ -3440,6 +5930,28 @@ class $$CompartmentsTableTableManager
                           ),
                       typedResults: items,
                     ),
+                  if (equipmentInstancesRefs)
+                    await $_getPrefetchedData<
+                      CompartmentData,
+                      $CompartmentsTable,
+                      EquipmentInstanceData
+                    >(
+                      currentTable: table,
+                      referencedTable: $$CompartmentsTableReferences
+                          ._equipmentInstancesRefsTable(db),
+                      managerFromTypedResult:
+                          (p0) =>
+                              $$CompartmentsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).equipmentInstancesRefs,
+                      referencedItemsForCurrentItem:
+                          (item, referencedItems) => referencedItems.where(
+                            (e) => e.compartmentId == item.id,
+                          ),
+                      typedResults: items,
+                    ),
                 ];
               },
             );
@@ -3460,12 +5972,17 @@ typedef $$CompartmentsTableProcessedTableManager =
       $$CompartmentsTableUpdateCompanionBuilder,
       (CompartmentData, $$CompartmentsTableReferences),
       CompartmentData,
-      PrefetchHooks Function({bool vehicleId, bool equipmentAssignmentsRefs})
+      PrefetchHooks Function({
+        bool vehicleId,
+        bool equipmentAssignmentsRefs,
+        bool equipmentInstancesRefs,
+      })
     >;
 typedef $$EquipmentItemsTableCreateCompanionBuilder =
     EquipmentItemsCompanion Function({
       Value<int> id,
       required String name,
+      Value<String?> shortName,
       Value<String> equipmentFunctionsJson,
       Value<String> deploymentScenariosJson,
       Value<String> description,
@@ -3474,12 +5991,15 @@ typedef $$EquipmentItemsTableCreateCompanionBuilder =
       Value<String?> libraryEquipmentId,
       Value<bool> isCustom,
       Value<String> extraAttributesJson,
+      Value<String> trainingQuestionsJson,
+      Value<String> typicalUseJson,
       Value<DateTime> updatedAt,
     });
 typedef $$EquipmentItemsTableUpdateCompanionBuilder =
     EquipmentItemsCompanion Function({
       Value<int> id,
       Value<String> name,
+      Value<String?> shortName,
       Value<String> equipmentFunctionsJson,
       Value<String> deploymentScenariosJson,
       Value<String> description,
@@ -3488,6 +6008,8 @@ typedef $$EquipmentItemsTableUpdateCompanionBuilder =
       Value<String?> libraryEquipmentId,
       Value<bool> isCustom,
       Value<String> extraAttributesJson,
+      Value<String> trainingQuestionsJson,
+      Value<String> typicalUseJson,
       Value<DateTime> updatedAt,
     });
 
@@ -3524,6 +6046,54 @@ final class $$EquipmentItemsTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<
+    $EquipmentInstancesTable,
+    List<EquipmentInstanceData>
+  >
+  _equipmentInstancesRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.equipmentInstances,
+        aliasName: $_aliasNameGenerator(
+          db.equipmentItems.id,
+          db.equipmentInstances.equipmentId,
+        ),
+      );
+
+  $$EquipmentInstancesTableProcessedTableManager get equipmentInstancesRefs {
+    final manager = $$EquipmentInstancesTableTableManager(
+      $_db,
+      $_db.equipmentInstances,
+    ).filter((f) => f.equipmentId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _equipmentInstancesRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$UserAliasesTable, List<UserAliasData>>
+  _userAliasesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.userAliases,
+    aliasName: $_aliasNameGenerator(
+      db.equipmentItems.id,
+      db.userAliases.equipmentId,
+    ),
+  );
+
+  $$UserAliasesTableProcessedTableManager get userAliasesRefs {
+    final manager = $$UserAliasesTableTableManager(
+      $_db,
+      $_db.userAliases,
+    ).filter((f) => f.equipmentId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_userAliasesRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$EquipmentItemsTableFilterComposer
@@ -3542,6 +6112,11 @@ class $$EquipmentItemsTableFilterComposer
 
   ColumnFilters<String> get name => $composableBuilder(
     column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get shortName => $composableBuilder(
+    column: $table.shortName,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3585,6 +6160,16 @@ class $$EquipmentItemsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get trainingQuestionsJson => $composableBuilder(
+    column: $table.trainingQuestionsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get typicalUseJson => $composableBuilder(
+    column: $table.typicalUseJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<DateTime> get updatedAt => $composableBuilder(
     column: $table.updatedAt,
     builder: (column) => ColumnFilters(column),
@@ -3614,6 +6199,56 @@ class $$EquipmentItemsTableFilterComposer
     );
     return f(composer);
   }
+
+  Expression<bool> equipmentInstancesRefs(
+    Expression<bool> Function($$EquipmentInstancesTableFilterComposer f) f,
+  ) {
+    final $$EquipmentInstancesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.equipmentInstances,
+      getReferencedColumn: (t) => t.equipmentId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EquipmentInstancesTableFilterComposer(
+            $db: $db,
+            $table: $db.equipmentInstances,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> userAliasesRefs(
+    Expression<bool> Function($$UserAliasesTableFilterComposer f) f,
+  ) {
+    final $$UserAliasesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.userAliases,
+      getReferencedColumn: (t) => t.equipmentId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UserAliasesTableFilterComposer(
+            $db: $db,
+            $table: $db.userAliases,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$EquipmentItemsTableOrderingComposer
@@ -3632,6 +6267,11 @@ class $$EquipmentItemsTableOrderingComposer
 
   ColumnOrderings<String> get name => $composableBuilder(
     column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get shortName => $composableBuilder(
+    column: $table.shortName,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -3675,6 +6315,16 @@ class $$EquipmentItemsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get trainingQuestionsJson => $composableBuilder(
+    column: $table.trainingQuestionsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get typicalUseJson => $composableBuilder(
+    column: $table.typicalUseJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
     column: $table.updatedAt,
     builder: (column) => ColumnOrderings(column),
@@ -3695,6 +6345,9 @@ class $$EquipmentItemsTableAnnotationComposer
 
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get shortName =>
+      $composableBuilder(column: $table.shortName, builder: (column) => column);
 
   GeneratedColumn<String> get equipmentFunctionsJson => $composableBuilder(
     column: $table.equipmentFunctionsJson,
@@ -3732,6 +6385,16 @@ class $$EquipmentItemsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get trainingQuestionsJson => $composableBuilder(
+    column: $table.trainingQuestionsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get typicalUseJson => $composableBuilder(
+    column: $table.typicalUseJson,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 
@@ -3760,6 +6423,57 @@ class $$EquipmentItemsTableAnnotationComposer
         );
     return f(composer);
   }
+
+  Expression<T> equipmentInstancesRefs<T extends Object>(
+    Expression<T> Function($$EquipmentInstancesTableAnnotationComposer a) f,
+  ) {
+    final $$EquipmentInstancesTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.equipmentInstances,
+          getReferencedColumn: (t) => t.equipmentId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$EquipmentInstancesTableAnnotationComposer(
+                $db: $db,
+                $table: $db.equipmentInstances,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<T> userAliasesRefs<T extends Object>(
+    Expression<T> Function($$UserAliasesTableAnnotationComposer a) f,
+  ) {
+    final $$UserAliasesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.userAliases,
+      getReferencedColumn: (t) => t.equipmentId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UserAliasesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.userAliases,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$EquipmentItemsTableTableManager
@@ -3775,7 +6489,11 @@ class $$EquipmentItemsTableTableManager
           $$EquipmentItemsTableUpdateCompanionBuilder,
           (EquipmentItemData, $$EquipmentItemsTableReferences),
           EquipmentItemData,
-          PrefetchHooks Function({bool equipmentAssignmentsRefs})
+          PrefetchHooks Function({
+            bool equipmentAssignmentsRefs,
+            bool equipmentInstancesRefs,
+            bool userAliasesRefs,
+          })
         > {
   $$EquipmentItemsTableTableManager(
     _$AppDatabase db,
@@ -3798,6 +6516,7 @@ class $$EquipmentItemsTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<String> name = const Value.absent(),
+                Value<String?> shortName = const Value.absent(),
                 Value<String> equipmentFunctionsJson = const Value.absent(),
                 Value<String> deploymentScenariosJson = const Value.absent(),
                 Value<String> description = const Value.absent(),
@@ -3806,10 +6525,13 @@ class $$EquipmentItemsTableTableManager
                 Value<String?> libraryEquipmentId = const Value.absent(),
                 Value<bool> isCustom = const Value.absent(),
                 Value<String> extraAttributesJson = const Value.absent(),
+                Value<String> trainingQuestionsJson = const Value.absent(),
+                Value<String> typicalUseJson = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => EquipmentItemsCompanion(
                 id: id,
                 name: name,
+                shortName: shortName,
                 equipmentFunctionsJson: equipmentFunctionsJson,
                 deploymentScenariosJson: deploymentScenariosJson,
                 description: description,
@@ -3818,12 +6540,15 @@ class $$EquipmentItemsTableTableManager
                 libraryEquipmentId: libraryEquipmentId,
                 isCustom: isCustom,
                 extraAttributesJson: extraAttributesJson,
+                trainingQuestionsJson: trainingQuestionsJson,
+                typicalUseJson: typicalUseJson,
                 updatedAt: updatedAt,
               ),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
                 required String name,
+                Value<String?> shortName = const Value.absent(),
                 Value<String> equipmentFunctionsJson = const Value.absent(),
                 Value<String> deploymentScenariosJson = const Value.absent(),
                 Value<String> description = const Value.absent(),
@@ -3832,10 +6557,13 @@ class $$EquipmentItemsTableTableManager
                 Value<String?> libraryEquipmentId = const Value.absent(),
                 Value<bool> isCustom = const Value.absent(),
                 Value<String> extraAttributesJson = const Value.absent(),
+                Value<String> trainingQuestionsJson = const Value.absent(),
+                Value<String> typicalUseJson = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => EquipmentItemsCompanion.insert(
                 id: id,
                 name: name,
+                shortName: shortName,
                 equipmentFunctionsJson: equipmentFunctionsJson,
                 deploymentScenariosJson: deploymentScenariosJson,
                 description: description,
@@ -3844,6 +6572,8 @@ class $$EquipmentItemsTableTableManager
                 libraryEquipmentId: libraryEquipmentId,
                 isCustom: isCustom,
                 extraAttributesJson: extraAttributesJson,
+                trainingQuestionsJson: trainingQuestionsJson,
+                typicalUseJson: typicalUseJson,
                 updatedAt: updatedAt,
               ),
           withReferenceMapper:
@@ -3856,11 +6586,17 @@ class $$EquipmentItemsTableTableManager
                         ),
                       )
                       .toList(),
-          prefetchHooksCallback: ({equipmentAssignmentsRefs = false}) {
+          prefetchHooksCallback: ({
+            equipmentAssignmentsRefs = false,
+            equipmentInstancesRefs = false,
+            userAliasesRefs = false,
+          }) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [
                 if (equipmentAssignmentsRefs) db.equipmentAssignments,
+                if (equipmentInstancesRefs) db.equipmentInstances,
+                if (userAliasesRefs) db.userAliases,
               ],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
@@ -3887,6 +6623,50 @@ class $$EquipmentItemsTableTableManager
                           ),
                       typedResults: items,
                     ),
+                  if (equipmentInstancesRefs)
+                    await $_getPrefetchedData<
+                      EquipmentItemData,
+                      $EquipmentItemsTable,
+                      EquipmentInstanceData
+                    >(
+                      currentTable: table,
+                      referencedTable: $$EquipmentItemsTableReferences
+                          ._equipmentInstancesRefsTable(db),
+                      managerFromTypedResult:
+                          (p0) =>
+                              $$EquipmentItemsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).equipmentInstancesRefs,
+                      referencedItemsForCurrentItem:
+                          (item, referencedItems) => referencedItems.where(
+                            (e) => e.equipmentId == item.id,
+                          ),
+                      typedResults: items,
+                    ),
+                  if (userAliasesRefs)
+                    await $_getPrefetchedData<
+                      EquipmentItemData,
+                      $EquipmentItemsTable,
+                      UserAliasData
+                    >(
+                      currentTable: table,
+                      referencedTable: $$EquipmentItemsTableReferences
+                          ._userAliasesRefsTable(db),
+                      managerFromTypedResult:
+                          (p0) =>
+                              $$EquipmentItemsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).userAliasesRefs,
+                      referencedItemsForCurrentItem:
+                          (item, referencedItems) => referencedItems.where(
+                            (e) => e.equipmentId == item.id,
+                          ),
+                      typedResults: items,
+                    ),
                 ];
               },
             );
@@ -3907,7 +6687,11 @@ typedef $$EquipmentItemsTableProcessedTableManager =
       $$EquipmentItemsTableUpdateCompanionBuilder,
       (EquipmentItemData, $$EquipmentItemsTableReferences),
       EquipmentItemData,
-      PrefetchHooks Function({bool equipmentAssignmentsRefs})
+      PrefetchHooks Function({
+        bool equipmentAssignmentsRefs,
+        bool equipmentInstancesRefs,
+        bool userAliasesRefs,
+      })
     >;
 typedef $$EquipmentAssignmentsTableCreateCompanionBuilder =
     EquipmentAssignmentsCompanion Function({
@@ -4679,6 +7463,2035 @@ typedef $$QuizResultsTableProcessedTableManager =
       QuizResultData,
       PrefetchHooks Function({bool vehicleId})
     >;
+typedef $$EquipmentInstancesTableCreateCompanionBuilder =
+    EquipmentInstancesCompanion Function({
+      Value<int> id,
+      required int equipmentId,
+      Value<int?> vehicleId,
+      Value<int?> compartmentId,
+      Value<String?> identifier,
+      Value<String> notes,
+      Value<bool> isActive,
+      Value<DateTime> updatedAt,
+    });
+typedef $$EquipmentInstancesTableUpdateCompanionBuilder =
+    EquipmentInstancesCompanion Function({
+      Value<int> id,
+      Value<int> equipmentId,
+      Value<int?> vehicleId,
+      Value<int?> compartmentId,
+      Value<String?> identifier,
+      Value<String> notes,
+      Value<bool> isActive,
+      Value<DateTime> updatedAt,
+    });
+
+final class $$EquipmentInstancesTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $EquipmentInstancesTable,
+          EquipmentInstanceData
+        > {
+  $$EquipmentInstancesTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $EquipmentItemsTable _equipmentIdTable(_$AppDatabase db) =>
+      db.equipmentItems.createAlias(
+        $_aliasNameGenerator(
+          db.equipmentInstances.equipmentId,
+          db.equipmentItems.id,
+        ),
+      );
+
+  $$EquipmentItemsTableProcessedTableManager get equipmentId {
+    final $_column = $_itemColumn<int>('equipment_id')!;
+
+    final manager = $$EquipmentItemsTableTableManager(
+      $_db,
+      $_db.equipmentItems,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_equipmentIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $VehiclesTable _vehicleIdTable(_$AppDatabase db) =>
+      db.vehicles.createAlias(
+        $_aliasNameGenerator(db.equipmentInstances.vehicleId, db.vehicles.id),
+      );
+
+  $$VehiclesTableProcessedTableManager? get vehicleId {
+    final $_column = $_itemColumn<int>('vehicle_id');
+    if ($_column == null) return null;
+    final manager = $$VehiclesTableTableManager(
+      $_db,
+      $_db.vehicles,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_vehicleIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $CompartmentsTable _compartmentIdTable(_$AppDatabase db) =>
+      db.compartments.createAlias(
+        $_aliasNameGenerator(
+          db.equipmentInstances.compartmentId,
+          db.compartments.id,
+        ),
+      );
+
+  $$CompartmentsTableProcessedTableManager? get compartmentId {
+    final $_column = $_itemColumn<int>('compartment_id');
+    if ($_column == null) return null;
+    final manager = $$CompartmentsTableTableManager(
+      $_db,
+      $_db.compartments,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_compartmentIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $InspectionSchedulesTable,
+    List<InspectionScheduleData>
+  >
+  _inspectionSchedulesRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.inspectionSchedules,
+        aliasName: $_aliasNameGenerator(
+          db.equipmentInstances.id,
+          db.inspectionSchedules.instanceId,
+        ),
+      );
+
+  $$InspectionSchedulesTableProcessedTableManager get inspectionSchedulesRefs {
+    final manager = $$InspectionSchedulesTableTableManager(
+      $_db,
+      $_db.inspectionSchedules,
+    ).filter((f) => f.instanceId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _inspectionSchedulesRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$EquipmentInstancesTableFilterComposer
+    extends Composer<_$AppDatabase, $EquipmentInstancesTable> {
+  $$EquipmentInstancesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get identifier => $composableBuilder(
+    column: $table.identifier,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$EquipmentItemsTableFilterComposer get equipmentId {
+    final $$EquipmentItemsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.equipmentId,
+      referencedTable: $db.equipmentItems,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EquipmentItemsTableFilterComposer(
+            $db: $db,
+            $table: $db.equipmentItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$VehiclesTableFilterComposer get vehicleId {
+    final $$VehiclesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.vehicleId,
+      referencedTable: $db.vehicles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$VehiclesTableFilterComposer(
+            $db: $db,
+            $table: $db.vehicles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CompartmentsTableFilterComposer get compartmentId {
+    final $$CompartmentsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.compartmentId,
+      referencedTable: $db.compartments,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CompartmentsTableFilterComposer(
+            $db: $db,
+            $table: $db.compartments,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> inspectionSchedulesRefs(
+    Expression<bool> Function($$InspectionSchedulesTableFilterComposer f) f,
+  ) {
+    final $$InspectionSchedulesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.inspectionSchedules,
+      getReferencedColumn: (t) => t.instanceId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$InspectionSchedulesTableFilterComposer(
+            $db: $db,
+            $table: $db.inspectionSchedules,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$EquipmentInstancesTableOrderingComposer
+    extends Composer<_$AppDatabase, $EquipmentInstancesTable> {
+  $$EquipmentInstancesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get identifier => $composableBuilder(
+    column: $table.identifier,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$EquipmentItemsTableOrderingComposer get equipmentId {
+    final $$EquipmentItemsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.equipmentId,
+      referencedTable: $db.equipmentItems,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EquipmentItemsTableOrderingComposer(
+            $db: $db,
+            $table: $db.equipmentItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$VehiclesTableOrderingComposer get vehicleId {
+    final $$VehiclesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.vehicleId,
+      referencedTable: $db.vehicles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$VehiclesTableOrderingComposer(
+            $db: $db,
+            $table: $db.vehicles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CompartmentsTableOrderingComposer get compartmentId {
+    final $$CompartmentsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.compartmentId,
+      referencedTable: $db.compartments,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CompartmentsTableOrderingComposer(
+            $db: $db,
+            $table: $db.compartments,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$EquipmentInstancesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $EquipmentInstancesTable> {
+  $$EquipmentInstancesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get identifier => $composableBuilder(
+    column: $table.identifier,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$EquipmentItemsTableAnnotationComposer get equipmentId {
+    final $$EquipmentItemsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.equipmentId,
+      referencedTable: $db.equipmentItems,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EquipmentItemsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.equipmentItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$VehiclesTableAnnotationComposer get vehicleId {
+    final $$VehiclesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.vehicleId,
+      referencedTable: $db.vehicles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$VehiclesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.vehicles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CompartmentsTableAnnotationComposer get compartmentId {
+    final $$CompartmentsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.compartmentId,
+      referencedTable: $db.compartments,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CompartmentsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.compartments,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> inspectionSchedulesRefs<T extends Object>(
+    Expression<T> Function($$InspectionSchedulesTableAnnotationComposer a) f,
+  ) {
+    final $$InspectionSchedulesTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.inspectionSchedules,
+          getReferencedColumn: (t) => t.instanceId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$InspectionSchedulesTableAnnotationComposer(
+                $db: $db,
+                $table: $db.inspectionSchedules,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$EquipmentInstancesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $EquipmentInstancesTable,
+          EquipmentInstanceData,
+          $$EquipmentInstancesTableFilterComposer,
+          $$EquipmentInstancesTableOrderingComposer,
+          $$EquipmentInstancesTableAnnotationComposer,
+          $$EquipmentInstancesTableCreateCompanionBuilder,
+          $$EquipmentInstancesTableUpdateCompanionBuilder,
+          (EquipmentInstanceData, $$EquipmentInstancesTableReferences),
+          EquipmentInstanceData,
+          PrefetchHooks Function({
+            bool equipmentId,
+            bool vehicleId,
+            bool compartmentId,
+            bool inspectionSchedulesRefs,
+          })
+        > {
+  $$EquipmentInstancesTableTableManager(
+    _$AppDatabase db,
+    $EquipmentInstancesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$EquipmentInstancesTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer:
+              () => $$EquipmentInstancesTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer:
+              () => $$EquipmentInstancesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> equipmentId = const Value.absent(),
+                Value<int?> vehicleId = const Value.absent(),
+                Value<int?> compartmentId = const Value.absent(),
+                Value<String?> identifier = const Value.absent(),
+                Value<String> notes = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => EquipmentInstancesCompanion(
+                id: id,
+                equipmentId: equipmentId,
+                vehicleId: vehicleId,
+                compartmentId: compartmentId,
+                identifier: identifier,
+                notes: notes,
+                isActive: isActive,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int equipmentId,
+                Value<int?> vehicleId = const Value.absent(),
+                Value<int?> compartmentId = const Value.absent(),
+                Value<String?> identifier = const Value.absent(),
+                Value<String> notes = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => EquipmentInstancesCompanion.insert(
+                id: id,
+                equipmentId: equipmentId,
+                vehicleId: vehicleId,
+                compartmentId: compartmentId,
+                identifier: identifier,
+                notes: notes,
+                isActive: isActive,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          $$EquipmentInstancesTableReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: ({
+            equipmentId = false,
+            vehicleId = false,
+            compartmentId = false,
+            inspectionSchedulesRefs = false,
+          }) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (inspectionSchedulesRefs) db.inspectionSchedules,
+              ],
+              addJoins: <
+                T extends TableManagerState<
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic
+                >
+              >(state) {
+                if (equipmentId) {
+                  state =
+                      state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.equipmentId,
+                            referencedTable: $$EquipmentInstancesTableReferences
+                                ._equipmentIdTable(db),
+                            referencedColumn:
+                                $$EquipmentInstancesTableReferences
+                                    ._equipmentIdTable(db)
+                                    .id,
+                          )
+                          as T;
+                }
+                if (vehicleId) {
+                  state =
+                      state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.vehicleId,
+                            referencedTable: $$EquipmentInstancesTableReferences
+                                ._vehicleIdTable(db),
+                            referencedColumn:
+                                $$EquipmentInstancesTableReferences
+                                    ._vehicleIdTable(db)
+                                    .id,
+                          )
+                          as T;
+                }
+                if (compartmentId) {
+                  state =
+                      state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.compartmentId,
+                            referencedTable: $$EquipmentInstancesTableReferences
+                                ._compartmentIdTable(db),
+                            referencedColumn:
+                                $$EquipmentInstancesTableReferences
+                                    ._compartmentIdTable(db)
+                                    .id,
+                          )
+                          as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (inspectionSchedulesRefs)
+                    await $_getPrefetchedData<
+                      EquipmentInstanceData,
+                      $EquipmentInstancesTable,
+                      InspectionScheduleData
+                    >(
+                      currentTable: table,
+                      referencedTable: $$EquipmentInstancesTableReferences
+                          ._inspectionSchedulesRefsTable(db),
+                      managerFromTypedResult:
+                          (p0) =>
+                              $$EquipmentInstancesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).inspectionSchedulesRefs,
+                      referencedItemsForCurrentItem:
+                          (item, referencedItems) => referencedItems.where(
+                            (e) => e.instanceId == item.id,
+                          ),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$EquipmentInstancesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $EquipmentInstancesTable,
+      EquipmentInstanceData,
+      $$EquipmentInstancesTableFilterComposer,
+      $$EquipmentInstancesTableOrderingComposer,
+      $$EquipmentInstancesTableAnnotationComposer,
+      $$EquipmentInstancesTableCreateCompanionBuilder,
+      $$EquipmentInstancesTableUpdateCompanionBuilder,
+      (EquipmentInstanceData, $$EquipmentInstancesTableReferences),
+      EquipmentInstanceData,
+      PrefetchHooks Function({
+        bool equipmentId,
+        bool vehicleId,
+        bool compartmentId,
+        bool inspectionSchedulesRefs,
+      })
+    >;
+typedef $$InspectionSchedulesTableCreateCompanionBuilder =
+    InspectionSchedulesCompanion Function({
+      Value<int> id,
+      required int instanceId,
+      required String kind,
+      required String title,
+      Value<int?> intervalMonths,
+      Value<DateTime?> lastDoneAt,
+      required DateTime dueAt,
+      Value<String> notes,
+      Value<DateTime> updatedAt,
+    });
+typedef $$InspectionSchedulesTableUpdateCompanionBuilder =
+    InspectionSchedulesCompanion Function({
+      Value<int> id,
+      Value<int> instanceId,
+      Value<String> kind,
+      Value<String> title,
+      Value<int?> intervalMonths,
+      Value<DateTime?> lastDoneAt,
+      Value<DateTime> dueAt,
+      Value<String> notes,
+      Value<DateTime> updatedAt,
+    });
+
+final class $$InspectionSchedulesTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $InspectionSchedulesTable,
+          InspectionScheduleData
+        > {
+  $$InspectionSchedulesTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $EquipmentInstancesTable _instanceIdTable(_$AppDatabase db) =>
+      db.equipmentInstances.createAlias(
+        $_aliasNameGenerator(
+          db.inspectionSchedules.instanceId,
+          db.equipmentInstances.id,
+        ),
+      );
+
+  $$EquipmentInstancesTableProcessedTableManager get instanceId {
+    final $_column = $_itemColumn<int>('instance_id')!;
+
+    final manager = $$EquipmentInstancesTableTableManager(
+      $_db,
+      $_db.equipmentInstances,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_instanceIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$InspectionLogTable, List<InspectionLogData>>
+  _inspectionLogRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.inspectionLog,
+    aliasName: $_aliasNameGenerator(
+      db.inspectionSchedules.id,
+      db.inspectionLog.scheduleId,
+    ),
+  );
+
+  $$InspectionLogTableProcessedTableManager get inspectionLogRefs {
+    final manager = $$InspectionLogTableTableManager(
+      $_db,
+      $_db.inspectionLog,
+    ).filter((f) => f.scheduleId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_inspectionLogRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$InspectionSchedulesTableFilterComposer
+    extends Composer<_$AppDatabase, $InspectionSchedulesTable> {
+  $$InspectionSchedulesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get intervalMonths => $composableBuilder(
+    column: $table.intervalMonths,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastDoneAt => $composableBuilder(
+    column: $table.lastDoneAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get dueAt => $composableBuilder(
+    column: $table.dueAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$EquipmentInstancesTableFilterComposer get instanceId {
+    final $$EquipmentInstancesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.instanceId,
+      referencedTable: $db.equipmentInstances,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EquipmentInstancesTableFilterComposer(
+            $db: $db,
+            $table: $db.equipmentInstances,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> inspectionLogRefs(
+    Expression<bool> Function($$InspectionLogTableFilterComposer f) f,
+  ) {
+    final $$InspectionLogTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.inspectionLog,
+      getReferencedColumn: (t) => t.scheduleId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$InspectionLogTableFilterComposer(
+            $db: $db,
+            $table: $db.inspectionLog,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$InspectionSchedulesTableOrderingComposer
+    extends Composer<_$AppDatabase, $InspectionSchedulesTable> {
+  $$InspectionSchedulesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get intervalMonths => $composableBuilder(
+    column: $table.intervalMonths,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastDoneAt => $composableBuilder(
+    column: $table.lastDoneAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get dueAt => $composableBuilder(
+    column: $table.dueAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$EquipmentInstancesTableOrderingComposer get instanceId {
+    final $$EquipmentInstancesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.instanceId,
+      referencedTable: $db.equipmentInstances,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EquipmentInstancesTableOrderingComposer(
+            $db: $db,
+            $table: $db.equipmentInstances,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$InspectionSchedulesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $InspectionSchedulesTable> {
+  $$InspectionSchedulesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<int> get intervalMonths => $composableBuilder(
+    column: $table.intervalMonths,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get lastDoneAt => $composableBuilder(
+    column: $table.lastDoneAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get dueAt =>
+      $composableBuilder(column: $table.dueAt, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$EquipmentInstancesTableAnnotationComposer get instanceId {
+    final $$EquipmentInstancesTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.instanceId,
+          referencedTable: $db.equipmentInstances,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$EquipmentInstancesTableAnnotationComposer(
+                $db: $db,
+                $table: $db.equipmentInstances,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+
+  Expression<T> inspectionLogRefs<T extends Object>(
+    Expression<T> Function($$InspectionLogTableAnnotationComposer a) f,
+  ) {
+    final $$InspectionLogTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.inspectionLog,
+      getReferencedColumn: (t) => t.scheduleId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$InspectionLogTableAnnotationComposer(
+            $db: $db,
+            $table: $db.inspectionLog,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$InspectionSchedulesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $InspectionSchedulesTable,
+          InspectionScheduleData,
+          $$InspectionSchedulesTableFilterComposer,
+          $$InspectionSchedulesTableOrderingComposer,
+          $$InspectionSchedulesTableAnnotationComposer,
+          $$InspectionSchedulesTableCreateCompanionBuilder,
+          $$InspectionSchedulesTableUpdateCompanionBuilder,
+          (InspectionScheduleData, $$InspectionSchedulesTableReferences),
+          InspectionScheduleData,
+          PrefetchHooks Function({bool instanceId, bool inspectionLogRefs})
+        > {
+  $$InspectionSchedulesTableTableManager(
+    _$AppDatabase db,
+    $InspectionSchedulesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$InspectionSchedulesTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer:
+              () => $$InspectionSchedulesTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer:
+              () => $$InspectionSchedulesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> instanceId = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<int?> intervalMonths = const Value.absent(),
+                Value<DateTime?> lastDoneAt = const Value.absent(),
+                Value<DateTime> dueAt = const Value.absent(),
+                Value<String> notes = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => InspectionSchedulesCompanion(
+                id: id,
+                instanceId: instanceId,
+                kind: kind,
+                title: title,
+                intervalMonths: intervalMonths,
+                lastDoneAt: lastDoneAt,
+                dueAt: dueAt,
+                notes: notes,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int instanceId,
+                required String kind,
+                required String title,
+                Value<int?> intervalMonths = const Value.absent(),
+                Value<DateTime?> lastDoneAt = const Value.absent(),
+                required DateTime dueAt,
+                Value<String> notes = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => InspectionSchedulesCompanion.insert(
+                id: id,
+                instanceId: instanceId,
+                kind: kind,
+                title: title,
+                intervalMonths: intervalMonths,
+                lastDoneAt: lastDoneAt,
+                dueAt: dueAt,
+                notes: notes,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          $$InspectionSchedulesTableReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: ({
+            instanceId = false,
+            inspectionLogRefs = false,
+          }) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (inspectionLogRefs) db.inspectionLog,
+              ],
+              addJoins: <
+                T extends TableManagerState<
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic
+                >
+              >(state) {
+                if (instanceId) {
+                  state =
+                      state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.instanceId,
+                            referencedTable:
+                                $$InspectionSchedulesTableReferences
+                                    ._instanceIdTable(db),
+                            referencedColumn:
+                                $$InspectionSchedulesTableReferences
+                                    ._instanceIdTable(db)
+                                    .id,
+                          )
+                          as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (inspectionLogRefs)
+                    await $_getPrefetchedData<
+                      InspectionScheduleData,
+                      $InspectionSchedulesTable,
+                      InspectionLogData
+                    >(
+                      currentTable: table,
+                      referencedTable: $$InspectionSchedulesTableReferences
+                          ._inspectionLogRefsTable(db),
+                      managerFromTypedResult:
+                          (p0) =>
+                              $$InspectionSchedulesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).inspectionLogRefs,
+                      referencedItemsForCurrentItem:
+                          (item, referencedItems) => referencedItems.where(
+                            (e) => e.scheduleId == item.id,
+                          ),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$InspectionSchedulesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $InspectionSchedulesTable,
+      InspectionScheduleData,
+      $$InspectionSchedulesTableFilterComposer,
+      $$InspectionSchedulesTableOrderingComposer,
+      $$InspectionSchedulesTableAnnotationComposer,
+      $$InspectionSchedulesTableCreateCompanionBuilder,
+      $$InspectionSchedulesTableUpdateCompanionBuilder,
+      (InspectionScheduleData, $$InspectionSchedulesTableReferences),
+      InspectionScheduleData,
+      PrefetchHooks Function({bool instanceId, bool inspectionLogRefs})
+    >;
+typedef $$InspectionLogTableCreateCompanionBuilder =
+    InspectionLogCompanion Function({
+      Value<int> id,
+      required int scheduleId,
+      required DateTime doneAt,
+      Value<String> doneBy,
+      Value<String> note,
+    });
+typedef $$InspectionLogTableUpdateCompanionBuilder =
+    InspectionLogCompanion Function({
+      Value<int> id,
+      Value<int> scheduleId,
+      Value<DateTime> doneAt,
+      Value<String> doneBy,
+      Value<String> note,
+    });
+
+final class $$InspectionLogTableReferences
+    extends
+        BaseReferences<_$AppDatabase, $InspectionLogTable, InspectionLogData> {
+  $$InspectionLogTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $InspectionSchedulesTable _scheduleIdTable(_$AppDatabase db) =>
+      db.inspectionSchedules.createAlias(
+        $_aliasNameGenerator(
+          db.inspectionLog.scheduleId,
+          db.inspectionSchedules.id,
+        ),
+      );
+
+  $$InspectionSchedulesTableProcessedTableManager get scheduleId {
+    final $_column = $_itemColumn<int>('schedule_id')!;
+
+    final manager = $$InspectionSchedulesTableTableManager(
+      $_db,
+      $_db.inspectionSchedules,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_scheduleIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$InspectionLogTableFilterComposer
+    extends Composer<_$AppDatabase, $InspectionLogTable> {
+  $$InspectionLogTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get doneAt => $composableBuilder(
+    column: $table.doneAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get doneBy => $composableBuilder(
+    column: $table.doneBy,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$InspectionSchedulesTableFilterComposer get scheduleId {
+    final $$InspectionSchedulesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.scheduleId,
+      referencedTable: $db.inspectionSchedules,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$InspectionSchedulesTableFilterComposer(
+            $db: $db,
+            $table: $db.inspectionSchedules,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$InspectionLogTableOrderingComposer
+    extends Composer<_$AppDatabase, $InspectionLogTable> {
+  $$InspectionLogTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get doneAt => $composableBuilder(
+    column: $table.doneAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get doneBy => $composableBuilder(
+    column: $table.doneBy,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$InspectionSchedulesTableOrderingComposer get scheduleId {
+    final $$InspectionSchedulesTableOrderingComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.scheduleId,
+          referencedTable: $db.inspectionSchedules,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$InspectionSchedulesTableOrderingComposer(
+                $db: $db,
+                $table: $db.inspectionSchedules,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+}
+
+class $$InspectionLogTableAnnotationComposer
+    extends Composer<_$AppDatabase, $InspectionLogTable> {
+  $$InspectionLogTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get doneAt =>
+      $composableBuilder(column: $table.doneAt, builder: (column) => column);
+
+  GeneratedColumn<String> get doneBy =>
+      $composableBuilder(column: $table.doneBy, builder: (column) => column);
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  $$InspectionSchedulesTableAnnotationComposer get scheduleId {
+    final $$InspectionSchedulesTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.scheduleId,
+          referencedTable: $db.inspectionSchedules,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$InspectionSchedulesTableAnnotationComposer(
+                $db: $db,
+                $table: $db.inspectionSchedules,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+}
+
+class $$InspectionLogTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $InspectionLogTable,
+          InspectionLogData,
+          $$InspectionLogTableFilterComposer,
+          $$InspectionLogTableOrderingComposer,
+          $$InspectionLogTableAnnotationComposer,
+          $$InspectionLogTableCreateCompanionBuilder,
+          $$InspectionLogTableUpdateCompanionBuilder,
+          (InspectionLogData, $$InspectionLogTableReferences),
+          InspectionLogData,
+          PrefetchHooks Function({bool scheduleId})
+        > {
+  $$InspectionLogTableTableManager(_$AppDatabase db, $InspectionLogTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$InspectionLogTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () =>
+                  $$InspectionLogTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer:
+              () => $$InspectionLogTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> scheduleId = const Value.absent(),
+                Value<DateTime> doneAt = const Value.absent(),
+                Value<String> doneBy = const Value.absent(),
+                Value<String> note = const Value.absent(),
+              }) => InspectionLogCompanion(
+                id: id,
+                scheduleId: scheduleId,
+                doneAt: doneAt,
+                doneBy: doneBy,
+                note: note,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int scheduleId,
+                required DateTime doneAt,
+                Value<String> doneBy = const Value.absent(),
+                Value<String> note = const Value.absent(),
+              }) => InspectionLogCompanion.insert(
+                id: id,
+                scheduleId: scheduleId,
+                doneAt: doneAt,
+                doneBy: doneBy,
+                note: note,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          $$InspectionLogTableReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: ({scheduleId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                T extends TableManagerState<
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic
+                >
+              >(state) {
+                if (scheduleId) {
+                  state =
+                      state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.scheduleId,
+                            referencedTable: $$InspectionLogTableReferences
+                                ._scheduleIdTable(db),
+                            referencedColumn:
+                                $$InspectionLogTableReferences
+                                    ._scheduleIdTable(db)
+                                    .id,
+                          )
+                          as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$InspectionLogTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $InspectionLogTable,
+      InspectionLogData,
+      $$InspectionLogTableFilterComposer,
+      $$InspectionLogTableOrderingComposer,
+      $$InspectionLogTableAnnotationComposer,
+      $$InspectionLogTableCreateCompanionBuilder,
+      $$InspectionLogTableUpdateCompanionBuilder,
+      (InspectionLogData, $$InspectionLogTableReferences),
+      InspectionLogData,
+      PrefetchHooks Function({bool scheduleId})
+    >;
+typedef $$UserAliasesTableCreateCompanionBuilder =
+    UserAliasesCompanion Function({
+      Value<int> id,
+      required String alias,
+      required int equipmentId,
+      Value<DateTime> updatedAt,
+    });
+typedef $$UserAliasesTableUpdateCompanionBuilder =
+    UserAliasesCompanion Function({
+      Value<int> id,
+      Value<String> alias,
+      Value<int> equipmentId,
+      Value<DateTime> updatedAt,
+    });
+
+final class $$UserAliasesTableReferences
+    extends BaseReferences<_$AppDatabase, $UserAliasesTable, UserAliasData> {
+  $$UserAliasesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $EquipmentItemsTable _equipmentIdTable(_$AppDatabase db) =>
+      db.equipmentItems.createAlias(
+        $_aliasNameGenerator(db.userAliases.equipmentId, db.equipmentItems.id),
+      );
+
+  $$EquipmentItemsTableProcessedTableManager get equipmentId {
+    final $_column = $_itemColumn<int>('equipment_id')!;
+
+    final manager = $$EquipmentItemsTableTableManager(
+      $_db,
+      $_db.equipmentItems,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_equipmentIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$UserAliasesTableFilterComposer
+    extends Composer<_$AppDatabase, $UserAliasesTable> {
+  $$UserAliasesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get alias => $composableBuilder(
+    column: $table.alias,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$EquipmentItemsTableFilterComposer get equipmentId {
+    final $$EquipmentItemsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.equipmentId,
+      referencedTable: $db.equipmentItems,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EquipmentItemsTableFilterComposer(
+            $db: $db,
+            $table: $db.equipmentItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$UserAliasesTableOrderingComposer
+    extends Composer<_$AppDatabase, $UserAliasesTable> {
+  $$UserAliasesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get alias => $composableBuilder(
+    column: $table.alias,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$EquipmentItemsTableOrderingComposer get equipmentId {
+    final $$EquipmentItemsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.equipmentId,
+      referencedTable: $db.equipmentItems,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EquipmentItemsTableOrderingComposer(
+            $db: $db,
+            $table: $db.equipmentItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$UserAliasesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $UserAliasesTable> {
+  $$UserAliasesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get alias =>
+      $composableBuilder(column: $table.alias, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$EquipmentItemsTableAnnotationComposer get equipmentId {
+    final $$EquipmentItemsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.equipmentId,
+      referencedTable: $db.equipmentItems,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EquipmentItemsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.equipmentItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$UserAliasesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $UserAliasesTable,
+          UserAliasData,
+          $$UserAliasesTableFilterComposer,
+          $$UserAliasesTableOrderingComposer,
+          $$UserAliasesTableAnnotationComposer,
+          $$UserAliasesTableCreateCompanionBuilder,
+          $$UserAliasesTableUpdateCompanionBuilder,
+          (UserAliasData, $$UserAliasesTableReferences),
+          UserAliasData,
+          PrefetchHooks Function({bool equipmentId})
+        > {
+  $$UserAliasesTableTableManager(_$AppDatabase db, $UserAliasesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$UserAliasesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () => $$UserAliasesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer:
+              () =>
+                  $$UserAliasesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> alias = const Value.absent(),
+                Value<int> equipmentId = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => UserAliasesCompanion(
+                id: id,
+                alias: alias,
+                equipmentId: equipmentId,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String alias,
+                required int equipmentId,
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => UserAliasesCompanion.insert(
+                id: id,
+                alias: alias,
+                equipmentId: equipmentId,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          $$UserAliasesTableReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: ({equipmentId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                T extends TableManagerState<
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic
+                >
+              >(state) {
+                if (equipmentId) {
+                  state =
+                      state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.equipmentId,
+                            referencedTable: $$UserAliasesTableReferences
+                                ._equipmentIdTable(db),
+                            referencedColumn:
+                                $$UserAliasesTableReferences
+                                    ._equipmentIdTable(db)
+                                    .id,
+                          )
+                          as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$UserAliasesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $UserAliasesTable,
+      UserAliasData,
+      $$UserAliasesTableFilterComposer,
+      $$UserAliasesTableOrderingComposer,
+      $$UserAliasesTableAnnotationComposer,
+      $$UserAliasesTableCreateCompanionBuilder,
+      $$UserAliasesTableUpdateCompanionBuilder,
+      (UserAliasData, $$UserAliasesTableReferences),
+      UserAliasData,
+      PrefetchHooks Function({bool equipmentId})
+    >;
+typedef $$SyncMetaTableCreateCompanionBuilder =
+    SyncMetaCompanion Function({
+      Value<int> id,
+      Value<int> lastPulledVersion,
+      Value<DateTime?> lastPulledAt,
+      Value<bool> localDirty,
+    });
+typedef $$SyncMetaTableUpdateCompanionBuilder =
+    SyncMetaCompanion Function({
+      Value<int> id,
+      Value<int> lastPulledVersion,
+      Value<DateTime?> lastPulledAt,
+      Value<bool> localDirty,
+    });
+
+class $$SyncMetaTableFilterComposer
+    extends Composer<_$AppDatabase, $SyncMetaTable> {
+  $$SyncMetaTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get lastPulledVersion => $composableBuilder(
+    column: $table.lastPulledVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastPulledAt => $composableBuilder(
+    column: $table.lastPulledAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get localDirty => $composableBuilder(
+    column: $table.localDirty,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SyncMetaTableOrderingComposer
+    extends Composer<_$AppDatabase, $SyncMetaTable> {
+  $$SyncMetaTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get lastPulledVersion => $composableBuilder(
+    column: $table.lastPulledVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastPulledAt => $composableBuilder(
+    column: $table.lastPulledAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get localDirty => $composableBuilder(
+    column: $table.localDirty,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SyncMetaTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SyncMetaTable> {
+  $$SyncMetaTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get lastPulledVersion => $composableBuilder(
+    column: $table.lastPulledVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get lastPulledAt => $composableBuilder(
+    column: $table.lastPulledAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get localDirty => $composableBuilder(
+    column: $table.localDirty,
+    builder: (column) => column,
+  );
+}
+
+class $$SyncMetaTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SyncMetaTable,
+          SyncMetaData,
+          $$SyncMetaTableFilterComposer,
+          $$SyncMetaTableOrderingComposer,
+          $$SyncMetaTableAnnotationComposer,
+          $$SyncMetaTableCreateCompanionBuilder,
+          $$SyncMetaTableUpdateCompanionBuilder,
+          (
+            SyncMetaData,
+            BaseReferences<_$AppDatabase, $SyncMetaTable, SyncMetaData>,
+          ),
+          SyncMetaData,
+          PrefetchHooks Function()
+        > {
+  $$SyncMetaTableTableManager(_$AppDatabase db, $SyncMetaTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$SyncMetaTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () => $$SyncMetaTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer:
+              () => $$SyncMetaTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> lastPulledVersion = const Value.absent(),
+                Value<DateTime?> lastPulledAt = const Value.absent(),
+                Value<bool> localDirty = const Value.absent(),
+              }) => SyncMetaCompanion(
+                id: id,
+                lastPulledVersion: lastPulledVersion,
+                lastPulledAt: lastPulledAt,
+                localDirty: localDirty,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> lastPulledVersion = const Value.absent(),
+                Value<DateTime?> lastPulledAt = const Value.absent(),
+                Value<bool> localDirty = const Value.absent(),
+              }) => SyncMetaCompanion.insert(
+                id: id,
+                lastPulledVersion: lastPulledVersion,
+                lastPulledAt: lastPulledAt,
+                localDirty: localDirty,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          BaseReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SyncMetaTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SyncMetaTable,
+      SyncMetaData,
+      $$SyncMetaTableFilterComposer,
+      $$SyncMetaTableOrderingComposer,
+      $$SyncMetaTableAnnotationComposer,
+      $$SyncMetaTableCreateCompanionBuilder,
+      $$SyncMetaTableUpdateCompanionBuilder,
+      (
+        SyncMetaData,
+        BaseReferences<_$AppDatabase, $SyncMetaTable, SyncMetaData>,
+      ),
+      SyncMetaData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -4693,4 +9506,14 @@ class $AppDatabaseManager {
       $$EquipmentAssignmentsTableTableManager(_db, _db.equipmentAssignments);
   $$QuizResultsTableTableManager get quizResults =>
       $$QuizResultsTableTableManager(_db, _db.quizResults);
+  $$EquipmentInstancesTableTableManager get equipmentInstances =>
+      $$EquipmentInstancesTableTableManager(_db, _db.equipmentInstances);
+  $$InspectionSchedulesTableTableManager get inspectionSchedules =>
+      $$InspectionSchedulesTableTableManager(_db, _db.inspectionSchedules);
+  $$InspectionLogTableTableManager get inspectionLog =>
+      $$InspectionLogTableTableManager(_db, _db.inspectionLog);
+  $$UserAliasesTableTableManager get userAliases =>
+      $$UserAliasesTableTableManager(_db, _db.userAliases);
+  $$SyncMetaTableTableManager get syncMeta =>
+      $$SyncMetaTableTableManager(_db, _db.syncMeta);
 }

@@ -70,4 +70,5 @@ flutter:
     - assets/equipment_library/vehicles/ab_g/loading_plan.json
     - assets/equipment_library/vehicles/ab_g/equipment/
     - assets/images/placeholder_equipment.png
+    - assets/images/equipment/
 

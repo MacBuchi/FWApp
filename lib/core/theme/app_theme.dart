@@ -1,5 +1,6 @@
 /// AppTheme – Material 3 theme definition for the FWApp.
 /// Primary colour: red (Feuerwehr), dark mode support.
+library;
 import 'package:flutter/material.dart';
 
 class AppTheme {

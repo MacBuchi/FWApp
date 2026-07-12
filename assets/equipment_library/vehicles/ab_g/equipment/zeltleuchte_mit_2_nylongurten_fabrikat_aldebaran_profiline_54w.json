@@ -24,7 +24,9 @@
     "Welche Schutzart (IP) bzw. ATEX-Kategorie hat dieses Gerät?",
     "Was ist beim Betrieb in explosionsgefährdeten Atmosphären (ATEX) zu beachten?"
   ],
-  "images": [],
+  "images": [
+    "assets/images/equipment/zeltleuchte_mit_2_nylongurten_fabrikat_aldebaran_profiline_54w.webp"
+  ],
   "manuals": [],
   "source": "Beladeliste AB-G, Stand 2025-01-29"
 }

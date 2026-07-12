@@ -1,6 +1,7 @@
 /// equipment_enums.dart – Two-axis classification system (§9).
 /// EquipmentFunction: what the device technically does.
 /// DeploymentScenario: in which incident type the equipment is used.
+library;
 
 enum EquipmentFunction {
   rettung,

@@ -1,4 +1,5 @@
 /// assignment_repository.dart – Abstract interface for equipment-assignment data access.
+library;
 import 'package:fwapp/features/assignment/domain/entities/equipment_assignment.dart';
 
 abstract class AssignmentRepository {

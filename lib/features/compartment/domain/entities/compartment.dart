@@ -1,4 +1,5 @@
 /// compartment.dart – Compartment domain entity.
+library;
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'compartment.freezed.dart';

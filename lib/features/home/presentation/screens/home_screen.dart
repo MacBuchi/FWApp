@@ -1,8 +1,10 @@
 /// home_screen.dart – Dashboard with stats, quick navigation, and recent quiz scores.
+library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fwapp/features/equipment/presentation/providers/equipment_providers.dart';
+import 'package:fwapp/features/inspection/presentation/providers/inspection_providers.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';
 import 'package:fwapp/core/database/database_providers.dart';
 
@@ -49,6 +51,8 @@ class HomeScreen extends ConsumerWidget {
               ),
             ],
           ),
+          const SizedBox(height: 12),
+          const _InspectionsCard(),
           const SizedBox(height: 20),
           Text('Schnellzugriff',
               style: Theme.of(context).textTheme.titleMedium),
@@ -94,6 +98,68 @@ class HomeScreen extends ConsumerWidget {
           const SizedBox(height: 8),
           _RecentQuizResults(),
         ],
+      ),
+    );
+  }
+}
+
+/// Gerätewart summary: overdue / due-soon inspections across the fleet.
+class _InspectionsCard extends ConsumerWidget {
+  const _InspectionsCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final dueAsync = ref.watch(dueInspectionsStreamProvider());
+    return Card(
+      child: InkWell(
+        onTap: () => context.push('/inspections'),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: dueAsync.when(
+            loading: () => const SizedBox(
+                height: 24,
+                child: Center(
+                    child: CircularProgressIndicator(strokeWidth: 2))),
+            error: (_, __) => const Text('Prüftermine: Fehler beim Laden'),
+            data: (entries) {
+              final now = DateTime.now();
+              final overdue =
+                  entries.where((e) => e.isOverdue(now)).length;
+              final dueSoon = entries.length - overdue;
+              final color = overdue > 0
+                  ? Colors.red.shade700
+                  : dueSoon > 0
+                      ? Colors.orange.shade800
+                      : Colors.green.shade700;
+              final text = entries.isEmpty
+                  ? 'Keine fälligen Prüfungen'
+                  : [
+                      if (overdue > 0) '$overdue überfällig',
+                      if (dueSoon > 0) '$dueSoon bald fällig',
+                    ].join(' · ');
+              return Row(
+                children: [
+                  Icon(Icons.fact_check, color: color, size: 28),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Prüftermine',
+                            style: Theme.of(context).textTheme.titleSmall),
+                        Text(text,
+                            style: TextStyle(
+                                color: color, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.chevron_right),
+                ],
+              );
+            },
+          ),
+        ),
       ),
     );
   }
@@ -222,9 +288,13 @@ class _RecentQuizResults extends ConsumerWidget {
                     style: const TextStyle(
                         color: Colors.white, fontSize: 11)),
               ),
-              title: Text(r.quizType == 'compartment'
-                  ? 'Fach-Quiz'
-                  : 'Bild-Quiz'),
+              title: Text(switch (r.quizType) {
+                'compartment' => 'Fach-Quiz',
+                'cutaway' => 'Wo liegt\'s?',
+                'flashcards' => 'Geräte-Wissen',
+                'dragdrop' => 'Drag & Drop',
+                _ => 'Bild-Quiz',
+              }),
               subtitle: Text(
                   '${r.score}/${r.total} Punkte'),
               trailing: Text(

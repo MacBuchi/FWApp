@@ -1,10 +1,16 @@
-/// drag_drop_screen.dart – Drag equipment cards into the correct compartment zone.
+/// drag_drop_screen.dart – Drag equipment cards onto the correct compartment
+/// in the vehicle cutaway (Schnittdarstellung).
+library;
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/database/database_providers.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
+import 'package:fwapp/features/compartment/domain/entities/compartment.dart';
 import 'package:fwapp/features/vehicle/domain/entities/vehicle.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';
+import 'package:fwapp/features/vehicle/presentation/widgets/vehicle_cutaway_view.dart';
 
 class DragDropScreen extends ConsumerStatefulWidget {
   const DragDropScreen({super.key});
@@ -18,10 +24,12 @@ class _DragDropScreenState extends ConsumerState<DragDropScreen> {
   bool _started = false;
 
   List<_DragItem> _remaining = [];
-  List<_CompartmentZone> _zones = [];
+  List<Compartment> _compartments = [];
   int _score = 0;
   int _total = 0;
-  final Map<int, bool> _zoneHighlight = {};
+
+  /// Brief correct/wrong flash on the tile that received a drop.
+  final Map<int, CutawayTileStatus> _flash = {};
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +54,7 @@ class _DragDropScreenState extends ConsumerState<DragDropScreen> {
               loading: () => const CircularProgressIndicator(),
               error: (e, _) => Text('Fehler: $e'),
               data: (vehicles) => DropdownButtonFormField<Vehicle>(
-                value: _selectedVehicle,
+                initialValue: _selectedVehicle,
                 decoration: const InputDecoration(labelText: 'Fahrzeug'),
                 items: vehicles
                     .map((v) => DropdownMenuItem(
@@ -71,13 +79,23 @@ class _DragDropScreenState extends ConsumerState<DragDropScreen> {
   Future<void> _startGame() async {
     if (_selectedVehicle == null) return;
     final db = ref.read(appDatabaseProvider);
-    final compartments =
+    final compartmentRows =
         await db.compartmentDao.getByVehicle(_selectedVehicle!.id);
     final items = <_DragItem>[];
-    final zones = <_CompartmentZone>[];
+    final zones = compartmentRows
+        .map((c) => Compartment(
+              id: c.id,
+              vehicleId: c.vehicleId,
+              label: c.label,
+              position: c.position,
+              gridRow: c.gridRow,
+              gridCol: c.gridCol,
+              gridColSpan: c.gridColSpan,
+              updatedAt: c.updatedAt,
+            ))
+        .toList();
 
-    for (final c in compartments) {
-      zones.add(_CompartmentZone(id: c.id, label: c.label));
+    for (final c in compartmentRows) {
       final assignments = await db.assignmentDao.getByCompartment(c.id);
       for (final a in assignments) {
         final eq = await db.equipmentDao.getById(a.equipmentId);
@@ -102,7 +120,8 @@ class _DragDropScreenState extends ConsumerState<DragDropScreen> {
 
     setState(() {
       _remaining = items.take(15).toList();
-      _zones = zones;
+      _compartments = zones;
+      _flash.clear();
       _score = 0;
       _total = _remaining.length;
       _started = true;
@@ -149,54 +168,28 @@ class _DragDropScreenState extends ConsumerState<DragDropScreen> {
                 width: 130, child: _EquipmentCard(item: current)),
           ),
           const SizedBox(height: 12),
-          // Compartment zones grid
+          // Cutaway as drop surface
           Expanded(
-            child: GridView.builder(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.all(12),
-              gridDelegate:
-                  const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
-                childAspectRatio: 1.5,
-              ),
-              itemCount: _zones.length,
-              itemBuilder: (context, i) {
-                final zone = _zones[i];
-                return DragTarget<_DragItem>(
+              child: VehicleCutawayView(
+                compartments: _compartments,
+                tileStates: {
+                  for (final e in _flash.entries)
+                    e.key: CutawayTileState(status: e.value),
+                },
+                tileWrapperBuilder: (compartment, tile) =>
+                    DragTarget<_DragItem>(
                   onWillAcceptWithDetails: (_) => true,
                   onAcceptWithDetails: (details) =>
-                      _onDrop(details.data, zone),
-                  builder: (ctx, candidates, rejected) {
-                    final isHighlighted = candidates.isNotEmpty;
-                    return AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      decoration: BoxDecoration(
-                        color: isHighlighted
-                            ? Theme.of(context)
-                                .colorScheme
-                                .primaryContainer
-                            : Theme.of(context)
-                                .colorScheme
-                                .surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: isHighlighted
-                              ? Theme.of(context).colorScheme.primary
-                              : Colors.transparent,
-                          width: 2,
-                        ),
-                      ),
-                      child: Center(
-                        child: Text(zone.label,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.center),
-                      ),
-                    );
-                  },
-                );
-              },
+                      _onDrop(details.data, compartment),
+                  builder: (ctx, candidates, rejected) => AnimatedScale(
+                    scale: candidates.isNotEmpty ? 1.05 : 1,
+                    duration: const Duration(milliseconds: 150),
+                    child: tile,
+                  ),
+                ),
+              ),
             ),
           ),
         ],
@@ -204,21 +197,37 @@ class _DragDropScreenState extends ConsumerState<DragDropScreen> {
     );
   }
 
-  void _onDrop(_DragItem item, _CompartmentZone zone) {
-    final correct = item.correctCompartmentId == zone.id;
+  void _onDrop(_DragItem item, Compartment compartment) {
+    if (_flash.isNotEmpty) return; // ignore drops during the feedback flash
+    final correct = item.correctCompartmentId == compartment.id;
     if (correct) _score++;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(correct
-            ? '✓ Richtig! ${item.equipmentName} → ${zone.label}'
-            : '✗ Falsch! ${item.equipmentName} gehört nicht in ${zone.label}'),
-        backgroundColor: correct ? Colors.green : Colors.red,
-        duration: const Duration(milliseconds: 1500),
-      ),
-    );
+    setState(() {
+      _flash[compartment.id] =
+          correct ? CutawayTileStatus.correct : CutawayTileStatus.wrong;
+      if (!correct) {
+        // Also show where it belongs.
+        _flash[item.correctCompartmentId] = CutawayTileStatus.correct;
+      }
+    });
+    Future.delayed(const Duration(milliseconds: 900), () {
+      if (!mounted) return;
+      setState(() {
+        _flash.clear();
+        _remaining.removeAt(0);
+        if (_remaining.isEmpty) _saveResult();
+      });
+    });
+  }
 
-    setState(() => _remaining.removeAt(0));
+  Future<void> _saveResult() async {
+    final db = ref.read(appDatabaseProvider);
+    await db.quizDao.insertResult(QuizResultsCompanion.insert(
+      quizType: 'dragdrop',
+      score: _score,
+      total: _total,
+      vehicleId: Value(_selectedVehicle?.id),
+    ));
   }
 
   Widget _buildResults() {
@@ -309,8 +318,3 @@ class _DragItem {
   });
 }
 
-class _CompartmentZone {
-  final int id;
-  final String label;
-  const _CompartmentZone({required this.id, required this.label});
-}

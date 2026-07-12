@@ -12,7 +12,8 @@
   ],
   "description": "Klappbarer Transportwagen 900x600mm, Fabrikat Fetra. Sonderausstattung des AB-G für spezifische Gefahrgutlagen.",
   "technical_data": {
-    "abmessungen_mm": "900 x 600"
+    "abmessungen_mm": "900 x 600",
+    "image_todo": true
   },
   "typical_use": [
     "Einsatz bei Gefahrgutvorfällen",

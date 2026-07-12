@@ -22,7 +22,9 @@
     "Welchem TW-Bereich (TW-1 bis TW-6) ist dieses Gerät zuzuordnen?",
     "Bei welchen Gefahrgutszenarien kommt es zum Einsatz?"
   ],
-  "images": [],
+  "images": [
+    "assets/images/equipment/dichtungskeil_schaumstoff_800x500x200mm.webp"
+  ],
   "manuals": [],
   "source": "Beladeliste AB-G, Stand 2025-01-29"
 }

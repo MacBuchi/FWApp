@@ -12,7 +12,8 @@
   ],
   "description": "Sackkarre klappbar ca 1100x460x300mm. Arbeitsmittel des AB-G für den Einsatz an der Gefahrguteinsatzstelle.",
   "technical_data": {
-    "abmessungen_mm": "1100 x 460 x 300"
+    "abmessungen_mm": "1100 x 460 x 300",
+    "image_todo": true
   },
   "typical_use": [
     "Unterstützung beim Umpumpen und Auffangen",

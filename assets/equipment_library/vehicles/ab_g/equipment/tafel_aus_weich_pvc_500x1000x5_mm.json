@@ -13,7 +13,8 @@
   "description": "Tafel aus Weich PVC 500x1000x5 mm. Sonderausstattung des AB-G für spezifische Gefahrgutlagen.",
   "technical_data": {
     "abmessungen_mm": "500 x 1000 x 5",
-    "material": "PVC"
+    "material": "PVC",
+    "image_todo": true
   },
   "typical_use": [
     "Einsatz bei Gefahrgutvorfällen",

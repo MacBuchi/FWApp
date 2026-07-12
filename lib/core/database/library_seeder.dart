@@ -1,5 +1,6 @@
 /// library_seeder.dart – Idempotent seeder that populates the DB from the JSON asset library.
 /// Run once on first launch. Uses libraryEquipmentId to detect already-seeded rows.
+library;
 import 'dart:convert';
 
 import 'package:drift/drift.dart' show Value;
@@ -19,13 +20,17 @@ class LibrarySeeder {
       final existing = await _db.equipmentDao.getAll();
       final seeded =
           existing.any((e) => e.libraryEquipmentId != null);
-      if (seeded) {
-        _log.i('Library already seeded – skipping.');
-        return;
+      if (!seeded) {
+        _log.i('Starting library seed...');
+        await _seedVehicle('ab_g');
+        _log.i('Library seed complete.');
+      } else {
+        _log.i('Library already seeded – skipping full seed.');
       }
-      _log.i('Starting library seed...');
-      await _seedVehicle('ab_g');
-      _log.i('Library seed complete.');
+      // Always sync image paths so newly added images propagate to existing rows.
+      await _syncImagePaths('ab_g');
+      // Backfill training content (v2 columns) for rows seeded before v2.
+      await _syncEnrichment('ab_g');
     } catch (e, st) {
       _log.e('Library seed failed', error: e, stackTrace: st);
     }
@@ -120,10 +125,21 @@ class LibrarySeeder {
             List<String> scenarios = [];
             String description = '';
             String? trainingUrl;
+            String? imagePath;
             Map<String, dynamic> extra = {};
+
+            String? shortName;
+            List<String> trainingQuestions = [];
+            List<String> typicalUse = [];
 
             if (eJson != null) {
               name = (eJson['name'] as String?) ?? name;
+              shortName = eJson['short_name'] as String?;
+              trainingQuestions =
+                  ((eJson['training_questions'] as List?)?.cast<String>()) ??
+                      [];
+              typicalUse =
+                  ((eJson['typical_use'] as List?)?.cast<String>()) ?? [];
               functions =
                   ((eJson['equipment_functions'] as List?)
                           ?.cast<String>()) ??
@@ -138,6 +154,9 @@ class LibrarySeeder {
                   (eJson['manuals'] as List).isNotEmpty) {
                 trainingUrl = (eJson['manuals'] as List).first as String?;
               }
+              final images =
+                  ((eJson['images'] as List?)?.cast<String>()) ?? [];
+              if (images.isNotEmpty) imagePath = images.first;
               if (eJson['technical_data'] is Map) {
                 extra = Map<String, dynamic>.from(
                     eJson['technical_data'] as Map);
@@ -147,6 +166,7 @@ class LibrarySeeder {
             equipmentId = await _db.equipmentDao.insertEquipment(
               EquipmentItemsCompanion.insert(
                 name: name,
+                shortName: Value(shortName),
                 libraryEquipmentId: Value(equipmentLibId),
                 isCustom: const Value(false),
                 equipmentFunctionsJson:
@@ -154,8 +174,11 @@ class LibrarySeeder {
                 deploymentScenariosJson:
                     Value(jsonEncode(scenarios)),
                 description: Value(description),
+                imagePath: Value(imagePath),
                 trainingUrl: Value(trainingUrl),
                 extraAttributesJson: Value(jsonEncode(extra)),
+                trainingQuestionsJson: Value(jsonEncode(trainingQuestions)),
+                typicalUseJson: Value(jsonEncode(typicalUse)),
               ),
             );
           }
@@ -177,6 +200,66 @@ class LibrarySeeder {
         }
       }
     });
+  }
+
+  /// Backfill imagePath for any already-seeded rows whose JSON now has an image.
+  Future<void> _syncImagePaths(String vehicleId) async {
+    final all = await _db.equipmentDao.getAll();
+    final needsImage = all
+        .where((e) => e.imagePath == null && e.libraryEquipmentId != null)
+        .toList();
+    if (needsImage.isEmpty) return;
+    _log.i('Syncing image paths for ${needsImage.length} items...');
+    int updated = 0;
+    for (final row in needsImage) {
+      final eJson = await _loadJson(
+          'assets/equipment_library/vehicles/$vehicleId/equipment/${row.libraryEquipmentId}.json');
+      if (eJson == null) continue;
+      final images = ((eJson['images'] as List?)?.cast<String>()) ?? [];
+      if (images.isEmpty) continue;
+      await _db.equipmentDao.patchEquipment(
+        row.id,
+        EquipmentItemsCompanion(imagePath: Value(images.first)),
+      );
+      updated++;
+    }
+    if (updated > 0) _log.i('Updated image paths for $updated equipment items.');
+  }
+
+  /// Backfill v2 training content (training_questions, typical_use,
+  /// short_name) for rows seeded before those columns existed.
+  Future<void> _syncEnrichment(String vehicleId) async {
+    final all = await _db.equipmentDao.getAll();
+    final needsEnrichment = all
+        .where((e) =>
+            e.libraryEquipmentId != null && e.trainingQuestionsJson == '[]')
+        .toList();
+    if (needsEnrichment.isEmpty) return;
+    _log.i('Backfilling training content for ${needsEnrichment.length} items...');
+    int updated = 0;
+    for (final row in needsEnrichment) {
+      final eJson = await _loadJson(
+          'assets/equipment_library/vehicles/$vehicleId/equipment/${row.libraryEquipmentId}.json');
+      if (eJson == null) continue;
+      final trainingQuestions =
+          ((eJson['training_questions'] as List?)?.cast<String>()) ?? [];
+      final typicalUse =
+          ((eJson['typical_use'] as List?)?.cast<String>()) ?? [];
+      final shortName = eJson['short_name'] as String?;
+      if (trainingQuestions.isEmpty && typicalUse.isEmpty && shortName == null) {
+        continue;
+      }
+      await _db.equipmentDao.patchEquipment(
+        row.id,
+        EquipmentItemsCompanion(
+          shortName: Value(shortName ?? row.shortName),
+          trainingQuestionsJson: Value(jsonEncode(trainingQuestions)),
+          typicalUseJson: Value(jsonEncode(typicalUse)),
+        ),
+      );
+      updated++;
+    }
+    if (updated > 0) _log.i('Backfilled training content for $updated items.');
   }
 
   Future<Map<String, dynamic>?> _loadJson(String assetPath) async {

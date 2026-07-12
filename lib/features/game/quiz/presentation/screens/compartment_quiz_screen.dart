@@ -1,13 +1,10 @@
 /// compartment_quiz_screen.dart – Multiple-choice: which compartment for this equipment?
-import 'dart:math';
+library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/database/database_providers.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
-import 'package:fwapp/features/assignment/presentation/providers/assignment_providers.dart';
-import 'package:fwapp/features/compartment/presentation/providers/compartment_providers.dart';
-import 'package:fwapp/features/equipment/presentation/providers/equipment_providers.dart';
 import 'package:fwapp/features/vehicle/domain/entities/vehicle.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';
 
@@ -54,7 +51,7 @@ class _CompartmentQuizScreenState
               loading: () => const CircularProgressIndicator(),
               error: (e, _) => Text('Fehler: $e'),
               data: (vehicles) => DropdownButtonFormField<Vehicle?>(
-                value: _selectedVehicle,
+                initialValue: _selectedVehicle,
                 decoration:
                     const InputDecoration(labelText: 'Fahrzeug (optional)'),
                 items: [
@@ -173,9 +170,9 @@ class _CompartmentQuizScreenState
                       style: OutlinedButton.styleFrom(
                         backgroundColor: _answered
                             ? opt == q.correctAnswer
-                                ? Colors.green.withOpacity(0.15)
+                                ? Colors.green.withValues(alpha: 0.15)
                                 : opt == _selectedAnswer
-                                    ? Colors.red.withOpacity(0.15)
+                                    ? Colors.red.withValues(alpha: 0.15)
                                     : null
                             : null,
                         side: BorderSide(

@@ -1,4 +1,5 @@
 /// vehicle_repository_impl.dart – Drift-backed implementation of VehicleRepository.
+library;
 import 'package:drift/drift.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/features/vehicle/domain/entities/vehicle.dart';

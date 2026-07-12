@@ -1,5 +1,6 @@
 /// image_utils.dart – Image-path resolution helpers.
 /// Rule: paths starting with "assets/" use Image.asset(); all others use Image.file().
+library;
 import 'dart:io';
 import 'package:flutter/material.dart';
 

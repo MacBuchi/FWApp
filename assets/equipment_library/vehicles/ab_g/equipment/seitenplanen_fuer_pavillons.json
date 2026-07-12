@@ -11,7 +11,9 @@
     "GEFAHRGUT_PUMPEN"
   ],
   "description": "Seitenplanen für Pavillons. Sonderausstattung des AB-G für spezifische Gefahrgutlagen.",
-  "technical_data": {},
+  "technical_data": {
+    "image_todo": true
+  },
   "typical_use": [
     "Einsatz bei Gefahrgutvorfällen",
     "Aufbau der Einsatzstelle (TW-Bereiche)"

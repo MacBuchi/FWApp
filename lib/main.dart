@@ -1,4 +1,5 @@
 /// main.dart – App entry point. Initialises Riverpod, seeds the library, and launches the router.
+library;
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

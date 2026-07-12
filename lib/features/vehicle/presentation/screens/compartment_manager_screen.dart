@@ -1,9 +1,12 @@
-/// compartment_manager_screen.dart – Add/remove/reorder compartments for a vehicle.
+/// compartment_manager_screen.dart – Add/remove/reorder compartments for a
+/// vehicle plus a grid editor for the cutaway view (Schnittdarstellung).
+library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/features/compartment/domain/entities/compartment.dart';
 import 'package:fwapp/features/compartment/presentation/providers/compartment_providers.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';
+import 'package:fwapp/features/vehicle/presentation/widgets/vehicle_cutaway_view.dart';
 
 class CompartmentManagerScreen extends ConsumerWidget {
   final int vehicleId;
@@ -15,22 +18,40 @@ class CompartmentManagerScreen extends ConsumerWidget {
     final compartmentsAsync =
         ref.watch(compartmentListStreamProvider(vehicleId));
 
-    return Scaffold(
-      appBar: AppBar(
-        title: vehicleAsync.when(
-          loading: () => const Text('Fächer'),
-          error: (_, __) => const Text('Fächer'),
-          data: (v) => Text('Fächer – ${v?.name ?? ''}'),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            tooltip: 'Fach hinzufügen',
-            onPressed: () => _showAddDialog(context, ref),
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: vehicleAsync.when(
+            loading: () => const Text('Fächer'),
+            error: (_, __) => const Text('Fächer'),
+            data: (v) => Text('Fächer – ${v?.name ?? ''}'),
           ),
-        ],
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.add),
+              tooltip: 'Fach hinzufügen',
+              onPressed: () => _showAddDialog(context, ref),
+            ),
+          ],
+          bottom: const TabBar(tabs: [
+            Tab(text: 'Liste', icon: Icon(Icons.list)),
+            Tab(text: 'Raster', icon: Icon(Icons.grid_view)),
+          ]),
+        ),
+        body: TabBarView(
+          children: [
+            _buildListTab(context, ref, compartmentsAsync),
+            _GridEditorTab(vehicleId: vehicleId),
+          ],
+        ),
       ),
-      body: compartmentsAsync.when(
+    );
+  }
+
+  Widget _buildListTab(BuildContext context, WidgetRef ref,
+      AsyncValue<List<Compartment>> compartmentsAsync) {
+    return compartmentsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Fehler: $e')),
         data: (compartments) {
@@ -87,8 +108,7 @@ class CompartmentManagerScreen extends ConsumerWidget {
             },
           );
         },
-      ),
-    );
+      );
   }
 
   Future<void> _showAddDialog(BuildContext context, WidgetRef ref) async {
@@ -191,5 +211,182 @@ class CompartmentManagerScreen extends ConsumerWidget {
     for (var i = 0; i < list.length; i++) {
       await repo.update(list[i].copyWith(position: i));
     }
+  }
+}
+
+/// Editor for the cutaway grid: live preview, tap a tile to set its
+/// row/column/span. Persists directly via the compartment repository.
+class _GridEditorTab extends ConsumerWidget {
+  final int vehicleId;
+  const _GridEditorTab({required this.vehicleId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final compartmentsAsync =
+        ref.watch(compartmentListStreamProvider(vehicleId));
+    return compartmentsAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(child: Text('Fehler: $e')),
+      data: (compartments) {
+        if (compartments.isEmpty) {
+          return const Center(
+              child: Text('Lege zuerst Fächer an.',
+                  style: TextStyle(color: Colors.grey)));
+        }
+        final unplaced = compartments
+            .where((c) => c.gridRow == null || c.gridCol == null)
+            .length;
+        return ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            Text(
+              'Tippe auf ein Fach, um Zeile, Spalte und Breite in der '
+              'Schnittdarstellung festzulegen.',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            if (unplaced > 0)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  '$unplaced Fach/Fächer noch nicht platziert '
+                  '(werden unten automatisch angeordnet).',
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: Colors.orange.shade800),
+                ),
+              ),
+            const SizedBox(height: 12),
+            VehicleCutawayView(
+              compartments: compartments,
+              onTapCompartment: (c) => _editTile(context, ref, c),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _editTile(
+      BuildContext context, WidgetRef ref, Compartment c) async {
+    await showModalBottomSheet(
+      context: context,
+      builder: (ctx) => _TileEditorSheet(compartment: c),
+    );
+  }
+}
+
+class _TileEditorSheet extends ConsumerStatefulWidget {
+  final Compartment compartment;
+  const _TileEditorSheet({required this.compartment});
+
+  @override
+  ConsumerState<_TileEditorSheet> createState() => _TileEditorSheetState();
+}
+
+class _TileEditorSheetState extends ConsumerState<_TileEditorSheet> {
+  late int _row;
+  late int _col;
+  late int _span;
+
+  @override
+  void initState() {
+    super.initState();
+    _row = widget.compartment.gridRow ?? 0;
+    _col = widget.compartment.gridCol ?? 0;
+    _span = widget.compartment.gridColSpan;
+  }
+
+  Future<void> _save({bool removeFromGrid = false}) async {
+    final repo = ref.read(compartmentRepositoryProvider);
+    await repo.update(widget.compartment.copyWith(
+      gridRow: removeFromGrid ? null : _row,
+      gridCol: removeFromGrid ? null : _col,
+      gridColSpan: removeFromGrid ? 1 : _span,
+    ));
+    if (mounted) Navigator.of(context).pop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(widget.compartment.label,
+                style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            _Stepper(
+                label: 'Zeile',
+                value: _row,
+                min: 0,
+                onChanged: (v) => setState(() => _row = v)),
+            _Stepper(
+                label: 'Spalte',
+                value: _col,
+                min: 0,
+                onChanged: (v) => setState(() => _col = v)),
+            _Stepper(
+                label: 'Breite (Spalten)',
+                value: _span,
+                min: 1,
+                onChanged: (v) => setState(() => _span = v)),
+            const SizedBox(height: 12),
+            OverflowBar(
+              alignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => _save(removeFromGrid: true),
+                  child: const Text('Aus Raster entfernen'),
+                ),
+                FilledButton(
+                  onPressed: _save,
+                  child: const Text('Speichern'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Stepper extends StatelessWidget {
+  final String label;
+  final int value;
+  final int min;
+  final ValueChanged<int> onChanged;
+
+  const _Stepper({
+    required this.label,
+    required this.value,
+    required this.min,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(child: Text(label)),
+        IconButton(
+          icon: const Icon(Icons.remove_circle_outline),
+          onPressed: value > min ? () => onChanged(value - 1) : null,
+        ),
+        SizedBox(
+            width: 32,
+            child: Text('$value',
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontWeight: FontWeight.bold))),
+        IconButton(
+          icon: const Icon(Icons.add_circle_outline),
+          onPressed: () => onChanged(value + 1),
+        ),
+      ],
+    );
   }
 }

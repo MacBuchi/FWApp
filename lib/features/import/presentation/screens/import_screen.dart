@@ -1,4 +1,5 @@
 /// import_screen.dart – Excel / CSV Beladeplan import screen.
+library;
 
 import 'package:excel/excel.dart';
 import 'package:file_picker/file_picker.dart';
@@ -109,7 +110,9 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
 
             if (vehicleName.isEmpty ||
                 compartmentLabel.isEmpty ||
-                equipmentName.isEmpty) continue;
+                equipmentName.isEmpty) {
+              continue;
+            }
 
             // Upsert vehicle
             final vehicles = await db.vehicleDao.getAll();

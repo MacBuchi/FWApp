@@ -11,7 +11,9 @@
     "GEFAHRGUT_PUMPEN"
   ],
   "description": "Fuß verzinkt für Absperrstützen. Mittel für Beleuchtung, Strom, Signalgebung oder Funk an der Einsatzstelle.",
-  "technical_data": {},
+  "technical_data": {
+    "image_todo": true
+  },
   "typical_use": [
     "Ausleuchtung der Einsatzstelle",
     "Energieversorgung für Pumpen und Dekon-Einrichtungen"

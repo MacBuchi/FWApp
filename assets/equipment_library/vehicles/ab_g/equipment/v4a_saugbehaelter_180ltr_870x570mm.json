@@ -14,7 +14,8 @@
   "technical_data": {
     "volumen_liter": 180.0,
     "abmessungen_mm": "870 x 570",
-    "material": "Edelstahl V4A"
+    "material": "Edelstahl V4A",
+    "image_todo": true
   },
   "typical_use": [
     "Einsatz bei Gefahrgutvorfällen",

@@ -27,7 +27,9 @@
     "Welche Schutzausrüstung ist beim Aufbau in explosionsgefährdeter Umgebung Pflicht?",
     "Darf ein nicht-ATEX-Lüfter in einer Gas-Wolke eingesetzt werden?"
   ],
-  "images": [],
+  "images": [
+    "assets/images/equipment/luefter_leader_esx_230_atex_550_x_550_x_490_mm.webp"
+  ],
   "manuals": [],
   "source": "Beladeliste AB-G, Stand 2025-01-29"
 }

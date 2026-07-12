@@ -1,4 +1,5 @@
 /// assignment_repository_impl.dart – Drift-backed AssignmentRepository implementation.
+library;
 import 'package:drift/drift.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/features/assignment/domain/entities/equipment_assignment.dart';

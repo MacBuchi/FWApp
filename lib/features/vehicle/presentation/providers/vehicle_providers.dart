@@ -1,4 +1,5 @@
 /// vehicle_providers.dart – Riverpod providers for the vehicle feature.
+library;
 import 'package:fwapp/core/database/database_providers.dart';
 import 'package:fwapp/features/vehicle/data/repositories/vehicle_repository_impl.dart';
 import 'package:fwapp/features/vehicle/domain/entities/vehicle.dart';

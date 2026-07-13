@@ -20,6 +20,9 @@ import 'package:fwapp/features/game/quiz/presentation/screens/image_quiz_screen.
 import 'package:fwapp/features/game/deployment/presentation/screens/deployment_mode_screen.dart';
 import 'package:fwapp/features/import/presentation/screens/import_wizard_screen.dart';
 import 'package:fwapp/features/inspection/presentation/screens/inspection_dashboard_screen.dart';
+import 'package:fwapp/features/operation/presentation/screens/operation_setup_screen.dart';
+import 'package:fwapp/features/operation/presentation/screens/operation_run_screen.dart';
+import 'package:fwapp/features/operation/presentation/screens/operation_summary_screen.dart';
 import 'package:fwapp/features/settings/presentation/screens/settings_screen.dart';
 
 final appRouter = GoRouter(
@@ -119,6 +122,20 @@ final appRouter = GoRouter(
         GoRoute(
           path: '/inspections',
           builder: (_, __) => const InspectionDashboardScreen(),
+        ),
+        GoRoute(
+          path: '/operation',
+          builder: (_, __) => const OperationSetupScreen(),
+          routes: [
+            GoRoute(
+              path: 'run',
+              builder: (_, __) => const OperationRunScreen(),
+            ),
+            GoRoute(
+              path: 'summary',
+              builder: (_, __) => const OperationSummaryScreen(),
+            ),
+          ],
         ),
         GoRoute(
           path: '/import',

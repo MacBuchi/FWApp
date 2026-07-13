@@ -35,6 +35,16 @@ class VehicleListScreen extends ConsumerWidget {
             ),
         ],
       ),
+      floatingActionButton: vehiclesAsync.maybeWhen(
+        data: (vehicles) => vehicles.isEmpty
+            ? null
+            : FloatingActionButton.extended(
+                icon: const Icon(Icons.local_fire_department),
+                label: const Text('Einsatz'),
+                onPressed: () => context.push('/operation'),
+              ),
+        orElse: () => null,
+      ),
       body: vehiclesAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Fehler: $e')),

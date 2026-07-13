@@ -10,8 +10,11 @@ enum CutawayTileStatus { normal, selected, correct, wrong }
 class CutawayTileState {
   final CutawayTileStatus status;
 
-  /// Shown as "N Geräte" under the label.
+  /// Shown as "N Geräte" under the label (ignored when [statusText] is set).
   final int? itemCount;
+
+  /// Overrides the count line, e.g. "3/5 entnommen" during an Einsatz.
+  final String? statusText;
 
   /// Red/orange inspection badge in the tile corner.
   final int dueBadgeCount;
@@ -20,6 +23,7 @@ class CutawayTileState {
   const CutawayTileState({
     this.status = CutawayTileStatus.normal,
     this.itemCount,
+    this.statusText,
     this.dueBadgeCount = 0,
     this.dueBadgeIsOverdue = false,
   });
@@ -183,7 +187,13 @@ class _CutawayTile extends StatelessWidget {
                             fontSize: 13,
                             color: fg),
                       ),
-                      if (state.itemCount != null)
+                      if (state.statusText != null)
+                        Text(state.statusText!,
+                            style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: fg.withValues(alpha: 0.85)))
+                      else if (state.itemCount != null)
                         Text('${state.itemCount} Geräte',
                             style: TextStyle(
                                 fontSize: 11, color: fg.withValues(alpha: 0.7))),

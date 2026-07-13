@@ -36,8 +36,17 @@ jobs:
         run: flutter analyze
 
       # The Supabase sync E2E test skips itself when no local stack is running.
-      - name: Test
-        run: flutter test
+      - name: Test (with coverage)
+        run: flutter test --coverage
+
+      - name: Coverage gate (logic layers ≥ 65%)
+        run: dart run tool/check_coverage.dart --min 65
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/lcov.info
+          retention-days: 14
 
   build-web:
     name: Build Web

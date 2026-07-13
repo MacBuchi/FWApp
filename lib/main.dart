@@ -2,6 +2,8 @@
 /// configured), seeds the library, pulls the central dataset, and launches
 /// the router.
 library;
+import 'dart:ui' show PlatformDispatcher;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,11 +13,26 @@ import 'package:fwapp/core/router/app_router.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/theme/app_theme.dart';
 import 'package:fwapp/features/settings/presentation/providers/settings_providers.dart';
+import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+final _log = Logger();
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Central error reporting: uncaught framework and async errors end up in
+  // one place instead of dying silently in release builds.
+  FlutterError.onError = (details) {
+    _log.e('Flutter framework error',
+        error: details.exception, stackTrace: details.stack);
+    FlutterError.presentError(details);
+  };
+  PlatformDispatcher.instance.onError = (error, stack) {
+    _log.e('Uncaught async error', error: error, stackTrace: stack);
+    return true;
+  };
 
   // Supabase must be initialised before runApp; config lives in the same
   // SharedPreferences the settings screen writes (restart applies changes).

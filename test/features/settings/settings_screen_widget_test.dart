@@ -1,0 +1,53 @@
+/// settings_screen_widget_test.dart – Settings states: sync section and the
+/// restart hint when credentials are configured but not yet active.
+library;
+import 'package:flutter_test/flutter_test.dart';
+import 'package:fwapp/core/database/app_database.dart';
+import 'package:fwapp/features/settings/presentation/screens/settings_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../helpers/test_database.dart';
+import '../../helpers/widget_harness.dart';
+
+void main() {
+  late AppDatabase db;
+
+  setUp(() => db = createTestDatabase());
+  tearDown(() => db.close());
+
+  testWidgets('Sync deaktiviert: keine Verbindungsfelder sichtbar',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester
+        .pumpWidget(buildTestApp(db: db, home: const SettingsScreen()));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Supabase-Sync aktivieren'), findsOneWidget);
+    expect(find.text('Supabase URL'), findsNothing);
+    expect(find.text('Neustart erforderlich'), findsNothing);
+  });
+
+  testWidgets(
+      'Sync konfiguriert, aber nicht initialisiert: Neustart-Hinweis',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({
+      'sync_enabled': true,
+      'supabase_url': 'http://127.0.0.1:54321',
+      'supabase_key': 'anon-key',
+    });
+    await tester
+        .pumpWidget(buildTestApp(db: db, home: const SettingsScreen()));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Supabase URL'), findsOneWidget);
+    expect(find.text('http://127.0.0.1:54321'), findsOneWidget);
+    // supabaseReadyProvider ist false (kein Initialize in diesem Lauf).
+    expect(find.text('Neustart erforderlich'), findsOneWidget);
+    // Verbindungs-Sektion (Login) erscheint erst nach dem Neustart.
+    expect(find.text('Mit Abteilung verbinden'), findsNothing);
+  });
+
+  // Bewusst kein Test für den metadata.json-FutureBuilder: Asset-I/O in
+  // FutureBuildern lässt sich in der Fake-Async-Testumgebung nicht
+  // zuverlässig antreiben, und die Kachel ist rein kosmetisch.
+}

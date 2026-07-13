@@ -1,5 +1,7 @@
 /// settings_screen.dart – App settings: dark mode, Supabase sync, library info.
 library;
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -103,21 +105,7 @@ class SettingsScreen extends ConsumerWidget {
 
           // ─── Bibliothek ───────────────────────────────────────
           _SectionHeader('Gerätebibliothek'),
-          const ListTile(
-            leading: Icon(Icons.library_books),
-            title: Text('Installierte Version'),
-            subtitle: Text('v1.0.0 – 257 Geräte (AB-G)'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.system_update),
-            title: const Text('Nach Updates suchen'),
-            subtitle: const Text('Prüft auf neue Bibliotheksversionen'),
-            onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                  content: Text(
-                      'Keine Updates verfügbar (Netzwerk nicht konfiguriert).')),
-            ),
-          ),
+          const _LibraryInfoTile(),
 
           // ─── App-Info ─────────────────────────────────────────
           _SectionHeader('App-Information'),
@@ -169,6 +157,41 @@ class SettingsScreen extends ConsumerWidget {
       ),
     );
     if (ok == true) onSave(ctrl.text.trim());
+  }
+}
+
+/// Version and item count of the bundled equipment library, read from
+/// assets/equipment_library/metadata.json.
+class _LibraryInfoTile extends StatelessWidget {
+  const _LibraryInfoTile();
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<String>(
+      future: DefaultAssetBundle.of(context)
+          .loadString('assets/equipment_library/metadata.json'),
+      builder: (context, snapshot) {
+        String subtitle = '…';
+        if (snapshot.hasError) {
+          subtitle = 'Keine Bibliothek gebündelt';
+        } else if (snapshot.hasData) {
+          try {
+            final meta = jsonDecode(snapshot.data!) as Map<String, dynamic>;
+            final vehicles = (meta['vehicles'] as List?)?.join(', ') ?? '?';
+            subtitle = 'v${meta['version'] ?? '?'} – '
+                '${meta['equipment_count'] ?? '?'} Geräte ($vehicles), '
+                'Stand ${meta['last_updated'] ?? '?'}';
+          } catch (_) {
+            subtitle = 'metadata.json nicht lesbar';
+          }
+        }
+        return ListTile(
+          leading: const Icon(Icons.library_books),
+          title: const Text('Gebündelte Bibliothek'),
+          subtitle: Text(subtitle),
+        );
+      },
+    );
   }
 }
 

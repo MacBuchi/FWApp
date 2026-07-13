@@ -2,6 +2,9 @@
 
 Stand: 2026-07-13 · Status-Legende: ✅ fertig · 🔨 geplant
 
+**Fuhrpark der Wehr (Baden-Württemberg, Zielumfang):** HLF 20, LF 20, LF 8/6,
+DLK 23/13, AB-G (Demo-Datensatz vorhanden), AB-Mulde, GW-T, RW, ELW, MTW.
+
 ## Wo wir stehen
 
 | Bereich | Status |
@@ -15,10 +18,11 @@ Stand: 2026-07-13 · Status-Legende: ✅ fertig · 🔨 geplant
 | Plattformen: Android, iOS, Web (persistent), macOS | ✅ |
 | CI (Analyze, Tests, Codegen-Check, Web-Build) | ✅ |
 | Logik-Testabdeckung (Sync 89 %, Inspection 86 %, Import 73 %) | ✅ |
-| Inventurassistent | 🔨 M3 |
-| Einsatzassistent (virtuelles Ausladen) | 🔨 M4 |
-| Zentrale Gerätefotos (Sync-fähig) | 🔨 M2 |
-| UI-/Widget-Tests kritischer Flows | 🔨 M1 |
+| Inventurassistent (Soll/Ist, Mängeldoku, Report) | ✅ M3 |
+| Einsatzassistent (virtuelles Ausladen) | ✅ M4 |
+| UI-/Widget-Tests kritischer Flows + Coverage-Gate | ✅ M1 |
+| Lernzentriertes Redesign (Dashboard, Rollen, Piktogramme, Grundkatalog) | ✅ |
+| Zentrale Gerätefotos (Sync-fähig) | 🔨 M2 (braucht gehostetes Supabase) |
 | Produktiv-Betrieb (Cloud, Verteilung, Backups) | 🔨 M5 |
 | Open Source | 🔨 M6 |
 

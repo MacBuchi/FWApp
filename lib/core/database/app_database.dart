@@ -1,13 +1,8 @@
 /// app_database.dart – Drift database definition: tables, DAOs, and database singleton.
 /// Platform-conditional connection (NativeDatabase on mobile, WasmDatabase on web).
 library;
-import 'dart:io';
-
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
-import 'package:flutter/foundation.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
+import 'package:fwapp/core/database/connection/connection.dart';
 
 part 'app_database.g.dart';
 
@@ -522,19 +517,5 @@ class AppDatabase extends _$AppDatabase {
         },
       );
 
-  static AppDatabase create() {
-    if (kIsWeb) {
-      // Web: use in-memory database for v1 (WasmDatabase requires separate setup)
-      return AppDatabase(NativeDatabase.memory());
-    }
-    return AppDatabase(_openNative());
-  }
-
-  static LazyDatabase _openNative() {
-    return LazyDatabase(() async {
-      final dir = await getApplicationDocumentsDirectory();
-      final file = File(p.join(dir.path, 'fwapp.sqlite'));
-      return NativeDatabase.createInBackground(file);
-    });
-  }
+  static AppDatabase create() => AppDatabase(openConnection());
 }

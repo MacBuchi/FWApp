@@ -4,6 +4,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
 import 'package:fwapp/features/assignment/presentation/providers/assignment_providers.dart';
 import 'package:fwapp/features/compartment/domain/entities/compartment.dart';
@@ -36,17 +37,19 @@ class VehicleDetailScreen extends ConsumerWidget {
           appBar: AppBar(
             title: Text(vehicle.name),
             actions: [
-              IconButton(
-                icon: const Icon(Icons.edit),
-                tooltip: 'Bearbeiten',
-                onPressed: () => context.push('/vehicles/$vehicleId/edit'),
-              ),
-              IconButton(
-                icon: const Icon(Icons.view_module),
-                tooltip: 'Beladefächer verwalten',
-                onPressed: () =>
-                    context.push('/vehicles/$vehicleId/compartments'),
-              ),
+              if (ref.watch(isAdminProvider)) ...[
+                IconButton(
+                  icon: const Icon(Icons.edit),
+                  tooltip: 'Bearbeiten',
+                  onPressed: () => context.push('/vehicles/$vehicleId/edit'),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.view_module),
+                  tooltip: 'Beladefächer verwalten',
+                  onPressed: () =>
+                      context.push('/vehicles/$vehicleId/compartments'),
+                ),
+              ],
             ],
           ),
           body: CustomScrollView(
@@ -100,12 +103,13 @@ class VehicleDetailScreen extends ConsumerWidget {
                     children: [
                       Text('Beladefächer',
                           style: Theme.of(context).textTheme.titleMedium),
-                      TextButton.icon(
-                        onPressed: () =>
-                            context.push('/vehicles/$vehicleId/compartments'),
-                        icon: const Icon(Icons.settings, size: 16),
-                        label: const Text('Verwalten'),
-                      ),
+                      if (ref.watch(isAdminProvider))
+                        TextButton.icon(
+                          onPressed: () => context
+                              .push('/vehicles/$vehicleId/compartments'),
+                          icon: const Icon(Icons.settings, size: 16),
+                          label: const Text('Verwalten'),
+                        ),
                     ],
                   ),
                 ),

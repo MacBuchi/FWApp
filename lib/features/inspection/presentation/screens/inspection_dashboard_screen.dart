@@ -3,6 +3,7 @@
 library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/features/inspection/domain/entities/due_inspection_entry.dart';
 import 'package:fwapp/features/inspection/domain/entities/inspection_schedule.dart';
 import 'package:fwapp/features/inspection/presentation/providers/inspection_providers.dart';
@@ -121,16 +122,17 @@ class _DueTile extends ConsumerWidget {
                         ? Colors.red.shade700
                         : Colors.orange.shade800,
                     fontWeight: FontWeight.bold)),
-            TextButton(
-              style: TextButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  minimumSize: const Size(60, 28),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap),
-              onPressed: () => markScheduleDone(context, ref, schedule),
-              child: Text(schedule.kind == InspectionKind.expiry
-                  ? 'Ersetzt'
-                  : 'Erledigt'),
-            ),
+            if (ref.watch(isAdminProvider))
+              TextButton(
+                style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: const Size(60, 28),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+                onPressed: () => markScheduleDone(context, ref, schedule),
+                child: Text(schedule.kind == InspectionKind.expiry
+                    ? 'Ersetzt'
+                    : 'Erledigt'),
+              ),
           ],
         ),
       ),

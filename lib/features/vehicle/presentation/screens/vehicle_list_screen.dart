@@ -3,6 +3,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
 import 'package:fwapp/features/inspection/domain/entities/due_inspection_entry.dart';
 import 'package:fwapp/features/inspection/presentation/providers/inspection_providers.dart';
@@ -21,11 +22,12 @@ class VehicleListScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Fahrzeuge'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            tooltip: 'Fahrzeug hinzufügen',
-            onPressed: () => context.push('/vehicles/new'),
-          ),
+          if (ref.watch(isAdminProvider))
+            IconButton(
+              icon: const Icon(Icons.add),
+              tooltip: 'Fahrzeug hinzufügen',
+              onPressed: () => context.push('/vehicles/new'),
+            ),
         ],
       ),
       body: vehiclesAsync.when(

@@ -3,6 +3,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/features/equipment/presentation/providers/equipment_providers.dart';
 import 'package:fwapp/features/inspection/presentation/providers/inspection_providers.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';
@@ -84,12 +85,13 @@ class HomeScreen extends ConsumerWidget {
                 color: Colors.green.shade700,
                 onTap: () => context.go('/game'),
               ),
-              _NavCard(
-                icon: Icons.upload_file,
-                label: 'Beladeplan\nimportieren',
-                color: Colors.blue.shade700,
-                onTap: () => context.push('/import'),
-              ),
+              if (ref.watch(isAdminProvider))
+                _NavCard(
+                  icon: Icons.upload_file,
+                  label: 'Beladeplan\nimportieren',
+                  color: Colors.blue.shade700,
+                  onTap: () => context.push('/import'),
+                ),
             ],
           ),
           const SizedBox(height: 20),

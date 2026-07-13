@@ -4,6 +4,7 @@
 library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/features/inspection/domain/entities/equipment_instance.dart';
 import 'package:fwapp/features/inspection/domain/entities/inspection_schedule.dart';
 import 'package:fwapp/features/inspection/presentation/providers/inspection_providers.dart';
@@ -36,11 +37,12 @@ class EquipmentInstancesSection extends ConsumerWidget {
               child: Text('Instanzen & Prüfungen',
                   style: Theme.of(context).textTheme.titleMedium),
             ),
-            IconButton(
-              icon: const Icon(Icons.add_circle_outline),
-              tooltip: 'Instanz hinzufügen',
-              onPressed: () => _addInstance(context, ref, vehicles),
-            ),
+            if (ref.watch(isAdminProvider))
+              IconButton(
+                icon: const Icon(Icons.add_circle_outline),
+                tooltip: 'Instanz hinzufügen',
+                onPressed: () => _addInstance(context, ref, vehicles),
+              ),
           ],
         ),
         instancesAsync.when(
@@ -138,20 +140,21 @@ class _InstanceCard extends ConsumerWidget {
               ],
             ),
           ),
-          OverflowBar(
-            children: [
-              TextButton.icon(
-                icon: const Icon(Icons.add),
-                label: const Text('Prüfung hinzufügen'),
-                onPressed: () => _addSchedule(context, ref),
-              ),
-              TextButton.icon(
-                icon: const Icon(Icons.delete_outline),
-                label: const Text('Instanz löschen'),
-                onPressed: () => _deleteInstance(context, ref),
-              ),
-            ],
-          ),
+          if (ref.watch(isAdminProvider))
+            OverflowBar(
+              children: [
+                TextButton.icon(
+                  icon: const Icon(Icons.add),
+                  label: const Text('Prüfung hinzufügen'),
+                  onPressed: () => _addSchedule(context, ref),
+                ),
+                TextButton.icon(
+                  icon: const Icon(Icons.delete_outline),
+                  label: const Text('Instanz löschen'),
+                  onPressed: () => _deleteInstance(context, ref),
+                ),
+              ],
+            ),
         ],
       ),
     );
@@ -223,7 +226,8 @@ class _ScheduleTile extends ConsumerWidget {
         children: [
           Text(_formatDate(schedule.dueAt),
               style: TextStyle(color: dueColor, fontWeight: FontWeight.bold)),
-          PopupMenuButton<String>(
+          if (ref.watch(isAdminProvider))
+            PopupMenuButton<String>(
             onSelected: (value) async {
               switch (value) {
                 case 'done':

@@ -3,6 +3,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_enums.dart';
 import 'package:fwapp/features/equipment/presentation/providers/equipment_providers.dart';
@@ -44,11 +45,12 @@ class _EquipmentListScreenState extends ConsumerState<EquipmentListScreen> {
                 _searchCtrl.clear();
               },
             ),
-          IconButton(
-            icon: const Icon(Icons.add),
-            tooltip: 'Gerät hinzufügen',
-            onPressed: () => context.push('/equipment/new'),
-          ),
+          if (ref.watch(isAdminProvider))
+            IconButton(
+              icon: const Icon(Icons.add),
+              tooltip: 'Gerät hinzufügen',
+              onPressed: () => context.push('/equipment/new'),
+            ),
         ],
       ),
       body: Column(

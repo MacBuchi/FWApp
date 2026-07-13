@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_enums.dart';
 import 'package:fwapp/features/equipment/presentation/providers/equipment_providers.dart';
@@ -30,12 +31,13 @@ class EquipmentDetailScreen extends ConsumerWidget {
           appBar: AppBar(
             title: Text(item.name),
             actions: [
-              IconButton(
-                icon: const Icon(Icons.edit),
-                tooltip: 'Bearbeiten',
-                onPressed: () =>
-                    context.push('/equipment/$equipmentId/edit'),
-              ),
+              if (ref.watch(isAdminProvider))
+                IconButton(
+                  icon: const Icon(Icons.edit),
+                  tooltip: 'Bearbeiten',
+                  onPressed: () =>
+                      context.push('/equipment/$equipmentId/edit'),
+                ),
             ],
           ),
           body: ListView(

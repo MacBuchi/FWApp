@@ -16,6 +16,16 @@ class LibrarySeeder {
 
   Future<void> seedIfNeeded() async {
     try {
+      // A device that has pulled the central dataset must not be re-seeded
+      // with the bundled demo library — the published data is authoritative.
+      final syncMeta = await (_db.select(_db.syncMeta)
+            ..where((t) => t.id.equals(1)))
+          .getSingleOrNull();
+      if ((syncMeta?.lastPulledVersion ?? 0) > 0) {
+        _log.i('Central dataset present – skipping library seed.');
+        return;
+      }
+
       // Check if already seeded: look for any row with libraryEquipmentId set
       final existing = await _db.equipmentDao.getAll();
       final seeded =

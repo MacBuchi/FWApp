@@ -41,6 +41,8 @@ class LibrarySeeder {
       await _syncImagePaths('ab_g');
       // Backfill training content (v2 columns) for rows seeded before v2.
       await _syncEnrichment('ab_g');
+      // Standard-Grunddatenbank (Normbeladung) — idempotent per item.
+      await _seedCatalog();
     } catch (e, st) {
       _log.e('Library seed failed', error: e, stackTrace: st);
     }
@@ -270,6 +272,40 @@ class LibrarySeeder {
       updated++;
     }
     if (updated > 0) _log.i('Backfilled training content for $updated items.');
+  }
+
+  /// Seeds the standard equipment catalog (Normbeladung) so imports of new
+  /// Beladelisten match against a broad base database. Items are plain
+  /// equipment rows without assignments; idempotent via libraryEquipmentId.
+  Future<void> _seedCatalog() async {
+    final catalogJson = await _loadJson(
+        'assets/equipment_library/catalog/standard_catalog.json');
+    if (catalogJson == null) return;
+    final items = (catalogJson['items'] as List?) ?? [];
+    var created = 0;
+    for (final raw in items) {
+      final item = raw as Map<String, dynamic>;
+      final id = item['id'] as String;
+      final existing = await _db.equipmentDao.getByLibraryId(id);
+      if (existing != null) continue;
+      await _db.equipmentDao.insertEquipment(EquipmentItemsCompanion.insert(
+        name: item['name'] as String,
+        shortName: Value(item['short_name'] as String?),
+        libraryEquipmentId: Value(id),
+        isCustom: const Value(false),
+        equipmentFunctionsJson: Value(jsonEncode(
+            ((item['equipment_functions'] as List?)?.cast<String>()) ?? [])),
+        description: Value((item['description'] as String?) ?? ''),
+        typicalUseJson: Value(jsonEncode(
+            ((item['typical_use'] as List?)?.cast<String>()) ?? [])),
+        trainingQuestionsJson: Value(jsonEncode(
+            ((item['training_questions'] as List?)?.cast<String>()) ?? [])),
+      ));
+      created++;
+    }
+    if (created > 0) {
+      _log.i('Standard-Katalog: $created Geräte ergänzt.');
+    }
   }
 
   Future<Map<String, dynamic>?> _loadJson(String assetPath) async {

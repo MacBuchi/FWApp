@@ -67,6 +67,7 @@ flutter:
   assets:
     - assets/equipment_library/metadata.json
     - assets/equipment_library/aliases.json
+    - assets/equipment_library/catalog/standard_catalog.json
     - assets/equipment_library/vehicles/ab_g/vehicle.json
     - assets/equipment_library/vehicles/ab_g/loading_plan.json
     - assets/equipment_library/vehicles/ab_g/equipment/

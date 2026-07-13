@@ -1,0 +1,2402 @@
+{
+ "version": "1.0",
+ "source": "Standard-Normbeladung deutscher Feuerwehrfahrzeuge (u.a. DIN 14530, DIN EN 1846)",
+ "items": [
+  {
+   "id": "std_b_druckschlauch_20m",
+   "name": "B-Druckschlauch 20 m",
+   "short_name": "B-Schlauch 20 m",
+   "equipment_functions": [
+    "WASSER",
+    "ARMATUREN"
+   ],
+   "description": "Druckschlauch DN 75 mit B-Storz-Kupplungen, Standardlänge 20 m, für Wasserförderung und Löschangriff mit hoher Durchflussmenge.",
+   "typical_use": [
+    "Wasserförderung zwischen Pumpe und Verteiler",
+    "Zubringerleitung von der Wasserentnahmestelle"
+   ],
+   "training_questions": [
+    "Welchen Nenndurchmesser hat ein B-Schlauch?",
+    "Wofür wird die B-Leitung typischerweise eingesetzt?"
+   ],
+   "aliases": [
+    "B-Schlauch",
+    "Druckschlauch B 20m",
+    "B 75 Druckschlauch",
+    "Schlauch B20"
+   ]
+  },
+  {
+   "id": "std_c_druckschlauch_15m",
+   "name": "C-Druckschlauch 15 m",
+   "short_name": "C-Schlauch 15 m",
+   "equipment_functions": [
+    "WASSER",
+    "ARMATUREN",
+    "BRAND"
+   ],
+   "description": "Druckschlauch DN 42/52 mit C-Storz-Kupplungen, Standardlänge 15 m, Standardschlauch für den Löschangriff.",
+   "typical_use": [
+    "Angriffsleitung vom Verteiler zum Strahlrohr",
+    "Schnellangriff bei Kleinbränden"
+   ],
+   "training_questions": [
+    "Welche Nenndurchmesser sind bei C-Schläuchen üblich?",
+    "Wie viele C-Schläuche gehören zu einem Angriffstrupp-Satz?"
+   ],
+   "aliases": [
+    "C-Schlauch",
+    "Druckschlauch C 15m",
+    "C 42 Druckschlauch",
+    "Schlauch C15"
+   ]
+  },
+  {
+   "id": "std_d_druckschlauch_15m",
+   "name": "D-Druckschlauch 15 m",
+   "short_name": "D-Schlauch 15 m",
+   "equipment_functions": [
+    "WASSER",
+    "ARMATUREN"
+   ],
+   "description": "Leichter Druckschlauch DN 25 mit D-Storz-Kupplungen für Kleinlöschgeräte und Waldbrandbekämpfung.",
+   "typical_use": [
+    "Vegetationsbrandbekämpfung",
+    "Kübelspritze und Kleinlöschtechnik"
+   ],
+   "training_questions": [
+    "Wofür werden D-Schläuche bevorzugt eingesetzt?",
+    "Welchen Nenndurchmesser hat ein D-Schlauch?"
+   ],
+   "aliases": [
+    "D-Schlauch",
+    "Druckschlauch D",
+    "Schlauch D15"
+   ]
+  },
+  {
+   "id": "std_a_saugschlauch_1_6m",
+   "name": "A-Saugschlauch 1,6 m",
+   "short_name": "A-Saugschlauch",
+   "equipment_functions": [
+    "WASSER",
+    "ARMATUREN"
+   ],
+   "description": "Formstabiler Saugschlauch DN 110 mit A-Storz-Kupplungen zur Wasserentnahme aus offenen Gewässern.",
+   "typical_use": [
+    "Saugleitung der Tragkraftspritze/Feuerlöschkreiselpumpe",
+    "Wasserentnahme aus Bach, Teich oder Zisterne"
+   ],
+   "training_questions": [
+    "Wie viele A-Saugschläuche werden üblicherweise gekuppelt?",
+    "Warum muss ein Saugschlauch formstabil sein?"
+   ],
+   "aliases": [
+    "A-Saugschlauch",
+    "Saugschlauch A110",
+    "Saugschlauch 1,6m"
+   ]
+  },
+  {
+   "id": "std_verteiler_bv",
+   "name": "Verteiler B-CBC",
+   "short_name": "Verteiler",
+   "equipment_functions": [
+    "WASSER",
+    "ARMATUREN"
+   ],
+   "description": "Verteiler mit B-Eingang und zwei C- sowie einem B-Abgang mit Niederschraubventilen; teilt die Zubringerleitung in Angriffsleitungen auf.",
+   "typical_use": [
+    "Aufbau des Löschangriffs mit mehreren Rohren",
+    "Übergang von B-Zubringer- auf C-Angriffsleitungen"
+   ],
+   "training_questions": [
+    "Welche Abgänge hat ein Verteiler B-CBC?",
+    "Wo wird der Verteiler im Löschaufbau platziert?"
+   ],
+   "aliases": [
+    "Verteiler B-CBC",
+    "B-Verteiler",
+    "Verteiler BV"
+   ]
+  },
+  {
+   "id": "std_cm_strahlrohr",
+   "name": "C-Mehrzweckstrahlrohr CM",
+   "short_name": "CM-Strahlrohr",
+   "equipment_functions": [
+    "BRAND",
+    "ARMATUREN"
+   ],
+   "description": "Mehrzweckstrahlrohr für C-Schläuche mit umschaltbarem Voll-/Sprühstrahl und absperrbarem Durchfluss (ca. 100/200 l/min).",
+   "typical_use": [
+    "Innen- und Außenangriff mit C-Leitung",
+    "Nachlöscharbeiten"
+   ],
+   "training_questions": [
+    "Welche Durchflussmengen liefert ein CM-Strahlrohr mit/ohne Mundstück?",
+    "Welche Strahlarten sind möglich?"
+   ],
+   "aliases": [
+    "CM Strahlrohr",
+    "Mehrzweckstrahlrohr C",
+    "C-Strahlrohr",
+    "CM"
+   ]
+  },
+  {
+   "id": "std_bm_strahlrohr",
+   "name": "B-Mehrzweckstrahlrohr BM",
+   "short_name": "BM-Strahlrohr",
+   "equipment_functions": [
+    "BRAND",
+    "ARMATUREN"
+   ],
+   "description": "Mehrzweckstrahlrohr für B-Schläuche mit hoher Wurfweite und Durchflussmenge (ca. 400/800 l/min), Einsatz mit Stützkrümmer.",
+   "typical_use": [
+    "Massiver Außenangriff",
+    "Riegelstellung bei Großbränden"
+   ],
+   "training_questions": [
+    "Warum wird das BM-Rohr mit Stützkrümmer eingesetzt?",
+    "Wie viele Einsatzkräfte bedienen ein B-Rohr?"
+   ],
+   "aliases": [
+    "BM Strahlrohr",
+    "B-Strahlrohr",
+    "Mehrzweckstrahlrohr B",
+    "BM"
+   ]
+  },
+  {
+   "id": "std_hohlstrahlrohr",
+   "name": "Hohlstrahlrohr C",
+   "short_name": "Hohlstrahlrohr",
+   "equipment_functions": [
+    "BRAND",
+    "ARMATUREN"
+   ],
+   "description": "Regelbares Strahlrohr mit einstellbarer Durchflussmenge und Sprühbild, Standard für den Innenangriff.",
+   "typical_use": [
+    "Innenangriff mit dynamischer Strahlrohrführung",
+    "Rauchgaskühlung"
+   ],
+   "training_questions": [
+    "Welche Vorteile bietet das Hohlstrahlrohr gegenüber dem CM-Rohr?",
+    "Was bedeutet Rauchgaskühlung?"
+   ],
+   "aliases": [
+    "HSR",
+    "Hohlstrahlrohr",
+    "Turbospritze",
+    "AWG 2400"
+   ]
+  },
+  {
+   "id": "std_stuetzkruemmer",
+   "name": "Stützkrümmer B",
+   "short_name": "Stützkrümmer",
+   "equipment_functions": [
+    "ARMATUREN"
+   ],
+   "description": "Gebogene Armatur zwischen B-Schlauch und BM-Strahlrohr; leitet die Rückstoßkräfte in den Boden ab.",
+   "typical_use": [
+    "Einsatz des B-Rohrs mit zwei Kräften"
+   ],
+   "training_questions": [
+    "Welche Aufgabe hat der Stützkrümmer?",
+    "Zwischen welche Teile wird er gekuppelt?"
+   ],
+   "aliases": [
+    "Stützkrümmer",
+    "B-Stützkrümmer"
+   ]
+  },
+  {
+   "id": "std_sammelstueck",
+   "name": "Sammelstück A-2B",
+   "short_name": "Sammelstück",
+   "equipment_functions": [
+    "WASSER",
+    "ARMATUREN"
+   ],
+   "description": "Armatur mit zwei B-Eingängen und einem A-Abgang zur Pumpenspeisung aus zwei Leitungen; mit Pendelklappe.",
+   "typical_use": [
+    "Einspeisung in die Feuerlöschkreiselpumpe aus zwei B-Leitungen"
+   ],
+   "training_questions": [
+    "Welche Funktion hat die Pendelklappe im Sammelstück?",
+    "Wo wird das Sammelstück angekuppelt?"
+   ],
+   "aliases": [
+    "Sammelstück",
+    "A-2B Sammelstück"
+   ]
+  },
+  {
+   "id": "std_uebergangsstueck_ba",
+   "name": "Übergangsstück A-B",
+   "short_name": "Übergang A-B",
+   "equipment_functions": [
+    "ARMATUREN"
+   ],
+   "description": "Kupplungsadapter zwischen A- und B-Kupplungen.",
+   "typical_use": [
+    "Anschluss von B-Leitungen an A-Abgänge"
+   ],
+   "training_questions": [
+    "Wofür dienen Übergangsstücke?",
+    "Welche Größenpaarungen sind auf Löschfahrzeugen üblich?"
+   ],
+   "aliases": [
+    "Übergangsstück A-B",
+    "Adapter A-B",
+    "Reduzierstück A-B"
+   ]
+  },
+  {
+   "id": "std_uebergangsstueck_cb",
+   "name": "Übergangsstück B-C",
+   "short_name": "Übergang B-C",
+   "equipment_functions": [
+    "ARMATUREN"
+   ],
+   "description": "Kupplungsadapter zwischen B- und C-Kupplungen.",
+   "typical_use": [
+    "Anschluss einer C-Leitung an einen B-Abgang"
+   ],
+   "training_questions": [
+    "Wofür dienen Übergangsstücke?",
+    "Wo werden B-C-Übergänge gebraucht?"
+   ],
+   "aliases": [
+    "Übergangsstück B-C",
+    "Adapter B-C",
+    "Reduzierstück B-C"
+   ]
+  },
+  {
+   "id": "std_uebergangsstueck_dc",
+   "name": "Übergangsstück C-D",
+   "short_name": "Übergang C-D",
+   "equipment_functions": [
+    "ARMATUREN"
+   ],
+   "description": "Kupplungsadapter zwischen C- und D-Kupplungen.",
+   "typical_use": [
+    "Anschluss von D-Schläuchen an C-Abgänge"
+   ],
+   "training_questions": [
+    "Wofür dienen Übergangsstücke?",
+    "Wann kommen D-Leitungen zum Einsatz?"
+   ],
+   "aliases": [
+    "Übergangsstück C-D",
+    "Adapter C-D",
+    "Reduzierstück C-D"
+   ]
+  },
+  {
+   "id": "std_standrohr",
+   "name": "Standrohr 2B DIN 14375",
+   "short_name": "Standrohr",
+   "equipment_functions": [
+    "WASSER",
+    "ARMATUREN"
+   ],
+   "description": "Armatur zur Wasserentnahme aus Unterflurhydranten mit zwei absperrbaren B-Abgängen.",
+   "typical_use": [
+    "Wasserentnahme aus dem Hydrantennetz"
+   ],
+   "training_questions": [
+    "Wie wird das Standrohr gesetzt?",
+    "Warum muss der Hydrant vor dem Ankuppeln gespült werden?"
+   ],
+   "aliases": [
+    "Standrohr 2B",
+    "Standrohr DIN 14375",
+    "Hydrantenstandrohr"
+   ]
+  },
+  {
+   "id": "std_unterflurhydrantenschluessel",
+   "name": "Unterflurhydrantenschlüssel",
+   "short_name": "UF-Schlüssel",
+   "equipment_functions": [
+    "WASSER",
+    "ARMATUREN"
+   ],
+   "description": "Schlüssel zum Öffnen der Straßenkappe und Bedienen des Unterflurhydranten.",
+   "typical_use": [
+    "Setzen des Standrohrs am Unterflurhydranten"
+   ],
+   "training_questions": [
+    "Welche zwei Arbeitsgänge erledigt der Unterflurhydrantenschlüssel?",
+    "Woran erkennt man Hydranten im Straßenraum?"
+   ],
+   "aliases": [
+    "Unterflurhydrantenschlüssel",
+    "Hydrantenschlüssel UF",
+    "UF-Hydrantenschlüssel"
+   ]
+  },
+  {
+   "id": "std_oberflurhydrantenschluessel",
+   "name": "Oberflurhydrantenschlüssel",
+   "short_name": "OF-Schlüssel",
+   "equipment_functions": [
+    "WASSER",
+    "ARMATUREN"
+   ],
+   "description": "Schlüssel zum Bedienen von Oberflurhydranten.",
+   "typical_use": [
+    "Wasserentnahme am Oberflurhydranten"
+   ],
+   "training_questions": [
+    "Wie unterscheidet sich der Ober- vom Unterflurhydranten?",
+    "Welche Abgänge hat ein Oberflurhydrant üblicherweise?"
+   ],
+   "aliases": [
+    "Oberflurhydrantenschlüssel",
+    "Hydrantenschlüssel OF"
+   ]
+  },
+  {
+   "id": "std_kupplungsschluessel",
+   "name": "Kupplungsschlüssel ABC",
+   "short_name": "Kupplungsschlüssel",
+   "equipment_functions": [
+    "ARMATUREN"
+   ],
+   "description": "Schlüssel zum festen Kuppeln und Lösen von Storz-Kupplungen der Größen A, B und C.",
+   "typical_use": [
+    "Kuppeln von Saug- und Druckschläuchen"
+   ],
+   "training_questions": [
+    "Wie viele Kupplungsschlüssel braucht man zum Kuppeln von Saugschläuchen?",
+    "Für welche Kupplungsgrößen passt der ABC-Schlüssel?"
+   ],
+   "aliases": [
+    "Kupplungsschlüssel",
+    "Schlauchschlüssel ABC"
+   ]
+  },
+  {
+   "id": "std_schlauchhalter",
+   "name": "Schlauchhalter",
+   "short_name": "Schlauchhalter",
+   "equipment_functions": [
+    "ARMATUREN",
+    "LOGISTIK"
+   ],
+   "description": "Gurtband mit Haken zum Sichern und Entlasten verlegter Schlauchleitungen.",
+   "typical_use": [
+    "Sichern der Saugleitung",
+    "Entlasten senkrecht verlegter Leitungen"
+   ],
+   "training_questions": [
+    "Wofür wird der Schlauchhalter beim Saugbetrieb verwendet?",
+    "Wie viele Schlauchhalter gehören zur Saugschlauchausrüstung?"
+   ],
+   "aliases": [
+    "Schlauchhalter DIN 14828"
+   ]
+  },
+  {
+   "id": "std_schlauchbruecken",
+   "name": "Schlauchbrücken (Paar)",
+   "short_name": "Schlauchbrücken",
+   "equipment_functions": [
+    "ARMATUREN",
+    "LOGISTIK"
+   ],
+   "description": "Überfahrschutz für über Straßen verlegte Schlauchleitungen.",
+   "typical_use": [
+    "Schutz von B-Leitungen bei Straßenquerung"
+   ],
+   "training_questions": [
+    "Wozu dienen Schlauchbrücken?",
+    "Welche Alternative gibt es bei schmalen Fahrbahnen?"
+   ],
+   "aliases": [
+    "Schlauchbrücke",
+    "Überfahrbrücke"
+   ]
+  },
+  {
+   "id": "std_druckbegrenzungsventil",
+   "name": "Druckbegrenzungsventil B",
+   "short_name": "DBV",
+   "equipment_functions": [
+    "WASSER",
+    "ARMATUREN"
+   ],
+   "description": "Sicherheitsarmatur in der B-Leitung, die unzulässig hohe Drücke abbaut, z. B. bei langen Wegstrecken.",
+   "typical_use": [
+    "Wasserförderung über lange Wegstrecke"
+   ],
+   "training_questions": [
+    "Wo wird das Druckbegrenzungsventil eingebaut?",
+    "Auf welchen Druck wird es typischerweise eingestellt?"
+   ],
+   "aliases": [
+    "Druckbegrenzungsventil",
+    "DBV B"
+   ]
+  },
+  {
+   "id": "std_zumischer_z2",
+   "name": "Zumischer Z2",
+   "short_name": "Zumischer Z2",
+   "equipment_functions": [
+    "BRAND",
+    "ARMATUREN"
+   ],
+   "description": "Zumischer nach dem Venturi-Prinzip zur Beimischung von Schaummittel (Z2 = 200 l/min Durchfluss).",
+   "typical_use": [
+    "Schaumangriff mit Schwer- oder Mittelschaum"
+   ],
+   "training_questions": [
+    "Nach welchem Prinzip arbeitet der Zumischer?",
+    "Was bedeutet die Kennzahl Z2?"
+   ],
+   "aliases": [
+    "Zumischer Z 2",
+    "Z2",
+    "Schaumzumischer"
+   ]
+  },
+  {
+   "id": "std_schwerschaumrohr_s2",
+   "name": "Schwerschaumrohr S2",
+   "short_name": "S2-Rohr",
+   "equipment_functions": [
+    "BRAND"
+   ],
+   "description": "Schaumstrahlrohr für Schwerschaum mit großer Wurfweite (Verschäumungszahl ca. 15).",
+   "typical_use": [
+    "Brandbekämpfung von Flüssigkeitsbränden"
+   ],
+   "training_questions": [
+    "Welche Verschäumungszahl hat Schwerschaum?",
+    "Mit welchem Zumischer wird das S2-Rohr kombiniert?"
+   ],
+   "aliases": [
+    "Schaumrohr S2",
+    "S 2",
+    "Schwerschaumrohr"
+   ]
+  },
+  {
+   "id": "std_mittelschaumrohr_m2",
+   "name": "Mittelschaumrohr M2",
+   "short_name": "M2-Rohr",
+   "equipment_functions": [
+    "BRAND"
+   ],
+   "description": "Schaumstrahlrohr für Mittelschaum (Verschäumungszahl ca. 75), geringe Wurfweite, große Schaummenge.",
+   "typical_use": [
+    "Fluten von Schächten und Hohlräumen",
+    "Abdecken auslaufender Betriebsstoffe"
+   ],
+   "training_questions": [
+    "Welche Verschäumungszahl hat Mittelschaum?",
+    "Wofür eignet sich Mittelschaum besonders?"
+   ],
+   "aliases": [
+    "Schaumrohr M2",
+    "M 2",
+    "Mittelschaumrohr"
+   ]
+  },
+  {
+   "id": "std_schaummittel_kanister",
+   "name": "Schaummittelkanister 20 l",
+   "short_name": "Schaummittel 20 l",
+   "equipment_functions": [
+    "BRAND",
+    "LOGISTIK"
+   ],
+   "description": "Kanister mit Mehrbereichsschaummittel für Zumischer und Schaumrohre.",
+   "typical_use": [
+    "Schaumangriff",
+    "Abdecken von Kraftstofflachen"
+   ],
+   "training_questions": [
+    "Wie viel Schaummittel verbraucht ein Z2-Zumischer bei 3 % Zumischung pro Minute?",
+    "Welche Schaumarten kennst du?"
+   ],
+   "aliases": [
+    "Schaummittel 20l",
+    "Schaummittelbehälter",
+    "Mehrbereichsschaummittel"
+   ]
+  },
+  {
+   "id": "std_kuebelspritze",
+   "name": "Kübelspritze",
+   "short_name": "Kübelspritze",
+   "equipment_functions": [
+    "BRAND",
+    "WASSER"
+   ],
+   "description": "Tragbares Kleinlöschgerät mit Handpumpe und D-Schlauch, ca. 10 l Löschwasser.",
+   "typical_use": [
+    "Nachlöscharbeiten",
+    "Kleinbrände und Entstehungsbrände"
+   ],
+   "training_questions": [
+    "Wie viel Wasser fasst die Kübelspritze?",
+    "Für welche Einsätze ist sie geeignet?"
+   ],
+   "aliases": [
+    "Kübelspritze DIN 14405",
+    "Eimerspritze"
+   ]
+  },
+  {
+   "id": "std_feuerloescher_pg6",
+   "name": "Pulverlöscher PG 6",
+   "short_name": "PG 6",
+   "equipment_functions": [
+    "BRAND"
+   ],
+   "description": "Tragbarer 6-kg-Pulverfeuerlöscher für die Brandklassen A, B und C.",
+   "typical_use": [
+    "Entstehungsbrandbekämpfung",
+    "PKW-Brände"
+   ],
+   "training_questions": [
+    "Für welche Brandklassen ist ABC-Pulver geeignet?",
+    "Wie lange sprüht ein PG 6 ununterbrochen?"
+   ],
+   "aliases": [
+    "PG6",
+    "Pulverlöscher 6kg",
+    "Feuerlöscher PG 6",
+    "P6"
+   ]
+  },
+  {
+   "id": "std_feuerloescher_co2",
+   "name": "CO2-Löscher K 5",
+   "short_name": "K 5",
+   "equipment_functions": [
+    "BRAND"
+   ],
+   "description": "5-kg-Kohlendioxidlöscher für Brände in elektrischen Anlagen (Brandklasse B, rückstandsfrei).",
+   "typical_use": [
+    "Brände an Elektroanlagen",
+    "Schaltschrank- und Serverbrände"
+   ],
+   "training_questions": [
+    "Warum ist CO2 in engen Räumen gefährlich?",
+    "Für welche Brandklasse ist CO2 geeignet?"
+   ],
+   "aliases": [
+    "CO2-Löscher",
+    "Kohlendioxidlöscher",
+    "K5"
+   ]
+  },
+  {
+   "id": "std_loeschdecke",
+   "name": "Löschdecke",
+   "short_name": "Löschdecke",
+   "equipment_functions": [
+    "BRAND"
+   ],
+   "description": "Decke aus schwer entflammbarem Gewebe zum Ersticken von Entstehungsbränden.",
+   "typical_use": [
+    "Fettbrände in Küchen (Abdecken)",
+    "Personenbrände"
+   ],
+   "training_questions": [
+    "Wie wird eine Löschdecke eingesetzt?",
+    "Warum darf Fett nie mit Wasser gelöscht werden?"
+   ],
+   "aliases": [
+    "Löschdecke DIN EN 1869",
+    "Branddecke"
+   ]
+  },
+  {
+   "id": "std_feuerpatsche",
+   "name": "Feuerpatsche",
+   "short_name": "Feuerpatsche",
+   "equipment_functions": [
+    "BRAND",
+    "HANDWERKZEUG"
+   ],
+   "description": "Handgerät zum Ausschlagen von Boden- und Vegetationsbränden.",
+   "typical_use": [
+    "Wald- und Flächenbrandbekämpfung"
+   ],
+   "training_questions": [
+    "Bei welchen Bränden wird die Feuerpatsche eingesetzt?",
+    "Welche Taktik gilt beim Flächenbrand?"
+   ],
+   "aliases": [
+    "Feuerpatsche DIN 14830",
+    "Waldbrandpatsche"
+   ]
+  },
+  {
+   "id": "std_pressluftatmer",
+   "name": "Pressluftatmer PA",
+   "short_name": "Pressluftatmer",
+   "equipment_functions": [
+    "PSA"
+   ],
+   "description": "Umluftunabhängiges Atemschutzgerät mit 300-bar-Flasche und Lungenautomat für den Innenangriff.",
+   "typical_use": [
+    "Innenangriff unter Nullsicht",
+    "Einsätze mit Atemgiften"
+   ],
+   "training_questions": [
+    "Wie hoch ist der Fülldruck der Atemluftflasche?",
+    "Ab welchem Restdruck muss der Rückzug angetreten sein?"
+   ],
+   "aliases": [
+    "PA",
+    "Atemschutzgerät",
+    "Pressluftatmer PA 300",
+    "Atemschutzgerät mit Flasche"
+   ]
+  },
+  {
+   "id": "std_atemschutzmaske",
+   "name": "Atemschutz-Vollmaske",
+   "short_name": "Vollmaske",
+   "equipment_functions": [
+    "PSA"
+   ],
+   "description": "Vollmaske mit Rundgewinde- oder Steckanschluss für Pressluftatmer und Filtergeräte.",
+   "typical_use": [
+    "Atemschutzeinsatz",
+    "Filtereinsatz bei ausreichend Sauerstoff"
+   ],
+   "training_questions": [
+    "Wann darf mit Filter statt PA gearbeitet werden?",
+    "Wie wird der Dichtsitz der Maske geprüft?"
+   ],
+   "aliases": [
+    "Vollmaske",
+    "Atemschutzmaske",
+    "Maske Panorama Nova"
+   ]
+  },
+  {
+   "id": "std_ersatzflasche_300bar",
+   "name": "Atemluftflasche 6,8 l / 300 bar",
+   "short_name": "Ersatzflasche",
+   "equipment_functions": [
+    "PSA",
+    "LOGISTIK"
+   ],
+   "description": "Composite-Ersatzflasche für Pressluftatmer.",
+   "typical_use": [
+    "Flaschenwechsel an der Einsatzstelle"
+   ],
+   "training_questions": [
+    "Wie viel Luftvorrat enthält eine 6,8-l-300-bar-Flasche?",
+    "Wie oft müssen Atemluftflaschen geprüft werden?"
+   ],
+   "aliases": [
+    "Atemluftflasche",
+    "Ersatzflasche 300 bar",
+    "CFK-Flasche 6,8l"
+   ]
+  },
+  {
+   "id": "std_fluchthaube",
+   "name": "Fluchthaube",
+   "short_name": "Fluchthaube",
+   "equipment_functions": [
+    "PSA",
+    "RETTUNG"
+   ],
+   "description": "Rettungshaube mit Filter zur Rettung von Personen aus verrauchten Bereichen.",
+   "typical_use": [
+    "Menschenrettung über verrauchte Flure"
+   ],
+   "training_questions": [
+    "Wofür ist die Fluchthaube gedacht — Träger oder zu rettende Person?",
+    "Was ist bei Sauerstoffmangel zu beachten?"
+   ],
+   "aliases": [
+    "Fluchthaube",
+    "Rettungshaube",
+    "Brandfluchthaube"
+   ]
+  },
+  {
+   "id": "std_atemschutzueberwachung",
+   "name": "Atemschutzüberwachungstafel",
+   "short_name": "ASÜ-Tafel",
+   "equipment_functions": [
+    "FUEHRUNG",
+    "PSA"
+   ],
+   "description": "Tafel zur Registrierung von Trupps, Drücken und Einsatzzeiten der Atemschutzgeräteträger.",
+   "typical_use": [
+    "Atemschutzüberwachung am Verteiler/Einstieg"
+   ],
+   "training_questions": [
+    "Welche Daten werden bei der ASÜ dokumentiert?",
+    "In welchen Abständen werden Druckabfragen durchgeführt?"
+   ],
+   "aliases": [
+    "Atemschutzüberwachung",
+    "ASÜ Tafel",
+    "Überwachungstafel"
+   ]
+  },
+  {
+   "id": "std_krankentrage",
+   "name": "Krankentrage DIN 13024",
+   "short_name": "Krankentrage",
+   "equipment_functions": [
+    "RETTUNG"
+   ],
+   "description": "Klappbare Trage zum Transport liegender Personen.",
+   "typical_use": [
+    "Patiententransport aus dem Gefahrenbereich"
+   ],
+   "training_questions": [
+    "Wie viele Kräfte tragen eine besetzte Trage?",
+    "Welche Alternative gibt es in engen Treppenräumen?"
+   ],
+   "aliases": [
+    "Trage",
+    "Krankentrage",
+    "Klapptrage DIN 13024"
+   ]
+  },
+  {
+   "id": "std_schleifkorbtrage",
+   "name": "Schleifkorbtrage",
+   "short_name": "Schleifkorb",
+   "equipment_functions": [
+    "RETTUNG"
+   ],
+   "description": "Robuste Korbtrage zum Retten aus Höhen, Tiefen und unwegsamem Gelände; schleif- und kranbar.",
+   "typical_use": [
+    "Höhen-/Tiefenrettung",
+    "Rettung aus unwegsamem Gelände"
+   ],
+   "training_questions": [
+    "Welche Vorteile bietet die Schleifkorbtrage gegenüber der Krankentrage?",
+    "Wie wird sie angeschlagen?"
+   ],
+   "aliases": [
+    "Schleifkorb",
+    "Korbtrage",
+    "Stokes Basket"
+   ]
+  },
+  {
+   "id": "std_spineboard",
+   "name": "Spineboard",
+   "short_name": "Spineboard",
+   "equipment_functions": [
+    "RETTUNG"
+   ],
+   "description": "Starres Rettungsbrett mit Kopffixierung zur achsengerechten Rettung Wirbelsäulenverletzter.",
+   "typical_use": [
+    "Patientenrettung bei Verkehrsunfällen",
+    "Achsengerechte Rettung"
+   ],
+   "training_questions": [
+    "Wofür dient das Spineboard?",
+    "Welches Zubehör gehört zur Kopffixierung?"
+   ],
+   "aliases": [
+    "Rettungsbrett",
+    "Spine Board",
+    "Backboard"
+   ]
+  },
+  {
+   "id": "std_ked_system",
+   "name": "KED-System",
+   "short_name": "KED",
+   "equipment_functions": [
+    "RETTUNG"
+   ],
+   "description": "Rettungskorsett zur schonenden Rettung sitzender Patienten mit Wirbelsäulenfixierung.",
+   "typical_use": [
+    "Patientenrettung aus PKW"
+   ],
+   "training_questions": [
+    "Wann wird das KED-System eingesetzt?",
+    "Was ist die Crash-Rettung im Gegensatz dazu?"
+   ],
+   "aliases": [
+    "KED",
+    "Kendrick Extrication Device",
+    "Rettungskorsett"
+   ]
+  },
+  {
+   "id": "std_verbandkasten",
+   "name": "Verbandkasten DIN 14142",
+   "short_name": "Verbandkasten",
+   "equipment_functions": [
+    "RETTUNG"
+   ],
+   "description": "Feuerwehr-Verbandkasten mit Erste-Hilfe-Material.",
+   "typical_use": [
+    "Erstversorgung Verletzter"
+   ],
+   "training_questions": [
+    "Wo ist der Verbandkasten im Fahrzeug verlastet?",
+    "Was gehört zur Ersten Hilfe bei starker Blutung?"
+   ],
+   "aliases": [
+    "Verbandkasten",
+    "Erste-Hilfe-Kasten",
+    "Sanitätskasten DIN 14142"
+   ]
+  },
+  {
+   "id": "std_rettungsdecke",
+   "name": "Rettungsdecke",
+   "short_name": "Rettungsdecke",
+   "equipment_functions": [
+    "RETTUNG"
+   ],
+   "description": "Metallisierte Folie zum Wärmeerhalt von Patienten.",
+   "typical_use": [
+    "Schutz vor Auskühlung",
+    "Schockprophylaxe"
+   ],
+   "training_questions": [
+    "Welche Seite der Rettungsdecke gehört zum Körper?",
+    "Wofür wird sie außer zum Wärmeerhalt genutzt?"
+   ],
+   "aliases": [
+    "Rettungsfolie",
+    "Wärmedecke"
+   ]
+  },
+  {
+   "id": "std_kleiderschere",
+   "name": "Kleiderschere",
+   "short_name": "Kleiderschere",
+   "equipment_functions": [
+    "RETTUNG",
+    "HANDWERKZEUG"
+   ],
+   "description": "Robuste Schere zum schnellen Entfernen von Kleidung bei der Patientenversorgung.",
+   "typical_use": [
+    "Freilegen von Verletzungen"
+   ],
+   "training_questions": [
+    "Warum eine spezielle Kleiderschere statt eines Messers?",
+    "Wo wird sie verlastet?"
+   ],
+   "aliases": [
+    "Kleiderschere",
+    "Rettungsschere klein",
+    "Verbandschere"
+   ]
+  },
+  {
+   "id": "std_aed",
+   "name": "Automatisierter Externer Defibrillator (AED)",
+   "short_name": "AED",
+   "equipment_functions": [
+    "RETTUNG"
+   ],
+   "description": "Gerät zur Frühdefibrillation mit Sprachführung für den Erste-Hilfe-Einsatz.",
+   "typical_use": [
+    "Reanimation"
+   ],
+   "training_questions": [
+    "In welchem Rhythmus wird bei der Reanimation gedrückt und beatmet?",
+    "Was macht der AED selbstständig?"
+   ],
+   "aliases": [
+    "AED",
+    "Defibrillator",
+    "Defi"
+   ]
+  },
+  {
+   "id": "std_absturzsicherung",
+   "name": "Gerätesatz Absturzsicherung",
+   "short_name": "Absturzsicherung",
+   "equipment_functions": [
+    "RETTUNG",
+    "PSA"
+   ],
+   "description": "Auffanggurt, Kernmantelseile und Zubehör zum Sichern von Einsatzkräften bei Absturzgefahr.",
+   "typical_use": [
+    "Arbeiten auf Dächern",
+    "Sicherung an Absturzkanten"
+   ],
+   "training_questions": [
+    "Wozu dient der Gerätesatz Absturzsicherung — Halten oder Auffangen?",
+    "Wer darf damit arbeiten?"
+   ],
+   "aliases": [
+    "Absturzsicherung",
+    "Gerätesatz AS",
+    "Höhensicherungssatz"
+   ]
+  },
+  {
+   "id": "std_sprungretter",
+   "name": "Sprungrettungsgerät SP 16",
+   "short_name": "Sprungpolster",
+   "equipment_functions": [
+    "RETTUNG"
+   ],
+   "description": "Aufblasbares Sprungpolster zur Rettung aus Höhen bis ca. 16 m, wenn kein anderer Rettungsweg besteht.",
+   "typical_use": [
+    "Notrettung aus Obergeschossen"
+   ],
+   "training_questions": [
+    "Ab welcher Höhe ist das SP 16 einsetzbar?",
+    "Wie lange dauert das Aufstellen?"
+   ],
+   "aliases": [
+    "Sprungpolster",
+    "SP16",
+    "Sprungrettungsgerät"
+   ]
+  },
+  {
+   "id": "std_spreizer",
+   "name": "Hydraulischer Spreizer",
+   "short_name": "Spreizer",
+   "equipment_functions": [
+    "RETTUNG",
+    "HANDWERKZEUG"
+   ],
+   "description": "Hydraulisches Rettungsgerät zum Spreizen, Ziehen und Quetschen bei der Patientenbefreiung.",
+   "typical_use": [
+    "Türen öffnen am Unfall-PKW",
+    "Schaffung von Rettungsöffnungen"
+   ],
+   "training_questions": [
+    "Welche Kräfte erreicht ein Rettungsspreizer?",
+    "Was ist beim Ansetzen zu beachten?"
+   ],
+   "aliases": [
+    "Spreizer",
+    "Rettungsspreizer",
+    "SP 49",
+    "Hydraulikspreizer"
+   ]
+  },
+  {
+   "id": "std_schneidgeraet",
+   "name": "Hydraulisches Schneidgerät",
+   "short_name": "Schere",
+   "equipment_functions": [
+    "RETTUNG",
+    "HANDWERKZEUG"
+   ],
+   "description": "Hydraulische Rettungsschere zum Durchtrennen von Karosserieteilen und Holmen.",
+   "typical_use": [
+    "Dachabnahme am Unfall-PKW",
+    "Durchtrennen von A-/B-/C-Säulen"
+   ],
+   "training_questions": [
+    "Was muss vor dem Schneiden einer Säule geprüft werden (Airbag)?",
+    "Welche Schutzausrüstung ist Pflicht?"
+   ],
+   "aliases": [
+    "Rettungsschere",
+    "Schneidgerät",
+    "S 50",
+    "Hydraulikschere"
+   ]
+  },
+  {
+   "id": "std_rettungszylinder",
+   "name": "Rettungszylinder",
+   "short_name": "Rettungszylinder",
+   "equipment_functions": [
+    "RETTUNG",
+    "HANDWERKZEUG"
+   ],
+   "description": "Hydraulischer Teleskopzylinder zum Wegdrücken von Fahrzeugteilen, z. B. Armaturenbrett.",
+   "typical_use": [
+    "Armaturenbrett anheben (Dashboard-Lift)"
+   ],
+   "training_questions": [
+    "Wofür wird der Rettungszylinder eingesetzt?",
+    "Worauf muss beim Abstützen geachtet werden?"
+   ],
+   "aliases": [
+    "RZ 1",
+    "Rettungszylinder",
+    "Teleskopzylinder"
+   ]
+  },
+  {
+   "id": "std_hydraulikaggregat",
+   "name": "Hydraulikaggregat",
+   "short_name": "Aggregat",
+   "equipment_functions": [
+    "RETTUNG",
+    "STROM"
+   ],
+   "description": "Motorbetriebene Pumpe zur Versorgung von Spreizer, Schere und Zylinder.",
+   "typical_use": [
+    "Antrieb des hydraulischen Rettungssatzes"
+   ],
+   "training_questions": [
+    "Wie viele Geräte können gleichzeitig betrieben werden?",
+    "Welche Druckstufe nutzen Rettungssätze üblicherweise?"
+   ],
+   "aliases": [
+    "Hydraulikpumpe",
+    "Aggregat Rettungssatz",
+    "Motorpumpenaggregat"
+   ]
+  },
+  {
+   "id": "std_hebekissen",
+   "name": "Hebekissen-Satz 8 bar",
+   "short_name": "Hebekissen",
+   "equipment_functions": [
+    "RETTUNG",
+    "HANDWERKZEUG"
+   ],
+   "description": "Pneumatische Kissen zum Anheben schwerer Lasten mit Druckluft.",
+   "typical_use": [
+    "Anheben von Fahrzeugen zur Personenbefreiung"
+   ],
+   "training_questions": [
+    "Wie hoch darf gestapelt werden (Anzahl Kissen)?",
+    "Warum muss parallel unterbaut werden?"
+   ],
+   "aliases": [
+    "Hebekissen",
+    "Lufthebekissen",
+    "Pneumatikkissen"
+   ]
+  },
+  {
+   "id": "std_unterbaumaterial",
+   "name": "Unterbau-/Rüstholz-Satz",
+   "short_name": "Rüstholz",
+   "equipment_functions": [
+    "HANDWERKZEUG",
+    "LOGISTIK"
+   ],
+   "description": "Kanthölzer und Keile zum Unterbauen und Stabilisieren von Lasten und Fahrzeugen.",
+   "typical_use": [
+    "Stabilisieren des Unfall-PKW",
+    "Unterbauen beim Anheben"
+   ],
+   "training_questions": [
+    "Warum wird 'Anheben und Unterbauen' immer kombiniert?",
+    "Welche Grundregel gilt für Kreuzstapel?"
+   ],
+   "aliases": [
+    "Rüstholz",
+    "Unterbauholz",
+    "Abstützmaterial",
+    "Kreuzstapel"
+   ]
+  },
+  {
+   "id": "std_mehrzweckzug",
+   "name": "Mehrzweckzug Z 16",
+   "short_name": "Greifzug",
+   "equipment_functions": [
+    "HANDWERKZEUG"
+   ],
+   "description": "Seilzuggerät mit 16 kN Zugkraft zum Ziehen und Sichern von Lasten.",
+   "typical_use": [
+    "Wegziehen von Bäumen",
+    "Sichern von Fahrzeugen in Schräglage"
+   ],
+   "training_questions": [
+    "Welche Zugkraft hat der Z 16?",
+    "Wie wird die Zugkraft mit Umlenkrolle verdoppelt?"
+   ],
+   "aliases": [
+    "Greifzug",
+    "MZ 16",
+    "Zuggerät Z16",
+    "Mehrzweckzug"
+   ]
+  },
+  {
+   "id": "std_anschlagmittel",
+   "name": "Anschlagmittel-Satz (Rundschlingen/Schäkel)",
+   "short_name": "Anschlagmittel",
+   "equipment_functions": [
+    "HANDWERKZEUG",
+    "LOGISTIK"
+   ],
+   "description": "Rundschlingen, Drahtseile und Schäkel zum Anschlagen von Lasten.",
+   "typical_use": [
+    "Lastaufnahme mit Greifzug oder Kran"
+   ],
+   "training_questions": [
+    "Was bedeutet die Farbcodierung von Rundschlingen?",
+    "Was ist beim Anschlagen an scharfen Kanten zu tun?"
+   ],
+   "aliases": [
+    "Rundschlingen",
+    "Schäkel",
+    "Anschlagmittel"
+   ]
+  },
+  {
+   "id": "std_halligan",
+   "name": "Halligan-Tool",
+   "short_name": "Halligan",
+   "equipment_functions": [
+    "HANDWERKZEUG"
+   ],
+   "description": "Mehrzweck-Brechwerkzeug mit Klaue, Dorn und Blatt für gewaltsame Öffnung.",
+   "typical_use": [
+    "Türöffnung",
+    "Aufbrechen von Fenstern und Verkleidungen"
+   ],
+   "training_questions": [
+    "Welche drei Werkzeugenden hat das Halligan-Tool?",
+    "Mit welchem Gerät wird es kombiniert (Irons)?"
+   ],
+   "aliases": [
+    "Halligan Tool",
+    "Hooligan",
+    "Brechwerkzeug Halligan"
+   ]
+  },
+  {
+   "id": "std_brechstange",
+   "name": "Brechstange 700 mm",
+   "short_name": "Brechstange",
+   "equipment_functions": [
+    "HANDWERKZEUG"
+   ],
+   "description": "Stahlhebel zum Anheben und Aufbrechen.",
+   "typical_use": [
+    "Gewaltsame Öffnung",
+    "Anheben kleinerer Lasten"
+   ],
+   "training_questions": [
+    "Wofür wird die Brechstange genutzt?",
+    "Was ist der Unterschied zum Nageleisen?"
+   ],
+   "aliases": [
+    "Brechstange",
+    "Kuhfuß",
+    "Brecheisen"
+   ]
+  },
+  {
+   "id": "std_tueroeffnungssatz",
+   "name": "Türöffnungs-Werkzeugsatz",
+   "short_name": "Türöffnung",
+   "equipment_functions": [
+    "HANDWERKZEUG"
+   ],
+   "description": "Werkzeugsatz für die zerstörungsarme Türöffnung.",
+   "typical_use": [
+    "Wohnungsöffnung bei Gefahr in Verzug"
+   ],
+   "training_questions": [
+    "Wann ist zerstörungsarmes Öffnen angezeigt?",
+    "Welche rechtliche Grundlage erlaubt die Türöffnung?"
+   ],
+   "aliases": [
+    "Türöffnungssatz",
+    "Öffnungswerkzeug",
+    "Ziehfix"
+   ]
+  },
+  {
+   "id": "std_bolzenschneider",
+   "name": "Bolzenschneider 900 mm",
+   "short_name": "Bolzenschneider",
+   "equipment_functions": [
+    "HANDWERKZEUG"
+   ],
+   "description": "Schneidwerkzeug für Bolzen, Ketten und Vorhängeschlösser.",
+   "typical_use": [
+    "Öffnen von Toren und Ketten"
+   ],
+   "training_questions": [
+    "Bis zu welcher Materialstärke schneidet ein 900er Bolzenschneider?",
+    "Was darf nicht geschnitten werden (unter Spannung)?"
+   ],
+   "aliases": [
+    "Bolzenschneider",
+    "Kettenschneider"
+   ]
+  },
+  {
+   "id": "std_trennschleifer",
+   "name": "Trennschleifer",
+   "short_name": "Trennschleifer",
+   "equipment_functions": [
+    "HANDWERKZEUG"
+   ],
+   "description": "Motorbetriebener Trennschleifer für Metall und Stein.",
+   "typical_use": [
+    "Öffnen von Metalltoren",
+    "Trennen von Profilen"
+   ],
+   "training_questions": [
+    "Welche Schutzausrüstung ist beim Trennschleifen Pflicht?",
+    "Welche Trennscheiben gibt es?"
+   ],
+   "aliases": [
+    "Motortrennschleifer",
+    "Flex groß",
+    "Trennschleifgerät"
+   ]
+  },
+  {
+   "id": "std_saebelsaege",
+   "name": "Elektro-Säbelsäge",
+   "short_name": "Säbelsäge",
+   "equipment_functions": [
+    "HANDWERKZEUG"
+   ],
+   "description": "Elektrowerkzeug zum Sägen von Metall, Holz und Kunststoff, auch für die Fahrzeugöffnung.",
+   "typical_use": [
+    "Alternative Schneidtechnik am Unfallfahrzeug"
+   ],
+   "training_questions": [
+    "Welche Vorteile bietet die Säbelsäge gegenüber der Rettungsschere?",
+    "Welche Sägeblätter werden vorgehalten?"
+   ],
+   "aliases": [
+    "Säbelsäge",
+    "Reciprosäge",
+    "Tigersäge"
+   ]
+  },
+  {
+   "id": "std_motorkettensaege",
+   "name": "Motorkettensäge",
+   "short_name": "Kettensäge",
+   "equipment_functions": [
+    "HANDWERKZEUG"
+   ],
+   "description": "Benzinbetriebene Kettensäge für Sturmholz und Sonderlagen.",
+   "typical_use": [
+    "Beseitigung umgestürzter Bäume"
+   ],
+   "training_questions": [
+    "Welche PSA gehört zur Motorsägenarbeit?",
+    "Wer darf die Motorsäge führen?"
+   ],
+   "aliases": [
+    "Motorsäge",
+    "Kettensäge",
+    "MS 261"
+   ]
+  },
+  {
+   "id": "std_schnittschutz",
+   "name": "Schnittschutzausrüstung",
+   "short_name": "Schnittschutz",
+   "equipment_functions": [
+    "PSA"
+   ],
+   "description": "Schnittschutzhose, Helm mit Visier und Gehörschutz für Motorsägenarbeiten.",
+   "typical_use": [
+    "Motorsägenarbeit"
+   ],
+   "training_questions": [
+    "Aus welchen Teilen besteht die Schnittschutzausrüstung?",
+    "Warum reicht der Feuerwehrhelm nicht aus?"
+   ],
+   "aliases": [
+    "Schnittschutzhose",
+    "Schnittschutz-Set",
+    "Sägen-PSA"
+   ]
+  },
+  {
+   "id": "std_glasmanagement",
+   "name": "Glasmanagement-Set",
+   "short_name": "Glas-Set",
+   "equipment_functions": [
+    "HANDWERKZEUG",
+    "RETTUNG"
+   ],
+   "description": "Werkzeuge (Glassäge, Federkörner, Folie) zum kontrollierten Entfernen von Fahrzeugscheiben.",
+   "typical_use": [
+    "Scheibenentfernung am Unfall-PKW"
+   ],
+   "training_questions": [
+    "Warum werden Scheiben vor dem Schneiden entfernt?",
+    "Wie wird Verbundglas bearbeitet?"
+   ],
+   "aliases": [
+    "Glasmanagement",
+    "Glassäge Set",
+    "Scheibenset"
+   ]
+  },
+  {
+   "id": "std_airbag_sicherung",
+   "name": "Airbag-Sicherungssystem",
+   "short_name": "Airbag-Sicherung",
+   "equipment_functions": [
+    "RETTUNG"
+   ],
+   "description": "Abdeckung zur Sicherung nicht ausgelöster Fahrer-Airbags.",
+   "typical_use": [
+    "Absichern des Lenkrads bei der PKW-Rettung"
+   ],
+   "training_questions": [
+    "Welche Abstände gelten zu nicht ausgelösten Airbags (30-60-90)?",
+    "Wann wird die Airbagsicherung gesetzt?"
+   ],
+   "aliases": [
+    "Airbagsicherung",
+    "Airbag-Abdeckung",
+    "Octopus"
+   ]
+  },
+  {
+   "id": "std_unfalldreieck_satz",
+   "name": "Verkehrssicherungssatz (Dreieck, Leuchten)",
+   "short_name": "Verkehrssicherung",
+   "equipment_functions": [
+    "ABSPERREN"
+   ],
+   "description": "Warndreieck, Warnleuchten und Flaggen zur Absicherung der Einsatzstelle.",
+   "typical_use": [
+    "Absicherung von Einsatzstellen im Verkehrsraum"
+   ],
+   "training_questions": [
+    "In welchem Abstand wird auf Landstraßen abgesichert?",
+    "Welche Reihenfolge gilt beim Absichern?"
+   ],
+   "aliases": [
+    "Warndreieck",
+    "Verkehrssicherung",
+    "Absicherungssatz"
+   ]
+  },
+  {
+   "id": "std_stromerzeuger_5kva",
+   "name": "Stromerzeuger 5 kVA",
+   "short_name": "Stromerzeuger",
+   "equipment_functions": [
+    "STROM"
+   ],
+   "description": "Tragbarer benzinbetriebener Generator zur Stromversorgung an der Einsatzstelle.",
+   "typical_use": [
+    "Versorgung von Beleuchtung und Elektrowerkzeugen"
+   ],
+   "training_questions": [
+    "Warum darf der Stromerzeuger nicht in Räumen betrieben werden?",
+    "Welche Leistung liefert er dauerhaft?"
+   ],
+   "aliases": [
+    "Generator 5kVA",
+    "Notstromerzeuger",
+    "Stromaggregat 5 kVA"
+   ]
+  },
+  {
+   "id": "std_flutlichtstrahler",
+   "name": "Flutlichtstrahler 1000 W",
+   "short_name": "Flutlichtstrahler",
+   "equipment_functions": [
+    "BELEUCHTUNG"
+   ],
+   "description": "Halogen- oder LED-Strahler zur Ausleuchtung der Einsatzstelle, Betrieb auf Stativ.",
+   "typical_use": [
+    "Ausleuchtung der Einsatzstelle bei Nacht"
+   ],
+   "training_questions": [
+    "Worauf ist beim Aufstellen des Strahlers zu achten (Blendung)?",
+    "Wie wird der Strahler angeschlossen?"
+   ],
+   "aliases": [
+    "Strahler 1000W",
+    "Halogenstrahler",
+    "LED-Strahler",
+    "Flutlicht"
+   ]
+  },
+  {
+   "id": "std_stativ",
+   "name": "Beleuchtungsstativ",
+   "short_name": "Stativ",
+   "equipment_functions": [
+    "BELEUCHTUNG",
+    "LOGISTIK"
+   ],
+   "description": "Teleskopstativ für Flutlichtstrahler, bis ca. 3,5 m ausziehbar.",
+   "typical_use": [
+    "Aufbau der Einsatzstellenbeleuchtung"
+   ],
+   "training_questions": [
+    "Wie wird das Stativ gegen Umkippen gesichert?",
+    "Welche Anbauhöhe ist maximal möglich?"
+   ],
+   "aliases": [
+    "Stativ DIN 14640",
+    "Lichtstativ",
+    "Teleskopstativ"
+   ]
+  },
+  {
+   "id": "std_kabeltrommel_50m",
+   "name": "Kabeltrommel 50 m 230 V",
+   "short_name": "Kabeltrommel",
+   "equipment_functions": [
+    "STROM"
+   ],
+   "description": "Kabeltrommel mit 50 m Gummischlauchleitung und Schutzkontaktsteckdosen, IP-geschützt.",
+   "typical_use": [
+    "Stromverteilung an der Einsatzstelle"
+   ],
+   "training_questions": [
+    "Warum muss die Trommel im Betrieb abgerollt werden?",
+    "Welche Schutzart brauchen Feuerwehr-Kabeltrommeln?"
+   ],
+   "aliases": [
+    "Kabeltrommel",
+    "Leitungsroller 50m",
+    "Verlängerung 50m"
+   ]
+  },
+  {
+   "id": "std_abzweigstueck_strom",
+   "name": "Stromverteiler 3-fach",
+   "short_name": "Stromverteiler",
+   "equipment_functions": [
+    "STROM"
+   ],
+   "description": "Verteiler zur Aufteilung einer Zuleitung auf mehrere Abgänge.",
+   "typical_use": [
+    "Anschluss mehrerer Verbraucher am Generator"
+   ],
+   "training_questions": [
+    "Was ist bei der Gesamtlast zu beachten?",
+    "Welche Steckverbindungen sind üblich?"
+   ],
+   "aliases": [
+    "Stromverteiler",
+    "Verteilerkasten 230V",
+    "Dreifachverteiler"
+   ]
+  },
+  {
+   "id": "std_handscheinwerfer",
+   "name": "Handscheinwerfer Ex",
+   "short_name": "Handscheinwerfer",
+   "equipment_functions": [
+    "BELEUCHTUNG"
+   ],
+   "description": "Explosionsgeschützter, akkubetriebener Handscheinwerfer.",
+   "typical_use": [
+    "Absuchen von Gebäuden",
+    "Innenangriff (Ex-Bereich)"
+   ],
+   "training_questions": [
+    "Was bedeutet die Ex-Zulassung?",
+    "Wo werden Handscheinwerfer im Fahrzeug geladen?"
+   ],
+   "aliases": [
+    "Handlampe Ex",
+    "Handscheinwerfer",
+    "HSE 7"
+   ]
+  },
+  {
+   "id": "std_knickkopflampe",
+   "name": "Knickkopfleuchte (Helmlampe)",
+   "short_name": "Knickkopflampe",
+   "equipment_functions": [
+    "BELEUCHTUNG",
+    "PSA"
+   ],
+   "description": "Kompakte Winkellampe zur Befestigung an der Einsatzjacke oder am Helm.",
+   "typical_use": [
+    "Persönliche Beleuchtung im Innenangriff"
+   ],
+   "training_questions": [
+    "Wo wird die Knickkopfleuchte getragen?",
+    "Warum Ex-geschützte Ausführung?"
+   ],
+   "aliases": [
+    "Knickkopflampe",
+    "Winkellampe",
+    "UK 4AA"
+   ]
+  },
+  {
+   "id": "std_powermoon",
+   "name": "Beleuchtungsballon",
+   "short_name": "Powermoon",
+   "equipment_functions": [
+    "BELEUCHTUNG"
+   ],
+   "description": "Ballonleuchte für blendfreie, großflächige Ausleuchtung.",
+   "typical_use": [
+    "Großflächige Ausleuchtung ohne Blendung"
+   ],
+   "training_questions": [
+    "Welchen Vorteil hat der Ballon gegenüber Strahlern?",
+    "Welche Leistung wird benötigt?"
+   ],
+   "aliases": [
+    "Powermoon",
+    "Lichtballon",
+    "Ballonleuchte"
+   ]
+  },
+  {
+   "id": "std_tragkraftspritze",
+   "name": "Tragkraftspritze PFPN 10-1000",
+   "short_name": "TS",
+   "equipment_functions": [
+    "PUMPEN",
+    "WASSER"
+   ],
+   "description": "Tragbare Feuerlöschkreiselpumpe mit 1000 l/min bei 10 bar.",
+   "typical_use": [
+    "Wasserentnahme aus offenen Gewässern",
+    "Wasserförderung über lange Wegstrecke"
+   ],
+   "training_questions": [
+    "Was bedeutet PFPN 10-1000?",
+    "Wie tief darf theoretisch/praktisch gesaugt werden?"
+   ],
+   "aliases": [
+    "TS 8/8",
+    "Tragkraftspritze",
+    "PFPN 10-1000",
+    "TS"
+   ]
+  },
+  {
+   "id": "std_tauchpumpe_tp4",
+   "name": "Tauchpumpe TP 4/1",
+   "short_name": "Tauchpumpe",
+   "equipment_functions": [
+    "PUMPEN"
+   ],
+   "description": "Elektrische Tauchpumpe mit 400 l/min Förderleistung für Keller und Schächte.",
+   "typical_use": [
+    "Auspumpen vollgelaufener Keller"
+   ],
+   "training_questions": [
+    "Ab welchem Wasserstand fördert die TP 4/1?",
+    "Welche Absicherung ist beim Elektrobetrieb nötig?"
+   ],
+   "aliases": [
+    "TP 4/1",
+    "Tauchpumpe 400",
+    "Elektrotauchpumpe"
+   ]
+  },
+  {
+   "id": "std_tauchpumpe_tp8",
+   "name": "Tauchpumpe TP 8/1",
+   "short_name": "Tauchpumpe groß",
+   "equipment_functions": [
+    "PUMPEN"
+   ],
+   "description": "Elektrische Tauchpumpe mit 800 l/min Förderleistung.",
+   "typical_use": [
+    "Wasserschäden mit großen Wassermengen"
+   ],
+   "training_questions": [
+    "Welche Förderleistung hat die TP 8/1?",
+    "Welcher Kupplungsabgang ist verbaut?"
+   ],
+   "aliases": [
+    "TP 8/1",
+    "Tauchpumpe 800"
+   ]
+  },
+  {
+   "id": "std_wassersauger",
+   "name": "Wassersauger",
+   "short_name": "Wassersauger",
+   "equipment_functions": [
+    "PUMPEN",
+    "LOGISTIK"
+   ],
+   "description": "Nasssauger zur Restwasserbeseitigung nach Wasserschäden.",
+   "typical_use": [
+    "Restwasser nach Rohrbruch oder Unwetter"
+   ],
+   "training_questions": [
+    "Wo endet der Einsatz der Tauchpumpe und beginnt der Wassersauger?",
+    "Wohin wird das Schmutzwasser abgeführt?"
+   ],
+   "aliases": [
+    "Nasssauger",
+    "Wassersauger WD"
+   ]
+  },
+  {
+   "id": "std_faltbehaelter_5000",
+   "name": "Faltbehälter 5000 l",
+   "short_name": "Faltbehälter",
+   "equipment_functions": [
+    "WASSER",
+    "LOGISTIK"
+   ],
+   "description": "Zusammenlegbarer Wasserbehälter als Pufferspeicher an der Einsatzstelle.",
+   "typical_use": [
+    "Wasserübergabe im Pendelverkehr",
+    "Pufferbehälter bei Waldbränden"
+   ],
+   "training_questions": [
+    "Wie wird der Faltbehälter befüllt und entnommen?",
+    "Welches Fassungsvermögen ist üblich?"
+   ],
+   "aliases": [
+    "Faltbehälter",
+    "Wasserblase 5000",
+    "Mobiler Löschwasserbehälter"
+   ]
+  },
+  {
+   "id": "std_druckbeluefter",
+   "name": "Hochdrucklüfter (Drucklüfter)",
+   "short_name": "Lüfter",
+   "equipment_functions": [
+    "LUEFTUNG"
+   ],
+   "description": "Benzin- oder akkubetriebener Lüfter zur Überdruckbelüftung verrauchter Gebäude.",
+   "typical_use": [
+    "Entrauchung nach/während des Innenangriffs"
+   ],
+   "training_questions": [
+    "Was muss vor dem Einsatz des Drucklüfters vorhanden sein (Abluftöffnung)?",
+    "Wo wird der Lüfter positioniert?"
+   ],
+   "aliases": [
+    "Drucklüfter",
+    "Überdrucklüfter",
+    "Hochleistungslüfter",
+    "PPV-Lüfter"
+   ]
+  },
+  {
+   "id": "std_gaswarngeraet",
+   "name": "Gasmessgerät (Mehrgas)",
+   "short_name": "Gasmessgerät",
+   "equipment_functions": [
+    "MESSGERAETE"
+   ],
+   "description": "Mehrgasmessgerät für Ex-Gefahr, Sauerstoff und toxische Gase (z. B. CO, H2S).",
+   "typical_use": [
+    "Freimessen von Räumen, Schächten und Kanälen",
+    "Gasgeruch-Einsätze"
+   ],
+   "training_questions": [
+    "Welche Messkanäle hat ein typisches 4-Gas-Gerät?",
+    "Was bedeutet die untere Explosionsgrenze (UEG)?"
+   ],
+   "aliases": [
+    "Mehrgasmessgerät",
+    "4-Gas-Messgerät",
+    "X-am 5000",
+    "Gaswarngerät"
+   ]
+  },
+  {
+   "id": "std_co_warner",
+   "name": "CO-Warngerät",
+   "short_name": "CO-Warner",
+   "equipment_functions": [
+    "MESSGERAETE",
+    "PSA"
+   ],
+   "description": "Persönlicher Kohlenmonoxid-Warner für Einsatzkräfte.",
+   "typical_use": [
+    "Eigenschutz bei Einsätzen in Gebäuden"
+   ],
+   "training_questions": [
+    "Warum ist CO besonders tückisch?",
+    "Ab welchem Wert warnt das Gerät typischerweise?"
+   ],
+   "aliases": [
+    "CO-Melder",
+    "CO Warner",
+    "Kohlenmonoxidwarner"
+   ]
+  },
+  {
+   "id": "std_waermebildkamera",
+   "name": "Wärmebildkamera",
+   "short_name": "WBK",
+   "equipment_functions": [
+    "MESSGERAETE"
+   ],
+   "description": "Kamera zur Darstellung von Wärmestrahlung; Personensuche und Glutnesterkennung.",
+   "typical_use": [
+    "Personensuche im verrauchten Gebäude",
+    "Glutnester aufspüren"
+   ],
+   "training_questions": [
+    "Welche Einsatzmöglichkeiten hat die WBK?",
+    "Kann die WBK durch Glas 'sehen'?"
+   ],
+   "aliases": [
+    "WBK",
+    "Wärmebildkamera",
+    "Thermalkamera"
+   ]
+  },
+  {
+   "id": "std_spannungspruefer",
+   "name": "Spannungsprüfer bis 1000 V",
+   "short_name": "Spannungsprüfer",
+   "equipment_functions": [
+    "MESSGERAETE"
+   ],
+   "description": "Zweipoliger Spannungsprüfer zur Feststellung der Spannungsfreiheit.",
+   "typical_use": [
+    "Prüfen elektrischer Anlagen vor Arbeiten"
+   ],
+   "training_questions": [
+    "Welche 5 Sicherheitsregeln der Elektrotechnik kennst du?",
+    "Bis zu welcher Spannung darf die Feuerwehr prüfen?"
+   ],
+   "aliases": [
+    "Spannungsprüfer",
+    "Duspol",
+    "Zweipoliger Prüfer"
+   ]
+  },
+  {
+   "id": "std_leitkegel",
+   "name": "Verkehrsleitkegel 500 mm",
+   "short_name": "Leitkegel",
+   "equipment_functions": [
+    "ABSPERREN"
+   ],
+   "description": "Kegel mit Reflexstreifen zur Verkehrslenkung.",
+   "typical_use": [
+    "Absicherung der Einsatzstelle",
+    "Fahrbahnverengung markieren"
+   ],
+   "training_questions": [
+    "In welchen Abständen werden Leitkegel gestellt?",
+    "Welche Größen sind auf BAB vorgeschrieben?"
+   ],
+   "aliases": [
+    "Leitkegel",
+    "Pylone",
+    "Verkehrshütchen",
+    "Lübecker Hütchen"
+   ]
+  },
+  {
+   "id": "std_warnleuchte",
+   "name": "Warnblitzleuchte",
+   "short_name": "Blitzleuchte",
+   "equipment_functions": [
+    "ABSPERREN",
+    "BELEUCHTUNG"
+   ],
+   "description": "Batteriebetriebene gelbe Blitzleuchte zur Absicherung.",
+   "typical_use": [
+    "Nächtliche Absicherung von Einsatzstellen"
+   ],
+   "training_questions": [
+    "Wo werden Blitzleuchten platziert?",
+    "Wie werden sie mit Leitkegeln kombiniert?"
+   ],
+   "aliases": [
+    "Blitzleuchte",
+    "Warnleuchte gelb",
+    "Powerflare"
+   ]
+  },
+  {
+   "id": "std_absperrband",
+   "name": "Absperrband 500 m",
+   "short_name": "Absperrband",
+   "equipment_functions": [
+    "ABSPERREN"
+   ],
+   "description": "Rot-weißes Flatterband zur Kennzeichnung von Gefahrenbereichen.",
+   "typical_use": [
+    "Absperren von Trümmer- und Gefahrenbereichen"
+   ],
+   "training_questions": [
+    "Welche Zonen werden an Einsatzstellen unterschieden?",
+    "Wie weit wird bei Gasgeruch abgesperrt?"
+   ],
+   "aliases": [
+    "Flatterband",
+    "Absperrband rot-weiß",
+    "Trassierband"
+   ]
+  },
+  {
+   "id": "std_winkerkelle",
+   "name": "Winkerkelle",
+   "short_name": "Winkerkelle",
+   "equipment_functions": [
+    "ABSPERREN"
+   ],
+   "description": "Beleuchtete Anhaltekelle zur Verkehrsregelung.",
+   "typical_use": [
+    "Anhalten des Verkehrs an der Einsatzstelle"
+   ],
+   "training_questions": [
+    "Wer darf den Verkehr regeln?",
+    "Welche PSA gehört zur Verkehrsabsicherung?"
+   ],
+   "aliases": [
+    "Anhaltestab",
+    "Verkehrskelle",
+    "Winkerkelle LED"
+   ]
+  },
+  {
+   "id": "std_faltsignal",
+   "name": "Faltsignal 'Unfall'",
+   "short_name": "Faltsignal",
+   "equipment_functions": [
+    "ABSPERREN"
+   ],
+   "description": "Faltbares Verkehrszeichen zur Vorwarnung des Verkehrs.",
+   "typical_use": [
+    "Vorwarnung auf Landstraßen"
+   ],
+   "training_questions": [
+    "In welcher Entfernung wird das Faltsignal aufgestellt?",
+    "Welche Symbole sind üblich?"
+   ],
+   "aliases": [
+    "Faltsignal",
+    "Klappdreieck groß",
+    "Faltdreieck"
+   ]
+  },
+  {
+   "id": "std_hrt_funkgeraet",
+   "name": "Handfunkgerät Digital (HRT)",
+   "short_name": "Handfunkgerät",
+   "equipment_functions": [
+    "KOMMUNIKATION"
+   ],
+   "description": "Digitales Handfunkgerät im BOS-Netz (TETRA) für die Einsatzstellenkommunikation.",
+   "typical_use": [
+    "Kommunikation zwischen Trupps und Gruppenführer"
+   ],
+   "training_questions": [
+    "Was bedeutet DMO und TMO?",
+    "Welche Betriebsgruppe nutzt ihr im Einsatz?"
+   ],
+   "aliases": [
+    "HRT",
+    "Handfunkgerät",
+    "Digitalfunkgerät",
+    "Handsprechfunkgerät"
+   ]
+  },
+  {
+   "id": "std_megaphon",
+   "name": "Megaphon",
+   "short_name": "Megaphon",
+   "equipment_functions": [
+    "KOMMUNIKATION"
+   ],
+   "description": "Elektroakustischer Verstärker für Durchsagen an der Einsatzstelle.",
+   "typical_use": [
+    "Warnung der Bevölkerung",
+    "Durchsagen bei Menschenansammlungen"
+   ],
+   "training_questions": [
+    "Wann werden Lautsprecherdurchsagen eingesetzt?",
+    "Welche Reichweite hat ein Megaphon?"
+   ],
+   "aliases": [
+    "Megafon",
+    "Lautsprecher tragbar",
+    "ELA tragbar"
+   ]
+  },
+  {
+   "id": "std_feuerwehrhelm",
+   "name": "Feuerwehrhelm",
+   "short_name": "Helm",
+   "equipment_functions": [
+    "PSA"
+   ],
+   "description": "Schutzhelm nach DIN EN 443 mit Nackenschutz und Visier.",
+   "typical_use": [
+    "Jeder Einsatz"
+   ],
+   "training_questions": [
+    "Welche Norm gilt für Feuerwehrhelme?",
+    "Wann wird das Visier genutzt?"
+   ],
+   "aliases": [
+    "Helm",
+    "Schutzhelm Feuerwehr",
+    "Helm DIN EN 443"
+   ]
+  },
+  {
+   "id": "std_haltegurt",
+   "name": "Feuerwehr-Haltegurt",
+   "short_name": "Haltegurt",
+   "equipment_functions": [
+    "PSA"
+   ],
+   "description": "Sicherheitsgurt mit Karabiner zum Halten und Rückhalten (kein Auffanggurt!).",
+   "typical_use": [
+    "Sichern auf tragbaren Leitern"
+   ],
+   "training_questions": [
+    "Wofür darf der Haltegurt NICHT verwendet werden?",
+    "Welches Gerät gehört zum Auffangen?"
+   ],
+   "aliases": [
+    "Haltegurt",
+    "Sicherheitsgurt Feuerwehr",
+    "Feuerwehrgurt"
+   ]
+  },
+  {
+   "id": "std_feuerwehrleine",
+   "name": "Feuerwehrleine 30 m",
+   "short_name": "Feuerwehrleine",
+   "equipment_functions": [
+    "PSA",
+    "RETTUNG"
+   ],
+   "description": "30-m-Leine im Leinenbeutel zum Sichern und Rückwegsichern.",
+   "typical_use": [
+    "Rückwegsicherung im Innenangriff",
+    "Sichern von Geräten"
+   ],
+   "training_questions": [
+    "Wie lang ist die Feuerwehrleine?",
+    "Wie oft wird sie geprüft?"
+   ],
+   "aliases": [
+    "Fangleine",
+    "Feuerwehrleine",
+    "Sicherungsleine 30m"
+   ]
+  },
+  {
+   "id": "std_schutzhandschuhe",
+   "name": "Feuerwehr-Schutzhandschuhe",
+   "short_name": "Handschuhe",
+   "equipment_functions": [
+    "PSA"
+   ],
+   "description": "Schutzhandschuhe für Brandbekämpfung und technische Hilfe.",
+   "typical_use": [
+    "Jeder Einsatz"
+   ],
+   "training_questions": [
+    "Welche Handschuharten werden unterschieden (Brand/TH)?",
+    "Welche Norm gilt?"
+   ],
+   "aliases": [
+    "Handschuhe",
+    "Brandschutzhandschuhe",
+    "Einsatzhandschuhe"
+   ]
+  },
+  {
+   "id": "std_infektionshandschuhe",
+   "name": "Einmalhandschuhe (Infektionsschutz)",
+   "short_name": "Einmalhandschuhe",
+   "equipment_functions": [
+    "PSA",
+    "RETTUNG"
+   ],
+   "description": "Nitril-Einmalhandschuhe für die Patientenversorgung.",
+   "typical_use": [
+    "Erste Hilfe",
+    "Umgang mit Betriebsstoffen"
+   ],
+   "training_questions": [
+    "Wann sind Einmalhandschuhe Pflicht?",
+    "Wie werden sie kontaminationsfrei ausgezogen?"
+   ],
+   "aliases": [
+    "Nitrilhandschuhe",
+    "Einweghandschuhe",
+    "Infektionshandschuhe"
+   ]
+  },
+  {
+   "id": "std_warnweste",
+   "name": "Warnweste",
+   "short_name": "Warnweste",
+   "equipment_functions": [
+    "PSA",
+    "ABSPERREN"
+   ],
+   "description": "Warnweste nach EN ISO 20471 für Tätigkeiten im Verkehrsraum.",
+   "typical_use": [
+    "Verkehrsabsicherung"
+   ],
+   "training_questions": [
+    "Wann muss die Warnweste getragen werden?",
+    "Ersetzt HuPF-Kleidung die Warnweste?"
+   ],
+   "aliases": [
+    "Warnweste gelb",
+    "Verkehrswarnweste"
+   ]
+  },
+  {
+   "id": "std_wathose",
+   "name": "Wathose",
+   "short_name": "Wathose",
+   "equipment_functions": [
+    "PSA"
+   ],
+   "description": "Wasserdichte Hose mit Stiefeln für Arbeiten im Wasser.",
+   "typical_use": [
+    "Hochwassereinsätze",
+    "Arbeiten an Gewässern"
+   ],
+   "training_questions": [
+    "Welche Gefahr besteht beim Volllaufen der Wathose?",
+    "Wie tief darf gewatet werden?"
+   ],
+   "aliases": [
+    "Watthose",
+    "Anglerhose",
+    "Wathose Gr. 44"
+   ]
+  },
+  {
+   "id": "std_steckleiter",
+   "name": "Steckleiter (4 Teile)",
+   "short_name": "Steckleiter",
+   "equipment_functions": [
+    "RETTUNG",
+    "HANDWERKZEUG"
+   ],
+   "description": "Vierteilige Steckleiter, Rettungshöhe ca. 7,2 m (2. OG).",
+   "typical_use": [
+    "Anleitern bis zum 2. Obergeschoss",
+    "Behelfsmäßige Hilfskonstruktionen"
+   ],
+   "training_questions": [
+    "Wie viele Kräfte nehmen die 4-teilige Steckleiter vor?",
+    "Welche Rettungshöhe erreicht sie?"
+   ],
+   "aliases": [
+    "Steckleiter",
+    "4-teilige Steckleiter",
+    "Steckleiterteile"
+   ]
+  },
+  {
+   "id": "std_schiebleiter",
+   "name": "Dreiteilige Schiebleiter",
+   "short_name": "Schiebleiter",
+   "equipment_functions": [
+    "RETTUNG",
+    "HANDWERKZEUG"
+   ],
+   "description": "Dreiteilige Schiebleiter mit Rettungshöhe ca. 12,2 m (3. OG).",
+   "typical_use": [
+    "Anleitern bis zum 3. Obergeschoss"
+   ],
+   "training_questions": [
+    "Wie viele Kräfte nehmen die Schiebleiter vor?",
+    "Welcher Anstellwinkel ist korrekt?"
+   ],
+   "aliases": [
+    "Schiebleiter",
+    "3-teilige Schiebleiter",
+    "Schiebeleiter"
+   ]
+  },
+  {
+   "id": "std_klappleiter",
+   "name": "Klappleiter",
+   "short_name": "Klappleiter",
+   "equipment_functions": [
+    "HANDWERKZEUG"
+   ],
+   "description": "Kompakte vierteilige Klappleiter für enge Räume.",
+   "typical_use": [
+    "Zugang zu Dachböden und Schächten"
+   ],
+   "training_questions": [
+    "Welche Leiterlänge hat die Klappleiter?",
+    "Wo ist sie verlastet?"
+   ],
+   "aliases": [
+    "Klappleiter",
+    "Hakenleiter klein"
+   ]
+  },
+  {
+   "id": "std_werkzeugkasten",
+   "name": "Werkzeugkasten DIN 14881",
+   "short_name": "Werkzeugkasten",
+   "equipment_functions": [
+    "HANDWERKZEUG"
+   ],
+   "description": "Universalwerkzeugkasten mit Schraubendrehern, Zangen, Hammer und Schlüsseln.",
+   "typical_use": [
+    "Kleine technische Hilfeleistungen"
+   ],
+   "training_questions": [
+    "Was gehört in den Werkzeugkasten nach DIN 14881?",
+    "Wo ist er verlastet?"
+   ],
+   "aliases": [
+    "Werkzeugkasten",
+    "Werkzeugkiste DIN",
+    "Feuerwehr-Werkzeugkasten"
+   ]
+  },
+  {
+   "id": "std_spaten",
+   "name": "Spaten",
+   "short_name": "Spaten",
+   "equipment_functions": [
+    "HANDWERKZEUG"
+   ],
+   "description": "Stichspaten für Erdarbeiten.",
+   "typical_use": [
+    "Ölschadenbekämpfung",
+    "Graben von Abflussrinnen"
+   ],
+   "training_questions": [
+    "Wofür wird der Spaten im Feuerwehreinsatz genutzt?",
+    "Was gehört zum Ölschaden-Grundschutz?"
+   ],
+   "aliases": [
+    "Spaten DIN 20127"
+   ]
+  },
+  {
+   "id": "std_schaufel",
+   "name": "Schaufel",
+   "short_name": "Schaufel",
+   "equipment_functions": [
+    "HANDWERKZEUG"
+   ],
+   "description": "Standardschaufel für Schüttgüter und Bindemittel.",
+   "typical_use": [
+    "Aufnehmen von Ölbindemittel"
+   ],
+   "training_questions": [
+    "Womit wird Ölbinder aufgenommen und entsorgt?",
+    "Welche Behälter werden genutzt?"
+   ],
+   "aliases": [
+    "Schaufel",
+    "Sandschaufel"
+   ]
+  },
+  {
+   "id": "std_besen",
+   "name": "Straßenbesen",
+   "short_name": "Besen",
+   "equipment_functions": [
+    "HANDWERKZEUG",
+    "LOGISTIK"
+   ],
+   "description": "Robuster Besen zum Verteilen von Bindemittel und Reinigen der Fahrbahn.",
+   "typical_use": [
+    "Einarbeiten von Ölbindemittel"
+   ],
+   "training_questions": [
+    "Wie wird Ölbinder eingearbeitet?",
+    "Wann gilt eine Fahrbahn als gereinigt?"
+   ],
+   "aliases": [
+    "Besen",
+    "Straßenbesen"
+   ]
+  },
+  {
+   "id": "std_einreisshaken",
+   "name": "Einreißhaken",
+   "short_name": "Einreißhaken",
+   "equipment_functions": [
+    "HANDWERKZEUG"
+   ],
+   "description": "Langes Hakenwerkzeug zum Einreißen von Verkleidungen und Öffnen von Glutnestern.",
+   "typical_use": [
+    "Nachlöscharbeiten an Dachstühlen"
+   ],
+   "training_questions": [
+    "Wofür wird der Einreißhaken verwendet?",
+    "Aus welchen Teilen besteht er (steckbar)?"
+   ],
+   "aliases": [
+    "Einreißhaken DIN 14851",
+    "Dachhaken"
+   ]
+  },
+  {
+   "id": "std_feuerwehraxt",
+   "name": "Feuerwehraxt",
+   "short_name": "Feuerwehraxt",
+   "equipment_functions": [
+    "HANDWERKZEUG"
+   ],
+   "description": "Mehrzweckaxt mit Blatt und Dorn.",
+   "typical_use": [
+    "Gewaltsame Öffnung",
+    "Schaffen von Öffnungen"
+   ],
+   "training_questions": [
+    "Wo wird die Feuerwehraxt getragen?",
+    "Was ist der Unterschied zur Spaltaxt?"
+   ],
+   "aliases": [
+    "Feuerwehrbeil",
+    "Axt",
+    "FW-Axt DIN 14900"
+   ]
+  },
+  {
+   "id": "std_vorschlaghammer",
+   "name": "Vorschlaghammer 5 kg",
+   "short_name": "Vorschlaghammer",
+   "equipment_functions": [
+    "HANDWERKZEUG"
+   ],
+   "description": "Schwerer Hammer für Abbruch- und Öffnungsarbeiten.",
+   "typical_use": [
+    "Gewaltsame Öffnung massiver Bauteile"
+   ],
+   "training_questions": [
+    "Welche Schutzausrüstung gehört zu Stemmarbeiten?",
+    "Wofür wird der Vorschlaghammer mit Meißel genutzt?"
+   ],
+   "aliases": [
+    "Vorschlaghammer",
+    "Mottek",
+    "Schlaghammer 5kg"
+   ]
+  },
+  {
+   "id": "std_oelbindemittel",
+   "name": "Ölbindemittel-Sack 20 kg",
+   "short_name": "Ölbinder",
+   "equipment_functions": [
+    "LOGISTIK"
+   ],
+   "description": "Saugfähiges Granulat zum Binden auslaufender Betriebsstoffe.",
+   "typical_use": [
+    "Ölspurbeseitigung",
+    "Auffangen von Kraftstoffen am Unfallort"
+   ],
+   "training_questions": [
+    "Welche Ölbinder-Typen gibt es (Straße/Gewässer)?",
+    "Wie wird gebrauchter Ölbinder entsorgt?"
+   ],
+   "aliases": [
+    "Ölbinder",
+    "Bindemittel",
+    "Absodan",
+    "Ölbindemittel Typ III R"
+   ]
+  },
+  {
+   "id": "std_auffangbehaelter",
+   "name": "Faltbarer Auffangbehälter",
+   "short_name": "Auffangbehälter",
+   "equipment_functions": [
+    "LOGISTIK"
+   ],
+   "description": "Faltbehälter zum Auffangen auslaufender Flüssigkeiten.",
+   "typical_use": [
+    "Auffangen von Kraftstoff unter Fahrzeugen"
+   ],
+   "training_questions": [
+    "Wohin mit aufgefangenen Betriebsstoffen?",
+    "Welche Größen sind verlastet?"
+   ],
+   "aliases": [
+    "Auffangwanne",
+    "Faltbehälter klein",
+    "Ölauffangbehälter"
+   ]
+  },
+  {
+   "id": "std_kanister_kraftstoff",
+   "name": "Kraftstoffkanister 20 l",
+   "short_name": "Kanister",
+   "equipment_functions": [
+    "LOGISTIK"
+   ],
+   "description": "Reservekanister für Benzin/Diesel der Aggregate.",
+   "typical_use": [
+    "Nachtanken von Stromerzeuger, TS und Sägen"
+   ],
+   "training_questions": [
+    "Welche Kraftstoffsorten werden vorgehalten?",
+    "Was ist beim Nachtanken heißer Geräte zu beachten?"
+   ],
+   "aliases": [
+    "Benzinkanister",
+    "Reservekanister",
+    "Kraftstoffkanister"
+   ]
+  },
+  {
+   "id": "std_abschleppseil",
+   "name": "Abschleppseil/Bergeseil",
+   "short_name": "Bergeseil",
+   "equipment_functions": [
+    "HANDWERKZEUG",
+    "LOGISTIK"
+   ],
+   "description": "Seil oder Gurt zum Bergen und Ziehen von Fahrzeugen.",
+   "typical_use": [
+    "Wegziehen von Fahrzeugen aus dem Gefahrenbereich"
+   ],
+   "training_questions": [
+    "Welche Anschlagpunkte am PKW sind zulässig?",
+    "Was ist der Unterschied Bergen/Abschleppen?"
+   ],
+   "aliases": [
+    "Abschleppseil",
+    "Bergegurt",
+    "Zugseil"
+   ]
+  },
+  {
+   "id": "std_wagenheber",
+   "name": "Wagenheber hydraulisch",
+   "short_name": "Wagenheber",
+   "equipment_functions": [
+    "HANDWERKZEUG"
+   ],
+   "description": "Hydraulischer Heber zum Anheben von Fahrzeugen und Lasten.",
+   "typical_use": [
+    "Anheben bei Personenrettung",
+    "Stabilisierung"
+   ],
+   "training_questions": [
+    "Warum immer parallel unterbauen?",
+    "Welche Tragkraft hat der Heber?"
+   ],
+   "aliases": [
+    "Wagenheber",
+    "Hydraulikheber",
+    "Stockheber"
+   ]
+  }
+ ]
+}

@@ -24,6 +24,17 @@ Map<String, List<String>> parseBundledAliases(String json) {
       k, v is List ? v.map((e) => e.toString()).toList() : <String>[]));
 }
 
+/// Parses the standard catalog into an alias map (id → alias spellings).
+Map<String, List<String>> parseCatalogAliases(String json) {
+  final decoded = jsonDecode(json) as Map<String, dynamic>;
+  final items = (decoded['items'] as List?) ?? [];
+  return {
+    for (final raw in items.cast<Map<String, dynamic>>())
+      raw['id'] as String:
+          ((raw['aliases'] as List?)?.map((e) => e.toString()).toList()) ?? [],
+  };
+}
+
 class ImportWizardState {
   /// 0 = Datei, 1 = Spalten, 2 = Abgleich, 3 = Bestätigen/Ergebnis.
   final int step;
@@ -182,6 +193,13 @@ class ImportWizardNotifier extends _$ImportWizardNotifier {
       bundled = parseBundledAliases(raw);
     } catch (_) {
       // No bundled aliases – matcher still works on names + user aliases.
+    }
+    try {
+      final raw = await rootBundle
+          .loadString('assets/equipment_library/catalog/standard_catalog.json');
+      bundled.addAll(parseCatalogAliases(raw));
+    } catch (_) {
+      // Catalog missing – nothing to merge.
     }
     return EquipmentMatcher(
       equipment: equipment,

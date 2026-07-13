@@ -54,9 +54,10 @@ void main() {
     await tester.pumpAndSettle();
     // Vorschau zeigt die gemappten Zeilen.
     expect(find.text('Kübelspritze'), findsWidgets);
-    await tester.dragUntilVisible(find.text('Weiter zum Abgleich'),
-        find.byType(ListView), const Offset(0, -200));
-    await tester.tap(find.text('Weiter zum Abgleich'));
+    // buildPreview lädt Alias-/Katalog-Assets (echtes I/O) — unter runAsync
+    // ausführen, damit es nicht in der Fake-Async-Umgebung hängt.
+    await tester.runAsync(
+        () => container.read(importWizardProvider.notifier).buildPreview());
     await tester.pumpAndSettle();
 
     // Schritt 2: 2 grün erkannt, 1 rot (unbekannt).

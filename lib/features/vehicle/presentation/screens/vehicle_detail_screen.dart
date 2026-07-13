@@ -10,6 +10,7 @@ import 'package:fwapp/features/assignment/presentation/providers/assignment_prov
 import 'package:fwapp/features/compartment/domain/entities/compartment.dart';
 import 'package:fwapp/features/compartment/presentation/providers/compartment_providers.dart';
 import 'package:fwapp/features/equipment/presentation/providers/equipment_providers.dart';
+import 'package:fwapp/features/equipment/presentation/widgets/equipment_avatar.dart';
 import 'package:fwapp/features/inspection/presentation/providers/inspection_providers.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';
 import 'package:fwapp/features/vehicle/presentation/widgets/vehicle_cutaway_view.dart';
@@ -330,10 +331,10 @@ class _AssignmentRow extends ConsumerWidget {
       error: (_, __) => const ListTile(title: Text('Fehler')),
       data: (item) => ListTile(
         dense: true,
-        leading: resolveImage(
-          path: item?.imagePath ?? kPlaceholderAsset,
-          width: 40,
-          height: 40,
+        leading: EquipmentAvatar(
+          imagePath: item?.imagePath,
+          functions: item?.equipmentFunctions ?? const [],
+          size: 40,
         ),
         title: Text(item?.name ?? '?'),
         trailing: Text('× $quantity',

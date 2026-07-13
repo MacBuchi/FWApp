@@ -3,9 +3,9 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/database/database_providers.dart';
-import 'package:fwapp/core/utils/image_utils.dart';
 import 'package:fwapp/core/utils/json_utils.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_enums.dart';
+import 'package:fwapp/features/equipment/presentation/widgets/equipment_avatar.dart';
 import 'package:fwapp/features/vehicle/domain/entities/vehicle.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';
 
@@ -94,10 +94,10 @@ class _DeploymentModeState extends ConsumerState<DeploymentModeScreen> {
                         itemBuilder: (context, i) {
                           final e = _results[i];
                           return ListTile(
-                            leading: resolveImage(
-                              path: e.imagePath ?? kPlaceholderAsset,
-                              width: 44,
-                              height: 44,
+                            leading: EquipmentAvatar(
+                              imagePath: e.imagePath,
+                              functions: e.functions,
+                              size: 44,
                             ),
                             title: Text(e.name),
                             subtitle: Text(e.functions

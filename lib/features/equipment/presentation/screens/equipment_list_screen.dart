@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
-import 'package:fwapp/core/utils/image_utils.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_enums.dart';
+import 'package:fwapp/features/equipment/presentation/widgets/equipment_avatar.dart';
 import 'package:fwapp/features/equipment/presentation/providers/equipment_providers.dart';
 
 class EquipmentListScreen extends ConsumerStatefulWidget {
@@ -145,13 +145,10 @@ class _EquipmentListScreenState extends ConsumerState<EquipmentListScreen> {
                     final item = items[i];
                     return Card(
                       child: ListTile(
-                        leading: ClipRRect(
-                          borderRadius: BorderRadius.circular(6),
-                          child: resolveImage(
-                            path: item.imagePath ?? kPlaceholderAsset,
-                            width: 48,
-                            height: 48,
-                          ),
+                        leading: EquipmentAvatar(
+                          imagePath: item.imagePath,
+                          functions: item.equipmentFunctions,
+                          size: 48,
                         ),
                         title: Text(item.name,
                             style: const TextStyle(

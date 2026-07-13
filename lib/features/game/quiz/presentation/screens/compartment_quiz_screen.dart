@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/database/database_providers.dart';
 import 'package:fwapp/core/database/app_database.dart';
-import 'package:fwapp/core/utils/image_utils.dart';
+import 'package:fwapp/core/utils/json_utils.dart';
+import 'package:fwapp/features/equipment/presentation/widgets/equipment_avatar.dart';
 import 'package:fwapp/features/vehicle/domain/entities/vehicle.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';
 
@@ -102,6 +103,7 @@ class _CompartmentQuizScreenState
           questions.add(_QuizQuestion(
             equipmentName: eq.name,
             imagePath: eq.imagePath,
+            functions: jsonToStringList(eq.equipmentFunctionsJson),
             correctAnswer: c.label,
             options: options,
           ));
@@ -143,14 +145,12 @@ class _CompartmentQuizScreenState
             LinearProgressIndicator(
                 value: _currentIndex / _questions.length),
             const SizedBox(height: 16),
-            // Equipment image + name
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: resolveImage(
-                path: q.imagePath ?? kPlaceholderAsset,
-                width: double.infinity,
-                height: 160,
-              ),
+            // Equipment photo or category pictogram
+            EquipmentAvatar(
+              imagePath: q.imagePath,
+              functions: q.functions,
+              size: 160,
+              width: double.infinity,
             ),
             const SizedBox(height: 12),
             Text(q.equipmentName,
@@ -283,12 +283,14 @@ class _CompartmentQuizScreenState
 class _QuizQuestion {
   final String equipmentName;
   final String? imagePath;
+  final List<String> functions;
   final String correctAnswer;
   final List<String> options;
 
   const _QuizQuestion({
     required this.equipmentName,
     this.imagePath,
+    this.functions = const [],
     required this.correctAnswer,
     required this.options,
   });

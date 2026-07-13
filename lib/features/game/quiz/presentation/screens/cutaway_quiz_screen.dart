@@ -6,7 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/database/database_providers.dart';
-import 'package:fwapp/core/utils/image_utils.dart';
+import 'package:fwapp/core/utils/json_utils.dart';
+import 'package:fwapp/features/equipment/presentation/widgets/equipment_avatar.dart';
 import 'package:fwapp/features/compartment/domain/entities/compartment.dart';
 import 'package:fwapp/features/vehicle/domain/entities/vehicle.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';
@@ -109,6 +110,7 @@ class _CutawayQuizScreenState extends ConsumerState<CutawayQuizScreen> {
         questions.add(_CutawayQuestion(
           equipmentName: eq.name,
           imagePath: eq.imagePath,
+          functions: jsonToStringList(eq.equipmentFunctionsJson),
           correctCompartmentId: c.id,
         ));
       }
@@ -155,13 +157,11 @@ class _CutawayQuizScreenState extends ConsumerState<CutawayQuizScreen> {
         children: [
           LinearProgressIndicator(value: _currentIndex / _questions.length),
           const SizedBox(height: 16),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: resolveImage(
-              path: q.imagePath ?? kPlaceholderAsset,
-              width: double.infinity,
-              height: 140,
-            ),
+          EquipmentAvatar(
+            imagePath: q.imagePath,
+            functions: q.functions,
+            size: 140,
+            width: double.infinity,
           ),
           const SizedBox(height: 8),
           Text(q.equipmentName,
@@ -265,11 +265,13 @@ class _CutawayQuizScreenState extends ConsumerState<CutawayQuizScreen> {
 class _CutawayQuestion {
   final String equipmentName;
   final String? imagePath;
+  final List<String> functions;
   final int correctCompartmentId;
 
   const _CutawayQuestion({
     required this.equipmentName,
     this.imagePath,
+    this.functions = const [],
     required this.correctCompartmentId,
   });
 }

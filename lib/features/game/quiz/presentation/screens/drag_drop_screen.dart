@@ -6,8 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/database/database_providers.dart';
-import 'package:fwapp/core/utils/image_utils.dart';
+import 'package:fwapp/core/utils/json_utils.dart';
 import 'package:fwapp/features/compartment/domain/entities/compartment.dart';
+import 'package:fwapp/features/equipment/presentation/widgets/equipment_avatar.dart';
 import 'package:fwapp/features/vehicle/domain/entities/vehicle.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';
 import 'package:fwapp/features/vehicle/presentation/widgets/vehicle_cutaway_view.dart';
@@ -104,6 +105,7 @@ class _DragDropScreenState extends ConsumerState<DragDropScreen> {
           equipmentId: eq.id,
           equipmentName: eq.name,
           imagePath: eq.imagePath,
+          functions: jsonToStringList(eq.equipmentFunctionsJson),
           correctCompartmentId: c.id,
         ));
       }
@@ -286,10 +288,10 @@ class _EquipmentCard extends StatelessWidget {
         padding: const EdgeInsets.all(8),
         child: Column(
           children: [
-            resolveImage(
-              path: item.imagePath ?? kPlaceholderAsset,
-              width: 64,
-              height: 64,
+            EquipmentAvatar(
+              imagePath: item.imagePath,
+              functions: item.functions,
+              size: 64,
             ),
             const SizedBox(height: 4),
             Text(item.equipmentName,
@@ -308,12 +310,14 @@ class _DragItem {
   final int equipmentId;
   final String equipmentName;
   final String? imagePath;
+  final List<String> functions;
   final int correctCompartmentId;
 
   const _DragItem({
     required this.equipmentId,
     required this.equipmentName,
     this.imagePath,
+    this.functions = const [],
     required this.correctCompartmentId,
   });
 }

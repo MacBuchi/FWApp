@@ -5,8 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
-import 'package:fwapp/core/utils/image_utils.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_enums.dart';
+import 'package:fwapp/features/equipment/presentation/widgets/equipment_avatar.dart';
 import 'package:fwapp/features/equipment/presentation/providers/equipment_providers.dart';
 import 'package:fwapp/features/inspection/presentation/widgets/equipment_instances_section.dart';
 
@@ -43,14 +43,12 @@ class EquipmentDetailScreen extends ConsumerWidget {
           body: ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              // Image
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: resolveImage(
-                  path: item.imagePath ?? kPlaceholderAsset,
-                  width: double.infinity,
-                  height: 200,
-                ),
+              // Photo or category pictogram banner
+              EquipmentAvatar(
+                imagePath: item.imagePath,
+                functions: item.equipmentFunctions,
+                size: 200,
+                width: double.infinity,
               ),
               const SizedBox(height: 16),
 

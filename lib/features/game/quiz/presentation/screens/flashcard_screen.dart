@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/database/database_providers.dart';
-import 'package:fwapp/core/utils/image_utils.dart';
 import 'package:fwapp/core/utils/json_utils.dart';
+import 'package:fwapp/features/equipment/presentation/widgets/equipment_avatar.dart';
 import 'package:fwapp/features/vehicle/domain/entities/vehicle.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';
 
@@ -99,6 +99,7 @@ class _FlashcardScreenState extends ConsumerState<FlashcardScreen> {
         cards.add(_Flashcard(
           equipmentName: item.name,
           imagePath: item.imagePath,
+          functions: jsonToStringList(item.equipmentFunctionsJson),
           question: q,
           description: item.description,
           typicalUse: typicalUse,
@@ -140,13 +141,11 @@ class _FlashcardScreenState extends ConsumerState<FlashcardScreen> {
         children: [
           LinearProgressIndicator(value: _currentIndex / _cards.length),
           const SizedBox(height: 16),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: resolveImage(
-              path: card.imagePath ?? kPlaceholderAsset,
-              width: double.infinity,
-              height: 140,
-            ),
+          EquipmentAvatar(
+            imagePath: card.imagePath,
+            functions: card.functions,
+            size: 140,
+            width: double.infinity,
           ),
           const SizedBox(height: 8),
           Text(card.equipmentName,
@@ -297,6 +296,7 @@ class _FlashcardScreenState extends ConsumerState<FlashcardScreen> {
 class _Flashcard {
   final String equipmentName;
   final String? imagePath;
+  final List<String> functions;
   final String question;
   final String description;
   final List<String> typicalUse;
@@ -305,6 +305,7 @@ class _Flashcard {
   const _Flashcard({
     required this.equipmentName,
     this.imagePath,
+    this.functions = const [],
     required this.question,
     required this.description,
     required this.typicalUse,

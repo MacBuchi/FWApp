@@ -108,6 +108,7 @@ class _CutawayQuizScreenState extends ConsumerState<CutawayQuizScreen> {
         final eq = await db.equipmentDao.getById(a.equipmentId);
         if (eq == null) continue;
         questions.add(_CutawayQuestion(
+          equipmentId: eq.id,
           equipmentName: eq.name,
           imagePath: eq.imagePath,
           functions: jsonToStringList(eq.equipmentFunctionsJson),
@@ -193,7 +194,12 @@ class _CutawayQuizScreenState extends ConsumerState<CutawayQuizScreen> {
   }
 
   void _answer(Compartment c, _CutawayQuestion q) {
-    if (c.id == q.correctCompartmentId) _score++;
+    final correct = c.id == q.correctCompartmentId;
+    if (correct) _score++;
+    ref
+        .read(appDatabaseProvider)
+        .learningDao
+        .recordAnswer(q.equipmentId, correct: correct);
     setState(() {
       _tappedCompartmentId = c.id;
       _answered = true;
@@ -263,12 +269,14 @@ class _CutawayQuizScreenState extends ConsumerState<CutawayQuizScreen> {
 }
 
 class _CutawayQuestion {
+  final int equipmentId;
   final String equipmentName;
   final String? imagePath;
   final List<String> functions;
   final int correctCompartmentId;
 
   const _CutawayQuestion({
+    required this.equipmentId,
     required this.equipmentName,
     this.imagePath,
     this.functions = const [],

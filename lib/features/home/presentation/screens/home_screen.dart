@@ -1,318 +1,285 @@
-/// home_screen.dart – Dashboard with stats, quick navigation, and recent quiz scores.
+/// home_screen.dart – Persönliches Lern-Dashboard (Start tab): Tagesserie,
+/// XP/Level, Wochenziel, "Weiterlernen"-Empfehlung, letzte Ergebnisse.
 library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
-import 'package:fwapp/features/equipment/presentation/providers/equipment_providers.dart';
+import 'package:fwapp/features/home/presentation/providers/dashboard_providers.dart';
 import 'package:fwapp/features/inspection/presentation/providers/inspection_providers.dart';
-import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';
-import 'package:fwapp/core/database/database_providers.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final vehicleCountAsync = ref.watch(vehicleCountProvider);
-    final equipmentCountAsync = ref.watch(equipmentCountProvider);
+    final statsAsync = ref.watch(dashboardStatsProvider);
+    final isAdmin = ref.watch(isAdminProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Feuerwehr-Lernapp'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () => context.push('/settings'),
-          ),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // Stats row
-          Row(
-            children: [
-              Expanded(
-                child: _StatCard(
-                  icon: Icons.fire_truck,
-                  label: 'Fahrzeuge',
-                  valueAsync: vehicleCountAsync,
-                  onTap: () => context.go('/vehicles'),
-                ),
+      appBar: AppBar(title: const Text('Moin! 👋')),
+      body: statsAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text('Fehler: $e')),
+        data: (stats) => ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            Row(
+              children: [
+                Expanded(child: _StreakCard(stats: stats)),
+                const SizedBox(width: 12),
+                Expanded(child: _LevelCard(stats: stats)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _WeekGoalCard(stats: stats),
+            const SizedBox(height: 12),
+            if (stats.suggestion != null)
+              _SuggestionCard(suggestion: stats.suggestion!),
+            if (isAdmin) const _InspectionsCard(),
+            if (stats.recentResults.isNotEmpty) ...[
+              Padding(
+                padding: const EdgeInsets.fromLTRB(4, 16, 4, 8),
+                child: Text('Letzte Übungen',
+                    style: Theme.of(context).textTheme.titleMedium),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _StatCard(
-                  icon: Icons.inventory_2,
-                  label: 'Geräte',
-                  valueAsync: equipmentCountAsync,
-                  onTap: () => context.go('/equipment'),
-                ),
-              ),
+              ...stats.recentResults.map((r) => _ResultTile(
+                    quizType: r.quizType,
+                    score: r.score,
+                    total: r.total,
+                    playedAt: r.playedAt,
+                  )),
             ],
-          ),
-          const SizedBox(height: 12),
-          const _InspectionsCard(),
-          const SizedBox(height: 20),
-          Text('Schnellzugriff',
-              style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 12),
-          // Navigation grid
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 1.4,
-            children: [
-              _NavCard(
-                icon: Icons.fire_truck,
-                label: 'Fahrzeugflotte',
-                color: Colors.red.shade700,
-                onTap: () => context.go('/vehicles'),
-              ),
-              _NavCard(
-                icon: Icons.inventory_2,
-                label: 'Gerätedatenbank',
-                color: Colors.orange.shade700,
-                onTap: () => context.go('/equipment'),
-              ),
-              _NavCard(
-                icon: Icons.sports_esports,
-                label: 'Trainings-\nSpielmodi',
-                color: Colors.green.shade700,
-                onTap: () => context.go('/game'),
-              ),
-              if (ref.watch(isAdminProvider))
-                _NavCard(
-                  icon: Icons.upload_file,
-                  label: 'Beladeplan\nimportieren',
-                  color: Colors.blue.shade700,
-                  onTap: () => context.push('/import'),
-                ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Text('Letzte Ergebnisse',
-              style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
-          _RecentQuizResults(),
-        ],
+            const SizedBox(height: 24),
+          ],
+        ),
       ),
     );
   }
 }
 
-/// Gerätewart summary: overdue / due-soon inspections across the fleet.
+class _StreakCard extends StatelessWidget {
+  final DashboardStats stats;
+  const _StreakCard({required this.stats});
+
+  @override
+  Widget build(BuildContext context) {
+    final active = stats.streakDays > 0;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(active ? '🔥' : '🩶', style: const TextStyle(fontSize: 28)),
+            const SizedBox(height: 8),
+            Text('${stats.streakDays}',
+                style: Theme.of(context)
+                    .textTheme
+                    .headlineMedium
+                    ?.copyWith(fontWeight: FontWeight.w800)),
+            Text(
+              stats.streakDays == 1 ? 'Tag Serie' : 'Tage Serie',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            if (active && !stats.trainedToday)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text('Heute noch üben!',
+                    style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.orange.shade800)),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LevelCard extends StatelessWidget {
+  final DashboardStats stats;
+  const _LevelCard({required this.stats});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.military_tech,
+                size: 28, color: Theme.of(context).colorScheme.primary),
+            const SizedBox(height: 8),
+            Text('Level ${stats.level}',
+                style: Theme.of(context)
+                    .textTheme
+                    .headlineMedium
+                    ?.copyWith(fontWeight: FontWeight.w800)),
+            Text('${stats.xp} XP',
+                style: Theme.of(context).textTheme.bodySmall),
+            const SizedBox(height: 6),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                  value: stats.levelProgress, minHeight: 6),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _WeekGoalCard extends ConsumerWidget {
+  final DashboardStats stats;
+  const _WeekGoalCard({required this.stats});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final done = stats.weekSessions >= stats.weekGoal;
+    return Card(
+      child: ListTile(
+        leading: Icon(done ? Icons.emoji_events : Icons.flag,
+            color: done
+                ? Colors.amber.shade700
+                : Theme.of(context).colorScheme.primary),
+        title: Text(done ? 'Wochenziel erreicht!' : 'Wochenziel'),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 6),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: (stats.weekSessions / stats.weekGoal).clamp(0.0, 1.0),
+              minHeight: 6,
+            ),
+          ),
+        ),
+        trailing: Text('${stats.weekSessions}/${stats.weekGoal}',
+            style: const TextStyle(
+                fontWeight: FontWeight.w700, fontSize: 16)),
+        onTap: () => _editGoal(context, ref),
+      ),
+    );
+  }
+
+  Future<void> _editGoal(BuildContext context, WidgetRef ref) async {
+    final goal = await showDialog<int>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: const Text('Übungen pro Woche'),
+        children: [3, 5, 7, 10, 14]
+            .map((g) => SimpleDialogOption(
+                  onPressed: () => Navigator.pop(ctx, g),
+                  child: Text('$g Übungen'),
+                ))
+            .toList(),
+      ),
+    );
+    if (goal != null) {
+      await ref.read(weekGoalProvider.notifier).set(goal);
+    }
+  }
+}
+
+class _SuggestionCard extends StatelessWidget {
+  final LearnSuggestion suggestion;
+  const _SuggestionCard({required this.suggestion});
+
+  @override
+  Widget build(BuildContext context) {
+    final percent = (suggestion.coverage * 100).round();
+    return Card(
+      color: Theme.of(context).colorScheme.primaryContainer,
+      child: ListTile(
+        leading: Icon(Icons.play_circle_fill,
+            size: 36, color: Theme.of(context).colorScheme.primary),
+        title: const Text('Weiterlernen',
+            style: TextStyle(fontWeight: FontWeight.w700)),
+        subtitle: Text(
+            '${suggestion.vehicleName} · Fach ${suggestion.compartmentLabel} · '
+            '$percent % geübt'),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => context.push('/game/cutaway-quiz'),
+      ),
+    );
+  }
+}
+
+/// Gerätewart-Hinweis — nur für Admins auf dem Dashboard.
 class _InspectionsCard extends ConsumerWidget {
   const _InspectionsCard();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dueAsync = ref.watch(dueInspectionsStreamProvider());
+    final entries = ref.watch(dueInspectionsStreamProvider()).value ?? const [];
+    if (entries.isEmpty) return const SizedBox.shrink();
+    final now = DateTime.now();
+    final overdue = entries.where((e) => e.isOverdue(now)).length;
+    final dueSoon = entries.length - overdue;
+    final color =
+        overdue > 0 ? Colors.red.shade700 : Colors.orange.shade800;
     return Card(
-      child: InkWell(
+      child: ListTile(
+        leading: Icon(Icons.fact_check, color: color),
+        title: const Text('Prüftermine'),
+        subtitle: Text([
+          if (overdue > 0) '$overdue überfällig',
+          if (dueSoon > 0) '$dueSoon bald fällig',
+        ].join(' · ')),
+        trailing: const Icon(Icons.chevron_right),
         onTap: () => context.push('/inspections'),
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: dueAsync.when(
-            loading: () => const SizedBox(
-                height: 24,
-                child: Center(
-                    child: CircularProgressIndicator(strokeWidth: 2))),
-            error: (_, __) => const Text('Prüftermine: Fehler beim Laden'),
-            data: (entries) {
-              final now = DateTime.now();
-              final overdue =
-                  entries.where((e) => e.isOverdue(now)).length;
-              final dueSoon = entries.length - overdue;
-              final color = overdue > 0
-                  ? Colors.red.shade700
-                  : dueSoon > 0
-                      ? Colors.orange.shade800
-                      : Colors.green.shade700;
-              final text = entries.isEmpty
-                  ? 'Keine fälligen Prüfungen'
-                  : [
-                      if (overdue > 0) '$overdue überfällig',
-                      if (dueSoon > 0) '$dueSoon bald fällig',
-                    ].join(' · ');
-              return Row(
-                children: [
-                  Icon(Icons.fact_check, color: color, size: 28),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Prüftermine',
-                            style: Theme.of(context).textTheme.titleSmall),
-                        Text(text,
-                            style: TextStyle(
-                                color: color, fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                  ),
-                  const Icon(Icons.chevron_right),
-                ],
-              );
-            },
-          ),
-        ),
       ),
     );
   }
 }
 
-class _StatCard extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final AsyncValue<int> valueAsync;
-  final VoidCallback onTap;
+class _ResultTile extends StatelessWidget {
+  final String quizType;
+  final int score;
+  final int total;
+  final DateTime playedAt;
 
-  const _StatCard({
-    required this.icon,
-    required this.label,
-    required this.valueAsync,
-    required this.onTap,
+  const _ResultTile({
+    required this.quizType,
+    required this.score,
+    required this.total,
+    required this.playedAt,
   });
 
   @override
   Widget build(BuildContext context) {
+    final pct = total > 0 ? (score / total * 100).round() : 0;
     return Card(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(icon,
-                  color: Theme.of(context).colorScheme.primary, size: 28),
-              const SizedBox(height: 8),
-              valueAsync.when(
-                loading: () => const CircularProgressIndicator(strokeWidth: 2),
-                error: (_, __) => const Text('?'),
-                data: (n) => Text('$n',
-                    style: Theme.of(context)
-                        .textTheme
-                        .headlineMedium
-                        ?.copyWith(fontWeight: FontWeight.bold)),
-              ),
-              Text(label,
-                  style: Theme.of(context).textTheme.bodySmall),
-            ],
-          ),
+      child: ListTile(
+        dense: true,
+        leading: CircleAvatar(
+          radius: 16,
+          backgroundColor: pct >= 80
+              ? Colors.green
+              : pct >= 50
+                  ? Colors.orange
+                  : Colors.red,
+          child: Text('$pct%',
+              style: const TextStyle(color: Colors.white, fontSize: 10)),
+        ),
+        title: Text(switch (quizType) {
+          'compartment' => 'Fach-Quiz',
+          'cutaway' => 'Wo liegt\'s?',
+          'flashcards' => 'Geräte-Wissen',
+          'dragdrop' => 'Drag & Drop',
+          _ => 'Bild-Quiz',
+        }),
+        subtitle: Text('$score/$total richtig'),
+        trailing: Text(
+          '${playedAt.day.toString().padLeft(2, '0')}.'
+          '${playedAt.month.toString().padLeft(2, '0')}.'
+          '${playedAt.year}',
+          style: Theme.of(context).textTheme.bodySmall,
         ),
       ),
     );
-  }
-}
-
-class _NavCard extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _NavCard({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      color: color,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Icon(icon, color: Colors.white, size: 32),
-              Text(label,
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _RecentQuizResults extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final db = ref.watch(appDatabaseProvider);
-    return FutureBuilder(
-      future: db.quizDao.getRecent(limit: 5),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const SizedBox(
-            height: 60,
-            child: Center(child: CircularProgressIndicator()),
-          );
-        }
-        final results = snapshot.data!;
-        if (results.isEmpty) {
-          return const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8),
-            child: Text('Noch kein Quiz gespielt.',
-                style: TextStyle(color: Colors.grey)),
-          );
-        }
-        return Column(
-          children: results.map((r) {
-            final pct = r.total > 0
-                ? (r.score / r.total * 100).round()
-                : 0;
-            return ListTile(
-              leading: CircleAvatar(
-                backgroundColor: pct >= 80
-                    ? Colors.green
-                    : pct >= 50
-                        ? Colors.orange
-                        : Colors.red,
-                child: Text('$pct%',
-                    style: const TextStyle(
-                        color: Colors.white, fontSize: 11)),
-              ),
-              title: Text(switch (r.quizType) {
-                'compartment' => 'Fach-Quiz',
-                'cutaway' => 'Wo liegt\'s?',
-                'flashcards' => 'Geräte-Wissen',
-                'dragdrop' => 'Drag & Drop',
-                _ => 'Bild-Quiz',
-              }),
-              subtitle: Text(
-                  '${r.score}/${r.total} Punkte'),
-              trailing: Text(
-                _formatDate(r.playedAt),
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            );
-          }).toList(),
-        );
-      },
-    );
-  }
-
-  String _formatDate(DateTime dt) {
-    return '${dt.day.toString().padLeft(2, '0')}.'
-        '${dt.month.toString().padLeft(2, '0')}.'
-        '${dt.year}';
   }
 }

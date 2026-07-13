@@ -3,6 +3,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fwapp/features/home/presentation/screens/home_screen.dart';
+import 'package:fwapp/features/home/presentation/screens/more_screen.dart';
 import 'package:fwapp/features/vehicle/presentation/screens/vehicle_list_screen.dart';
 import 'package:fwapp/features/vehicle/presentation/screens/vehicle_detail_screen.dart';
 import 'package:fwapp/features/vehicle/presentation/screens/vehicle_form_screen.dart';
@@ -124,6 +125,10 @@ final appRouter = GoRouter(
           builder: (_, __) => const ImportWizardScreen(),
         ),
         GoRoute(
+          path: '/more',
+          builder: (_, __) => const MoreScreen(),
+        ),
+        GoRoute(
           path: '/settings',
           builder: (_, __) => const SettingsScreen(),
         ),
@@ -151,22 +156,29 @@ class _AppShell extends StatelessWidget {
                   case 0:
                     context.go('/');
                   case 1:
-                    context.go('/vehicles');
-                  case 2:
-                    context.go('/equipment');
-                  case 3:
                     context.go('/game');
+                  case 2:
+                    context.go('/vehicles');
+                  case 3:
+                    context.go('/more');
                 }
               },
               destinations: const [
                 NavigationDestination(
-                    icon: Icon(Icons.home), label: 'Start'),
+                    icon: Icon(Icons.home_outlined),
+                    selectedIcon: Icon(Icons.home),
+                    label: 'Start'),
                 NavigationDestination(
-                    icon: Icon(Icons.fire_truck), label: 'Fahrzeuge'),
+                    icon: Icon(Icons.school_outlined),
+                    selectedIcon: Icon(Icons.school),
+                    label: 'Lernen'),
                 NavigationDestination(
-                    icon: Icon(Icons.inventory_2), label: 'Geräte'),
+                    icon: Icon(Icons.fire_truck_outlined),
+                    selectedIcon: Icon(Icons.fire_truck),
+                    label: 'Fahrzeuge'),
                 NavigationDestination(
-                    icon: Icon(Icons.sports_esports), label: 'Training'),
+                    icon: Icon(Icons.more_horiz),
+                    label: 'Mehr'),
               ],
             )
           : null,
@@ -175,9 +187,13 @@ class _AppShell extends StatelessWidget {
 
   int _currentNavIndex(String path) {
     if (path == '/') return 0;
-    if (path.startsWith('/vehicles')) return 1;
-    if (path.startsWith('/equipment')) return 2;
-    if (path.startsWith('/game')) return 3;
+    if (path.startsWith('/game')) return 1;
+    if (path.startsWith('/vehicles')) return 2;
+    if (path.startsWith('/more') ||
+        path.startsWith('/equipment') ||
+        path.startsWith('/inspections')) {
+      return 3;
+    }
     return -1; // import, settings – no nav bar
   }
 }

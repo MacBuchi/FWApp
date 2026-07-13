@@ -9,7 +9,7 @@ class GameMenuScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Trainings-Spielmodi')),
+      appBar: AppBar(title: const Text('Lernen')),
       body: GridView.count(
         crossAxisCount: 2,
         padding: const EdgeInsets.all(16),

@@ -68,18 +68,24 @@ class _ImageQuizState extends ConsumerState<ImageRecognitionQuizScreen> {
 
   Future<void> _startQuiz() async {
     final all = await ref.read(equipmentListProvider.future);
-    if (all.length < 4) {
+    // Bild-Erkennung ergibt nur mit echten Fotos Sinn.
+    final withImage = all
+        .where((e) => e.imagePath != null && e.imagePath!.isNotEmpty)
+        .toList();
+    if (withImage.length < 4) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Mindestens 4 Geräte für das Quiz notwendig.')));
+            content: Text(
+                'Mindestens 4 Geräte mit Foto notwendig für die Bild-Erkennung.')));
       }
       return;
     }
-    final shuffled = [...all]..shuffle();
+    final shuffled = [...withImage]..shuffle();
     final questions = <_ImageQuestion>[];
     for (var i = 0; i < shuffled.length && questions.length < 10; i++) {
       final correct = shuffled[i];
-      final wrong = shuffled
+      // Falsche Optionen dürfen aus dem Gesamtbestand kommen.
+      final wrong = ([...all]..shuffle())
           .where((e) => e.id != correct.id)
           .take(3)
           .map((e) => e.name)
@@ -87,6 +93,7 @@ class _ImageQuizState extends ConsumerState<ImageRecognitionQuizScreen> {
       if (wrong.length < 3) continue;
       final options = [correct.name, ...wrong]..shuffle();
       questions.add(_ImageQuestion(
+        equipmentId: correct.id,
         imagePath: correct.imagePath,
         correctAnswer: correct.name,
         options: options,
@@ -181,7 +188,12 @@ class _ImageQuizState extends ConsumerState<ImageRecognitionQuizScreen> {
   }
 
   void _answer(String choice, _ImageQuestion q) {
-    if (choice == q.correctAnswer) _score++;
+    final correct = choice == q.correctAnswer;
+    if (correct) _score++;
+    ref
+        .read(appDatabaseProvider)
+        .learningDao
+        .recordAnswer(q.equipmentId, correct: correct);
     setState(() {
       _selectedAnswer = choice;
       _answered = true;
@@ -249,11 +261,13 @@ class _ImageQuizState extends ConsumerState<ImageRecognitionQuizScreen> {
 }
 
 class _ImageQuestion {
+  final int equipmentId;
   final String? imagePath;
   final String correctAnswer;
   final List<String> options;
 
   const _ImageQuestion({
+    required this.equipmentId,
     this.imagePath,
     required this.correctAnswer,
     required this.options,

@@ -34,3 +34,7 @@ QuizDao quizDao(Ref ref) => ref.watch(appDatabaseProvider).quizDao;
 @Riverpod(keepAlive: true)
 InspectionDao inspectionDao(Ref ref) =>
     ref.watch(appDatabaseProvider).inspectionDao;
+
+@Riverpod(keepAlive: true)
+LearningDao learningDao(Ref ref) =>
+    ref.watch(appDatabaseProvider).learningDao;

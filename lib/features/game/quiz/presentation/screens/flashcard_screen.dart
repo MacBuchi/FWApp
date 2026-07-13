@@ -97,6 +97,7 @@ class _FlashcardScreenState extends ConsumerState<FlashcardScreen> {
       final typicalUse = jsonToStringList(item.typicalUseJson);
       for (final q in questions) {
         cards.add(_Flashcard(
+          equipmentId: item.id,
           equipmentName: item.name,
           imagePath: item.imagePath,
           functions: jsonToStringList(item.equipmentFunctionsJson),
@@ -234,6 +235,10 @@ class _FlashcardScreenState extends ConsumerState<FlashcardScreen> {
 
   void _next({required bool known}) {
     if (known) _known++;
+    ref
+        .read(appDatabaseProvider)
+        .learningDao
+        .recordAnswer(_cards[_currentIndex].equipmentId, correct: known);
     if (_currentIndex + 1 >= _cards.length) {
       _saveResult();
     }
@@ -294,6 +299,7 @@ class _FlashcardScreenState extends ConsumerState<FlashcardScreen> {
 }
 
 class _Flashcard {
+  final int equipmentId;
   final String equipmentName;
   final String? imagePath;
   final List<String> functions;
@@ -303,6 +309,7 @@ class _Flashcard {
   final Map<String, dynamic> technicalData;
 
   const _Flashcard({
+    required this.equipmentId,
     required this.equipmentName,
     this.imagePath,
     this.functions = const [],

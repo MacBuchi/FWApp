@@ -34,6 +34,11 @@ mixin _$QuizDaoMixin on DatabaseAccessor<AppDatabase> {
   $VehiclesTable get vehicles => attachedDatabase.vehicles;
   $QuizResultsTable get quizResults => attachedDatabase.quizResults;
 }
+mixin _$LearningDaoMixin on DatabaseAccessor<AppDatabase> {
+  $EquipmentItemsTable get equipmentItems => attachedDatabase.equipmentItems;
+  $LearningProgressTable get learningProgress =>
+      attachedDatabase.learningProgress;
+}
 
 class $VehiclesTable extends Vehicles
     with TableInfo<$VehiclesTable, VehicleData> {
@@ -4728,6 +4733,384 @@ class SyncMetaCompanion extends UpdateCompanion<SyncMetaData> {
   }
 }
 
+class $LearningProgressTable extends LearningProgress
+    with TableInfo<$LearningProgressTable, LearningProgressData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LearningProgressTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _equipmentIdMeta = const VerificationMeta(
+    'equipmentId',
+  );
+  @override
+  late final GeneratedColumn<int> equipmentId = GeneratedColumn<int>(
+    'equipment_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES equipment_items (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _correctCountMeta = const VerificationMeta(
+    'correctCount',
+  );
+  @override
+  late final GeneratedColumn<int> correctCount = GeneratedColumn<int>(
+    'correct_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _wrongCountMeta = const VerificationMeta(
+    'wrongCount',
+  );
+  @override
+  late final GeneratedColumn<int> wrongCount = GeneratedColumn<int>(
+    'wrong_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _lastPracticedAtMeta = const VerificationMeta(
+    'lastPracticedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastPracticedAt =
+      GeneratedColumn<DateTime>(
+        'last_practiced_at',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+        defaultValue: currentDateAndTime,
+      );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    equipmentId,
+    correctCount,
+    wrongCount,
+    lastPracticedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'learning_progress';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LearningProgressData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('equipment_id')) {
+      context.handle(
+        _equipmentIdMeta,
+        equipmentId.isAcceptableOrUnknown(
+          data['equipment_id']!,
+          _equipmentIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_equipmentIdMeta);
+    }
+    if (data.containsKey('correct_count')) {
+      context.handle(
+        _correctCountMeta,
+        correctCount.isAcceptableOrUnknown(
+          data['correct_count']!,
+          _correctCountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('wrong_count')) {
+      context.handle(
+        _wrongCountMeta,
+        wrongCount.isAcceptableOrUnknown(data['wrong_count']!, _wrongCountMeta),
+      );
+    }
+    if (data.containsKey('last_practiced_at')) {
+      context.handle(
+        _lastPracticedAtMeta,
+        lastPracticedAt.isAcceptableOrUnknown(
+          data['last_practiced_at']!,
+          _lastPracticedAtMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {equipmentId},
+  ];
+  @override
+  LearningProgressData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LearningProgressData(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}id'],
+          )!,
+      equipmentId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}equipment_id'],
+          )!,
+      correctCount:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}correct_count'],
+          )!,
+      wrongCount:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}wrong_count'],
+          )!,
+      lastPracticedAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}last_practiced_at'],
+          )!,
+    );
+  }
+
+  @override
+  $LearningProgressTable createAlias(String alias) {
+    return $LearningProgressTable(attachedDatabase, alias);
+  }
+}
+
+class LearningProgressData extends DataClass
+    implements Insertable<LearningProgressData> {
+  final int id;
+  final int equipmentId;
+  final int correctCount;
+  final int wrongCount;
+  final DateTime lastPracticedAt;
+  const LearningProgressData({
+    required this.id,
+    required this.equipmentId,
+    required this.correctCount,
+    required this.wrongCount,
+    required this.lastPracticedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['equipment_id'] = Variable<int>(equipmentId);
+    map['correct_count'] = Variable<int>(correctCount);
+    map['wrong_count'] = Variable<int>(wrongCount);
+    map['last_practiced_at'] = Variable<DateTime>(lastPracticedAt);
+    return map;
+  }
+
+  LearningProgressCompanion toCompanion(bool nullToAbsent) {
+    return LearningProgressCompanion(
+      id: Value(id),
+      equipmentId: Value(equipmentId),
+      correctCount: Value(correctCount),
+      wrongCount: Value(wrongCount),
+      lastPracticedAt: Value(lastPracticedAt),
+    );
+  }
+
+  factory LearningProgressData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LearningProgressData(
+      id: serializer.fromJson<int>(json['id']),
+      equipmentId: serializer.fromJson<int>(json['equipmentId']),
+      correctCount: serializer.fromJson<int>(json['correctCount']),
+      wrongCount: serializer.fromJson<int>(json['wrongCount']),
+      lastPracticedAt: serializer.fromJson<DateTime>(json['lastPracticedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'equipmentId': serializer.toJson<int>(equipmentId),
+      'correctCount': serializer.toJson<int>(correctCount),
+      'wrongCount': serializer.toJson<int>(wrongCount),
+      'lastPracticedAt': serializer.toJson<DateTime>(lastPracticedAt),
+    };
+  }
+
+  LearningProgressData copyWith({
+    int? id,
+    int? equipmentId,
+    int? correctCount,
+    int? wrongCount,
+    DateTime? lastPracticedAt,
+  }) => LearningProgressData(
+    id: id ?? this.id,
+    equipmentId: equipmentId ?? this.equipmentId,
+    correctCount: correctCount ?? this.correctCount,
+    wrongCount: wrongCount ?? this.wrongCount,
+    lastPracticedAt: lastPracticedAt ?? this.lastPracticedAt,
+  );
+  LearningProgressData copyWithCompanion(LearningProgressCompanion data) {
+    return LearningProgressData(
+      id: data.id.present ? data.id.value : this.id,
+      equipmentId:
+          data.equipmentId.present ? data.equipmentId.value : this.equipmentId,
+      correctCount:
+          data.correctCount.present
+              ? data.correctCount.value
+              : this.correctCount,
+      wrongCount:
+          data.wrongCount.present ? data.wrongCount.value : this.wrongCount,
+      lastPracticedAt:
+          data.lastPracticedAt.present
+              ? data.lastPracticedAt.value
+              : this.lastPracticedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LearningProgressData(')
+          ..write('id: $id, ')
+          ..write('equipmentId: $equipmentId, ')
+          ..write('correctCount: $correctCount, ')
+          ..write('wrongCount: $wrongCount, ')
+          ..write('lastPracticedAt: $lastPracticedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, equipmentId, correctCount, wrongCount, lastPracticedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LearningProgressData &&
+          other.id == this.id &&
+          other.equipmentId == this.equipmentId &&
+          other.correctCount == this.correctCount &&
+          other.wrongCount == this.wrongCount &&
+          other.lastPracticedAt == this.lastPracticedAt);
+}
+
+class LearningProgressCompanion extends UpdateCompanion<LearningProgressData> {
+  final Value<int> id;
+  final Value<int> equipmentId;
+  final Value<int> correctCount;
+  final Value<int> wrongCount;
+  final Value<DateTime> lastPracticedAt;
+  const LearningProgressCompanion({
+    this.id = const Value.absent(),
+    this.equipmentId = const Value.absent(),
+    this.correctCount = const Value.absent(),
+    this.wrongCount = const Value.absent(),
+    this.lastPracticedAt = const Value.absent(),
+  });
+  LearningProgressCompanion.insert({
+    this.id = const Value.absent(),
+    required int equipmentId,
+    this.correctCount = const Value.absent(),
+    this.wrongCount = const Value.absent(),
+    this.lastPracticedAt = const Value.absent(),
+  }) : equipmentId = Value(equipmentId);
+  static Insertable<LearningProgressData> custom({
+    Expression<int>? id,
+    Expression<int>? equipmentId,
+    Expression<int>? correctCount,
+    Expression<int>? wrongCount,
+    Expression<DateTime>? lastPracticedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (equipmentId != null) 'equipment_id': equipmentId,
+      if (correctCount != null) 'correct_count': correctCount,
+      if (wrongCount != null) 'wrong_count': wrongCount,
+      if (lastPracticedAt != null) 'last_practiced_at': lastPracticedAt,
+    });
+  }
+
+  LearningProgressCompanion copyWith({
+    Value<int>? id,
+    Value<int>? equipmentId,
+    Value<int>? correctCount,
+    Value<int>? wrongCount,
+    Value<DateTime>? lastPracticedAt,
+  }) {
+    return LearningProgressCompanion(
+      id: id ?? this.id,
+      equipmentId: equipmentId ?? this.equipmentId,
+      correctCount: correctCount ?? this.correctCount,
+      wrongCount: wrongCount ?? this.wrongCount,
+      lastPracticedAt: lastPracticedAt ?? this.lastPracticedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (equipmentId.present) {
+      map['equipment_id'] = Variable<int>(equipmentId.value);
+    }
+    if (correctCount.present) {
+      map['correct_count'] = Variable<int>(correctCount.value);
+    }
+    if (wrongCount.present) {
+      map['wrong_count'] = Variable<int>(wrongCount.value);
+    }
+    if (lastPracticedAt.present) {
+      map['last_practiced_at'] = Variable<DateTime>(lastPracticedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LearningProgressCompanion(')
+          ..write('id: $id, ')
+          ..write('equipmentId: $equipmentId, ')
+          ..write('correctCount: $correctCount, ')
+          ..write('wrongCount: $wrongCount, ')
+          ..write('lastPracticedAt: $lastPracticedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -4744,6 +5127,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $InspectionLogTable inspectionLog = $InspectionLogTable(this);
   late final $UserAliasesTable userAliases = $UserAliasesTable(this);
   late final $SyncMetaTable syncMeta = $SyncMetaTable(this);
+  late final $LearningProgressTable learningProgress = $LearningProgressTable(
+    this,
+  );
   late final VehicleDao vehicleDao = VehicleDao(this as AppDatabase);
   late final CompartmentDao compartmentDao = CompartmentDao(
     this as AppDatabase,
@@ -4752,6 +5138,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final AssignmentDao assignmentDao = AssignmentDao(this as AppDatabase);
   late final QuizDao quizDao = QuizDao(this as AppDatabase);
   late final InspectionDao inspectionDao = InspectionDao(this as AppDatabase);
+  late final LearningDao learningDao = LearningDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -4767,6 +5154,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     inspectionLog,
     userAliases,
     syncMeta,
+    learningProgress,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -4839,6 +5227,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('user_aliases', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'equipment_items',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('learning_progress', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -6094,6 +6489,29 @@ final class $$EquipmentItemsTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$LearningProgressTable, List<LearningProgressData>>
+  _learningProgressRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.learningProgress,
+    aliasName: $_aliasNameGenerator(
+      db.equipmentItems.id,
+      db.learningProgress.equipmentId,
+    ),
+  );
+
+  $$LearningProgressTableProcessedTableManager get learningProgressRefs {
+    final manager = $$LearningProgressTableTableManager(
+      $_db,
+      $_db.learningProgress,
+    ).filter((f) => f.equipmentId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _learningProgressRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$EquipmentItemsTableFilterComposer
@@ -6241,6 +6659,31 @@ class $$EquipmentItemsTableFilterComposer
           }) => $$UserAliasesTableFilterComposer(
             $db: $db,
             $table: $db.userAliases,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> learningProgressRefs(
+    Expression<bool> Function($$LearningProgressTableFilterComposer f) f,
+  ) {
+    final $$LearningProgressTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.learningProgress,
+      getReferencedColumn: (t) => t.equipmentId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LearningProgressTableFilterComposer(
+            $db: $db,
+            $table: $db.learningProgress,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -6474,6 +6917,31 @@ class $$EquipmentItemsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> learningProgressRefs<T extends Object>(
+    Expression<T> Function($$LearningProgressTableAnnotationComposer a) f,
+  ) {
+    final $$LearningProgressTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.learningProgress,
+      getReferencedColumn: (t) => t.equipmentId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LearningProgressTableAnnotationComposer(
+            $db: $db,
+            $table: $db.learningProgress,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$EquipmentItemsTableTableManager
@@ -6493,6 +6961,7 @@ class $$EquipmentItemsTableTableManager
             bool equipmentAssignmentsRefs,
             bool equipmentInstancesRefs,
             bool userAliasesRefs,
+            bool learningProgressRefs,
           })
         > {
   $$EquipmentItemsTableTableManager(
@@ -6590,6 +7059,7 @@ class $$EquipmentItemsTableTableManager
             equipmentAssignmentsRefs = false,
             equipmentInstancesRefs = false,
             userAliasesRefs = false,
+            learningProgressRefs = false,
           }) {
             return PrefetchHooks(
               db: db,
@@ -6597,6 +7067,7 @@ class $$EquipmentItemsTableTableManager
                 if (equipmentAssignmentsRefs) db.equipmentAssignments,
                 if (equipmentInstancesRefs) db.equipmentInstances,
                 if (userAliasesRefs) db.userAliases,
+                if (learningProgressRefs) db.learningProgress,
               ],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
@@ -6667,6 +7138,28 @@ class $$EquipmentItemsTableTableManager
                           ),
                       typedResults: items,
                     ),
+                  if (learningProgressRefs)
+                    await $_getPrefetchedData<
+                      EquipmentItemData,
+                      $EquipmentItemsTable,
+                      LearningProgressData
+                    >(
+                      currentTable: table,
+                      referencedTable: $$EquipmentItemsTableReferences
+                          ._learningProgressRefsTable(db),
+                      managerFromTypedResult:
+                          (p0) =>
+                              $$EquipmentItemsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).learningProgressRefs,
+                      referencedItemsForCurrentItem:
+                          (item, referencedItems) => referencedItems.where(
+                            (e) => e.equipmentId == item.id,
+                          ),
+                      typedResults: items,
+                    ),
                 ];
               },
             );
@@ -6691,6 +7184,7 @@ typedef $$EquipmentItemsTableProcessedTableManager =
         bool equipmentAssignmentsRefs,
         bool equipmentInstancesRefs,
         bool userAliasesRefs,
+        bool learningProgressRefs,
       })
     >;
 typedef $$EquipmentAssignmentsTableCreateCompanionBuilder =
@@ -9492,6 +9986,348 @@ typedef $$SyncMetaTableProcessedTableManager =
       SyncMetaData,
       PrefetchHooks Function()
     >;
+typedef $$LearningProgressTableCreateCompanionBuilder =
+    LearningProgressCompanion Function({
+      Value<int> id,
+      required int equipmentId,
+      Value<int> correctCount,
+      Value<int> wrongCount,
+      Value<DateTime> lastPracticedAt,
+    });
+typedef $$LearningProgressTableUpdateCompanionBuilder =
+    LearningProgressCompanion Function({
+      Value<int> id,
+      Value<int> equipmentId,
+      Value<int> correctCount,
+      Value<int> wrongCount,
+      Value<DateTime> lastPracticedAt,
+    });
+
+final class $$LearningProgressTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $LearningProgressTable,
+          LearningProgressData
+        > {
+  $$LearningProgressTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $EquipmentItemsTable _equipmentIdTable(_$AppDatabase db) =>
+      db.equipmentItems.createAlias(
+        $_aliasNameGenerator(
+          db.learningProgress.equipmentId,
+          db.equipmentItems.id,
+        ),
+      );
+
+  $$EquipmentItemsTableProcessedTableManager get equipmentId {
+    final $_column = $_itemColumn<int>('equipment_id')!;
+
+    final manager = $$EquipmentItemsTableTableManager(
+      $_db,
+      $_db.equipmentItems,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_equipmentIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$LearningProgressTableFilterComposer
+    extends Composer<_$AppDatabase, $LearningProgressTable> {
+  $$LearningProgressTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get correctCount => $composableBuilder(
+    column: $table.correctCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get wrongCount => $composableBuilder(
+    column: $table.wrongCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastPracticedAt => $composableBuilder(
+    column: $table.lastPracticedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$EquipmentItemsTableFilterComposer get equipmentId {
+    final $$EquipmentItemsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.equipmentId,
+      referencedTable: $db.equipmentItems,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EquipmentItemsTableFilterComposer(
+            $db: $db,
+            $table: $db.equipmentItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$LearningProgressTableOrderingComposer
+    extends Composer<_$AppDatabase, $LearningProgressTable> {
+  $$LearningProgressTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get correctCount => $composableBuilder(
+    column: $table.correctCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get wrongCount => $composableBuilder(
+    column: $table.wrongCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastPracticedAt => $composableBuilder(
+    column: $table.lastPracticedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$EquipmentItemsTableOrderingComposer get equipmentId {
+    final $$EquipmentItemsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.equipmentId,
+      referencedTable: $db.equipmentItems,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EquipmentItemsTableOrderingComposer(
+            $db: $db,
+            $table: $db.equipmentItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$LearningProgressTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LearningProgressTable> {
+  $$LearningProgressTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get correctCount => $composableBuilder(
+    column: $table.correctCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get wrongCount => $composableBuilder(
+    column: $table.wrongCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get lastPracticedAt => $composableBuilder(
+    column: $table.lastPracticedAt,
+    builder: (column) => column,
+  );
+
+  $$EquipmentItemsTableAnnotationComposer get equipmentId {
+    final $$EquipmentItemsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.equipmentId,
+      referencedTable: $db.equipmentItems,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EquipmentItemsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.equipmentItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$LearningProgressTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LearningProgressTable,
+          LearningProgressData,
+          $$LearningProgressTableFilterComposer,
+          $$LearningProgressTableOrderingComposer,
+          $$LearningProgressTableAnnotationComposer,
+          $$LearningProgressTableCreateCompanionBuilder,
+          $$LearningProgressTableUpdateCompanionBuilder,
+          (LearningProgressData, $$LearningProgressTableReferences),
+          LearningProgressData,
+          PrefetchHooks Function({bool equipmentId})
+        > {
+  $$LearningProgressTableTableManager(
+    _$AppDatabase db,
+    $LearningProgressTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () =>
+                  $$LearningProgressTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () => $$LearningProgressTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer:
+              () => $$LearningProgressTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> equipmentId = const Value.absent(),
+                Value<int> correctCount = const Value.absent(),
+                Value<int> wrongCount = const Value.absent(),
+                Value<DateTime> lastPracticedAt = const Value.absent(),
+              }) => LearningProgressCompanion(
+                id: id,
+                equipmentId: equipmentId,
+                correctCount: correctCount,
+                wrongCount: wrongCount,
+                lastPracticedAt: lastPracticedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int equipmentId,
+                Value<int> correctCount = const Value.absent(),
+                Value<int> wrongCount = const Value.absent(),
+                Value<DateTime> lastPracticedAt = const Value.absent(),
+              }) => LearningProgressCompanion.insert(
+                id: id,
+                equipmentId: equipmentId,
+                correctCount: correctCount,
+                wrongCount: wrongCount,
+                lastPracticedAt: lastPracticedAt,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          $$LearningProgressTableReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: ({equipmentId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                T extends TableManagerState<
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic
+                >
+              >(state) {
+                if (equipmentId) {
+                  state =
+                      state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.equipmentId,
+                            referencedTable: $$LearningProgressTableReferences
+                                ._equipmentIdTable(db),
+                            referencedColumn:
+                                $$LearningProgressTableReferences
+                                    ._equipmentIdTable(db)
+                                    .id,
+                          )
+                          as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$LearningProgressTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LearningProgressTable,
+      LearningProgressData,
+      $$LearningProgressTableFilterComposer,
+      $$LearningProgressTableOrderingComposer,
+      $$LearningProgressTableAnnotationComposer,
+      $$LearningProgressTableCreateCompanionBuilder,
+      $$LearningProgressTableUpdateCompanionBuilder,
+      (LearningProgressData, $$LearningProgressTableReferences),
+      LearningProgressData,
+      PrefetchHooks Function({bool equipmentId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -9516,4 +10352,6 @@ class $AppDatabaseManager {
       $$UserAliasesTableTableManager(_db, _db.userAliases);
   $$SyncMetaTableTableManager get syncMeta =>
       $$SyncMetaTableTableManager(_db, _db.syncMeta);
+  $$LearningProgressTableTableManager get learningProgress =>
+      $$LearningProgressTableTableManager(_db, _db.learningProgress);
 }

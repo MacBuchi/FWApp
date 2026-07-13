@@ -203,6 +203,10 @@ class _DragDropScreenState extends ConsumerState<DragDropScreen> {
     if (_flash.isNotEmpty) return; // ignore drops during the feedback flash
     final correct = item.correctCompartmentId == compartment.id;
     if (correct) _score++;
+    ref
+        .read(appDatabaseProvider)
+        .learningDao
+        .recordAnswer(item.equipmentId, correct: correct);
 
     setState(() {
       _flash[compartment.id] =

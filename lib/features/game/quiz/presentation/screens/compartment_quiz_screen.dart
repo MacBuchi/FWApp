@@ -101,6 +101,7 @@ class _CompartmentQuizScreenState
           wrong.shuffle();
           final options = [c.label, ...wrong.take(3)]..shuffle();
           questions.add(_QuizQuestion(
+            equipmentId: eq.id,
             equipmentName: eq.name,
             imagePath: eq.imagePath,
             functions: jsonToStringList(eq.equipmentFunctionsJson),
@@ -208,7 +209,12 @@ class _CompartmentQuizScreenState
   }
 
   void _answer(String choice, _QuizQuestion q) {
-    if (choice == q.correctAnswer) _score++;
+    final correct = choice == q.correctAnswer;
+    if (correct) _score++;
+    ref
+        .read(appDatabaseProvider)
+        .learningDao
+        .recordAnswer(q.equipmentId, correct: correct);
     setState(() {
       _selectedAnswer = choice;
       _answered = true;
@@ -281,6 +287,7 @@ class _CompartmentQuizScreenState
 }
 
 class _QuizQuestion {
+  final int equipmentId;
   final String equipmentName;
   final String? imagePath;
   final List<String> functions;
@@ -288,6 +295,7 @@ class _QuizQuestion {
   final List<String> options;
 
   const _QuizQuestion({
+    required this.equipmentId,
     required this.equipmentName,
     this.imagePath,
     this.functions = const [],

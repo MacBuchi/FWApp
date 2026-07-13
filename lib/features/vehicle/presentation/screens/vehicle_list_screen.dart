@@ -22,6 +22,11 @@ class VehicleListScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Fahrzeuge'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            tooltip: 'Gerätekatalog durchsuchen',
+            onPressed: () => context.push('/equipment'),
+          ),
           if (ref.watch(isAdminProvider))
             IconButton(
               icon: const Icon(Icons.add),

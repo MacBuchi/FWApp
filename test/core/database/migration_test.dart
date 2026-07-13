@@ -14,14 +14,14 @@ void main() {
     verifier = SchemaVerifier(GeneratedHelper());
   });
 
-  test('migrates from v1 to v2 without schema errors', () async {
+  test('migrates from v1 to v3 without schema errors', () async {
     final connection = await verifier.startAt(1);
     final db = AppDatabase(connection);
-    await verifier.migrateAndValidate(db, 2);
+    await verifier.migrateAndValidate(db, 3);
     await db.close();
   });
 
-  test('v1 data survives the migration to v2', () async {
+  test('v1 data survives the migration to v3', () async {
     final schema = await verifier.schemaAt(1);
 
     schema.rawDatabase
@@ -40,7 +40,7 @@ void main() {
           "VALUES (1, 1, 1, 2, 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 2);
+    await verifier.migrateAndValidate(db, 3);
 
     final vehicle = await db.vehicleDao.getById(1);
     expect(vehicle?.name, 'AB-G');
@@ -59,10 +59,29 @@ void main() {
     await db.close();
   });
 
+  test('migrates from v2 to v3 and learning progress upserts correctly',
+      () async {
+    final connection = await verifier.startAt(2);
+    final db = AppDatabase(connection);
+    await verifier.migrateAndValidate(db, 3);
+
+    final equipmentId = await db.equipmentDao
+        .insertEquipment(EquipmentItemsCompanion.insert(name: 'Spineboard'));
+    await db.learningDao.recordAnswer(equipmentId, correct: true);
+    await db.learningDao.recordAnswer(equipmentId, correct: true);
+    await db.learningDao.recordAnswer(equipmentId, correct: false);
+
+    final progress = await db.learningDao.watchAll().first;
+    expect(progress.single.correctCount, 2);
+    expect(progress.single.wrongCount, 1);
+
+    await db.close();
+  });
+
   test('new v2 tables are usable after migration', () async {
     final connection = await verifier.startAt(1);
     final db = AppDatabase(connection);
-    await verifier.migrateAndValidate(db, 2);
+    await verifier.migrateAndValidate(db, 3);
 
     final vehicleId = await db.vehicleDao.insertVehicle(
         VehiclesCompanion.insert(name: 'LF 10', type: 'LF'));

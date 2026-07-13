@@ -295,3 +295,44 @@ final class InspectionDaoProvider
 }
 
 String _$inspectionDaoHash() => r'c78679bcf2b7f1067b9b674061fdc5787129f425';
+
+@ProviderFor(learningDao)
+final learningDaoProvider = LearningDaoProvider._();
+
+final class LearningDaoProvider
+    extends $FunctionalProvider<LearningDao, LearningDao, LearningDao>
+    with $Provider<LearningDao> {
+  LearningDaoProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'learningDaoProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$learningDaoHash();
+
+  @$internal
+  @override
+  $ProviderElement<LearningDao> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  LearningDao create(Ref ref) {
+    return learningDao(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(LearningDao value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<LearningDao>(value),
+    );
+  }
+}
+
+String _$learningDaoHash() => r'0a651aa8c545253b9b444cf9b7b93307c56a25a5';

@@ -152,6 +152,24 @@ class SyncMeta extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+/// Per-equipment learning progress (Sprachlernapp-Prinzip). Local-only —
+/// deliberately NOT part of the synced dataset: it is personal to the device.
+@DataClassName('LearningProgressData')
+class LearningProgress extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get equipmentId =>
+      integer().references(EquipmentItems, #id, onDelete: KeyAction.cascade)();
+  IntColumn get correctCount => integer().withDefault(const Constant(0))();
+  IntColumn get wrongCount => integer().withDefault(const Constant(0))();
+  DateTimeColumn get lastPracticedAt =>
+      dateTime().withDefault(currentDateAndTime)();
+
+  @override
+  List<Set<Column>> get uniqueKeys => [
+        {equipmentId}
+      ];
+}
+
 @DataClassName('QuizResultData')
 class QuizResults extends Table {
   IntColumn get id => integer().autoIncrement()();
@@ -458,8 +476,49 @@ class QuizDao extends DatabaseAccessor<AppDatabase> with _$QuizDaoMixin {
             ..limit(limit))
           .get();
 
+  Stream<List<QuizResultData>> watchAll() => (select(quizResults)
+        ..orderBy([(t) => OrderingTerm.desc(t.playedAt)]))
+      .watch();
+
   Future<int> insertResult(QuizResultsCompanion r) =>
       into(quizResults).insert(r);
+}
+
+@DriftAccessor(tables: [LearningProgress])
+class LearningDao extends DatabaseAccessor<AppDatabase>
+    with _$LearningDaoMixin {
+  LearningDao(super.db);
+
+  /// Records one quiz answer for an equipment item (upsert + increment).
+  Future<void> recordAnswer(int equipmentId, {required bool correct}) async {
+    final updated = await customUpdate(
+      'UPDATE learning_progress SET '
+      'correct_count = correct_count + ?, '
+      'wrong_count = wrong_count + ?, '
+      'last_practiced_at = ? '
+      'WHERE equipment_id = ?',
+      variables: [
+        Variable.withInt(correct ? 1 : 0),
+        Variable.withInt(correct ? 0 : 1),
+        Variable.withDateTime(DateTime.now()),
+        Variable.withInt(equipmentId),
+      ],
+      updates: {learningProgress},
+    );
+    if (updated == 0) {
+      await into(learningProgress).insert(
+        LearningProgressCompanion.insert(
+          equipmentId: equipmentId,
+          correctCount: Value(correct ? 1 : 0),
+          wrongCount: Value(correct ? 0 : 1),
+        ),
+        mode: InsertMode.insertOrIgnore,
+      );
+    }
+  }
+
+  Stream<List<LearningProgressData>> watchAll() =>
+      select(learningProgress).watch();
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -478,6 +537,7 @@ class QuizDao extends DatabaseAccessor<AppDatabase> with _$QuizDaoMixin {
     InspectionLog,
     UserAliases,
     SyncMeta,
+    LearningProgress,
   ],
   daos: [
     VehicleDao,
@@ -486,13 +546,14 @@ class QuizDao extends DatabaseAccessor<AppDatabase> with _$QuizDaoMixin {
     AssignmentDao,
     QuizDao,
     InspectionDao,
+    LearningDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -508,6 +569,9 @@ class AppDatabase extends _$AppDatabase {
             await m.addColumn(
                 equipmentItems, equipmentItems.trainingQuestionsJson);
             await m.addColumn(equipmentItems, equipmentItems.typicalUseJson);
+          }
+          if (from < 3) {
+            await m.createTable(learningProgress);
           }
         },
         beforeOpen: (details) async {

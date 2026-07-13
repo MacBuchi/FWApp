@@ -34,6 +34,12 @@ mixin _$QuizDaoMixin on DatabaseAccessor<AppDatabase> {
   $VehiclesTable get vehicles => attachedDatabase.vehicles;
   $QuizResultsTable get quizResults => attachedDatabase.quizResults;
 }
+mixin _$InventoryDaoMixin on DatabaseAccessor<AppDatabase> {
+  $VehiclesTable get vehicles => attachedDatabase.vehicles;
+  $InventorySessionsTable get inventorySessions =>
+      attachedDatabase.inventorySessions;
+  $InventoryChecksTable get inventoryChecks => attachedDatabase.inventoryChecks;
+}
 mixin _$LearningDaoMixin on DatabaseAccessor<AppDatabase> {
   $EquipmentItemsTable get equipmentItems => attachedDatabase.equipmentItems;
   $LearningProgressTable get learningProgress =>
@@ -5111,6 +5117,1004 @@ class LearningProgressCompanion extends UpdateCompanion<LearningProgressData> {
   }
 }
 
+class $InventorySessionsTable extends InventorySessions
+    with TableInfo<$InventorySessionsTable, InventorySessionData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $InventorySessionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _vehicleIdMeta = const VerificationMeta(
+    'vehicleId',
+  );
+  @override
+  late final GeneratedColumn<int> vehicleId = GeneratedColumn<int>(
+    'vehicle_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES vehicles (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _startedAtMeta = const VerificationMeta(
+    'startedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> startedAt = GeneratedColumn<DateTime>(
+    'started_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _finishedAtMeta = const VerificationMeta(
+    'finishedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> finishedAt = GeneratedColumn<DateTime>(
+    'finished_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _doneByMeta = const VerificationMeta('doneBy');
+  @override
+  late final GeneratedColumn<String> doneBy = GeneratedColumn<String>(
+    'done_by',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    vehicleId,
+    startedAt,
+    finishedAt,
+    doneBy,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'inventory_sessions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<InventorySessionData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('vehicle_id')) {
+      context.handle(
+        _vehicleIdMeta,
+        vehicleId.isAcceptableOrUnknown(data['vehicle_id']!, _vehicleIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_vehicleIdMeta);
+    }
+    if (data.containsKey('started_at')) {
+      context.handle(
+        _startedAtMeta,
+        startedAt.isAcceptableOrUnknown(data['started_at']!, _startedAtMeta),
+      );
+    }
+    if (data.containsKey('finished_at')) {
+      context.handle(
+        _finishedAtMeta,
+        finishedAt.isAcceptableOrUnknown(data['finished_at']!, _finishedAtMeta),
+      );
+    }
+    if (data.containsKey('done_by')) {
+      context.handle(
+        _doneByMeta,
+        doneBy.isAcceptableOrUnknown(data['done_by']!, _doneByMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  InventorySessionData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return InventorySessionData(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}id'],
+          )!,
+      vehicleId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}vehicle_id'],
+          )!,
+      startedAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}started_at'],
+          )!,
+      finishedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}finished_at'],
+      ),
+      doneBy:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}done_by'],
+          )!,
+    );
+  }
+
+  @override
+  $InventorySessionsTable createAlias(String alias) {
+    return $InventorySessionsTable(attachedDatabase, alias);
+  }
+}
+
+class InventorySessionData extends DataClass
+    implements Insertable<InventorySessionData> {
+  final int id;
+  final int vehicleId;
+  final DateTime startedAt;
+  final DateTime? finishedAt;
+  final String doneBy;
+  const InventorySessionData({
+    required this.id,
+    required this.vehicleId,
+    required this.startedAt,
+    this.finishedAt,
+    required this.doneBy,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['vehicle_id'] = Variable<int>(vehicleId);
+    map['started_at'] = Variable<DateTime>(startedAt);
+    if (!nullToAbsent || finishedAt != null) {
+      map['finished_at'] = Variable<DateTime>(finishedAt);
+    }
+    map['done_by'] = Variable<String>(doneBy);
+    return map;
+  }
+
+  InventorySessionsCompanion toCompanion(bool nullToAbsent) {
+    return InventorySessionsCompanion(
+      id: Value(id),
+      vehicleId: Value(vehicleId),
+      startedAt: Value(startedAt),
+      finishedAt:
+          finishedAt == null && nullToAbsent
+              ? const Value.absent()
+              : Value(finishedAt),
+      doneBy: Value(doneBy),
+    );
+  }
+
+  factory InventorySessionData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return InventorySessionData(
+      id: serializer.fromJson<int>(json['id']),
+      vehicleId: serializer.fromJson<int>(json['vehicleId']),
+      startedAt: serializer.fromJson<DateTime>(json['startedAt']),
+      finishedAt: serializer.fromJson<DateTime?>(json['finishedAt']),
+      doneBy: serializer.fromJson<String>(json['doneBy']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'vehicleId': serializer.toJson<int>(vehicleId),
+      'startedAt': serializer.toJson<DateTime>(startedAt),
+      'finishedAt': serializer.toJson<DateTime?>(finishedAt),
+      'doneBy': serializer.toJson<String>(doneBy),
+    };
+  }
+
+  InventorySessionData copyWith({
+    int? id,
+    int? vehicleId,
+    DateTime? startedAt,
+    Value<DateTime?> finishedAt = const Value.absent(),
+    String? doneBy,
+  }) => InventorySessionData(
+    id: id ?? this.id,
+    vehicleId: vehicleId ?? this.vehicleId,
+    startedAt: startedAt ?? this.startedAt,
+    finishedAt: finishedAt.present ? finishedAt.value : this.finishedAt,
+    doneBy: doneBy ?? this.doneBy,
+  );
+  InventorySessionData copyWithCompanion(InventorySessionsCompanion data) {
+    return InventorySessionData(
+      id: data.id.present ? data.id.value : this.id,
+      vehicleId: data.vehicleId.present ? data.vehicleId.value : this.vehicleId,
+      startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
+      finishedAt:
+          data.finishedAt.present ? data.finishedAt.value : this.finishedAt,
+      doneBy: data.doneBy.present ? data.doneBy.value : this.doneBy,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('InventorySessionData(')
+          ..write('id: $id, ')
+          ..write('vehicleId: $vehicleId, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('finishedAt: $finishedAt, ')
+          ..write('doneBy: $doneBy')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, vehicleId, startedAt, finishedAt, doneBy);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is InventorySessionData &&
+          other.id == this.id &&
+          other.vehicleId == this.vehicleId &&
+          other.startedAt == this.startedAt &&
+          other.finishedAt == this.finishedAt &&
+          other.doneBy == this.doneBy);
+}
+
+class InventorySessionsCompanion extends UpdateCompanion<InventorySessionData> {
+  final Value<int> id;
+  final Value<int> vehicleId;
+  final Value<DateTime> startedAt;
+  final Value<DateTime?> finishedAt;
+  final Value<String> doneBy;
+  const InventorySessionsCompanion({
+    this.id = const Value.absent(),
+    this.vehicleId = const Value.absent(),
+    this.startedAt = const Value.absent(),
+    this.finishedAt = const Value.absent(),
+    this.doneBy = const Value.absent(),
+  });
+  InventorySessionsCompanion.insert({
+    this.id = const Value.absent(),
+    required int vehicleId,
+    this.startedAt = const Value.absent(),
+    this.finishedAt = const Value.absent(),
+    this.doneBy = const Value.absent(),
+  }) : vehicleId = Value(vehicleId);
+  static Insertable<InventorySessionData> custom({
+    Expression<int>? id,
+    Expression<int>? vehicleId,
+    Expression<DateTime>? startedAt,
+    Expression<DateTime>? finishedAt,
+    Expression<String>? doneBy,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (vehicleId != null) 'vehicle_id': vehicleId,
+      if (startedAt != null) 'started_at': startedAt,
+      if (finishedAt != null) 'finished_at': finishedAt,
+      if (doneBy != null) 'done_by': doneBy,
+    });
+  }
+
+  InventorySessionsCompanion copyWith({
+    Value<int>? id,
+    Value<int>? vehicleId,
+    Value<DateTime>? startedAt,
+    Value<DateTime?>? finishedAt,
+    Value<String>? doneBy,
+  }) {
+    return InventorySessionsCompanion(
+      id: id ?? this.id,
+      vehicleId: vehicleId ?? this.vehicleId,
+      startedAt: startedAt ?? this.startedAt,
+      finishedAt: finishedAt ?? this.finishedAt,
+      doneBy: doneBy ?? this.doneBy,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (vehicleId.present) {
+      map['vehicle_id'] = Variable<int>(vehicleId.value);
+    }
+    if (startedAt.present) {
+      map['started_at'] = Variable<DateTime>(startedAt.value);
+    }
+    if (finishedAt.present) {
+      map['finished_at'] = Variable<DateTime>(finishedAt.value);
+    }
+    if (doneBy.present) {
+      map['done_by'] = Variable<String>(doneBy.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('InventorySessionsCompanion(')
+          ..write('id: $id, ')
+          ..write('vehicleId: $vehicleId, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('finishedAt: $finishedAt, ')
+          ..write('doneBy: $doneBy')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $InventoryChecksTable extends InventoryChecks
+    with TableInfo<$InventoryChecksTable, InventoryCheckData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $InventoryChecksTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _sessionIdMeta = const VerificationMeta(
+    'sessionId',
+  );
+  @override
+  late final GeneratedColumn<int> sessionId = GeneratedColumn<int>(
+    'session_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES inventory_sessions (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _equipmentIdMeta = const VerificationMeta(
+    'equipmentId',
+  );
+  @override
+  late final GeneratedColumn<int> equipmentId = GeneratedColumn<int>(
+    'equipment_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _compartmentIdMeta = const VerificationMeta(
+    'compartmentId',
+  );
+  @override
+  late final GeneratedColumn<int> compartmentId = GeneratedColumn<int>(
+    'compartment_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _equipmentNameMeta = const VerificationMeta(
+    'equipmentName',
+  );
+  @override
+  late final GeneratedColumn<String> equipmentName = GeneratedColumn<String>(
+    'equipment_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _compartmentLabelMeta = const VerificationMeta(
+    'compartmentLabel',
+  );
+  @override
+  late final GeneratedColumn<String> compartmentLabel = GeneratedColumn<String>(
+    'compartment_label',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _targetQuantityMeta = const VerificationMeta(
+    'targetQuantity',
+  );
+  @override
+  late final GeneratedColumn<int> targetQuantity = GeneratedColumn<int>(
+    'target_quantity',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _actualQuantityMeta = const VerificationMeta(
+    'actualQuantity',
+  );
+  @override
+  late final GeneratedColumn<int> actualQuantity = GeneratedColumn<int>(
+    'actual_quantity',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('open'),
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    sessionId,
+    equipmentId,
+    compartmentId,
+    equipmentName,
+    compartmentLabel,
+    targetQuantity,
+    actualQuantity,
+    status,
+    note,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'inventory_checks';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<InventoryCheckData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('session_id')) {
+      context.handle(
+        _sessionIdMeta,
+        sessionId.isAcceptableOrUnknown(data['session_id']!, _sessionIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sessionIdMeta);
+    }
+    if (data.containsKey('equipment_id')) {
+      context.handle(
+        _equipmentIdMeta,
+        equipmentId.isAcceptableOrUnknown(
+          data['equipment_id']!,
+          _equipmentIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('compartment_id')) {
+      context.handle(
+        _compartmentIdMeta,
+        compartmentId.isAcceptableOrUnknown(
+          data['compartment_id']!,
+          _compartmentIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('equipment_name')) {
+      context.handle(
+        _equipmentNameMeta,
+        equipmentName.isAcceptableOrUnknown(
+          data['equipment_name']!,
+          _equipmentNameMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_equipmentNameMeta);
+    }
+    if (data.containsKey('compartment_label')) {
+      context.handle(
+        _compartmentLabelMeta,
+        compartmentLabel.isAcceptableOrUnknown(
+          data['compartment_label']!,
+          _compartmentLabelMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_compartmentLabelMeta);
+    }
+    if (data.containsKey('target_quantity')) {
+      context.handle(
+        _targetQuantityMeta,
+        targetQuantity.isAcceptableOrUnknown(
+          data['target_quantity']!,
+          _targetQuantityMeta,
+        ),
+      );
+    }
+    if (data.containsKey('actual_quantity')) {
+      context.handle(
+        _actualQuantityMeta,
+        actualQuantity.isAcceptableOrUnknown(
+          data['actual_quantity']!,
+          _actualQuantityMeta,
+        ),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  InventoryCheckData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return InventoryCheckData(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}id'],
+          )!,
+      sessionId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}session_id'],
+          )!,
+      equipmentId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}equipment_id'],
+      ),
+      compartmentId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}compartment_id'],
+      ),
+      equipmentName:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}equipment_name'],
+          )!,
+      compartmentLabel:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}compartment_label'],
+          )!,
+      targetQuantity:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}target_quantity'],
+          )!,
+      actualQuantity: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}actual_quantity'],
+      ),
+      status:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}status'],
+          )!,
+      note:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}note'],
+          )!,
+    );
+  }
+
+  @override
+  $InventoryChecksTable createAlias(String alias) {
+    return $InventoryChecksTable(attachedDatabase, alias);
+  }
+}
+
+class InventoryCheckData extends DataClass
+    implements Insertable<InventoryCheckData> {
+  final int id;
+  final int sessionId;
+  final int? equipmentId;
+  final int? compartmentId;
+  final String equipmentName;
+  final String compartmentLabel;
+  final int targetQuantity;
+  final int? actualQuantity;
+  final String status;
+  final String note;
+  const InventoryCheckData({
+    required this.id,
+    required this.sessionId,
+    this.equipmentId,
+    this.compartmentId,
+    required this.equipmentName,
+    required this.compartmentLabel,
+    required this.targetQuantity,
+    this.actualQuantity,
+    required this.status,
+    required this.note,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['session_id'] = Variable<int>(sessionId);
+    if (!nullToAbsent || equipmentId != null) {
+      map['equipment_id'] = Variable<int>(equipmentId);
+    }
+    if (!nullToAbsent || compartmentId != null) {
+      map['compartment_id'] = Variable<int>(compartmentId);
+    }
+    map['equipment_name'] = Variable<String>(equipmentName);
+    map['compartment_label'] = Variable<String>(compartmentLabel);
+    map['target_quantity'] = Variable<int>(targetQuantity);
+    if (!nullToAbsent || actualQuantity != null) {
+      map['actual_quantity'] = Variable<int>(actualQuantity);
+    }
+    map['status'] = Variable<String>(status);
+    map['note'] = Variable<String>(note);
+    return map;
+  }
+
+  InventoryChecksCompanion toCompanion(bool nullToAbsent) {
+    return InventoryChecksCompanion(
+      id: Value(id),
+      sessionId: Value(sessionId),
+      equipmentId:
+          equipmentId == null && nullToAbsent
+              ? const Value.absent()
+              : Value(equipmentId),
+      compartmentId:
+          compartmentId == null && nullToAbsent
+              ? const Value.absent()
+              : Value(compartmentId),
+      equipmentName: Value(equipmentName),
+      compartmentLabel: Value(compartmentLabel),
+      targetQuantity: Value(targetQuantity),
+      actualQuantity:
+          actualQuantity == null && nullToAbsent
+              ? const Value.absent()
+              : Value(actualQuantity),
+      status: Value(status),
+      note: Value(note),
+    );
+  }
+
+  factory InventoryCheckData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return InventoryCheckData(
+      id: serializer.fromJson<int>(json['id']),
+      sessionId: serializer.fromJson<int>(json['sessionId']),
+      equipmentId: serializer.fromJson<int?>(json['equipmentId']),
+      compartmentId: serializer.fromJson<int?>(json['compartmentId']),
+      equipmentName: serializer.fromJson<String>(json['equipmentName']),
+      compartmentLabel: serializer.fromJson<String>(json['compartmentLabel']),
+      targetQuantity: serializer.fromJson<int>(json['targetQuantity']),
+      actualQuantity: serializer.fromJson<int?>(json['actualQuantity']),
+      status: serializer.fromJson<String>(json['status']),
+      note: serializer.fromJson<String>(json['note']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'sessionId': serializer.toJson<int>(sessionId),
+      'equipmentId': serializer.toJson<int?>(equipmentId),
+      'compartmentId': serializer.toJson<int?>(compartmentId),
+      'equipmentName': serializer.toJson<String>(equipmentName),
+      'compartmentLabel': serializer.toJson<String>(compartmentLabel),
+      'targetQuantity': serializer.toJson<int>(targetQuantity),
+      'actualQuantity': serializer.toJson<int?>(actualQuantity),
+      'status': serializer.toJson<String>(status),
+      'note': serializer.toJson<String>(note),
+    };
+  }
+
+  InventoryCheckData copyWith({
+    int? id,
+    int? sessionId,
+    Value<int?> equipmentId = const Value.absent(),
+    Value<int?> compartmentId = const Value.absent(),
+    String? equipmentName,
+    String? compartmentLabel,
+    int? targetQuantity,
+    Value<int?> actualQuantity = const Value.absent(),
+    String? status,
+    String? note,
+  }) => InventoryCheckData(
+    id: id ?? this.id,
+    sessionId: sessionId ?? this.sessionId,
+    equipmentId: equipmentId.present ? equipmentId.value : this.equipmentId,
+    compartmentId:
+        compartmentId.present ? compartmentId.value : this.compartmentId,
+    equipmentName: equipmentName ?? this.equipmentName,
+    compartmentLabel: compartmentLabel ?? this.compartmentLabel,
+    targetQuantity: targetQuantity ?? this.targetQuantity,
+    actualQuantity:
+        actualQuantity.present ? actualQuantity.value : this.actualQuantity,
+    status: status ?? this.status,
+    note: note ?? this.note,
+  );
+  InventoryCheckData copyWithCompanion(InventoryChecksCompanion data) {
+    return InventoryCheckData(
+      id: data.id.present ? data.id.value : this.id,
+      sessionId: data.sessionId.present ? data.sessionId.value : this.sessionId,
+      equipmentId:
+          data.equipmentId.present ? data.equipmentId.value : this.equipmentId,
+      compartmentId:
+          data.compartmentId.present
+              ? data.compartmentId.value
+              : this.compartmentId,
+      equipmentName:
+          data.equipmentName.present
+              ? data.equipmentName.value
+              : this.equipmentName,
+      compartmentLabel:
+          data.compartmentLabel.present
+              ? data.compartmentLabel.value
+              : this.compartmentLabel,
+      targetQuantity:
+          data.targetQuantity.present
+              ? data.targetQuantity.value
+              : this.targetQuantity,
+      actualQuantity:
+          data.actualQuantity.present
+              ? data.actualQuantity.value
+              : this.actualQuantity,
+      status: data.status.present ? data.status.value : this.status,
+      note: data.note.present ? data.note.value : this.note,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('InventoryCheckData(')
+          ..write('id: $id, ')
+          ..write('sessionId: $sessionId, ')
+          ..write('equipmentId: $equipmentId, ')
+          ..write('compartmentId: $compartmentId, ')
+          ..write('equipmentName: $equipmentName, ')
+          ..write('compartmentLabel: $compartmentLabel, ')
+          ..write('targetQuantity: $targetQuantity, ')
+          ..write('actualQuantity: $actualQuantity, ')
+          ..write('status: $status, ')
+          ..write('note: $note')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    sessionId,
+    equipmentId,
+    compartmentId,
+    equipmentName,
+    compartmentLabel,
+    targetQuantity,
+    actualQuantity,
+    status,
+    note,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is InventoryCheckData &&
+          other.id == this.id &&
+          other.sessionId == this.sessionId &&
+          other.equipmentId == this.equipmentId &&
+          other.compartmentId == this.compartmentId &&
+          other.equipmentName == this.equipmentName &&
+          other.compartmentLabel == this.compartmentLabel &&
+          other.targetQuantity == this.targetQuantity &&
+          other.actualQuantity == this.actualQuantity &&
+          other.status == this.status &&
+          other.note == this.note);
+}
+
+class InventoryChecksCompanion extends UpdateCompanion<InventoryCheckData> {
+  final Value<int> id;
+  final Value<int> sessionId;
+  final Value<int?> equipmentId;
+  final Value<int?> compartmentId;
+  final Value<String> equipmentName;
+  final Value<String> compartmentLabel;
+  final Value<int> targetQuantity;
+  final Value<int?> actualQuantity;
+  final Value<String> status;
+  final Value<String> note;
+  const InventoryChecksCompanion({
+    this.id = const Value.absent(),
+    this.sessionId = const Value.absent(),
+    this.equipmentId = const Value.absent(),
+    this.compartmentId = const Value.absent(),
+    this.equipmentName = const Value.absent(),
+    this.compartmentLabel = const Value.absent(),
+    this.targetQuantity = const Value.absent(),
+    this.actualQuantity = const Value.absent(),
+    this.status = const Value.absent(),
+    this.note = const Value.absent(),
+  });
+  InventoryChecksCompanion.insert({
+    this.id = const Value.absent(),
+    required int sessionId,
+    this.equipmentId = const Value.absent(),
+    this.compartmentId = const Value.absent(),
+    required String equipmentName,
+    required String compartmentLabel,
+    this.targetQuantity = const Value.absent(),
+    this.actualQuantity = const Value.absent(),
+    this.status = const Value.absent(),
+    this.note = const Value.absent(),
+  }) : sessionId = Value(sessionId),
+       equipmentName = Value(equipmentName),
+       compartmentLabel = Value(compartmentLabel);
+  static Insertable<InventoryCheckData> custom({
+    Expression<int>? id,
+    Expression<int>? sessionId,
+    Expression<int>? equipmentId,
+    Expression<int>? compartmentId,
+    Expression<String>? equipmentName,
+    Expression<String>? compartmentLabel,
+    Expression<int>? targetQuantity,
+    Expression<int>? actualQuantity,
+    Expression<String>? status,
+    Expression<String>? note,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (sessionId != null) 'session_id': sessionId,
+      if (equipmentId != null) 'equipment_id': equipmentId,
+      if (compartmentId != null) 'compartment_id': compartmentId,
+      if (equipmentName != null) 'equipment_name': equipmentName,
+      if (compartmentLabel != null) 'compartment_label': compartmentLabel,
+      if (targetQuantity != null) 'target_quantity': targetQuantity,
+      if (actualQuantity != null) 'actual_quantity': actualQuantity,
+      if (status != null) 'status': status,
+      if (note != null) 'note': note,
+    });
+  }
+
+  InventoryChecksCompanion copyWith({
+    Value<int>? id,
+    Value<int>? sessionId,
+    Value<int?>? equipmentId,
+    Value<int?>? compartmentId,
+    Value<String>? equipmentName,
+    Value<String>? compartmentLabel,
+    Value<int>? targetQuantity,
+    Value<int?>? actualQuantity,
+    Value<String>? status,
+    Value<String>? note,
+  }) {
+    return InventoryChecksCompanion(
+      id: id ?? this.id,
+      sessionId: sessionId ?? this.sessionId,
+      equipmentId: equipmentId ?? this.equipmentId,
+      compartmentId: compartmentId ?? this.compartmentId,
+      equipmentName: equipmentName ?? this.equipmentName,
+      compartmentLabel: compartmentLabel ?? this.compartmentLabel,
+      targetQuantity: targetQuantity ?? this.targetQuantity,
+      actualQuantity: actualQuantity ?? this.actualQuantity,
+      status: status ?? this.status,
+      note: note ?? this.note,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (sessionId.present) {
+      map['session_id'] = Variable<int>(sessionId.value);
+    }
+    if (equipmentId.present) {
+      map['equipment_id'] = Variable<int>(equipmentId.value);
+    }
+    if (compartmentId.present) {
+      map['compartment_id'] = Variable<int>(compartmentId.value);
+    }
+    if (equipmentName.present) {
+      map['equipment_name'] = Variable<String>(equipmentName.value);
+    }
+    if (compartmentLabel.present) {
+      map['compartment_label'] = Variable<String>(compartmentLabel.value);
+    }
+    if (targetQuantity.present) {
+      map['target_quantity'] = Variable<int>(targetQuantity.value);
+    }
+    if (actualQuantity.present) {
+      map['actual_quantity'] = Variable<int>(actualQuantity.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('InventoryChecksCompanion(')
+          ..write('id: $id, ')
+          ..write('sessionId: $sessionId, ')
+          ..write('equipmentId: $equipmentId, ')
+          ..write('compartmentId: $compartmentId, ')
+          ..write('equipmentName: $equipmentName, ')
+          ..write('compartmentLabel: $compartmentLabel, ')
+          ..write('targetQuantity: $targetQuantity, ')
+          ..write('actualQuantity: $actualQuantity, ')
+          ..write('status: $status, ')
+          ..write('note: $note')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -5130,6 +6134,11 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $LearningProgressTable learningProgress = $LearningProgressTable(
     this,
   );
+  late final $InventorySessionsTable inventorySessions =
+      $InventorySessionsTable(this);
+  late final $InventoryChecksTable inventoryChecks = $InventoryChecksTable(
+    this,
+  );
   late final VehicleDao vehicleDao = VehicleDao(this as AppDatabase);
   late final CompartmentDao compartmentDao = CompartmentDao(
     this as AppDatabase,
@@ -5139,6 +6148,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final QuizDao quizDao = QuizDao(this as AppDatabase);
   late final InspectionDao inspectionDao = InspectionDao(this as AppDatabase);
   late final LearningDao learningDao = LearningDao(this as AppDatabase);
+  late final InventoryDao inventoryDao = InventoryDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -5155,6 +6165,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     userAliases,
     syncMeta,
     learningProgress,
+    inventorySessions,
+    inventoryChecks,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -5234,6 +6246,20 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('learning_progress', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'vehicles',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('inventory_sessions', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'inventory_sessions',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('inventory_checks', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -5320,6 +6346,33 @@ final class $$VehiclesTableReferences
 
     final cache = $_typedResult.readTableOrNull(
       _equipmentInstancesRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $InventorySessionsTable,
+    List<InventorySessionData>
+  >
+  _inventorySessionsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.inventorySessions,
+        aliasName: $_aliasNameGenerator(
+          db.vehicles.id,
+          db.inventorySessions.vehicleId,
+        ),
+      );
+
+  $$InventorySessionsTableProcessedTableManager get inventorySessionsRefs {
+    final manager = $$InventorySessionsTableTableManager(
+      $_db,
+      $_db.inventorySessions,
+    ).filter((f) => f.vehicleId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _inventorySessionsRefsTable($_db),
     );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
@@ -5437,6 +6490,31 @@ class $$VehiclesTableFilterComposer
           }) => $$EquipmentInstancesTableFilterComposer(
             $db: $db,
             $table: $db.equipmentInstances,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> inventorySessionsRefs(
+    Expression<bool> Function($$InventorySessionsTableFilterComposer f) f,
+  ) {
+    final $$InventorySessionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.inventorySessions,
+      getReferencedColumn: (t) => t.vehicleId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$InventorySessionsTableFilterComposer(
+            $db: $db,
+            $table: $db.inventorySessions,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -5599,6 +6677,32 @@ class $$VehiclesTableAnnotationComposer
         );
     return f(composer);
   }
+
+  Expression<T> inventorySessionsRefs<T extends Object>(
+    Expression<T> Function($$InventorySessionsTableAnnotationComposer a) f,
+  ) {
+    final $$InventorySessionsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.inventorySessions,
+          getReferencedColumn: (t) => t.vehicleId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$InventorySessionsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.inventorySessions,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$VehiclesTableTableManager
@@ -5618,6 +6722,7 @@ class $$VehiclesTableTableManager
             bool compartmentsRefs,
             bool quizResultsRefs,
             bool equipmentInstancesRefs,
+            bool inventorySessionsRefs,
           })
         > {
   $$VehiclesTableTableManager(_$AppDatabase db, $VehiclesTable table)
@@ -5681,6 +6786,7 @@ class $$VehiclesTableTableManager
             compartmentsRefs = false,
             quizResultsRefs = false,
             equipmentInstancesRefs = false,
+            inventorySessionsRefs = false,
           }) {
             return PrefetchHooks(
               db: db,
@@ -5688,6 +6794,7 @@ class $$VehiclesTableTableManager
                 if (compartmentsRefs) db.compartments,
                 if (quizResultsRefs) db.quizResults,
                 if (equipmentInstancesRefs) db.equipmentInstances,
+                if (inventorySessionsRefs) db.inventorySessions,
               ],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
@@ -5758,6 +6865,28 @@ class $$VehiclesTableTableManager
                           ),
                       typedResults: items,
                     ),
+                  if (inventorySessionsRefs)
+                    await $_getPrefetchedData<
+                      VehicleData,
+                      $VehiclesTable,
+                      InventorySessionData
+                    >(
+                      currentTable: table,
+                      referencedTable: $$VehiclesTableReferences
+                          ._inventorySessionsRefsTable(db),
+                      managerFromTypedResult:
+                          (p0) =>
+                              $$VehiclesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).inventorySessionsRefs,
+                      referencedItemsForCurrentItem:
+                          (item, referencedItems) => referencedItems.where(
+                            (e) => e.vehicleId == item.id,
+                          ),
+                      typedResults: items,
+                    ),
                 ];
               },
             );
@@ -5782,6 +6911,7 @@ typedef $$VehiclesTableProcessedTableManager =
         bool compartmentsRefs,
         bool quizResultsRefs,
         bool equipmentInstancesRefs,
+        bool inventorySessionsRefs,
       })
     >;
 typedef $$CompartmentsTableCreateCompanionBuilder =
@@ -10328,6 +11458,888 @@ typedef $$LearningProgressTableProcessedTableManager =
       LearningProgressData,
       PrefetchHooks Function({bool equipmentId})
     >;
+typedef $$InventorySessionsTableCreateCompanionBuilder =
+    InventorySessionsCompanion Function({
+      Value<int> id,
+      required int vehicleId,
+      Value<DateTime> startedAt,
+      Value<DateTime?> finishedAt,
+      Value<String> doneBy,
+    });
+typedef $$InventorySessionsTableUpdateCompanionBuilder =
+    InventorySessionsCompanion Function({
+      Value<int> id,
+      Value<int> vehicleId,
+      Value<DateTime> startedAt,
+      Value<DateTime?> finishedAt,
+      Value<String> doneBy,
+    });
+
+final class $$InventorySessionsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $InventorySessionsTable,
+          InventorySessionData
+        > {
+  $$InventorySessionsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $VehiclesTable _vehicleIdTable(_$AppDatabase db) =>
+      db.vehicles.createAlias(
+        $_aliasNameGenerator(db.inventorySessions.vehicleId, db.vehicles.id),
+      );
+
+  $$VehiclesTableProcessedTableManager get vehicleId {
+    final $_column = $_itemColumn<int>('vehicle_id')!;
+
+    final manager = $$VehiclesTableTableManager(
+      $_db,
+      $_db.vehicles,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_vehicleIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$InventoryChecksTable, List<InventoryCheckData>>
+  _inventoryChecksRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.inventoryChecks,
+    aliasName: $_aliasNameGenerator(
+      db.inventorySessions.id,
+      db.inventoryChecks.sessionId,
+    ),
+  );
+
+  $$InventoryChecksTableProcessedTableManager get inventoryChecksRefs {
+    final manager = $$InventoryChecksTableTableManager(
+      $_db,
+      $_db.inventoryChecks,
+    ).filter((f) => f.sessionId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _inventoryChecksRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$InventorySessionsTableFilterComposer
+    extends Composer<_$AppDatabase, $InventorySessionsTable> {
+  $$InventorySessionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get finishedAt => $composableBuilder(
+    column: $table.finishedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get doneBy => $composableBuilder(
+    column: $table.doneBy,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$VehiclesTableFilterComposer get vehicleId {
+    final $$VehiclesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.vehicleId,
+      referencedTable: $db.vehicles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$VehiclesTableFilterComposer(
+            $db: $db,
+            $table: $db.vehicles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> inventoryChecksRefs(
+    Expression<bool> Function($$InventoryChecksTableFilterComposer f) f,
+  ) {
+    final $$InventoryChecksTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.inventoryChecks,
+      getReferencedColumn: (t) => t.sessionId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$InventoryChecksTableFilterComposer(
+            $db: $db,
+            $table: $db.inventoryChecks,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$InventorySessionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $InventorySessionsTable> {
+  $$InventorySessionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get finishedAt => $composableBuilder(
+    column: $table.finishedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get doneBy => $composableBuilder(
+    column: $table.doneBy,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$VehiclesTableOrderingComposer get vehicleId {
+    final $$VehiclesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.vehicleId,
+      referencedTable: $db.vehicles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$VehiclesTableOrderingComposer(
+            $db: $db,
+            $table: $db.vehicles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$InventorySessionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $InventorySessionsTable> {
+  $$InventorySessionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get startedAt =>
+      $composableBuilder(column: $table.startedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get finishedAt => $composableBuilder(
+    column: $table.finishedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get doneBy =>
+      $composableBuilder(column: $table.doneBy, builder: (column) => column);
+
+  $$VehiclesTableAnnotationComposer get vehicleId {
+    final $$VehiclesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.vehicleId,
+      referencedTable: $db.vehicles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$VehiclesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.vehicles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> inventoryChecksRefs<T extends Object>(
+    Expression<T> Function($$InventoryChecksTableAnnotationComposer a) f,
+  ) {
+    final $$InventoryChecksTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.inventoryChecks,
+      getReferencedColumn: (t) => t.sessionId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$InventoryChecksTableAnnotationComposer(
+            $db: $db,
+            $table: $db.inventoryChecks,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$InventorySessionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $InventorySessionsTable,
+          InventorySessionData,
+          $$InventorySessionsTableFilterComposer,
+          $$InventorySessionsTableOrderingComposer,
+          $$InventorySessionsTableAnnotationComposer,
+          $$InventorySessionsTableCreateCompanionBuilder,
+          $$InventorySessionsTableUpdateCompanionBuilder,
+          (InventorySessionData, $$InventorySessionsTableReferences),
+          InventorySessionData,
+          PrefetchHooks Function({bool vehicleId, bool inventoryChecksRefs})
+        > {
+  $$InventorySessionsTableTableManager(
+    _$AppDatabase db,
+    $InventorySessionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$InventorySessionsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer:
+              () => $$InventorySessionsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer:
+              () => $$InventorySessionsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> vehicleId = const Value.absent(),
+                Value<DateTime> startedAt = const Value.absent(),
+                Value<DateTime?> finishedAt = const Value.absent(),
+                Value<String> doneBy = const Value.absent(),
+              }) => InventorySessionsCompanion(
+                id: id,
+                vehicleId: vehicleId,
+                startedAt: startedAt,
+                finishedAt: finishedAt,
+                doneBy: doneBy,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int vehicleId,
+                Value<DateTime> startedAt = const Value.absent(),
+                Value<DateTime?> finishedAt = const Value.absent(),
+                Value<String> doneBy = const Value.absent(),
+              }) => InventorySessionsCompanion.insert(
+                id: id,
+                vehicleId: vehicleId,
+                startedAt: startedAt,
+                finishedAt: finishedAt,
+                doneBy: doneBy,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          $$InventorySessionsTableReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: ({
+            vehicleId = false,
+            inventoryChecksRefs = false,
+          }) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (inventoryChecksRefs) db.inventoryChecks,
+              ],
+              addJoins: <
+                T extends TableManagerState<
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic
+                >
+              >(state) {
+                if (vehicleId) {
+                  state =
+                      state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.vehicleId,
+                            referencedTable: $$InventorySessionsTableReferences
+                                ._vehicleIdTable(db),
+                            referencedColumn:
+                                $$InventorySessionsTableReferences
+                                    ._vehicleIdTable(db)
+                                    .id,
+                          )
+                          as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (inventoryChecksRefs)
+                    await $_getPrefetchedData<
+                      InventorySessionData,
+                      $InventorySessionsTable,
+                      InventoryCheckData
+                    >(
+                      currentTable: table,
+                      referencedTable: $$InventorySessionsTableReferences
+                          ._inventoryChecksRefsTable(db),
+                      managerFromTypedResult:
+                          (p0) =>
+                              $$InventorySessionsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).inventoryChecksRefs,
+                      referencedItemsForCurrentItem:
+                          (item, referencedItems) => referencedItems.where(
+                            (e) => e.sessionId == item.id,
+                          ),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$InventorySessionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $InventorySessionsTable,
+      InventorySessionData,
+      $$InventorySessionsTableFilterComposer,
+      $$InventorySessionsTableOrderingComposer,
+      $$InventorySessionsTableAnnotationComposer,
+      $$InventorySessionsTableCreateCompanionBuilder,
+      $$InventorySessionsTableUpdateCompanionBuilder,
+      (InventorySessionData, $$InventorySessionsTableReferences),
+      InventorySessionData,
+      PrefetchHooks Function({bool vehicleId, bool inventoryChecksRefs})
+    >;
+typedef $$InventoryChecksTableCreateCompanionBuilder =
+    InventoryChecksCompanion Function({
+      Value<int> id,
+      required int sessionId,
+      Value<int?> equipmentId,
+      Value<int?> compartmentId,
+      required String equipmentName,
+      required String compartmentLabel,
+      Value<int> targetQuantity,
+      Value<int?> actualQuantity,
+      Value<String> status,
+      Value<String> note,
+    });
+typedef $$InventoryChecksTableUpdateCompanionBuilder =
+    InventoryChecksCompanion Function({
+      Value<int> id,
+      Value<int> sessionId,
+      Value<int?> equipmentId,
+      Value<int?> compartmentId,
+      Value<String> equipmentName,
+      Value<String> compartmentLabel,
+      Value<int> targetQuantity,
+      Value<int?> actualQuantity,
+      Value<String> status,
+      Value<String> note,
+    });
+
+final class $$InventoryChecksTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $InventoryChecksTable,
+          InventoryCheckData
+        > {
+  $$InventoryChecksTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $InventorySessionsTable _sessionIdTable(_$AppDatabase db) =>
+      db.inventorySessions.createAlias(
+        $_aliasNameGenerator(
+          db.inventoryChecks.sessionId,
+          db.inventorySessions.id,
+        ),
+      );
+
+  $$InventorySessionsTableProcessedTableManager get sessionId {
+    final $_column = $_itemColumn<int>('session_id')!;
+
+    final manager = $$InventorySessionsTableTableManager(
+      $_db,
+      $_db.inventorySessions,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_sessionIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$InventoryChecksTableFilterComposer
+    extends Composer<_$AppDatabase, $InventoryChecksTable> {
+  $$InventoryChecksTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get equipmentId => $composableBuilder(
+    column: $table.equipmentId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get compartmentId => $composableBuilder(
+    column: $table.compartmentId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get equipmentName => $composableBuilder(
+    column: $table.equipmentName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get compartmentLabel => $composableBuilder(
+    column: $table.compartmentLabel,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get targetQuantity => $composableBuilder(
+    column: $table.targetQuantity,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get actualQuantity => $composableBuilder(
+    column: $table.actualQuantity,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$InventorySessionsTableFilterComposer get sessionId {
+    final $$InventorySessionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.sessionId,
+      referencedTable: $db.inventorySessions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$InventorySessionsTableFilterComposer(
+            $db: $db,
+            $table: $db.inventorySessions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$InventoryChecksTableOrderingComposer
+    extends Composer<_$AppDatabase, $InventoryChecksTable> {
+  $$InventoryChecksTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get equipmentId => $composableBuilder(
+    column: $table.equipmentId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get compartmentId => $composableBuilder(
+    column: $table.compartmentId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get equipmentName => $composableBuilder(
+    column: $table.equipmentName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get compartmentLabel => $composableBuilder(
+    column: $table.compartmentLabel,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get targetQuantity => $composableBuilder(
+    column: $table.targetQuantity,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get actualQuantity => $composableBuilder(
+    column: $table.actualQuantity,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$InventorySessionsTableOrderingComposer get sessionId {
+    final $$InventorySessionsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.sessionId,
+      referencedTable: $db.inventorySessions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$InventorySessionsTableOrderingComposer(
+            $db: $db,
+            $table: $db.inventorySessions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$InventoryChecksTableAnnotationComposer
+    extends Composer<_$AppDatabase, $InventoryChecksTable> {
+  $$InventoryChecksTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get equipmentId => $composableBuilder(
+    column: $table.equipmentId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get compartmentId => $composableBuilder(
+    column: $table.compartmentId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get equipmentName => $composableBuilder(
+    column: $table.equipmentName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get compartmentLabel => $composableBuilder(
+    column: $table.compartmentLabel,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get targetQuantity => $composableBuilder(
+    column: $table.targetQuantity,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get actualQuantity => $composableBuilder(
+    column: $table.actualQuantity,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  $$InventorySessionsTableAnnotationComposer get sessionId {
+    final $$InventorySessionsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.sessionId,
+          referencedTable: $db.inventorySessions,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$InventorySessionsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.inventorySessions,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+}
+
+class $$InventoryChecksTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $InventoryChecksTable,
+          InventoryCheckData,
+          $$InventoryChecksTableFilterComposer,
+          $$InventoryChecksTableOrderingComposer,
+          $$InventoryChecksTableAnnotationComposer,
+          $$InventoryChecksTableCreateCompanionBuilder,
+          $$InventoryChecksTableUpdateCompanionBuilder,
+          (InventoryCheckData, $$InventoryChecksTableReferences),
+          InventoryCheckData,
+          PrefetchHooks Function({bool sessionId})
+        > {
+  $$InventoryChecksTableTableManager(
+    _$AppDatabase db,
+    $InventoryChecksTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () =>
+                  $$InventoryChecksTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () => $$InventoryChecksTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer:
+              () => $$InventoryChecksTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> sessionId = const Value.absent(),
+                Value<int?> equipmentId = const Value.absent(),
+                Value<int?> compartmentId = const Value.absent(),
+                Value<String> equipmentName = const Value.absent(),
+                Value<String> compartmentLabel = const Value.absent(),
+                Value<int> targetQuantity = const Value.absent(),
+                Value<int?> actualQuantity = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String> note = const Value.absent(),
+              }) => InventoryChecksCompanion(
+                id: id,
+                sessionId: sessionId,
+                equipmentId: equipmentId,
+                compartmentId: compartmentId,
+                equipmentName: equipmentName,
+                compartmentLabel: compartmentLabel,
+                targetQuantity: targetQuantity,
+                actualQuantity: actualQuantity,
+                status: status,
+                note: note,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int sessionId,
+                Value<int?> equipmentId = const Value.absent(),
+                Value<int?> compartmentId = const Value.absent(),
+                required String equipmentName,
+                required String compartmentLabel,
+                Value<int> targetQuantity = const Value.absent(),
+                Value<int?> actualQuantity = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String> note = const Value.absent(),
+              }) => InventoryChecksCompanion.insert(
+                id: id,
+                sessionId: sessionId,
+                equipmentId: equipmentId,
+                compartmentId: compartmentId,
+                equipmentName: equipmentName,
+                compartmentLabel: compartmentLabel,
+                targetQuantity: targetQuantity,
+                actualQuantity: actualQuantity,
+                status: status,
+                note: note,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          $$InventoryChecksTableReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: ({sessionId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                T extends TableManagerState<
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic
+                >
+              >(state) {
+                if (sessionId) {
+                  state =
+                      state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.sessionId,
+                            referencedTable: $$InventoryChecksTableReferences
+                                ._sessionIdTable(db),
+                            referencedColumn:
+                                $$InventoryChecksTableReferences
+                                    ._sessionIdTable(db)
+                                    .id,
+                          )
+                          as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$InventoryChecksTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $InventoryChecksTable,
+      InventoryCheckData,
+      $$InventoryChecksTableFilterComposer,
+      $$InventoryChecksTableOrderingComposer,
+      $$InventoryChecksTableAnnotationComposer,
+      $$InventoryChecksTableCreateCompanionBuilder,
+      $$InventoryChecksTableUpdateCompanionBuilder,
+      (InventoryCheckData, $$InventoryChecksTableReferences),
+      InventoryCheckData,
+      PrefetchHooks Function({bool sessionId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -10354,4 +12366,8 @@ class $AppDatabaseManager {
       $$SyncMetaTableTableManager(_db, _db.syncMeta);
   $$LearningProgressTableTableManager get learningProgress =>
       $$LearningProgressTableTableManager(_db, _db.learningProgress);
+  $$InventorySessionsTableTableManager get inventorySessions =>
+      $$InventorySessionsTableTableManager(_db, _db.inventorySessions);
+  $$InventoryChecksTableTableManager get inventoryChecks =>
+      $$InventoryChecksTableTableManager(_db, _db.inventoryChecks);
 }

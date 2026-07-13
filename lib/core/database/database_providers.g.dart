@@ -336,3 +336,44 @@ final class LearningDaoProvider
 }
 
 String _$learningDaoHash() => r'0a651aa8c545253b9b444cf9b7b93307c56a25a5';
+
+@ProviderFor(inventoryDao)
+final inventoryDaoProvider = InventoryDaoProvider._();
+
+final class InventoryDaoProvider
+    extends $FunctionalProvider<InventoryDao, InventoryDao, InventoryDao>
+    with $Provider<InventoryDao> {
+  InventoryDaoProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'inventoryDaoProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$inventoryDaoHash();
+
+  @$internal
+  @override
+  $ProviderElement<InventoryDao> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  InventoryDao create(Ref ref) {
+    return inventoryDao(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(InventoryDao value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<InventoryDao>(value),
+    );
+  }
+}
+
+String _$inventoryDaoHash() => r'98ee2cbf4a481fd215e51594f01d52ec90669450';

@@ -38,3 +38,7 @@ InspectionDao inspectionDao(Ref ref) =>
 @Riverpod(keepAlive: true)
 LearningDao learningDao(Ref ref) =>
     ref.watch(appDatabaseProvider).learningDao;
+
+@Riverpod(keepAlive: true)
+InventoryDao inventoryDao(Ref ref) =>
+    ref.watch(appDatabaseProvider).inventoryDao;

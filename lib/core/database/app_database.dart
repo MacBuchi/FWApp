@@ -152,6 +152,40 @@ class SyncMeta extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+/// One inventory run (Inventur) for a vehicle.
+@DataClassName('InventorySessionData')
+class InventorySessions extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get vehicleId =>
+      integer().references(Vehicles, #id, onDelete: KeyAction.cascade)();
+  DateTimeColumn get startedAt =>
+      dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get finishedAt => dateTime().nullable()();
+  TextColumn get doneBy => text().withDefault(const Constant(''))();
+}
+
+/// One checked item within an inventory session. Soll (label/quantity) is
+/// snapshotted so the record survives a later Beladelisten-Re-Import.
+@DataClassName('InventoryCheckData')
+class InventoryChecks extends Table {
+  static const statusOpen = 'open';
+  static const statusOk = 'ok';
+  static const statusMissing = 'missing';
+  static const statusDamaged = 'damaged';
+
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get sessionId =>
+      integer().references(InventorySessions, #id, onDelete: KeyAction.cascade)();
+  IntColumn get equipmentId => integer().nullable()();
+  IntColumn get compartmentId => integer().nullable()();
+  TextColumn get equipmentName => text()();
+  TextColumn get compartmentLabel => text()();
+  IntColumn get targetQuantity => integer().withDefault(const Constant(1))();
+  IntColumn get actualQuantity => integer().nullable()();
+  TextColumn get status => text().withDefault(const Constant('open'))();
+  TextColumn get note => text().withDefault(const Constant(''))();
+}
+
 /// Per-equipment learning progress (Sprachlernapp-Prinzip). Local-only —
 /// deliberately NOT part of the synced dataset: it is personal to the device.
 @DataClassName('LearningProgressData')
@@ -484,6 +518,50 @@ class QuizDao extends DatabaseAccessor<AppDatabase> with _$QuizDaoMixin {
       into(quizResults).insert(r);
 }
 
+@DriftAccessor(tables: [InventorySessions, InventoryChecks])
+class InventoryDao extends DatabaseAccessor<AppDatabase>
+    with _$InventoryDaoMixin {
+  InventoryDao(super.db);
+
+  Future<int> createSession(InventorySessionsCompanion s) =>
+      into(inventorySessions).insert(s);
+
+  Future<InventorySessionData?> getSession(int id) =>
+      (select(inventorySessions)..where((t) => t.id.equals(id)))
+          .getSingleOrNull();
+
+  /// Most recent unfinished session for a vehicle, if any.
+  Future<InventorySessionData?> getOpenSession(int vehicleId) =>
+      (select(inventorySessions)
+            ..where((t) =>
+                t.vehicleId.equals(vehicleId) & t.finishedAt.isNull())
+            ..orderBy([(t) => OrderingTerm.desc(t.startedAt)])
+            ..limit(1))
+          .getSingleOrNull();
+
+  Future<void> insertChecks(List<InventoryChecksCompanion> checks) =>
+      batch((b) => b.insertAll(inventoryChecks, checks));
+
+  Stream<List<InventoryCheckData>> watchChecks(int sessionId) =>
+      (select(inventoryChecks)..where((t) => t.sessionId.equals(sessionId)))
+          .watch();
+
+  Future<List<InventoryCheckData>> getChecks(int sessionId) =>
+      (select(inventoryChecks)..where((t) => t.sessionId.equals(sessionId)))
+          .get();
+
+  Future<void> updateCheck(int id, InventoryChecksCompanion c) =>
+      (update(inventoryChecks)..where((t) => t.id.equals(id))).write(c);
+
+  Future<void> finishSession(int id, {String doneBy = ''}) =>
+      (update(inventorySessions)..where((t) => t.id.equals(id))).write(
+          InventorySessionsCompanion(
+              finishedAt: Value(DateTime.now()), doneBy: Value(doneBy)));
+
+  Future<void> deleteSession(int id) =>
+      (delete(inventorySessions)..where((t) => t.id.equals(id))).go();
+}
+
 @DriftAccessor(tables: [LearningProgress])
 class LearningDao extends DatabaseAccessor<AppDatabase>
     with _$LearningDaoMixin {
@@ -538,6 +616,8 @@ class LearningDao extends DatabaseAccessor<AppDatabase>
     UserAliases,
     SyncMeta,
     LearningProgress,
+    InventorySessions,
+    InventoryChecks,
   ],
   daos: [
     VehicleDao,
@@ -547,13 +627,14 @@ class LearningDao extends DatabaseAccessor<AppDatabase>
     QuizDao,
     InspectionDao,
     LearningDao,
+    InventoryDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -572,6 +653,10 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 3) {
             await m.createTable(learningProgress);
+          }
+          if (from < 4) {
+            await m.createTable(inventorySessions);
+            await m.createTable(inventoryChecks);
           }
         },
         beforeOpen: (details) async {

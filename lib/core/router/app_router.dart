@@ -23,6 +23,8 @@ import 'package:fwapp/features/inspection/presentation/screens/inspection_dashbo
 import 'package:fwapp/features/operation/presentation/screens/operation_setup_screen.dart';
 import 'package:fwapp/features/operation/presentation/screens/operation_run_screen.dart';
 import 'package:fwapp/features/operation/presentation/screens/operation_summary_screen.dart';
+import 'package:fwapp/features/inventory/presentation/screens/inventory_screen.dart';
+import 'package:fwapp/features/inventory/presentation/screens/inventory_report_screen.dart';
 import 'package:fwapp/features/settings/presentation/screens/settings_screen.dart';
 
 final appRouter = GoRouter(
@@ -134,6 +136,22 @@ final appRouter = GoRouter(
             GoRoute(
               path: 'summary',
               builder: (_, __) => const OperationSummaryScreen(),
+            ),
+          ],
+        ),
+        GoRoute(
+          path: '/inventory',
+          builder: (_, __) => const InventorySetupScreen(),
+          routes: [
+            GoRoute(
+              path: 'run/:id',
+              builder: (_, state) => InventoryRunScreen(
+                  sessionId: int.parse(state.pathParameters['id']!)),
+            ),
+            GoRoute(
+              path: 'report/:id',
+              builder: (_, state) => InventoryReportScreen(
+                  sessionId: int.parse(state.pathParameters['id']!)),
             ),
           ],
         ),

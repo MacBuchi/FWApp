@@ -61,6 +61,14 @@ class MoreScreen extends ConsumerWidget {
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => context.push('/import'),
                   ),
+                  const Divider(indent: 16, endIndent: 16),
+                  ListTile(
+                    leading: const Icon(Icons.playlist_add_check),
+                    title: const Text('Inventur'),
+                    subtitle: const Text('Fahrzeug fach für fach prüfen'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.push('/inventory'),
+                  ),
                   if (dirty) ...[
                     const Divider(indent: 16, endIndent: 16),
                     ListTile(

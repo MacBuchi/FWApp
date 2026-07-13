@@ -35,7 +35,18 @@ jobs:
       - name: Analyze
         run: flutter analyze
 
-      # The Supabase sync E2E test skips itself when no local stack is running.
+      # Local Supabase stack so the sync E2E test runs (it self-skips
+      # without one, which would drop coverage below the gate).
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start local Supabase stack
+        run: supabase start
+
+      - name: Create sync test users
+        run: bash tool/setup_local_supabase.sh
+
       - name: Test (with coverage)
         run: flutter test --coverage
 

@@ -1,0 +1,109 @@
+Gegenstand;Stückzahl;Lagerort
+B-Druckschlauch 20 m;6;G1 – Löschangriff
+C-Druckschlauch 15 m;10;G1 – Löschangriff
+Verteiler B-CBC;2;G1 – Löschangriff
+C-Mehrzweckstrahlrohr CM;2;G1 – Löschangriff
+B-Mehrzweckstrahlrohr BM;1;G1 – Löschangriff
+Hohlstrahlrohr C;3;G1 – Löschangriff
+Stützkrümmer B;1;G1 – Löschangriff
+Sammelstück A-2B;1;G1 – Löschangriff
+Übergangsstück A-B;1;G1 – Löschangriff
+Übergangsstück B-C;2;G1 – Löschangriff
+Kupplungsschlüssel ABC;2;G1 – Löschangriff
+Schlauchhalter;6;G1 – Löschangriff
+Standrohr 2B DIN 14375;1;G1 – Löschangriff
+Unterflurhydrantenschlüssel;1;G1 – Löschangriff
+Oberflurhydrantenschlüssel;1;G1 – Löschangriff
+Zumischer Z2;1;G2 – Schaum & Kleinlöschgeräte
+Schwerschaumrohr S2;1;G2 – Schaum & Kleinlöschgeräte
+Mittelschaumrohr M2;1;G2 – Schaum & Kleinlöschgeräte
+Schaummittelkanister 20 l;4;G2 – Schaum & Kleinlöschgeräte
+Kübelspritze;1;G2 – Schaum & Kleinlöschgeräte
+Pulverlöscher PG 6;2;G2 – Schaum & Kleinlöschgeräte
+CO2-Löscher K 5;1;G2 – Schaum & Kleinlöschgeräte
+Löschdecke;1;G2 – Schaum & Kleinlöschgeräte
+Druckbegrenzungsventil B;1;G2 – Schaum & Kleinlöschgeräte
+Hydraulischer Spreizer;1;G3 – Technische Hilfe
+Hydraulisches Schneidgerät;1;G3 – Technische Hilfe
+Rettungszylinder;1;G3 – Technische Hilfe
+Hydraulikaggregat;1;G3 – Technische Hilfe
+Hebekissen-Satz 8 bar;1;G3 – Technische Hilfe
+Unterbau-/Rüstholz-Satz;1;G3 – Technische Hilfe
+Glasmanagement-Set;1;G3 – Technische Hilfe
+Airbag-Sicherungssystem;1;G3 – Technische Hilfe
+Wagenheber hydraulisch;1;G3 – Technische Hilfe
+Abschleppseil/Bergeseil;1;G3 – Technische Hilfe
+Anschlagmittel-Satz (Rundschlingen/Schäkel);1;G3 – Technische Hilfe
+Mehrzweckzug Z 16;1;G3 – Technische Hilfe
+Stromerzeuger 5 kVA;1;G4 – Strom & Licht
+Flutlichtstrahler 1000 W;2;G4 – Strom & Licht
+Beleuchtungsstativ;1;G4 – Strom & Licht
+Kabeltrommel 50 m 230 V;2;G4 – Strom & Licht
+Stromverteiler 3-fach;1;G4 – Strom & Licht
+Handscheinwerfer Ex;2;G4 – Strom & Licht
+Beleuchtungsballon;1;G4 – Strom & Licht
+Elektro-Säbelsäge;1;G4 – Strom & Licht
+Trennschleifer;1;G4 – Strom & Licht
+Bolzenschneider 900 mm;1;G4 – Strom & Licht
+Spannungsprüfer bis 1000 V;1;G4 – Strom & Licht
+Atemluftflasche 6,8 l / 300 bar;4;G5 – Atemschutz & Rettung
+Fluchthaube;2;G5 – Atemschutz & Rettung
+Atemschutzüberwachungstafel;1;G5 – Atemschutz & Rettung
+Wärmebildkamera;1;G5 – Atemschutz & Rettung
+Gasmessgerät (Mehrgas);1;G5 – Atemschutz & Rettung
+CO-Warngerät;1;G5 – Atemschutz & Rettung
+Krankentrage DIN 13024;1;G5 – Atemschutz & Rettung
+Spineboard;1;G5 – Atemschutz & Rettung
+Verbandkasten DIN 14142;2;G5 – Atemschutz & Rettung
+Rettungsdecke;4;G5 – Atemschutz & Rettung
+Automatisierter Externer Defibrillator (AED);1;G5 – Atemschutz & Rettung
+Kleiderschere;1;G5 – Atemschutz & Rettung
+Werkzeugkasten DIN 14881;1;G6 – Werkzeug & Sonstiges
+Halligan-Tool;1;G6 – Werkzeug & Sonstiges
+Brechstange 700 mm;1;G6 – Werkzeug & Sonstiges
+Türöffnungs-Werkzeugsatz;1;G6 – Werkzeug & Sonstiges
+Feuerwehraxt;1;G6 – Werkzeug & Sonstiges
+Vorschlaghammer 5 kg;1;G6 – Werkzeug & Sonstiges
+Spaten;1;G6 – Werkzeug & Sonstiges
+Schaufel;1;G6 – Werkzeug & Sonstiges
+Straßenbesen;1;G6 – Werkzeug & Sonstiges
+Einreißhaken;1;G6 – Werkzeug & Sonstiges
+Motorkettensäge;1;G6 – Werkzeug & Sonstiges
+Schnittschutzausrüstung;1;G6 – Werkzeug & Sonstiges
+Ölbindemittel-Sack 20 kg;2;G6 – Werkzeug & Sonstiges
+Faltbarer Auffangbehälter;1;G6 – Werkzeug & Sonstiges
+Kraftstoffkanister 20 l;1;G6 – Werkzeug & Sonstiges
+Tragkraftspritze PFPN 10-1000;1;GR – Pumpe & Wasser (Heck)
+Tauchpumpe TP 4/1;1;GR – Pumpe & Wasser (Heck)
+Tauchpumpe TP 8/1;1;GR – Pumpe & Wasser (Heck)
+Wassersauger;1;GR – Pumpe & Wasser (Heck)
+Faltbehälter 5000 l;1;GR – Pumpe & Wasser (Heck)
+A-Saugschlauch 1,6 m;4;GR – Pumpe & Wasser (Heck)
+Hochdrucklüfter (Drucklüfter);1;GR – Pumpe & Wasser (Heck)
+D-Druckschlauch 15 m;2;GR – Pumpe & Wasser (Heck)
+Feuerpatsche;2;GR – Pumpe & Wasser (Heck)
+Übergangsstück C-D;1;GR – Pumpe & Wasser (Heck)
+Steckleiter (4 Teile);1;Dach
+Dreiteilige Schiebleiter;1;Dach
+Klappleiter;1;Dach
+Schlauchbrücken (Paar);1;Dach
+Sprungrettungsgerät SP 16;1;Dach
+Pressluftatmer PA;4;Mannschaftsraum
+Atemschutz-Vollmaske;4;Mannschaftsraum
+Handfunkgerät Digital (HRT);4;Mannschaftsraum
+Knickkopfleuchte (Helmlampe);4;Mannschaftsraum
+Feuerwehrleine 30 m;4;Mannschaftsraum
+Feuerwehr-Haltegurt;4;Mannschaftsraum
+Warnweste;6;Mannschaftsraum
+Verkehrssicherungssatz (Dreieck, Leuchten);1;Mannschaftsraum
+Verkehrsleitkegel 500 mm;5;Mannschaftsraum
+Warnblitzleuchte;3;Mannschaftsraum
+Absperrband 500 m;1;Mannschaftsraum
+Winkerkelle;2;Mannschaftsraum
+Faltsignal 'Unfall';1;Mannschaftsraum
+Megaphon;1;Mannschaftsraum
+Einmalhandschuhe (Infektionsschutz);1;Mannschaftsraum
+Gerätesatz Absturzsicherung;1;Mannschaftsraum
+KED-System;1;Mannschaftsraum
+Schleifkorbtrage;1;Mannschaftsraum
+Wathose;2;Mannschaftsraum

@@ -90,9 +90,7 @@ flutter:
     - assets/equipment_library/metadata.json
     - assets/equipment_library/aliases.json
     - assets/equipment_library/catalog/standard_catalog.json
-    - assets/equipment_library/vehicles/ab_g/vehicle.json
-    - assets/equipment_library/vehicles/ab_g/loading_plan.json
-    - assets/equipment_library/vehicles/ab_g/equipment/
+    - assets/equipment_library/vehicles/hlf20_demo/vehicle.json
+    - assets/equipment_library/vehicles/hlf20_demo/loading_plan.json
     - assets/images/placeholder_equipment.png
-    - assets/images/equipment/
 

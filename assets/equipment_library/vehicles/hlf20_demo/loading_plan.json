@@ -1,0 +1,491 @@
+{
+  "vehicle_id": "hlf20_demo",
+  "compartments": [
+    {
+      "label": "G1 – Löschangriff",
+      "position": 0,
+      "items": [
+        {
+          "equipment_id": "std_b_druckschlauch_20m",
+          "quantity": 6
+        },
+        {
+          "equipment_id": "std_c_druckschlauch_15m",
+          "quantity": 10
+        },
+        {
+          "equipment_id": "std_verteiler_bv",
+          "quantity": 2
+        },
+        {
+          "equipment_id": "std_cm_strahlrohr",
+          "quantity": 2
+        },
+        {
+          "equipment_id": "std_bm_strahlrohr",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_hohlstrahlrohr",
+          "quantity": 3
+        },
+        {
+          "equipment_id": "std_stuetzkruemmer",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_sammelstueck",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_uebergangsstueck_ba",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_uebergangsstueck_cb",
+          "quantity": 2
+        },
+        {
+          "equipment_id": "std_kupplungsschluessel",
+          "quantity": 2
+        },
+        {
+          "equipment_id": "std_schlauchhalter",
+          "quantity": 6
+        },
+        {
+          "equipment_id": "std_standrohr",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_unterflurhydrantenschluessel",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_oberflurhydrantenschluessel",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "label": "G2 – Schaum & Kleinlöschgeräte",
+      "position": 1,
+      "items": [
+        {
+          "equipment_id": "std_zumischer_z2",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_schwerschaumrohr_s2",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_mittelschaumrohr_m2",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_schaummittel_kanister",
+          "quantity": 4
+        },
+        {
+          "equipment_id": "std_kuebelspritze",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_feuerloescher_pg6",
+          "quantity": 2
+        },
+        {
+          "equipment_id": "std_feuerloescher_co2",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_loeschdecke",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_druckbegrenzungsventil",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "label": "G3 – Technische Hilfe",
+      "position": 2,
+      "items": [
+        {
+          "equipment_id": "std_spreizer",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_schneidgeraet",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_rettungszylinder",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_hydraulikaggregat",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_hebekissen",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_unterbaumaterial",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_glasmanagement",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_airbag_sicherung",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_wagenheber",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_abschleppseil",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_anschlagmittel",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_mehrzweckzug",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "label": "G4 – Strom & Licht",
+      "position": 3,
+      "items": [
+        {
+          "equipment_id": "std_stromerzeuger_5kva",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_flutlichtstrahler",
+          "quantity": 2
+        },
+        {
+          "equipment_id": "std_stativ",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_kabeltrommel_50m",
+          "quantity": 2
+        },
+        {
+          "equipment_id": "std_abzweigstueck_strom",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_handscheinwerfer",
+          "quantity": 2
+        },
+        {
+          "equipment_id": "std_powermoon",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_saebelsaege",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_trennschleifer",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_bolzenschneider",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_spannungspruefer",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "label": "G5 – Atemschutz & Rettung",
+      "position": 4,
+      "items": [
+        {
+          "equipment_id": "std_ersatzflasche_300bar",
+          "quantity": 4
+        },
+        {
+          "equipment_id": "std_fluchthaube",
+          "quantity": 2
+        },
+        {
+          "equipment_id": "std_atemschutzueberwachung",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_waermebildkamera",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_gaswarngeraet",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_co_warner",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_krankentrage",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_spineboard",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_verbandkasten",
+          "quantity": 2
+        },
+        {
+          "equipment_id": "std_rettungsdecke",
+          "quantity": 4
+        },
+        {
+          "equipment_id": "std_aed",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_kleiderschere",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "label": "G6 – Werkzeug & Sonstiges",
+      "position": 5,
+      "items": [
+        {
+          "equipment_id": "std_werkzeugkasten",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_halligan",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_brechstange",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_tueroeffnungssatz",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_feuerwehraxt",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_vorschlaghammer",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_spaten",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_schaufel",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_besen",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_einreisshaken",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_motorkettensaege",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_schnittschutz",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_oelbindemittel",
+          "quantity": 2
+        },
+        {
+          "equipment_id": "std_auffangbehaelter",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_kanister_kraftstoff",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "label": "GR – Pumpe & Wasser (Heck)",
+      "position": 6,
+      "items": [
+        {
+          "equipment_id": "std_tragkraftspritze",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_tauchpumpe_tp4",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_tauchpumpe_tp8",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_wassersauger",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_faltbehaelter_5000",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_a_saugschlauch_1_6m",
+          "quantity": 4
+        },
+        {
+          "equipment_id": "std_druckbeluefter",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_d_druckschlauch_15m",
+          "quantity": 2
+        },
+        {
+          "equipment_id": "std_feuerpatsche",
+          "quantity": 2
+        },
+        {
+          "equipment_id": "std_uebergangsstueck_dc",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "label": "Dach",
+      "position": 7,
+      "items": [
+        {
+          "equipment_id": "std_steckleiter",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_schiebleiter",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_klappleiter",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_schlauchbruecken",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_sprungretter",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "label": "Mannschaftsraum",
+      "position": 8,
+      "items": [
+        {
+          "equipment_id": "std_pressluftatmer",
+          "quantity": 4
+        },
+        {
+          "equipment_id": "std_atemschutzmaske",
+          "quantity": 4
+        },
+        {
+          "equipment_id": "std_hrt_funkgeraet",
+          "quantity": 4
+        },
+        {
+          "equipment_id": "std_knickkopflampe",
+          "quantity": 4
+        },
+        {
+          "equipment_id": "std_feuerwehrleine",
+          "quantity": 4
+        },
+        {
+          "equipment_id": "std_haltegurt",
+          "quantity": 4
+        },
+        {
+          "equipment_id": "std_warnweste",
+          "quantity": 6
+        },
+        {
+          "equipment_id": "std_unfalldreieck_satz",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_leitkegel",
+          "quantity": 5
+        },
+        {
+          "equipment_id": "std_warnleuchte",
+          "quantity": 3
+        },
+        {
+          "equipment_id": "std_absperrband",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_winkerkelle",
+          "quantity": 2
+        },
+        {
+          "equipment_id": "std_faltsignal",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_megaphon",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_infektionshandschuhe",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_absturzsicherung",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_ked_system",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_schleifkorbtrage",
+          "quantity": 1
+        },
+        {
+          "equipment_id": "std_wathose",
+          "quantity": 2
+        }
+      ]
+    }
+  ]
+}

@@ -1,195 +1,234 @@
 {
   "aliases": {
-    "dn32_saug_druckschlauchleitung_5m": [
-      "DN32-Saug/Druckschlauchleitung 5m",
-      "Saug-Druckschlauchleitung DN32 5m",
-      "S-Druckschlauchleitung DN32 5m",
-      "Saug/Druckschlauchleitung DN32",
-      "DN32 Saug-Druckschlauch 5m"
-    ],
-    "hydraulischer_spreizer": [
-      "Hydr. Spreizer",
-      "Spreizer",
-      "Rettungsspreizer",
-      "Hydraulic Spreader",
-      "Hydraulischer Spreizer"
-    ],
-    "hydraulische_rettungsschere": [
-      "Rettungsschere",
-      "Schere",
-      "Hydraulische Schere",
-      "Hydraulic Cutter"
-    ],
-    "tragkraftspritze": [
+    "std_tragkraftspritze": [
       "TS 8/8",
       "TS",
-      "Tragkraftspritze",
-      "Pumpe"
+      "Tragkraftspritze TS 8/8",
+      "PFPN 10-1000",
+      "Tragkraftspritze"
     ],
-    "feuerloescher_abc": [
-      "Feuerlöscher",
-      "ABC Löscher",
-      "Handfeuerlöscher",
-      "ABC-Pulverlöscher"
+    "std_spreizer": [
+      "Hydr. Spreizer",
+      "Rettungsspreizer",
+      "Spreizer",
+      "Hydraulischer Rettungsspreizer"
     ],
-    "atemschutzgeraet": [
+    "std_schneidgeraet": [
+      "Rettungsschere",
+      "Hydraulische Schere",
+      "Schere hydraulisch",
+      "Schneidgerät"
+    ],
+    "std_hydraulikaggregat": [
+      "Hydraulikpumpe",
+      "Aggregat hydraulisch",
+      "Motorpumpenaggregat"
+    ],
+    "std_verteiler_bv": [
+      "Verteiler B/CBC",
+      "B-Verteiler",
+      "Verteiler mit Niederschraubventilen"
+    ],
+    "std_hohlstrahlrohr": [
+      "HSR",
+      "Hohlstrahlrohr HSR C",
+      "C-Hohlstrahlrohr"
+    ],
+    "std_cm_strahlrohr": [
+      "C-Strahlrohr",
+      "CM Strahlrohr",
+      "Mehrzweckstrahlrohr C"
+    ],
+    "std_bm_strahlrohr": [
+      "B-Strahlrohr",
+      "BM Strahlrohr",
+      "Mehrzweckstrahlrohr B"
+    ],
+    "std_b_druckschlauch_20m": [
+      "B-Schlauch",
+      "B 20",
+      "B-Druckschlauch",
+      "Druckschlauch B 20 m"
+    ],
+    "std_c_druckschlauch_15m": [
+      "C-Schlauch",
+      "C 15",
+      "C-Druckschlauch",
+      "Druckschlauch C 15 m"
+    ],
+    "std_d_druckschlauch_15m": [
+      "D-Schlauch",
+      "Druckschlauch D"
+    ],
+    "std_a_saugschlauch_1_6m": [
+      "Saugschlauch",
+      "A-Saugschlauch",
+      "Saugschlauch A 1,6 m"
+    ],
+    "std_pressluftatmer": [
       "PA",
       "Atemschutzgerät",
-      "Pressluftatmer",
-      "Atemluftgerät"
+      "Pressluftatmer PSS",
+      "Atemschutzgeraet"
     ],
-    "schlauch_b75": [
-      "B-Schlauch",
-      "B 75",
-      "Druckschlauch B"
+    "std_atemschutzmaske": [
+      "Vollmaske",
+      "Atemschutzmaske",
+      "Maske Atemschutz"
     ],
-    "schlauch_c42": [
-      "C-Schlauch",
-      "C 42",
-      "Druckschlauch C"
+    "std_ersatzflasche_300bar": [
+      "Atemluftflasche",
+      "Ersatzflasche 300 bar",
+      "Pressluftflasche 6,8 l"
     ],
-    "ueberdruckluefter": [
+    "std_waermebildkamera": [
+      "WBK",
+      "Wärmebildkamera",
+      "Waermebildkamera"
+    ],
+    "std_stromerzeuger_5kva": [
+      "Notstromaggregat",
+      "Stromaggregat",
+      "Generator 5 kVA",
+      "Stromerzeuger 5kVA"
+    ],
+    "std_flutlichtstrahler": [
+      "Flutlicht",
+      "Halogenstrahler 1000 W",
+      "LED-Strahler",
+      "Scheinwerfer 1000 W"
+    ],
+    "std_kabeltrommel_50m": [
+      "Kabeltrommel",
+      "Leitungsroller 50 m",
+      "Kabeltrommel 50m"
+    ],
+    "std_steckleiter": [
+      "Steckleiter 4-teilig",
+      "4-teilige Steckleiter",
+      "Steckleiter"
+    ],
+    "std_schiebleiter": [
+      "Schiebleiter 3-teilig",
+      "3-teilige Schiebleiter",
+      "Schiebleiter"
+    ],
+    "std_feuerloescher_pg6": [
+      "Feuerlöscher PG6",
+      "Pulverlöscher 6 kg",
+      "Feuerlöscher Pulver",
+      "PG 6"
+    ],
+    "std_feuerloescher_co2": [
+      "CO2-Löscher",
+      "Kohlendioxidlöscher K5",
+      "CO2 Feuerlöscher"
+    ],
+    "std_kuebelspritze": [
+      "Kübelspritze 10 l",
+      "Kuebelspritze"
+    ],
+    "std_tauchpumpe_tp4": [
+      "TP 4/1",
+      "Tauchpumpe klein"
+    ],
+    "std_tauchpumpe_tp8": [
+      "TP 8/1",
+      "Tauchpumpe 800 l/min"
+    ],
+    "std_druckbeluefter": [
       "Überdrucklüfter",
       "Lüfter",
-      "Hochdrucklüfter",
-      "Belüftungsgerät"
+      "Belüftungsgerät",
+      "Hochleistungslüfter",
+      "Drucklüfter"
     ],
-    "kettensaege": [
-      "Kettensäge",
+    "std_hrt_funkgeraet": [
+      "HRT",
+      "Handfunkgerät",
+      "2m-Funkgerät",
+      "Digitalfunkgerät",
+      "Handsprechfunkgerät"
+    ],
+    "std_verbandkasten": [
+      "Erste-Hilfe-Kasten",
+      "Sanitätskasten",
+      "Verbandskasten",
+      "Notfallkoffer"
+    ],
+    "std_krankentrage": [
+      "Trage",
+      "Krankentrage klappbar"
+    ],
+    "std_mehrzweckzug": [
+      "Greifzug",
+      "MZ 16",
+      "Mehrzweckzug 1,6 t"
+    ],
+    "std_motorkettensaege": [
       "Motorsäge",
-      "Säge"
+      "Kettensäge",
+      "Motorkettensäge mit Zubehör"
     ],
-    "stromerzeuger": [
-      "Stromerzeuger",
-      "Generator",
-      "Notstromaggregat",
-      "Aggregat"
+    "std_halligan": [
+      "Halligan",
+      "Hooligan-Tool",
+      "Halligan Tool"
     ],
-    "saug_druckschlauch_dn32_2_1m_lang_eineseitig_vk50_kupplung": [
-      "Saug-Druckschlauch DN32 2,1m VK50",
-      "Saug/Druckschlauchleitung DN32 kurz",
-      "S-Druckschlauch DN32 2m VK50 Kupplung"
+    "std_hebekissen": [
+      "Lufthebekissen",
+      "Hebekissen Satz"
     ],
-    "saug_druckschlauch_saeurefest_dn_50_5m_lang": [
-      "Saug-Druckschlauch säurefest DN50",
-      "Säurefester Schlauch DN50 5m",
-      "Chemikalienschlauch DN50 5m"
+    "std_standrohr": [
+      "Standrohr 2B",
+      "Standrohr DIN"
     ],
-    "6x_stahl_cfk_druckiuftflasche_6_0_300bar_im_lager_und": [
-      "CFK Druckluftflasche 6L 300 bar",
-      "Atemluftflasche CFK 300bar",
-      "Pressluftflasche CFK 6L im Tragegestell"
+    "std_unterflurhydrantenschluessel": [
+      "Hydrantenschlüssel",
+      "Unterflurhydrantenschluessel"
     ],
-    "dichtkappe_mit_ablasshahn_fuer_chlorgasflaschen_mit_zubehoer": [
-      "Dichtkappe Chlorgasflasche",
-      "Ablasshahn Chlorgas",
-      "Chlorgasflaschendichtkappe mit Zubehör"
+    "std_leitkegel": [
+      "Pylone",
+      "Verkehrsleitkegel",
+      "Leitkegel 500",
+      "Lübecker Hütchen"
     ],
-    "dichtungskeil_schaumstoff_800x500x200mm": [
-      "Dichtungskeil Schaumstoff 800x500x200mm",
-      "Dichtungskeil Schaumstoff",
-      "Schaumstoff Dichtungskeil"
+    "std_warnleuchte": [
+      "Blitzleuchte",
+      "Warnblinkleuchte",
+      "Powerflare"
     ],
-    "dichtungsplatte_schaumstoff_900x900x20_mm": [
-      "Dichtungsplatte Schaumstoff 900x900x20mm",
-      "Dichtungsplatte Schaumstoff",
-      "Schaumstoff-Dichtungsplatte"
+    "std_faltbehaelter_5000": [
+      "Faltbecken",
+      "Faltbehälter 5000",
+      "Wasserbehälter faltbar"
     ],
-    "druckluftmembranpumpe_zum_absaugen_von_kraftstoffen_aus_pkw_und": [
-      "Druckluftmembranpumpe explosionsgeschützt",
-      "Membranpumpe ATEX",
-      "ATEX Membranpumpe Kraftstoff",
-      "Druckluft-Membranpumpe"
+    "std_gaswarngeraet": [
+      "Mehrgasmessgerät",
+      "4-Gas-Messgerät",
+      "Gasmessgerät X-am"
     ],
-    "esd_rollplattform_antistatisch_410x610mm": [
-      "ESD-Rollplattform antistatisch 410x610mm",
-      "ESD Rollplattform",
-      "Antistatische Rollplattform"
+    "std_stativ": [
+      "Lichtstativ",
+      "Stativ für Strahler"
     ],
-    "fasskarre_1100x700x200mm": [
-      "Fasskarre 1100x700x200mm",
-      "Fasskarre",
-      "Lagerkarre für Fässer"
+    "std_werkzeugkasten": [
+      "Werkzeugkasten",
+      "Werkzeugkiste",
+      "Elektrowerkzeugkasten"
     ],
-    "feuerwehr_werkzeugkasten_nach_din_14881": [
-      "Feuerwehr Werkzeugkasten DIN 14881",
-      "Handwerkzeugkasten DIN 14881",
-      "FWKa DIN 14881",
-      "Werkzeugkasten Feuerwehr"
+    "std_feuerwehraxt": [
+      "Axt",
+      "FW-Axt"
     ],
-    "fuss_verzinkt_fuer_absperrstuetzen": [
-      "Fuß verzinkt Absperrstützen",
-      "Rundfuß Absperrstütze verzinkt",
-      "Stützfuß Absperrstütze"
+    "std_absturzsicherung": [
+      "Gerätesatz Absturzsicherung",
+      "Absturzsicherungssatz"
     ],
-    "gefahrstoff_umfuellpumpe_din_14427_kreiselpumpe": [
-      "Gefahrstoff Umfüllpumpe DIN 14427 Kreiselpumpe",
-      "Kreiselpumpe DIN 14427",
-      "Umfüllpumpe Gefahrstoff Kreiselpumpe"
-    ],
-    "iconos_duesenschlauch_inkl_zubehoer_im_tragekorb_870x145x520_mm": [
-      "ICONOS Düsenschlauch Tragekorb",
-      "Düsenschlauch ICONOS mit Zubehör",
-      "ICONOS Düsenschlauch im Tragekorb 870x145x520mm"
-    ],
-    "klappbarer_transportwagen_900x600mm_fabrikat_fetra": [
-      "Klappbarer Transportwagen Fetra 900x600mm",
-      "Fetra Transportwagen klappbar",
-      "Transportwagen Fetra 900x600"
-    ],
-    "luefter_leader_esx_230_atex_550_x_550_x_490_mm": [
-      "Lüfter Leader ESX 230 ATEX",
-      "Leader ESX 230 ATEX",
-      "ESX 230 ATEX Elektrolüfter",
-      "Hochleistungslüfter Leader ESX 230"
-    ],
-    "sackkarre_klappbar_ca_1100x460x300mm": [
-      "Sackkarre klappbar 1100x460x300mm",
-      "Sackkarre klappbar",
-      "Klappbare Sackkarre"
-    ],
-    "seitenplanen_fuer_pavillons": [
-      "Seitenplanen für Pavillons",
-      "Pavillon Seitenplane",
-      "Zeltplane Pavillon"
-    ],
-    "tafel_aus_weich_pvc_500x1000x5_mm": [
-      "Tafel Weich-PVC 500x1000x5mm",
-      "Weich-PVC Tafel",
-      "PVC Abdichtplatte 500x1000"
-    ],
-    "v4a_saugbehaelter_180ltr_870x570mm": [
-      "V4A Saugbehälter 180 Liter 870x570mm",
-      "Saugbehälter Edelstahl 180L",
-      "V4A Edelstahlbehälter 180ltr"
-    ],
-    "zeltleuchte_mit_2_nylongurten_fabrikat_aldebaran_profiline_54w": [
-      "Zeltleuchte Aldebaran Profiline 54W",
-      "Aldebaran Profiline 54W",
-      "SETOLITE Aldebaran Profiline",
-      "Zeltleuchte mit 2 Nylongurten Aldebaran"
-    ],
-    "atemschutzgeraet_mit_flasche_u_lungenautomat": [
-      "Atemschutzgerät mit Flasche und Lungenautomat",
-      "Pressluftatmer mit Flasche",
-      "PA mit Flasche und Lungenautomat"
-    ],
-    "chemikalienanzug_typ_1a_et_modell_onesuit_pro_in_tasche": [
-      "Chemikalienanzug Typ 1a-ET ONESuit Pro",
-      "ONESuit Pro Chemikalienschutzanzug",
-      "Schwerer Chemikalienschutzanzug Typ 1a-ET",
-      "Chemikalienschutzanzug Typ 1a EN 943"
-    ],
-    "digitalkamera": [
-      "Digitalkamera",
-      "Kamera Feuerwehr",
-      "Digital-Kamera Einsatz"
-    ],
-    "dosisleistungsmessgeraet_mit_einer_akustischen_und_optischen": [
-      "Dosisleistungsmessgerät akustisch/optisch",
-      "Dosisleistungsmessgerät",
-      "Strahlenmessgerät akustisch optisch",
-      "Geigerzähler Feuerwehr"
+    "std_sprungretter": [
+      "Sprungpolster",
+      "Sprungtuch",
+      "SP 16"
     ]
   }
 }

@@ -3,7 +3,8 @@
 Stand: 2026-07-16 · Status-Legende: ✅ fertig · 🔨 geplant
 
 **Fuhrpark der Wehr (Baden-Württemberg, Zielumfang):** HLF 20, LF 20, LF 8/6,
-DLK 23/13, AB-G (Demo-Datensatz vorhanden), AB-Mulde, GW-T, RW, ELW, MTW.
+DLK 23/13, AB-G, AB-Mulde, GW-T, RW, ELW, MTW. (Die App liefert ein fiktives
+Demo-HLF 20 mit; die echten Beladelisten kommen per Import-Wizard.)
 
 ## Wo wir stehen
 
@@ -123,7 +124,8 @@ Ziel: Die Wehr arbeitet mit der App.
    - Accounts: individuelle Admin-Accounts (Marcus + Stellvertreter), EIN geteilter
      Mitglieder-Account pro Abteilung (Zugangszettel im Gerätehaus). `profiles.role` per SQL setzen.
      (`admin@fw.local` / `member@fw.local` existieren als Startpunkt.)
-   - VM 104 in den nächtlichen vzdump-Job des Hosts aufnehmen; optional `--onboot 1`.
+   - vzdump: ✅ eigener wöchentlicher Host-Backup-Job für die Sync-VM (2026-07-16).
+     Optional bleibt `--onboot 1`.
 2. **Erst-Datenbestand:** echte Beladelisten aller Fahrzeuge per Import-Wizard einlesen,
    Raster der Fahrzeuge anordnen, Prüftermine der prüfpflichtigen Geräte erfassen, veröffentlichen.
 3. **App-Verteilung:**
@@ -152,8 +154,12 @@ Flugmodus-Nutzung, Admin ändert + veröffentlicht, Geräte aktualisieren. Backu
 
 1. Lizenz wählen (Empfehlung: MIT für maximale Nachnutzung durch andere Wehren; GPL-3.0, falls
    Verbesserungen verpflichtend offen bleiben sollen) → Entscheidung Marcus.
-2. Echte Wehr-Daten aus der Historie entfernen bzw. durch anonymisierte Beispiel-Beladeliste
-   ersetzen (Achtung: Git-Historie! → `git filter-repo` oder frisches Public-Repo mit sauberem Stand).
+2. **Echte Wehr-Daten: ✅ aus dem Arbeitsstand entfernt (2026-07-16, Entscheidung Marcus):**
+   AB-G-Datensatz, Original-Beladelisten (xlsx/csv) und heruntergeladene Fremdbilder ersetzt
+   durch fiktives Demo-HLF 20 (108 Positionen aus dem Normkatalog) + Beispiel-Beladelisten
+   in `examples/beladelisten/`. **Noch offen:** Die Originale liegen weiter in der
+   Git-Historie — falls auch das raus soll: `git filter-repo` + Force-Push (Entscheidung
+   Marcus, bricht bestehende Clones).
 3. **README + CONTRIBUTING: ✅ erledigt (2026-07-16):** Außen-README (Architekturüberblick,
    Setup inkl. lokaler Supabase-Stack, Release-Download) und CONTRIBUTING.md (Workflow,
    Codegen-Regel, Architektur-Leitplanken). Screenshots noch offen (brauchen echten Datenbestand).

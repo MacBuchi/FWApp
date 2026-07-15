@@ -9,14 +9,15 @@ import 'package:fwapp/core/database/library_seeder.dart';
 
 import '../../helpers/test_database.dart';
 
-// Expected values derived from assets/equipment_library/vehicles/ab_g/
+// Expected values derived from assets/equipment_library/vehicles/hlf20_demo/
+// (fiktive Demo-Beladung, referenziert ausschließlich Standard-Katalog-IDs).
 const _expectedVehicles = 1;
-const _expectedCompartments = 13;
-// 257 AB-G-Bibliothek + 110 Standard-Katalog (Grunddatenbank)
-const _expectedEquipmentItems = 367;
-// 272 slots in loading_plan.json minus 2 intra-compartment duplicates in TW-3
-// that the seeder correctly deduplicates → 270 actual assignment rows.
-const _expectedAssignments = 270;
+const _expectedCompartments = 9;
+// Nur der Standard-Katalog (Grunddatenbank) – der Demo-Beladeplan legt keine
+// eigenen Geräte an, sondern verweist auf Katalog-Einträge.
+const _expectedEquipmentItems = 110;
+// Positionen im loading_plan.json (keine Duplikate innerhalb eines Fachs).
+const _expectedAssignments = 108;
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

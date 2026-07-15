@@ -24,10 +24,12 @@ void main() {
 
   tearDown(() => db.close());
 
-  test('Katalog wird zusätzlich zur AB-G-Bibliothek geseedet (idempotent)',
+  test('Katalog wird geseedet, Demo-Fahrzeug referenziert ihn (idempotent)',
       () async {
     final count = await db.equipmentDao.count();
-    expect(count, greaterThanOrEqualTo(360)); // 257 AB-G + 110 Katalog
+    // Nur der 110er-Katalog – der Demo-Beladeplan legt keine eigenen
+    // Geräte an, sondern verweist auf Katalog-Einträge.
+    expect(count, 110);
 
     final kegel = await db.equipmentDao.getByLibraryId('std_leitkegel');
     expect(kegel, isNotNull);

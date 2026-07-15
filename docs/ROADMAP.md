@@ -139,10 +139,11 @@ Ziel: Die Wehr arbeitet mit der App.
    - **macOS (Admin-Gerät):** lokaler Build reicht für Marcus; für weitere Macs Developer-ID +
      Notarisierung (gleiche Apple-Mitgliedschaft).
    - **Web (Admin im Browser):** `build/web` auf Netlify/Vercel (kostenlos) oder nur lokal starten.
-4. **Betriebs-Doku (docs/):** Onboarding-Zettel (App laden, Account, verbinden), Admin-Handbuch
-   (Import, Veröffentlichen, Prüftermine, Restore), Troubleshooting.
-5. **Datenschutz:** personenbezogene Daten minimal (nur Admin-E-Mails + geteilter Account);
-   Prüfprotokoll-Feld „Erledigt von“ als Freitext im Verein abstimmen; kurzer Hinweistext in der App.
+4. **Betriebs-Doku: ✅ erledigt (2026-07-16, [BETRIEB.md](BETRIEB.md)):** Onboarding-Zettel-Vorlage,
+   Admin-Handbuch (Import, Prüftermine, Fotos, Inventur, Veröffentlichen), Troubleshooting-Tabelle.
+5. **Datenschutz: ✅ dokumentiert in [BETRIEB.md](BETRIEB.md)** (Datensparsamkeits-Konzept,
+   Freitextfelder, Betroffenenrechte). Noch offen: Freitext-Konvention („Erledigt von“) im Verein
+   abstimmen + kurzer Hinweistext in der App.
 
 **Verifikation:** „Tag-1-Probe“: zwei fremde Geräte (1× Android, 1× iOS) onboarden, Pull,
 Flugmodus-Nutzung, Admin ändert + veröffentlicht, Geräte aktualisieren. Backup einspielen geprobt.
@@ -153,9 +154,10 @@ Flugmodus-Nutzung, Admin ändert + veröffentlicht, Geräte aktualisieren. Backu
    Verbesserungen verpflichtend offen bleiben sollen) → Entscheidung Marcus.
 2. Echte Wehr-Daten aus der Historie entfernen bzw. durch anonymisierte Beispiel-Beladeliste
    ersetzen (Achtung: Git-Historie! → `git filter-repo` oder frisches Public-Repo mit sauberem Stand).
-3. README für Außenstehende: Screenshots, Architekturüberblick, Setup (lokaler Supabase-Stack),
-   CONTRIBUTING.md.
-4. Repo auf public; CI-Badge.
+3. **README + CONTRIBUTING: ✅ erledigt (2026-07-16):** Außen-README (Architekturüberblick,
+   Setup inkl. lokaler Supabase-Stack, Release-Download) und CONTRIBUTING.md (Workflow,
+   Codegen-Regel, Architektur-Leitplanken). Screenshots noch offen (brauchen echten Datenbestand).
+4. **Repo public + CI-Badge: ✅** (public seit 2026-07-15, Badges im README seit 2026-07-16).
 
 ---
 

@@ -50,3 +50,7 @@ config/fwapp.local.json
 
 # Private Setup-Notizen (Instanzdetails, niemals committen)
 docs/private/
+
+# Release-Signierung (lokal; CI schreibt sie aus Actions-Secrets)
+android/key.properties
+android/fwapp-release.jks

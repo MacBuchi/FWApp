@@ -1,0 +1,120 @@
+name: Release
+
+# Zwei Einstiege (Muster aus dem durecmix-Repo):
+#  - Push auf main: hat die Version aus pubspec.yaml noch kein v<version>-Tag,
+#    legt dieser Lauf das Tag an und publiziert das Release (jeder gemergte PR
+#    mit Version-Bump liefert automatisch aus; PRs ohne Bump — z. B. reine
+#    Doku — überspringen). Das Tag wird mit GITHUB_TOKEN gepusht und löst
+#    bewusst KEINEN zweiten Lauf aus — dieser Lauf baut die Artefakte selbst.
+#  - Manueller Tag-Push (v*): baut und publiziert für genau dieses Tag.
+#
+# Das APK wird mit dem FWApp-Release-Keystore signiert (Actions-Secrets;
+# Keystore-Ablage siehe docs/private/) und bekommt Server-URL + Anon-Key als
+# --dart-define eingebacken, damit nach der Installation nur noch der Login
+# fehlt. Der Anon-Key ist clientseitig-öffentlich, Datenzugriff schützt RLS.
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  version:
+    name: Determine release tag
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.check.outputs.tag }}
+      release: ${{ steps.check.outputs.release }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - id: check
+        name: Tag main when the pubspec version is unreleased
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            echo "tag=$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
+            echo "release=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          version=$(sed -n 's/^version: \([0-9][0-9.]*\).*/\1/p' pubspec.yaml)
+          if [[ -z "$version" ]]; then
+            echo "::error::no version found in pubspec.yaml"
+            exit 1
+          fi
+          if git rev-parse -q --verify "refs/tags/v$version" > /dev/null; then
+            echo "v$version already released — nothing to do"
+            echo "release=false" >> "$GITHUB_OUTPUT"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git tag "v$version"
+            git push origin "v$version"
+            echo "tag=v$version" >> "$GITHUB_OUTPUT"
+            echo "release=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  build-android:
+    name: Build Android APK (signed)
+    needs: version
+    if: needs.version.outputs.release == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.41.2
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Write signing config
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/fwapp-release.jks
+          cat > android/key.properties <<EOF
+          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
+          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          storeFile=fwapp-release.jks
+          EOF
+
+      # Ein einzelnes arm64-APK reicht: deckt praktisch jedes Android-Gerät
+      # ab ca. 2017 ab.
+      - name: Build signed release APK
+        run: |
+          flutter build apk --release --target-platform android-arm64 \
+            --dart-define=FWAPP_SUPABASE_URL='${{ secrets.FWAPP_SUPABASE_URL }}' \
+            --dart-define=FWAPP_SUPABASE_ANON_KEY='${{ secrets.FWAPP_SUPABASE_ANON_KEY }}'
+
+      - run: cp build/app/outputs/flutter-apk/app-release.apk fwapp-${{ needs.version.outputs.tag }}.apk
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: android-apk
+          path: fwapp-${{ needs.version.outputs.tag }}.apk
+
+  release:
+    name: Create GitHub Release
+    needs: [version, build-android]
+    if: needs.version.outputs.release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ needs.version.outputs.tag }}
+          generate_release_notes: true
+          files: fwapp-*.apk

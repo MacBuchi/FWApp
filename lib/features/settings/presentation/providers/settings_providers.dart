@@ -10,6 +10,16 @@ const _kSyncEnabled = 'sync_enabled';
 const _kSupabaseUrl = 'supabase_url';
 const _kSupabaseKey = 'supabase_key';
 
+/// Vorbelegung: self-hosted Supabase (VM fwapp-sync im Heimnetz, nur
+/// LAN/WireGuard erreichbar). In den Settings weiterhin änderbar.
+const kDefaultSupabaseUrl = 'http://192.168.178.201:8000';
+
+/// Anon-Key ist per Design clientseitig-öffentlich; Datenzugriff schützt RLS.
+const kDefaultSupabaseAnonKey =
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.'
+    'eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzgzOTgzMDM0LCJleHAiOjE5NDE2NjMwMzR9.'
+    'M9Q8PSKagvtVmX_AGdAdL02lZrR0wJrnLRN9PCYC1Ac';
+
 @Riverpod(keepAlive: true)
 Future<SharedPreferences> sharedPreferences(Ref ref) =>
     SharedPreferences.getInstance();
@@ -35,10 +45,12 @@ class SyncSettingsNotifier extends _$SyncSettingsNotifier {
   @override
   Future<SyncSettings> build() async {
     final prefs = await ref.watch(sharedPreferencesProvider.future);
+    final url = prefs.getString(_kSupabaseUrl);
+    final key = prefs.getString(_kSupabaseKey);
     return SyncSettings(
       enabled: prefs.getBool(_kSyncEnabled) ?? false,
-      supabaseUrl: prefs.getString(_kSupabaseUrl) ?? '',
-      supabaseKey: prefs.getString(_kSupabaseKey) ?? '',
+      supabaseUrl: (url == null || url.isEmpty) ? kDefaultSupabaseUrl : url,
+      supabaseKey: (key == null || key.isEmpty) ? kDefaultSupabaseAnonKey : key,
     );
   }
 

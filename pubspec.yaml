@@ -34,6 +34,9 @@ dependencies:
   file_picker: ^8.1.7
   image_picker: ^1.1.2
   cached_network_image: ^3.4.1
+  flutter_cache_manager: ^3.4.1
+  image: ^4.3.0
+  cross_file: ^0.3.4
 
   # Excel import
   excel: ^4.0.6
@@ -61,6 +64,25 @@ dev_dependencies:
   freezed: ^3.0.0
   json_serializable: ^6.8.0
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.3
+
+# App-Icon (Quelle: assets/branding/*.svg, gerendert mit rsvg-convert).
+# Neu ausrollen mit: dart run flutter_launcher_icons
+flutter_launcher_icons:
+  image_path: assets/branding/app_icon.png
+  android: true
+  adaptive_icon_background: "#B71C1C"
+  adaptive_icon_foreground: assets/branding/app_icon_foreground.png
+  ios: true
+  remove_alpha_ios: true
+  macos:
+    generate: true
+    image_path: assets/branding/app_icon_macos.png
+  web:
+    generate: true
+    image_path: assets/branding/app_icon.png
+    theme_color: "#B71C1C"
+    background_color: "#FFFFFF"
 
 flutter:
   uses-material-design: true

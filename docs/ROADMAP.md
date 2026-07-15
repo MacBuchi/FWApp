@@ -1,6 +1,6 @@
 # FWApp – Roadmap bis zur produktiven Anwendung
 
-Stand: 2026-07-13 · Status-Legende: ✅ fertig · 🔨 geplant
+Stand: 2026-07-15 · Status-Legende: ✅ fertig · 🔨 geplant
 
 **Fuhrpark der Wehr (Baden-Württemberg, Zielumfang):** HLF 20, LF 20, LF 8/6,
 DLK 23/13, AB-G (Demo-Datensatz vorhanden), AB-Mulde, GW-T, RW, ELW, MTW.
@@ -8,7 +8,7 @@ DLK 23/13, AB-G (Demo-Datensatz vorhanden), AB-Mulde, GW-T, RW, ELW, MTW.
 ## Wo wir stehen
 
 | Bereich | Status |
-|---|---|
+| --- | --- |
 | Datenmodell + Migrationen (Schema v2, Prüftermine, Instanzen) | ✅ |
 | Gerätewart-Assistent (Prüftermine, Ablaufdaten, Dashboard, Badges) | ✅ |
 | Zentrale Datenbank (Supabase, Single-Writer-Admin, RLS, Publish/Pull) | ✅ |
@@ -22,13 +22,15 @@ DLK 23/13, AB-G (Demo-Datensatz vorhanden), AB-Mulde, GW-T, RW, ELW, MTW.
 | Einsatzassistent (virtuelles Ausladen) | ✅ M4 |
 | UI-/Widget-Tests kritischer Flows + Coverage-Gate | ✅ M1 |
 | Lernzentriertes Redesign (Dashboard, Rollen, Piktogramme, Grundkatalog) | ✅ |
-| Zentrale Gerätefotos (Sync-fähig) | 🔨 M2 (braucht gehostetes Supabase) |
+| Zentrale Gerätefotos (Sync-fähig) | ✅ M2 (App-Code + Bucket-Migration; Feldtest offen) |
 | Produktiv-Betrieb (Cloud, Verteilung, Backups) | 🔨 M5 |
 | Open Source | 🔨 M6 |
 
-**Architektur-Lücke (bewusst adressiert in M2):** `EquipmentItems.imagePath` kann auf lokale
-Dateien des Admin-Geräts zeigen (Kamera/Galerie-Import). Diese Pfade sind nach dem Sync auf
-Mitglieder-Geräten tot. Nur gebündelte Asset-Pfade funktionieren überall.
+**Architektur-Lücke (geschlossen mit M2, 2026-07-15):** `EquipmentItems.imagePath` konnte auf
+lokale Dateien des Admin-Geräts zeigen — tot auf Mitglieder-Geräten. Jetzt lädt das Admin-Gerät
+Fotos komprimiert in den Storage-Bucket `equipment-images` (Marker `supabase://…` in
+`imagePath`), Anzeige über `cached_network_image`, Offline-Precache nach jedem Pull.
+Seit M2 gibt es außerdem ein eigenes App-Icon (Flamme auf Rot) statt des Flutter-Standards.
 
 ---
 
@@ -112,16 +114,15 @@ Ziel: Im Einsatz zählt Sekunden-Auffindbarkeit — Bilder statt Listen, Entnahm
 
 Ziel: Die Wehr arbeitet mit der App.
 
-1. **Cloud-Umgebung:**
-   - Supabase-Projekt (EU-Region Frankfurt) anlegen; `supabase link` + `supabase db push`
-     (Migrationen sind versioniert im Repo). Storage-Bucket aus M2.
-   - **Free-Tier-Fallstrick:** Projekte pausieren nach 1 Woche Inaktivität. Für den Verein-Betrieb
-     entweder Pro-Plan (~25 $/Monat) oder Free + wöchentlicher Keep-Alive (GitHub-Actions-Cron
-     pingt die REST-API) — Empfehlung: mit Free + Keep-Alive starten, App bleibt offline voll nutzbar.
+1. **Server-Umgebung: ✅ erledigt durch Self-Hosting (2026-07-14, siehe [SERVER-SETUP.md](SERVER-SETUP.md)).**
+   Supabase läuft self-hosted auf VM 104 im Heimnetz (nur LAN/WireGuard, keine Portfreigabe);
+   tägliche pg_dump-Backups mit geprobter Restore-Prozedur sind eingerichtet. Der ursprüngliche
+   Plan (supabase.com Frankfurt + Keep-Alive + GitHub-Actions-Backup) ist damit überholt.
+   Noch offen aus diesem Block:
    - Accounts: individuelle Admin-Accounts (Marcus + Stellvertreter), EIN geteilter
      Mitglieder-Account pro Abteilung (Zugangszettel im Gerätehaus). `profiles.role` per SQL setzen.
-   - **Backups:** täglicher `pg_dump` per GitHub-Actions-Cron in ein privates Repo/Artefakt
-     (Free-Tier hat keine PITR); Restore-Prozedur einmal durchgespielt und in docs/ dokumentiert.
+     (`admin@fw.local` / `member@fw.local` existieren als Startpunkt.)
+   - VM 104 in den nächtlichen vzdump-Job des Hosts aufnehmen; optional `--onboot 1`.
 2. **Erst-Datenbestand:** echte Beladelisten aller Fahrzeuge per Import-Wizard einlesen,
    Raster der Fahrzeuge anordnen, Prüftermine der prüfpflichtigen Geräte erfassen, veröffentlichen.
 3. **App-Verteilung:**
@@ -157,7 +158,7 @@ Flugmodus-Nutzung, Admin ändert + veröffentlicht, Geräte aktualisieren. Backu
 
 ## Reihenfolge & Abhängigkeiten
 
-```
+```text
 M1 Qualität ──► M2 Fotos ──► M3 Inventur ──► M4 Einsatz ──► M5 Rollout ──► M6 Open Source
    (Fundament)  (braucht      (nutzt Fotos)  (nutzt Fotos)   (braucht M2,     (nach Rollout-
                  Storage)                                     sinnvoll M3/M4)  Erfahrung)

@@ -2,6 +2,7 @@
 /// configured), seeds the library, pulls the central dataset, and launches
 /// the router.
 library;
+import 'dart:async' show unawaited;
 import 'dart:ui' show PlatformDispatcher;
 
 import 'package:flutter/material.dart';
@@ -11,7 +12,9 @@ import 'package:fwapp/core/database/database_providers.dart';
 import 'package:fwapp/core/database/library_seeder.dart';
 import 'package:fwapp/core/router/app_router.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
+import 'package:fwapp/core/sync/image_precache.dart';
 import 'package:fwapp/core/theme/app_theme.dart';
+import 'package:fwapp/core/utils/image_utils.dart';
 import 'package:fwapp/features/settings/presentation/providers/settings_providers.dart';
 import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -40,11 +43,27 @@ Future<void> main() async {
   try {
     final prefs = await SharedPreferences.getInstance();
     final enabled = prefs.getBool('sync_enabled') ?? false;
-    final url = prefs.getString('supabase_url') ?? '';
-    final key = prefs.getString('supabase_key') ?? '';
-    if (enabled && url.isNotEmpty && key.isNotEmpty) {
+    // Same default fallback as SyncSettingsNotifier: unset/empty prefs mean
+    // the preconfigured self-hosted server.
+    var url = prefs.getString('supabase_url') ?? '';
+    var key = prefs.getString('supabase_key') ?? '';
+    if (url.isEmpty) url = kDefaultSupabaseUrl;
+    if (key.isEmpty) key = kDefaultSupabaseAnonKey;
+    if (enabled) {
       await Supabase.initialize(url: url, anonKey: key);
       supabaseReady = true;
+      // Lets resolveImage() and the precache fetch from the private bucket.
+      supabaseStorageBaseUrl = url.endsWith('/')
+          ? url.substring(0, url.length - 1)
+          : url;
+      supabaseStorageHeaders = () {
+        final token =
+            Supabase.instance.client.auth.currentSession?.accessToken;
+        return {
+          'apikey': key,
+          if (token != null) 'Authorization': 'Bearer $token',
+        };
+      };
     }
   } catch (_) {
     // Offline or misconfigured – app stays fully usable in local mode.
@@ -81,6 +100,8 @@ class _FWAppState extends ConsumerState<FWApp> {
     if (sync != null && session != null) {
       try {
         await sync.pullIfNewer();
+        // Warm the offline image cache in the background (M2).
+        unawaited(ref.read(imagePrecacheProvider.notifier).run());
       } catch (_) {
         // Offline – last pulled snapshot stays in place.
       }

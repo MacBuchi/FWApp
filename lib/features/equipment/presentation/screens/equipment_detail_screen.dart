@@ -3,9 +3,11 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_enums.dart';
+import 'package:fwapp/features/equipment/domain/entities/equipment_item.dart';
 import 'package:fwapp/features/equipment/presentation/widgets/equipment_avatar.dart';
 import 'package:fwapp/features/equipment/presentation/providers/equipment_providers.dart';
 import 'package:fwapp/features/inspection/presentation/widgets/equipment_instances_section.dart';
@@ -50,6 +52,22 @@ class EquipmentDetailScreen extends ConsumerWidget {
                 size: 200,
                 width: double.infinity,
               ),
+
+              // Photo workflow (M2): admins capture/replace the photo right
+              // here — one tap per device on the Gerätehaus walk-through.
+              if (ref.watch(isAdminProvider)) ...[
+                const SizedBox(height: 8),
+                Center(
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.photo_camera),
+                    label: Text(item.imagePath == null ||
+                            item.imagePath!.isEmpty
+                        ? 'Foto aufnehmen'
+                        : 'Foto ersetzen'),
+                    onPressed: () => _captureAndUploadPhoto(context, ref, item),
+                  ),
+                ),
+              ],
               const SizedBox(height: 16),
 
               // Custom item banner
@@ -216,5 +234,54 @@ class EquipmentDetailScreen extends ConsumerWidget {
         );
       },
     );
+  }
+
+  /// Camera on mobile, gallery/file dialog elsewhere. Uploads to the central
+  /// bucket when connected; otherwise the photo stays local to this device.
+  Future<void> _captureAndUploadPhoto(
+      BuildContext context, WidgetRef ref, EquipmentItem item) async {
+    final picker = ImagePicker();
+    final source = picker.supportsImageSource(ImageSource.camera)
+        ? ImageSource.camera
+        : ImageSource.gallery;
+    // Bounded pick: forces JPEG (no iOS HEIC) and keeps originals small.
+    final file = await picker.pickImage(
+      source: source,
+      maxWidth: 2048,
+      maxHeight: 2048,
+      imageQuality: 90,
+    );
+    if (file == null || !context.mounted) return;
+
+    var newPath = file.path;
+    var uploaded = false;
+    final imageSync = ref.read(imageSyncServiceProvider);
+    if (imageSync != null) {
+      try {
+        newPath = await imageSync.uploadEquipmentImage(
+          equipmentId: item.id,
+          localPath: file.path,
+          previousPath: item.imagePath,
+        );
+        uploaded = true;
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text('Foto nur lokal gespeichert – Upload '
+                  'fehlgeschlagen: $e')));
+        }
+      }
+    }
+
+    await ref
+        .read(equipmentRepositoryProvider)
+        .update(item.copyWith(imagePath: newPath));
+    ref.invalidate(equipmentDetailProvider(item.id));
+    ref.invalidate(equipmentListProvider);
+    if (context.mounted && uploaded) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Foto hochgeladen. Zum Verteilen an alle Geräte: '
+              'Einstellungen → Veröffentlichen.')));
+    }
   }
 }

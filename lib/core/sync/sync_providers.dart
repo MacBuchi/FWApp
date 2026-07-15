@@ -5,6 +5,7 @@ library;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/database/database_providers.dart';
+import 'package:fwapp/core/sync/image_sync_service.dart';
 import 'package:fwapp/core/sync/sync_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -44,6 +45,13 @@ final currentUserRoleProvider = FutureProvider<String?>((ref) async {
 final isAdminProvider = Provider<bool>((ref) {
   if (!ref.watch(supabaseReadyProvider)) return true;
   return ref.watch(currentUserRoleProvider).value == 'admin';
+});
+
+/// Uploads local equipment photos to the central bucket (M2); null while
+/// Supabase is not initialised (pure local mode).
+final imageSyncServiceProvider = Provider<ImageSyncService?>((ref) {
+  final client = ref.watch(supabaseClientProvider);
+  return client == null ? null : ImageSyncService(client);
 });
 
 final syncServiceProvider = Provider<SyncService?>((ref) {

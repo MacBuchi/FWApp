@@ -1,10 +1,12 @@
 /// settings_screen.dart – App settings: dark mode, Supabase sync, library info.
 library;
+import 'dart:async' show unawaited;
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:fwapp/core/sync/image_precache.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/features/settings/presentation/providers/settings_providers.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show AuthException;
@@ -252,6 +254,7 @@ class _ConnectionSection extends ConsumerWidget {
                 : 'Lokalen Datenbestand als neue Version veröffentlichen'),
             onTap: () => _publish(context, ref),
           ),
+        const _ImageCacheTile(),
       ],
     );
   }
@@ -300,6 +303,9 @@ class _ConnectionSection extends ConsumerWidget {
             const SnackBar(content: Text('Angemeldet. Lade Datenbestand...')));
       }
       final version = await ref.read(syncServiceProvider)?.pullIfNewer();
+      if (version != null) {
+        unawaited(ref.read(imagePrecacheProvider.notifier).run());
+      }
       if (context.mounted && version != null) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text('Datenbestand Version $version geladen.')));
@@ -321,6 +327,7 @@ class _ConnectionSection extends ConsumerWidget {
     try {
       final version =
           await ref.read(syncServiceProvider)?.pullIfNewer(force: true);
+      unawaited(ref.read(imagePrecacheProvider.notifier).run());
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(version == null
@@ -377,6 +384,44 @@ class _ConnectionSection extends ConsumerWidget {
       '${dt.month.toString().padLeft(2, '0')}.'
       '${dt.year} ${dt.hour.toString().padLeft(2, '0')}:'
       '${dt.minute.toString().padLeft(2, '0')}';
+}
+
+/// Offline availability of the central photos: shows precache progress and
+/// lets the user re-run the download (e.g. after a failed first attempt).
+class _ImageCacheTile extends ConsumerWidget {
+  const _ImageCacheTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cache = ref.watch(imagePrecacheProvider);
+
+    final String subtitle;
+    if (cache.running) {
+      subtitle = 'Lade ${cache.done + cache.failed}/${cache.total}…';
+    } else if (!cache.hasRun) {
+      subtitle = 'Fotos für die Offline-Nutzung herunterladen';
+    } else if (cache.failed > 0) {
+      subtitle = '${cache.done}/${cache.total} geladen, '
+          '${cache.failed} fehlgeschlagen – antippen zum Wiederholen';
+    } else {
+      subtitle = 'Alle ${cache.done} Fotos offline verfügbar';
+    }
+
+    return ListTile(
+      leading: cache.running
+          ? const SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(strokeWidth: 2))
+          : Icon(Icons.photo_library,
+              color: cache.hasRun && cache.failed > 0 ? Colors.orange : null),
+      title: const Text('Gerätefotos offline'),
+      subtitle: Text(subtitle),
+      onTap: cache.running
+          ? null
+          : () => ref.read(imagePrecacheProvider.notifier).run(),
+    );
+  }
 }
 
 class _SectionHeader extends StatelessWidget {

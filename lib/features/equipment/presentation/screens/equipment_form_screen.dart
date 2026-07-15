@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_enums.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_item.dart';
@@ -23,6 +24,7 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
   final _descCtrl = TextEditingController();
   final _urlCtrl = TextEditingController();
   String? _imagePath;
+  String? _originalImagePath;
   final Set<String> _functions = {};
   final Set<String> _scenarios = {};
   bool _isSubmitting = false;
@@ -52,9 +54,41 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
   }
 
   Future<void> _pickImage() async {
-    final file =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
+    // Bounded pick: keeps huge originals off disk and forces JPEG/PNG
+    // (avoids iOS HEIC, which the upload compressor cannot decode).
+    final file = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 2048,
+      maxHeight: 2048,
+      imageQuality: 90,
+    );
     if (file != null) setState(() => _imagePath = file.path);
+  }
+
+  /// Uploads a freshly picked local image to the central bucket and rewrites
+  /// imagePath to its supabase:// marker. Local mode or upload failure keeps
+  /// the local path — the device that took the photo can always show it.
+  Future<void> _uploadImageIfPossible(int equipmentId) async {
+    final imageSync = ref.read(imageSyncServiceProvider);
+    if (imageSync == null || !isLocalImagePath(_imagePath)) return;
+    final repo = ref.read(equipmentRepositoryProvider);
+    try {
+      final marker = await imageSync.uploadEquipmentImage(
+        equipmentId: equipmentId,
+        localPath: _imagePath!,
+        previousPath: _originalImagePath,
+      );
+      final saved = await repo.getById(equipmentId);
+      if (saved != null) {
+        await repo.update(saved.copyWith(imagePath: marker));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Foto nur lokal gespeichert – Upload '
+                'fehlgeschlagen: $e')));
+      }
+    }
   }
 
   Future<void> _submit() async {
@@ -84,9 +118,11 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
         updatedAt: DateTime.now(),
       );
       if (widget.editId == null) {
-        await repo.insert(item);
+        final newId = await repo.insert(item);
+        await _uploadImageIfPossible(newId);
       } else {
         await repo.update(item);
+        await _uploadImageIfPossible(widget.editId!);
       }
       ref.invalidate(equipmentListProvider);
       if (mounted) context.pop();
@@ -103,6 +139,7 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
     _urlCtrl.text = item.trainingUrl ?? '';
     setState(() {
       _imagePath = item.imagePath;
+      _originalImagePath = item.imagePath;
       _functions
         ..clear()
         ..addAll(item.equipmentFunctions);

@@ -7,7 +7,11 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Fwapp</string>
+	<string>FWApp</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Zum Fotografieren der Geräte für den Beladeplan.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Zum Auswählen vorhandener Gerätefotos.</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>

@@ -100,14 +100,9 @@ Enthalten: `ANON_KEY` (öffentlicher Client-Key für die App), `SERVICE_ROLE_KEY
   in `imagePath` und löst sie zur Laufzeit gegen
   `/storage/v1/object/authenticated/...` auf (Header `apikey` + `Bearer`).
 
-  > **Status 2026-07-15: noch NICHT auf dem Server eingespielt** (MacBook hing
-  > im Gastnetz). Einspielen aus dem Heimnetz:
-  >
-  > ```bash
-  > scp -i ~/.ssh/fwapp_proxmox_ed25519 supabase/migrations/20260715000000_equipment_images_storage.sql fwapp@192.168.178.201:/tmp/
-  > ssh -i ~/.ssh/fwapp_proxmox_ed25519 fwapp@192.168.178.201 \
-  >   'docker exec -i supabase-db psql -v ON_ERROR_STOP=1 -U supabase_admin -d postgres < /tmp/20260715000000_equipment_images_storage.sql'
-  > ```
+  Eingespielt und verifiziert am 2026-07-15: Admin-Upload 200, Member-Upload
+  400 (Policy greift), Member-Lesen über `/object/authenticated/` 200,
+  anonymer Zugriff 400.
 
 - Konten (Passwörter siehe Secrets-Datei):
   - `admin@fw.local` – Rolle `admin` (darf publizieren)

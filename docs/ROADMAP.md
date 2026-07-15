@@ -22,7 +22,7 @@ DLK 23/13, AB-G (Demo-Datensatz vorhanden), AB-Mulde, GW-T, RW, ELW, MTW.
 | Einsatzassistent (virtuelles Ausladen) | ✅ M4 |
 | UI-/Widget-Tests kritischer Flows + Coverage-Gate | ✅ M1 |
 | Lernzentriertes Redesign (Dashboard, Rollen, Piktogramme, Grundkatalog) | ✅ |
-| Zentrale Gerätefotos (Sync-fähig) | ✅ M2 (App-Code + Bucket-Migration; Feldtest offen) |
+| Zentrale Gerätefotos (Sync-fähig) | ✅ M2 (Server verifiziert 15.07.; Feldtest iPhone→MacBook offen) |
 | Produktiv-Betrieb (Cloud, Verteilung, Backups) | 🔨 M5 |
 | Open Source | 🔨 M6 |
 

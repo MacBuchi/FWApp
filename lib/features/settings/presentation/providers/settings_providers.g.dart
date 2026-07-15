@@ -119,7 +119,7 @@ final class SyncSettingsNotifierProvider
 }
 
 String _$syncSettingsNotifierHash() =>
-    r'a440bc1124b3241822d90d64f43e157912eae658';
+    r'0a183b0dd9fd0f770b167586e5dfc0af5eacdd64';
 
 abstract class _$SyncSettingsNotifier extends $AsyncNotifier<SyncSettings> {
   FutureOr<SyncSettings> build();

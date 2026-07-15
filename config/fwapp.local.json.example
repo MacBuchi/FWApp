@@ -1,0 +1,5 @@
+{
+  "_hinweis": "Nach config/fwapp.local.json kopieren (gitignored) und Werte des eigenen Servers eintragen. Build: flutter build/run --dart-define-from-file=config/fwapp.local.json",
+  "FWAPP_SUPABASE_URL": "http://<server-ip>:8000",
+  "FWAPP_SUPABASE_ANON_KEY": "<ANON_KEY aus der Server-.env>"
+}

@@ -73,6 +73,8 @@ Domain-Entitäten haben keine Flutter- oder Drift-Abhängigkeiten.
 | Cloud (optional) | Supabase (Auth + Sync)                   |
 | Code-Gen         | `build_runner`, `drift_dev`, `freezed`, `riverpod_generator` |
 
+Server-Setup für den Supabase-Sync: siehe [docs/SERVER-SETUP.md](docs/SERVER-SETUP.md).
+
 ---
 
 ## Abhängigkeiten (pubspec.yaml)

@@ -134,9 +134,19 @@ flutter build apk --dart-define-from-file=config/fwapp.local.json   # bzw. run/b
 ```
 
 Nach einer Neuinstallation eines solchen Builds muss nur noch Sync aktiviert
-und eingeloggt werden. Ohne Build-Flags (z. B. CI-Builds) bleiben die Felder
+und eingeloggt werden. Ohne Build-Flags (z. B. CI-PR-Builds) bleiben die Felder
 leer und werden unter **Settings → Sync** von Hand eingetragen.
 Von unterwegs muss auf dem Gerät die WireGuard-Verbindung ins Heimnetz aktiv sein.
+
+**Release-APKs von GitHub** (seit 2026-07-16): Die Release-Pipeline
+(`.github/workflows/release.yml`) baut bei jedem Version-Bump in
+`pubspec.yaml` ein **signiertes** APK (fester Release-Keystore, Updates ohne
+Deinstallation) und bekommt URL + `ANON_KEY` über Actions-Secrets
+(`FWAPP_SUPABASE_URL`, `FWAPP_SUPABASE_ANON_KEY`) bereits eingebacken —
+Mitglieder laden das APK vom GitHub-Release und müssen nur noch einloggen.
+Bewusste Abwägung: beide Werte stecken damit im öffentlich herunterladbaren
+APK; der Anon-Key ist clientseitig-öffentlich (RLS schützt), die URL eine
+private LAN-Adresse.
 
 Hinweis: REST-Aufrufe ohne `Authorization`-Header beantwortet Kong mit 403 –
 das ist normal, der Supabase-Client sendet den Header immer mit.

@@ -1,6 +1,6 @@
 # FWApp – Roadmap bis zur produktiven Anwendung
 
-Stand: 2026-07-15 · Status-Legende: ✅ fertig · 🔨 geplant
+Stand: 2026-07-16 · Status-Legende: ✅ fertig · 🔨 geplant
 
 **Fuhrpark der Wehr (Baden-Württemberg, Zielumfang):** HLF 20, LF 20, LF 8/6,
 DLK 23/13, AB-G (Demo-Datensatz vorhanden), AB-Mulde, GW-T, RW, ELW, MTW.
@@ -17,6 +17,7 @@ DLK 23/13, AB-G (Demo-Datensatz vorhanden), AB-Mulde, GW-T, RW, ELW, MTW.
 | Lernmodi (Fach-Quiz, Wo liegt's?, Geräte-Wissen, Drag&Drop, Bild-Quiz) | ✅ |
 | Plattformen: Android, iOS, Web (persistent), macOS | ✅ |
 | CI (Analyze, Tests, Codegen-Check, Web-Build) | ✅ |
+| Release-Pipeline (Auto-Tag + signiertes APK als GitHub-Release) | ✅ |
 | Logik-Testabdeckung (Sync 89 %, Inspection 86 %, Import 73 %) | ✅ |
 | Inventurassistent (Soll/Ist, Mängeldoku, Report) | ✅ M3 |
 | Einsatzassistent (virtuelles Ausladen) | ✅ M4 |
@@ -126,16 +127,18 @@ Ziel: Die Wehr arbeitet mit der App.
 2. **Erst-Datenbestand:** echte Beladelisten aller Fahrzeuge per Import-Wizard einlesen,
    Raster der Fahrzeuge anordnen, Prüftermine der prüfpflichtigen Geräte erfassen, veröffentlichen.
 3. **App-Verteilung:**
-   - **Android:** Release-APK signieren (Keystore erzeugen + sicher ablegen!) → Verteilung direkt
-     (Download-Link/QR im Gerätehaus). Play Store optional später.
+   - **Android: ✅ erledigt (2026-07-16).** Release-Pipeline
+     ([release.yml](../.github/workflows/release.yml)): Push auf `main` mit neuer
+     `pubspec.yaml`-Version erzeugt automatisch Git-Tag `vX.Y.Z` + GitHub-Release mit
+     signiertem, vorkonfiguriertem APK (`fwapp-vX.Y.Z.apk`) — direkt herunterladbar
+     (Download-Link/QR im Gerätehaus). Signatur über festen Release-Keystore
+     (Ablage/Secrets siehe private Notizen); PRs ohne Version-Bump lösen bewusst
+     kein Release aus. Play Store optional später.
    - **iOS:** Apple Developer Program nötig (99 €/Jahr) → TestFlight „Internal/External Testing“
      (bis 10.000 Tester, reicht für jede Wehr). Wartefrist: App-Review für External ~1–2 Tage.
    - **macOS (Admin-Gerät):** lokaler Build reicht für Marcus; für weitere Macs Developer-ID +
      Notarisierung (gleiche Apple-Mitgliedschaft).
    - **Web (Admin im Browser):** `build/web` auf Netlify/Vercel (kostenlos) oder nur lokal starten.
-   - **Versionierung:** `pubspec.yaml` version bei jedem Release erhöhen; Git-Tag `vX.Y.Z`;
-     CI baut Release-Artefakte bei Tags (Workflow-Erweiterung: signiertes APK + Web-Build als
-     Release-Assets).
 4. **Betriebs-Doku (docs/):** Onboarding-Zettel (App laden, Account, verbinden), Admin-Handbuch
    (Import, Veröffentlichen, Prüftermine, Restore), Troubleshooting.
 5. **Datenschutz:** personenbezogene Daten minimal (nur Admin-E-Mails + geteilter Account);

@@ -9,6 +9,7 @@ import 'package:fwapp/core/utils/image_utils.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_enums.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_item.dart';
 import 'package:fwapp/features/equipment/presentation/providers/equipment_providers.dart';
+import 'package:fwapp/features/equipment/presentation/screens/image_library_screen.dart';
 
 class EquipmentFormScreen extends ConsumerStatefulWidget {
   final int? editId;
@@ -54,6 +55,31 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
   }
 
   Future<void> _pickImage() async {
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Wrap(children: [
+          ListTile(
+            leading: const Icon(Icons.photo_library),
+            title: const Text('Aus Galerie'),
+            onTap: () => Navigator.pop(context, 'gallery'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.image_search),
+            title: const Text('Aus Bildbibliothek (Symbolbild)'),
+            onTap: () => Navigator.pop(context, 'library'),
+          ),
+        ]),
+      ),
+    );
+    if (!mounted || choice == null) return;
+
+    if (choice == 'library') {
+      final asset = await pickFromImageLibrary(context);
+      if (asset != null) setState(() => _imagePath = asset);
+      return;
+    }
+
     // Bounded pick: keeps huge originals off disk and forces JPEG/PNG
     // (avoids iOS HEIC, which the upload compressor cannot decode).
     final file = await ImagePicker().pickImage(
@@ -189,6 +215,14 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
               label: const Text('Bild auswählen'),
             ),
           ),
+          if (isPictogramPath(_imagePath))
+            const Center(
+              child: Chip(
+                avatar: Icon(Icons.auto_awesome, size: 16),
+                label: Text('Symbolbild – kein verifiziertes Foto'),
+                visualDensity: VisualDensity.compact,
+              ),
+            ),
           const SizedBox(height: 12),
           TextField(
             controller: _nameCtrl,

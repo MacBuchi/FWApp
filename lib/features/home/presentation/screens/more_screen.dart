@@ -22,12 +22,25 @@ class MoreScreen extends ConsumerWidget {
         children: [
           _Section('Nachschlagen'),
           Card(
-            child: ListTile(
-              leading: const Icon(Icons.inventory_2),
-              title: const Text('Gerätekatalog'),
-              subtitle: const Text('Alle Geräte durchsuchen und filtern'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => context.push('/equipment'),
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.inventory_2),
+                  title: const Text('Gerätekatalog'),
+                  subtitle: const Text('Alle Geräte durchsuchen und filtern'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.push('/equipment'),
+                ),
+                const Divider(indent: 16, endIndent: 16),
+                ListTile(
+                  leading: const Icon(Icons.image_search),
+                  title: const Text('Bildbibliothek'),
+                  subtitle:
+                      const Text('Symbolbilder aller Normgeräte durchsuchen'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.push('/image-library'),
+                ),
+              ],
             ),
           ),
           _Section('App'),

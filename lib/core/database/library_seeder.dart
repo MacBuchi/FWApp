@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:fwapp/core/database/app_database.dart';
+import 'package:fwapp/core/utils/image_utils.dart';
 import 'package:logger/logger.dart';
 
 final _log = Logger();
@@ -214,6 +215,11 @@ class LibrarySeeder {
   /// Seeds the standard equipment catalog (Normbeladung) so imports of new
   /// Beladelisten match against a broad base database. Items are plain
   /// equipment rows without assignments; idempotent via libraryEquipmentId.
+  ///
+  /// Jeder Katalog-Eintrag startet mit seinem Piktogramm aus der
+  /// Bildbibliothek (Symbolbild – erkennbar am Asset-Pfad, siehe
+  /// isPictogramPath); echte Fotos ersetzen es später über den
+  /// Kamera-Workflow oder die Bildbibliothek.
   Future<void> _seedCatalog() async {
     final catalogJson = await _loadJson(
         'assets/equipment_library/catalog/standard_catalog.json');
@@ -224,12 +230,21 @@ class LibrarySeeder {
       final item = raw as Map<String, dynamic>;
       final id = item['id'] as String;
       final existing = await _db.equipmentDao.getByLibraryId(id);
-      if (existing != null) continue;
+      if (existing != null) {
+        // Backfill für Bestände von vor der Bildbibliothek: nur wenn noch
+        // gar kein Bild gesetzt ist (Fotos nie überschreiben).
+        if (existing.imagePath == null) {
+          await _db.equipmentDao.patchEquipment(existing.id,
+              EquipmentItemsCompanion(imagePath: Value(pictogramPath(id))));
+        }
+        continue;
+      }
       await _db.equipmentDao.insertEquipment(EquipmentItemsCompanion.insert(
         name: item['name'] as String,
         shortName: Value(item['short_name'] as String?),
         libraryEquipmentId: Value(id),
         isCustom: const Value(false),
+        imagePath: Value(pictogramPath(id)),
         equipmentFunctionsJson: Value(jsonEncode(
             ((item['equipment_functions'] as List?)?.cast<String>()) ?? [])),
         description: Value((item['description'] as String?) ?? ''),

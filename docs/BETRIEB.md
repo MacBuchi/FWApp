@@ -67,10 +67,18 @@ Prüfhistorie oder Instanzen – die hängen an den physischen Geräten.
 - „Erledigt“ setzen springt die Fälligkeit aufs nächste Intervall.
 - Nach der Pflege: **Veröffentlichen** nicht vergessen.
 
-### Gerätefotos ergänzen
+### Gerätebilder: Symbolbilder & Fotos
 
-- Am Handy (Admin): Gerät öffnen → **Foto aufnehmen** → die App verkleinert
-  automatisch (≤ 1024 px, ≤ 300 KB) und lädt zentral hoch → **Veröffentlichen**.
+- Jedes Normgerät startet mit einem **Symbolbild** aus der Bildbibliothek
+  (gezeichnetes Piktogramm). In der App sind Symbolbilder als
+  „Symbolbild – kein verifiziertes Foto“ gekennzeichnet — beim Import
+  zugeordnete Bilder sind also automatisch, nicht geprüft.
+- **Echtes Foto:** Gerät öffnen → **Foto aufnehmen** → die App verkleinert
+  automatisch (≤ 1024 px, ≤ 300 KB) und lädt zentral hoch →
+  **Veröffentlichen**. Das Foto ersetzt das Symbolbild dauerhaft.
+- **Bild manuell wählen:** derselbe Button bietet auch „Symbolbild aus
+  Bildbibliothek“ — durchsuchbar nach Namen, Kurzformen und gängigen
+  Aliassen („Pylone“, „TS“, „HSR“ …). Zum Stöbern: **Mehr → Bildbibliothek**.
 - Mitglieder-Geräte laden alle Fotos nach dem nächsten Pull automatisch in
   den Offline-Cache (Fortschritt: Einstellungen → „Gerätefotos offline“).
 - Ideal als Gerätehaus-Rundgang: Fach für Fach fotografieren.

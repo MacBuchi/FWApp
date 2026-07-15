@@ -197,7 +197,11 @@ class ImportWizardNotifier extends _$ImportWizardNotifier {
     try {
       final raw = await rootBundle
           .loadString('assets/equipment_library/catalog/standard_catalog.json');
-      bundled.addAll(parseCatalogAliases(raw));
+      // Additiv mergen: aliases.json und Katalog-Aliasse ergänzen sich,
+      // gleiche Library-IDs dürfen einander nicht verdrängen.
+      parseCatalogAliases(raw).forEach((id, names) => bundled.update(
+          id, (existing) => [...existing, ...names],
+          ifAbsent: () => names));
     } catch (_) {
       // Catalog missing – nothing to merge.
     }

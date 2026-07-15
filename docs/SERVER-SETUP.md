@@ -173,13 +173,16 @@ Cronjob des Users `fwapp`, täglich **03:15 Uhr** (`crontab -l`):
   `pg_dump -Fc` der Datenbank + `pg_dumpall --globals-only` (Rollen)
 - Ablage `~/backups/`, Rotation nach **14 Tagen**, Log `~/backups/backup.log`
 
-### Zusätzlich empfohlen: vzdump auf dem Host
+### Zusätzlich: vzdump auf dem Host (eingerichtet 2026-07-16)
 
-Der nächtliche vzdump-Job (02:30, Storage `vm-backups`) sichert bisher nur die
-älteren Gäste. Die Sync-VM aufnehmen mit:
+Die Sync-VM hat einen **eigenen** vzdump-Job (wöchentlich So 03:45, Storage
+`vm-backups`, zstd/snapshot, Aufbewahrung 4 Wochen) — bewusst getrennt vom
+bestehenden Job der übrigen Gäste. Neu anlegen ginge mit:
 
 ```bash
-pvesh set /cluster/backup/<backup-job-id> --vmid <bisherige-ids>,<vm-id>
+pvesh create /cluster/backup --vmid <vm-id> --schedule "sun 03:45" \
+  --storage vm-backups --mode snapshot --compress zstd \
+  --prune-backups keep-weekly=4
 ```
 
 ### Restore (geprobt am 2026-07-14)

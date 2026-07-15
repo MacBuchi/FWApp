@@ -1,4 +1,4 @@
-/// import_e2e_test.dart – Full import pipeline against the real AB-G
+/// import_e2e_test.dart – Full import pipeline against the bundled example
 /// Beladeliste CSV: parse → detect mapping → match against the seeded
 /// library → apply → verify, including idempotent re-import and alias learning.
 library;
@@ -18,13 +18,13 @@ import '../../helpers/test_database.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  const csvPath = '2025-01-29 Beladeliste AB-G.csv';
+  const csvPath = 'examples/beladelisten/HLF20-Beispiel.csv';
 
   late AppDatabase db;
 
   setUp(() async {
     db = createTestDatabase();
-    // Seed the bundled AB-G library so the matcher has real data.
+    // Seed catalog + demo vehicle so the matcher has real data.
     await LibrarySeeder(db).seedIfNeeded();
   });
 
@@ -42,7 +42,7 @@ void main() {
         userAliases: userAliases);
   }
 
-  test('real AB-G CSV: mapping detected, ≥95% matched, import applies',
+  test('example HLF20 CSV: mapping detected, ≥95% matched, import applies',
       () async {
     final bytes = File(csvPath).readAsBytesSync();
     final file = ImportParser.parse(csvPath, bytes);
@@ -53,11 +53,11 @@ void main() {
     expect(mapping.equipmentColumn, greaterThanOrEqualTo(0));
     expect(mapping.compartmentColumn, greaterThanOrEqualTo(0));
     expect(mapping.vehicleColumn, isNull); // list has no vehicle column
-    mapping = mapping.copyWith(fixedVehicleName: 'AB-G Import-Test');
+    mapping = mapping.copyWith(fixedVehicleName: 'HLF 20 Import-Test');
     expect(mapping.isValid, isTrue);
 
     final rows = ImportParser.applyMapping(table, mapping);
-    expect(rows.length, greaterThan(250));
+    expect(rows.length, 108); // Positionen in HLF20-Beispiel.csv
 
     // Matching: the CSV is the source of the seeded library, so nearly
     // everything must resolve as exact/alias.

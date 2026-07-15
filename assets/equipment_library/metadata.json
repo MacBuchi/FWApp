@@ -1,8 +1,8 @@
 {
-  "version": "1.0.0",
-  "equipment_count": 257,
+  "version": "2.0.0",
+  "equipment_count": 110,
   "vehicles": [
-    "ab_g"
+    "hlf20_demo"
   ],
-  "last_updated": "2026-03-13"
+  "last_updated": "2026-07-16"
 }

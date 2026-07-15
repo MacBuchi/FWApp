@@ -82,7 +82,10 @@ skizziert; Projektstand und Historie in [docs/ROADMAP.md](docs/ROADMAP.md).
 
 Fertiges Android-APK vom [aktuellen Release](https://github.com/MacBuchi/FWApp/releases/latest)
 laden und installieren. Ohne Server läuft die App komplett lokal mit dem
-mitgelieferten Demo-Datensatz (Abrollbehälter Gefahrgut mit 257 Positionen).
+mitgelieferten Demo-Datensatz: ein fiktives HLF 20 mit 108 Positionen aus dem
+Normgeräte-Katalog. Eigene Beladelisten kommen per Import-Wizard rein —
+Vorlagen zum Ausprobieren liegen in
+[examples/beladelisten/](examples/beladelisten/).
 
 ### Entwickeln
 

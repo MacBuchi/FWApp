@@ -6,6 +6,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/database/library_seeder.dart';
+import 'package:fwapp/core/utils/image_utils.dart';
 
 import '../../helpers/test_database.dart';
 
@@ -79,6 +80,36 @@ void main() {
       await seeder.seedIfNeeded();
       final items = await db.equipmentDao.getAll();
       expect(items.every((e) => e.libraryEquipmentId != null), isTrue);
+    });
+
+    test('every catalog item starts with its pictogram as image', () async {
+      await seeder.seedIfNeeded();
+      final items = await db.equipmentDao.getAll();
+      expect(
+          items.every((e) =>
+              e.imagePath == pictogramPath(e.libraryEquipmentId!)),
+          isTrue);
+    });
+
+    test('backfill sets pictograms but never overwrites photos', () async {
+      await seeder.seedIfNeeded();
+      final items = await db.equipmentDao.getAll();
+      // Bestand simulieren: ein Gerät ohne Bild, eines mit echtem Foto.
+      await db.equipmentDao.patchEquipment(items[0].id,
+          const EquipmentItemsCompanion(imagePath: Value(null)));
+      await db.equipmentDao.patchEquipment(items[1].id,
+          const EquipmentItemsCompanion(
+              imagePath: Value('supabase://equipment-images/foto.jpg')));
+
+      await seeder.seedIfNeeded();
+
+      final after = await db.equipmentDao.getAll();
+      final restored =
+          after.firstWhere((e) => e.id == items[0].id);
+      final photo = after.firstWhere((e) => e.id == items[1].id);
+      expect(restored.imagePath,
+          pictogramPath(restored.libraryEquipmentId!));
+      expect(photo.imagePath, 'supabase://equipment-images/foto.jpg');
     });
 
     test('every assignment references an existing compartment and equipment',

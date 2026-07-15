@@ -23,6 +23,18 @@ Map<String, String> Function()? supabaseStorageHeaders;
 bool isSupabaseImagePath(String? path) =>
     path != null && path.startsWith(kSupabaseImagePrefix);
 
+/// Verzeichnis der Piktogramm-Bildbibliothek (ein Symbolbild pro
+/// Katalog-Gerät, erzeugt mit tool/generate_pictograms.py).
+const kPictogramDir = 'assets/equipment_library/images/';
+
+/// Asset-Pfad des Piktogramms zu einer Katalog-ID (Konvention: `<id>.png`).
+String pictogramPath(String catalogId) => '$kPictogramDir$catalogId.png';
+
+/// Symbolbild aus der Bildbibliothek — automatisch zugeordnet, kein
+/// verifiziertes Foto. Grundlage für den „Symbolbild“-Hinweis in der UI.
+bool isPictogramPath(String? path) =>
+    path != null && path.startsWith(kPictogramDir);
+
 bool isRemoteImagePath(String? path) =>
     isSupabaseImagePath(path) ||
     (path != null && (path.startsWith('http://') || path.startsWith('https://')));

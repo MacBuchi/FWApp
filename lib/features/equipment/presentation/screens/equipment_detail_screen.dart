@@ -6,10 +6,12 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
+import 'package:fwapp/core/utils/image_utils.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_enums.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_item.dart';
 import 'package:fwapp/features/equipment/presentation/widgets/equipment_avatar.dart';
 import 'package:fwapp/features/equipment/presentation/providers/equipment_providers.dart';
+import 'package:fwapp/features/equipment/presentation/screens/image_library_screen.dart';
 import 'package:fwapp/features/inspection/presentation/widgets/equipment_instances_section.dart';
 
 class EquipmentDetailScreen extends ConsumerWidget {
@@ -53,6 +55,19 @@ class EquipmentDetailScreen extends ConsumerWidget {
                 width: double.infinity,
               ),
 
+              // Symbolbild-Hinweis: automatisch zugeordnetes Piktogramm aus
+              // der Bildbibliothek, kein verifiziertes Foto.
+              if (isPictogramPath(item.imagePath)) ...[
+                const SizedBox(height: 6),
+                const Center(
+                  child: Chip(
+                    avatar: Icon(Icons.auto_awesome, size: 16),
+                    label: Text('Symbolbild – kein verifiziertes Foto'),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                ),
+              ],
+
               // Photo workflow (M2): admins capture/replace the photo right
               // here — one tap per device on the Gerätehaus walk-through.
               if (ref.watch(isAdminProvider)) ...[
@@ -61,10 +76,11 @@ class EquipmentDetailScreen extends ConsumerWidget {
                   child: OutlinedButton.icon(
                     icon: const Icon(Icons.photo_camera),
                     label: Text(item.imagePath == null ||
-                            item.imagePath!.isEmpty
+                            item.imagePath!.isEmpty ||
+                            isPictogramPath(item.imagePath)
                         ? 'Foto aufnehmen'
                         : 'Foto ersetzen'),
-                    onPressed: () => _captureAndUploadPhoto(context, ref, item),
+                    onPressed: () => _changeImage(context, ref, item),
                   ),
                 ),
               ],
@@ -234,6 +250,53 @@ class EquipmentDetailScreen extends ConsumerWidget {
         );
       },
     );
+  }
+
+  /// Bildquelle wählen: Foto (Kamera/Galerie, wird zentral hochgeladen)
+  /// oder Symbolbild aus der Bildbibliothek.
+  Future<void> _changeImage(
+      BuildContext context, WidgetRef ref, EquipmentItem item) async {
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Wrap(children: [
+          ListTile(
+            leading: const Icon(Icons.photo_camera),
+            title: const Text('Foto aufnehmen'),
+            subtitle: const Text('Wird zentral hochgeladen'),
+            onTap: () => Navigator.pop(context, 'photo'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.image_search),
+            title: const Text('Symbolbild aus Bildbibliothek'),
+            subtitle: const Text('Intuitive Suche über alle Normgeräte'),
+            onTap: () => Navigator.pop(context, 'library'),
+          ),
+        ]),
+      ),
+    );
+    if (!context.mounted || choice == null) return;
+    if (choice == 'library') {
+      await _pickFromLibrary(context, ref, item);
+    } else {
+      await _captureAndUploadPhoto(context, ref, item);
+    }
+  }
+
+  Future<void> _pickFromLibrary(
+      BuildContext context, WidgetRef ref, EquipmentItem item) async {
+    final asset = await pickFromImageLibrary(context);
+    if (asset == null) return;
+    await ref
+        .read(equipmentRepositoryProvider)
+        .update(item.copyWith(imagePath: asset));
+    ref.invalidate(equipmentDetailProvider(item.id));
+    ref.invalidate(equipmentListProvider);
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Symbolbild übernommen. Zum Verteilen an alle '
+              'Geräte: Einstellungen → Veröffentlichen.')));
+    }
   }
 
   /// Camera on mobile, gallery/file dialog elsewhere. Uploads to the central

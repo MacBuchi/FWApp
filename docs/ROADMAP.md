@@ -19,6 +19,7 @@ Demo-HLF 20 mit; die echten Beladelisten kommen per Import-Wizard.)
 | Plattformen: Android, iOS, Web (persistent), macOS | ✅ |
 | CI (Analyze, Tests, Codegen-Check, Web-Build) | ✅ |
 | Release-Pipeline (Auto-Tag + signiertes APK als GitHub-Release) | ✅ |
+| Bildbibliothek (110 Symbolbilder, Browser + intuitive Suche, Auto-Zuordnung mit „Symbolbild“-Kennzeichnung) | ✅ (16.07.) |
 | Logik-Testabdeckung (Sync 89 %, Inspection 86 %, Import 73 %) | ✅ |
 | Inventurassistent (Soll/Ist, Mängeldoku, Report) | ✅ M3 |
 | Einsatzassistent (virtuelles Ausladen) | ✅ M4 |

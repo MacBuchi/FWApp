@@ -11,6 +11,7 @@ import 'package:fwapp/features/vehicle/presentation/screens/compartment_manager_
 import 'package:fwapp/features/equipment/presentation/screens/equipment_list_screen.dart';
 import 'package:fwapp/features/equipment/presentation/screens/equipment_detail_screen.dart';
 import 'package:fwapp/features/equipment/presentation/screens/equipment_form_screen.dart';
+import 'package:fwapp/features/equipment/presentation/screens/image_library_screen.dart';
 import 'package:fwapp/features/game/presentation/screens/game_menu_screen.dart';
 import 'package:fwapp/features/game/quiz/presentation/screens/compartment_quiz_screen.dart';
 import 'package:fwapp/features/game/quiz/presentation/screens/cutaway_quiz_screen.dart';
@@ -162,6 +163,10 @@ final appRouter = GoRouter(
         GoRoute(
           path: '/more',
           builder: (_, __) => const MoreScreen(),
+        ),
+        GoRoute(
+          path: '/image-library',
+          builder: (_, __) => const ImageLibraryScreen(),
         ),
         GoRoute(
           path: '/settings',

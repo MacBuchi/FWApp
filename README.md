@@ -37,6 +37,10 @@ können.
 - **Zentrale Gerätefotos**: am Handy fotografieren, automatisch komprimiert
   hochladen – erscheint nach dem nächsten Pull auf allen Geräten (inkl.
   Offline-Cache für den Einsatz)
+- **Bildbibliothek**: jedes Normgerät startet mit einem gezeichneten
+  Symbolbild (durchsuchbar über Namen, Kurzformen und gängige Aliasse);
+  die App kennzeichnet Symbolbilder als „nicht verifiziert“, bis ein
+  echtes Foto sie ersetzt
 
 ### Einsatz
 

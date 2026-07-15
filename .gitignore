@@ -44,3 +44,6 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 android/.kotlin/
+
+# Instanzspezifische Build-Konfiguration (Server-URL, Anon-Key)
+config/fwapp.local.json

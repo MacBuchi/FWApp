@@ -119,11 +119,18 @@ Enthalten: `ANON_KEY` (öffentlicher Client-Key für die App), `SERVICE_ROLE_KEY
 
 ## App-Anbindung
 
-Seit 2026-07-14 sind URL und `ANON_KEY` dieses Servers in der App als **Default
-vorbelegt** (`kDefaultSupabaseUrl`/`kDefaultSupabaseAnonKey` in
-`lib/features/settings/presentation/providers/settings_providers.dart`) — nach
-einer Neuinstallation muss nur noch Sync aktiviert und eingeloggt werden.
-Abweichende Werte lassen sich weiterhin unter **Settings → Sync** eintragen.
+URL und `ANON_KEY` des eigenen Servers werden **zur Build-Zeit** vorbelegt
+(seit das Repo öffentlich ist, stehen instanzspezifische Werte nicht mehr im
+Code): `config/fwapp.local.json.example` nach `config/fwapp.local.json`
+kopieren (gitignored), Werte eintragen und bauen mit
+
+```bash
+flutter build apk --dart-define-from-file=config/fwapp.local.json   # bzw. run/build macos …
+```
+
+Nach einer Neuinstallation eines solchen Builds muss nur noch Sync aktiviert
+und eingeloggt werden. Ohne Build-Flags (z. B. CI-Builds) bleiben die Felder
+leer und werden unter **Settings → Sync** von Hand eingetragen.
 Von unterwegs muss auf dem Gerät die WireGuard-Verbindung ins Heimnetz aktiv sein.
 
 Hinweis: REST-Aufrufe ohne `Authorization`-Header beantwortet Kong mit 403 –

@@ -49,7 +49,7 @@ Future<void> main() async {
     var key = prefs.getString('supabase_key') ?? '';
     if (url.isEmpty) url = kDefaultSupabaseUrl;
     if (key.isEmpty) key = kDefaultSupabaseAnonKey;
-    if (enabled) {
+    if (enabled && url.isNotEmpty && key.isNotEmpty) {
       await Supabase.initialize(url: url, anonKey: key);
       supabaseReady = true;
       // Lets resolveImage() and the precache fetch from the private bucket.

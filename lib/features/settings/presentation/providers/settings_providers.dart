@@ -10,15 +10,18 @@ const _kSyncEnabled = 'sync_enabled';
 const _kSupabaseUrl = 'supabase_url';
 const _kSupabaseKey = 'supabase_key';
 
-/// Vorbelegung: self-hosted Supabase (VM fwapp-sync im Heimnetz, nur
-/// LAN/WireGuard erreichbar). In den Settings weiterhin änderbar.
-const kDefaultSupabaseUrl = 'http://192.168.178.201:8000';
+/// Vorbelegung des eigenen Servers kommt zur Build-Zeit über
+/// --dart-define-from-file=config/fwapp.local.json (gitignored; Vorlage:
+/// config/fwapp.local.json.example) — instanzspezifische Werte gehören
+/// nicht ins öffentliche Repo. Ohne Build-Flags bleibt alles leer und wird
+/// in den Settings von Hand eingetragen.
+const kDefaultSupabaseUrl =
+    String.fromEnvironment('FWAPP_SUPABASE_URL', defaultValue: '');
 
-/// Anon-Key ist per Design clientseitig-öffentlich; Datenzugriff schützt RLS.
+/// Anon-Key ist clientseitig-öffentlich (steckt in jedem verteilten Build);
+/// Datenzugriff schützt RLS.
 const kDefaultSupabaseAnonKey =
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.'
-    'eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzgzOTgzMDM0LCJleHAiOjE5NDE2NjMwMzR9.'
-    'M9Q8PSKagvtVmX_AGdAdL02lZrR0wJrnLRN9PCYC1Ac';
+    String.fromEnvironment('FWAPP_SUPABASE_ANON_KEY', defaultValue: '');
 
 @Riverpod(keepAlive: true)
 Future<SharedPreferences> sharedPreferences(Ref ref) =>

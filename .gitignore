@@ -47,3 +47,6 @@ android/.kotlin/
 
 # Instanzspezifische Build-Konfiguration (Server-URL, Anon-Key)
 config/fwapp.local.json
+
+# Private Setup-Notizen (Instanzdetails, niemals committen)
+docs/private/

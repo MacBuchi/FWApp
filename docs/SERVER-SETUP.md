@@ -1,8 +1,13 @@
 # FWApp Sync-Server – Setup-Dokumentation
 
-Stand: 2026-07-14. Beschreibt den selbst gehosteten Supabase-Sync-Server für die
+Stand: 2026-07-15. Beschreibt den selbst gehosteten Supabase-Sync-Server für die
 FWApp auf dem heimischen Proxmox-Host, inklusive Betrieb, Backup und
 Wiederherstellung.
+
+> Platzhalter wie `<server-ip>`, `<proxmox-ip>`, `<vm-id>` oder
+> `<backup-job-id>` stehen für instanzspezifische Werte. Unsere konkreten
+> Werte liegen **nicht im Repo**, sondern lokal in `docs/private/`
+> (gitignored, Datei `SETUP-PRIVAT.md`).
 
 ---
 
@@ -16,7 +21,7 @@ Der Server ist **nur im LAN bzw. per WireGuard** erreichbar – es gibt bewusst
 
 ```text
 MacBook (Admin)  ──┐
-                   ├── LAN / WireGuard ──► VM 104 „fwapp-sync“ (192.168.178.201)
+                   ├── LAN / WireGuard ──► VM „fwapp-sync“ (<server-ip>)
 Handy (Member)   ──┘                        └── Docker: Supabase (Kong :8000)
                                                  ├── Auth (GoTrue)
                                                  ├── PostgREST
@@ -32,28 +37,28 @@ Handy (Member)   ──┘                        └── Docker: Supabase (Ko
 
 | Eigenschaft | Wert |
 | --- | --- |
-| Adresse | `root@192.168.178.26` |
+| Adresse | `root@<proxmox-ip>` |
 | Version | Proxmox VE 9.1.1 |
 | Hardware | 8 Kerne, 15 GB RAM (knapp – neue Gäste sparsam dimensionieren) |
 | Storage | `local-lvm` (Thin-LVM, VM-Disks), `vm-backups` (vzdump) |
-| Bestehende Gäste | VM 100 debian, 101 haos, 110 nextcloud, LXC 102 PiHole, 103 caddy |
+| Bestehende Gäste | mehrere VMs/LXCs (Liste: private Notizen) — werden NICHT angefasst |
 
-### VM 104 „fwapp-sync“
+### VM „fwapp-sync“ (VM-ID: siehe private Notizen)
 
 | Eigenschaft | Wert |
 | --- | --- |
 | Basis | Debian 12 genericcloud (Cloud-Init), Image unter `/var/lib/vz/template/` |
 | Ressourcen | 2 vCPU (host), 6 GB RAM mit Ballooning (min. 3 GB), 40 GB Disk (local-lvm) |
-| Netzwerk | Statisch **192.168.178.201/24**, GW/DNS 192.168.178.1, Bridge `vmbr0` |
-| | (IP liegt bewusst außerhalb des Fritzbox-DHCP-Pools .20–.200) |
+| Netzwerk | Statisch **`<server-ip>/24`**, GW/DNS = Router, Bridge `vmbr0` |
+| | (IP liegt bewusst außerhalb des DHCP-Pools des Routers) |
 | Benutzer | `fwapp` (sudo NOPASSWD), SSH-Key `~/.ssh/fwapp_proxmox_ed25519` |
-| Extras | qemu-guest-agent, serielle Konsole (`qm terminal 104`), Docker + Compose |
+| Extras | qemu-guest-agent, serielle Konsole (`qm terminal <vm-id>`), Docker + Compose |
 
 Zugriff:
 
 ```bash
-ssh -i ~/.ssh/fwapp_proxmox_ed25519 fwapp@192.168.178.201   # VM
-ssh -i ~/.ssh/fwapp_proxmox_ed25519 root@192.168.178.26     # Proxmox-Host
+ssh -i ~/.ssh/fwapp_proxmox_ed25519 fwapp@<server-ip>   # VM
+ssh -i ~/.ssh/fwapp_proxmox_ed25519 root@<proxmox-ip>     # Proxmox-Host
 ```
 
 > **Eigenheit:** Die VM erreicht `github.com` nicht (Port 443 blockiert, übriges
@@ -69,8 +74,8 @@ Installiert nach dem offiziellen Docker-Setup (`supabase/supabase` → Ordner
 
 | Eigenschaft | Wert |
 | --- | --- |
-| API-URL (Kong) | `http://192.168.178.201:8000` |
-| Studio/Dashboard | gleiche URL, Login `fwadmin` (Passwort siehe Secrets) |
+| API-URL (Kong) | `http://<server-ip>:8000` |
+| Studio/Dashboard | gleiche URL, Login: siehe Secrets |
 | Container | 11 Stück (db, kong, auth, rest, realtime, storage, imgproxy, meta, studio, pooler, edge-functions) |
 | Konfiguration | `~/supabase/.env` (chmod 600) |
 
@@ -81,8 +86,8 @@ Skripte `utils/generate-keys.sh` und `utils/add-new-auth-keys.sh`) und stehen
 **nicht** im Repo. Ablage:
 
 - In der VM: `/home/fwapp/fwapp-secrets.txt` (chmod 600) und `~/supabase/.env`
-- Kopie: `~/Desktop/fwapp-secrets.txt` auf dem MacBook (besser: in den
-  Passwortmanager übernehmen)
+- Lokale Kopie: `docs/private/fwapp-secrets.txt` (gitignored; besser
+  zusätzlich in den Passwortmanager übernehmen)
 
 Enthalten: `ANON_KEY` (öffentlicher Client-Key für die App), `SERVICE_ROLE_KEY`,
 `JWT_SECRET`, Postgres-Passwort, Dashboard-Login sowie die App-Konten.
@@ -161,10 +166,10 @@ Cronjob des Users `fwapp`, täglich **03:15 Uhr** (`crontab -l`):
 ### Zusätzlich empfohlen: vzdump auf dem Host
 
 Der nächtliche vzdump-Job (02:30, Storage `vm-backups`) sichert bisher nur die
-älteren Gäste. VM 104 aufnehmen mit:
+älteren Gäste. Die Sync-VM aufnehmen mit:
 
 ```bash
-pvesh set /cluster/backup/backup-eae87c36-99cc --vmid 101,102,103,104,110
+pvesh set /cluster/backup/<backup-job-id> --vmid <bisherige-ids>,<vm-id>
 ```
 
 ### Restore (geprobt am 2026-07-14)
@@ -207,7 +212,7 @@ docker exec supabase-db psql -U supabase_admin -d postgres -c "NOTIFY pgrst, 're
 ```
 
 Die VM startet automatisch mit dem Host nicht – falls gewünscht, auf dem Host
-`qm set 104 --onboot 1` setzen. Docker-Container haben Restart-Policys aus dem
+`qm set <vm-id> --onboot 1` setzen. Docker-Container haben Restart-Policys aus dem
 offiziellen Compose-File und kommen nach einem VM-Reboot selbst hoch.
 
 ---

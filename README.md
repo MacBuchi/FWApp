@@ -143,8 +143,8 @@ in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Lizenz
 
-Noch nicht final festgelegt (MIT oder GPL-3.0 in Klärung). Bis dahin gilt:
-Quellcode einsehbar, Nachnutzung auf Anfrage.
+[MIT](LICENSE) — nachnutzen, anpassen, weitergeben ausdrücklich erwünscht,
+gerade durch andere Wehren.
 
 ## Bewusst nicht im Scope
 

@@ -163,6 +163,39 @@ man „zu Hause“ ist. Fürs Publizieren/Synchronisieren ins normale WLAN wechs
 
 ---
 
+## Web-App (iPhone-Zwischenlösung, seit 2026-07-17)
+
+Ohne Apple-Developer-Account läuft die App auf iPhones als **Web-App** aus
+dem Browser — gehostet als nginx-Container **in derselben VM** neben dem
+Supabase-Stack, erreichbar unter `http://<server-ip>:8080` (nur
+LAN/WireGuard, bewusst kein HTTPS/keine Portfreigabe).
+
+**Bewusste Einschränkung:** Ohne HTTPS gibt es auf iOS keinen Service
+Worker — die Web-App braucht daher beim Öffnen eine Verbindung zum Server
+(WLAN/WireGuard), kein Offline-Start wie bei der nativen App. Der lokale
+Datenbestand/Lernstand bleibt aber im Browser gespeichert (IndexedDB/OPFS).
+Falls später echtes Offline auf iOS gewünscht ist: eigene Domain +
+Let's-Encrypt-Zertifikat nachrüsten oder TestFlight (Apple-Account).
+
+Setup in der VM (`~/fwapp-web/`): `docker-compose.yml` mit `nginx:alpine`,
+Port `8080:80`, Volumes `./html` (Webroot, read-only) und `./nginx.conf`
+(gzip an; `Cache-Control: no-cache` für `index.html`/`flutter_bootstrap.js`,
+lange Cache-Zeiten für gehashte Assets). `docker compose up -d` — Restart-
+Policy bringt den Container nach Reboots selbst hoch. `rsync` muss in der
+VM installiert sein (`apt-get install rsync`).
+
+**Deploy** (vom Admin-Rechner, LAN nötig):
+
+```bash
+FWAPP_WEB_SSH_OPTS="-i ~/.ssh/<key>" bash tool/deploy_web.sh "fwapp@<server-ip>"
+```
+
+Das Skript baut `flutter build web --release` mit der Vorbelegung aus
+`config/fwapp.local.json` und synct nach `~/fwapp-web/html/`. Durch die
+No-Cache-Header greifen Updates beim nächsten Seiten-Reload.
+
+---
+
 ## Backup & Wiederherstellung
 
 ### Automatisch (in der VM)

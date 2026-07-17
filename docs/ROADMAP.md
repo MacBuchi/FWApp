@@ -137,8 +137,12 @@ Ziel: Die Wehr arbeitet mit der App.
      (Download-Link/QR im Gerätehaus). Signatur über festen Release-Keystore
      (Ablage/Secrets siehe private Notizen); PRs ohne Version-Bump lösen bewusst
      kein Release aus. Play Store optional später.
-   - **iOS:** Apple Developer Program nötig (99 €/Jahr) → TestFlight „Internal/External Testing“
-     (bis 10.000 Tester, reicht für jede Wehr). Wartefrist: App-Review für External ~1–2 Tage.
+   - **iOS: ✅ Zwischenlösung Web-App (2026-07-17, Entscheidung Marcus — kein Apple-Account
+     nötig):** Flutter-Web-Build als nginx-Container auf dem eigenen Server, `http://…:8080`
+     im LAN/WireGuard, „Zum Home-Bildschirm“ in Safari; Deploy per `tool/deploy_web.sh`
+     (siehe [SERVER-SETUP.md](SERVER-SETUP.md)). Einschränkung: braucht Serververbindung
+     beim Öffnen (kein Offline-Start ohne HTTPS). Falls später echtes iOS-Offline gewünscht:
+     Apple Developer Program (99 €/Jahr) → TestFlight, oder Domain + HTTPS für eine volle PWA.
    - **macOS (Admin-Gerät):** lokaler Build reicht für Marcus; für weitere Macs Developer-ID +
      Notarisierung (gleiche Apple-Mitgliedschaft).
    - **Web (Admin im Browser):** `build/web` auf Netlify/Vercel (kostenlos) oder nur lokal starten.

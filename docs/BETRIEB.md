@@ -29,8 +29,12 @@ Datenschutz. Technisches Server-Setup: [SERVER-SETUP.md](SERVER-SETUP.md).
 >    ist die WireGuard-Verbindung nötig (nur für Admins relevant –
 >    Lernen geht immer, auch ohne Netz).
 >
-> **iPhone:** aktuell nur über den Admin (Entwickler-Build), TestFlight ist
-> geplant.
+> **iPhone:** die App als **Web-App** nutzen — im Gerätehaus-/Heim-WLAN
+> `http://<server-adresse>:8080` in Safari öffnen (Adresse siehe
+> Zugangszettel), einloggen, dann über Teilen-Menü **„Zum Home-Bildschirm“**
+> — sieht danach aus wie eine App. Wichtig: braucht beim Öffnen Verbindung
+> zum Server (WLAN oder WireGuard); wer volles Offline braucht, nimmt ein
+> Android-Gerät mit APK.
 
 Updates: Neue App-Version installieren = einfach das neue APK vom Release
 laden und „drüberinstallieren“ – Lernstand und Daten bleiben erhalten

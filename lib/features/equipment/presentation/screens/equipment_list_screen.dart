@@ -45,7 +45,7 @@ class _EquipmentListScreenState extends ConsumerState<EquipmentListScreen> {
                 _searchCtrl.clear();
               },
             ),
-          if (ref.watch(isAdminProvider))
+          if (ref.watch(canEditProvider))
             IconButton(
               icon: const Icon(Icons.add),
               tooltip: 'Gerät hinzufügen',

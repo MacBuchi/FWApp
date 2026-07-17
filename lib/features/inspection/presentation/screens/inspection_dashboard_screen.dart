@@ -122,7 +122,7 @@ class _DueTile extends ConsumerWidget {
                         ? Colors.red.shade700
                         : Colors.orange.shade800,
                     fontWeight: FontWeight.bold)),
-            if (ref.watch(isAdminProvider))
+            if (ref.watch(canEditProvider))
               TextButton(
                 style: TextButton.styleFrom(
                     padding: EdgeInsets.zero,

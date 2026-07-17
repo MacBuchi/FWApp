@@ -27,7 +27,7 @@ class VehicleListScreen extends ConsumerWidget {
             tooltip: 'Gerätekatalog durchsuchen',
             onPressed: () => context.push('/equipment'),
           ),
-          if (ref.watch(isAdminProvider))
+          if (ref.watch(canEditProvider))
             IconButton(
               icon: const Icon(Icons.add),
               tooltip: 'Fahrzeug hinzufügen',

@@ -2,8 +2,9 @@
 /// (`supabase start`). Skips itself when the stack is not running.
 ///
 /// Requires the test users created for local dev:
-///   admin@fw.local / test1234  (profiles.role = 'admin')
-///   member@fw.local / test1234 (profiles.role = 'member')
+///   admin@fw.local / test1234       (profiles.role = 'admin')
+///   geraetewart@fw.local / test1234 (profiles.role = 'geraetewart')
+///   member@fw.local / test1234      (profiles.role = 'member')
 library;
 import 'dart:io';
 
@@ -135,7 +136,7 @@ Future<void> main() async {
     await expectLater(
       memberSync.publish(),
       throwsA(isA<PostgrestException>().having(
-          (e) => e.message, 'message', contains('admin role required'))),
+          (e) => e.message, 'message', contains('editor role'))),
     );
   });
 
@@ -166,5 +167,27 @@ Future<void> main() async {
     final compartments =
         await memberDb.compartmentDao.getByVehicle(target.id);
     expect(compartments, isEmpty);
+  });
+
+  test('geraetewart may publish (M7 editor role), member pulls it', () async {
+    final gwDb = createTestDatabase();
+    final gwClient = SupabaseClient(_url, _anonKey);
+    addTearDown(() async {
+      await gwDb.close();
+      await gwClient.dispose();
+    });
+    await gwClient.auth.signInWithPassword(
+        email: 'geraetewart@fw.local', password: 'test1234');
+    final gwSync = SyncService(gwDb, gwClient);
+
+    await gwSync.pullIfNewer(force: true);
+    await gwDb.vehicleDao.insertVehicle(
+        VehiclesCompanion.insert(name: 'MTW GW-E2E', type: 'MTW'));
+    final published = await gwSync.publish();
+    expect(published, greaterThan(0));
+
+    await memberSync.pullIfNewer();
+    final memberVehicles = await memberDb.vehicleDao.getAll();
+    expect(memberVehicles.map((v) => v.name), contains('MTW GW-E2E'));
   });
 }

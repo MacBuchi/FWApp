@@ -35,7 +35,7 @@ class EquipmentDetailScreen extends ConsumerWidget {
           appBar: AppBar(
             title: Text(item.name),
             actions: [
-              if (ref.watch(isAdminProvider))
+              if (ref.watch(canEditProvider))
                 IconButton(
                   icon: const Icon(Icons.edit),
                   tooltip: 'Bearbeiten',
@@ -70,7 +70,7 @@ class EquipmentDetailScreen extends ConsumerWidget {
 
               // Photo workflow (M2): admins capture/replace the photo right
               // here — one tap per device on the Gerätehaus walk-through.
-              if (ref.watch(isAdminProvider)) ...[
+              if (ref.watch(canEditProvider)) ...[
                 const SizedBox(height: 8),
                 Center(
                   child: OutlinedButton.icon(

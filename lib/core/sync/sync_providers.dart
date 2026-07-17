@@ -43,10 +43,18 @@ final currentUserRoleProvider = FutureProvider<String?>((ref) async {
   return row?['role'] as String?;
 });
 
-/// Gate for all editing UI.
+/// Gate for all editing UI (M7: Rollen admin | geraetewart | member).
 /// - Not connected to a department (pure local/demo mode): full control.
-/// - Connected: only the admin role may edit; members (and signed-out
-///   users on a connected install) are read-only.
+/// - Connected: admin und geraetewart dürfen bearbeiten/veröffentlichen;
+///   members (and signed-out users on a connected install) are read-only.
+final canEditProvider = Provider<bool>((ref) {
+  if (!ref.watch(supabaseReadyProvider)) return true;
+  final role = ref.watch(currentUserRoleProvider).value;
+  return role == 'admin' || role == 'geraetewart';
+});
+
+/// Strictly the admin role (Nutzerverwaltung/Reset, M7 Etappe 3).
+/// In pure local mode true, wie canEdit.
 final isAdminProvider = Provider<bool>((ref) {
   if (!ref.watch(supabaseReadyProvider)) return true;
   return ref.watch(currentUserRoleProvider).value == 'admin';

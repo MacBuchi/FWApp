@@ -38,7 +38,7 @@ class VehicleDetailScreen extends ConsumerWidget {
           appBar: AppBar(
             title: Text(vehicle.name),
             actions: [
-              if (ref.watch(isAdminProvider)) ...[
+              if (ref.watch(canEditProvider)) ...[
                 IconButton(
                   icon: const Icon(Icons.edit),
                   tooltip: 'Bearbeiten',
@@ -104,7 +104,7 @@ class VehicleDetailScreen extends ConsumerWidget {
                     children: [
                       Text('Beladefächer',
                           style: Theme.of(context).textTheme.titleMedium),
-                      if (ref.watch(isAdminProvider))
+                      if (ref.watch(canEditProvider))
                         TextButton.icon(
                           onPressed: () => context
                               .push('/vehicles/$vehicleId/compartments'),

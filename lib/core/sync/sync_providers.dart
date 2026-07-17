@@ -2,11 +2,16 @@
 /// role (admin/member), and the SyncService. Written as manual providers
 /// (riverpod_generator cannot emit code for supabase_flutter's types).
 library;
+import 'dart:async' show TimeoutException;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/database/database_providers.dart';
 import 'package:fwapp/core/sync/image_sync_service.dart';
 import 'package:fwapp/core/sync/sync_service.dart';
+import 'package:fwapp/core/utils/image_utils.dart'
+    show supabaseStorageBaseUrl, supabaseStorageHeaders;
+import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Set from main(): whether Supabase.initialize() succeeded this launch.
@@ -61,6 +66,27 @@ final syncServiceProvider = Provider<SyncService?>((ref) {
   service.startDirtyTracking();
   ref.onDispose(service.dispose);
   return service;
+});
+
+/// Live-Erreichbarkeitscheck des Sync-Servers (GET /auth/v1/health).
+/// Zeigt VOR dem Login, ob der Server überhaupt antwortet — deckt die
+/// häufigen Fälle auf (Gastnetz, WireGuard aus, Server down), die sich
+/// sonst erst als fehlgeschlagener Login äußern. Erneut prüfen per
+/// ref.invalidate(serverHealthProvider).
+final serverHealthProvider = FutureProvider.autoDispose<bool>((ref) async {
+  final base = supabaseStorageBaseUrl;
+  if (base == null) return false;
+  try {
+    final resp = await http
+        .get(Uri.parse('$base/auth/v1/health'),
+            headers: supabaseStorageHeaders?.call())
+        .timeout(const Duration(seconds: 4));
+    return resp.statusCode == 200;
+  } on TimeoutException {
+    return false;
+  } catch (_) {
+    return false;
+  }
 });
 
 /// Local sync bookkeeping (last pulled version, dirty flag) as a stream.

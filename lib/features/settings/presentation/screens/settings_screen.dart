@@ -103,7 +103,10 @@ class SettingsScreen extends ConsumerWidget {
               ],
             ),
           ),
-          if (ref.watch(supabaseReadyProvider)) const _ConnectionSection(),
+          if (ref.watch(supabaseReadyProvider)) ...[
+            const _ServerHealthTile(),
+            const _ConnectionSection(),
+          ],
 
           // ─── Bibliothek ───────────────────────────────────────
           _SectionHeader('Gerätebibliothek'),
@@ -197,6 +200,39 @@ class _LibraryInfoTile extends StatelessWidget {
   }
 }
 
+/// Live-Verbindungsstatus zum Sync-Server — sichtbar schon VOR dem Login,
+/// damit Gastnetz-/WireGuard-Probleme nicht wie falsche Zugangsdaten aussehen.
+class _ServerHealthTile extends ConsumerWidget {
+  const _ServerHealthTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final health = ref.watch(serverHealthProvider);
+    return health.when(
+      loading: () => const ListTile(
+        leading: SizedBox(
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(strokeWidth: 2.5)),
+        title: Text('Prüfe Server…'),
+      ),
+      error: (_, __) => _statusTile(ref, reachable: false),
+      data: (reachable) => _statusTile(ref, reachable: reachable),
+    );
+  }
+
+  Widget _statusTile(WidgetRef ref, {required bool reachable}) => ListTile(
+        leading: Icon(reachable ? Icons.check_circle : Icons.cancel,
+            color: reachable ? Colors.green : Colors.red),
+        title: Text(
+            reachable ? 'Server erreichbar' : 'Server nicht erreichbar'),
+        subtitle: Text(reachable
+            ? 'Verbindung steht – zum erneuten Prüfen tippen'
+            : 'WLAN/WireGuard prüfen (Gastnetz?) – zum erneuten Prüfen tippen'),
+        onTap: () => ref.invalidate(serverHealthProvider),
+      );
+}
+
 /// Login, role, pull and publish actions — shown only when Supabase was
 /// initialised at app start.
 class _ConnectionSection extends ConsumerWidget {
@@ -280,6 +316,12 @@ class _ConnectionSection extends ConsumerWidget {
               decoration: const InputDecoration(labelText: 'Passwort'),
               obscureText: true,
             ),
+            const SizedBox(height: 12),
+            const Text(
+              'Keine Registrierung nötig — die Zugangsdaten vergibt der '
+              'Gerätewart (Zugangszettel im Gerätehaus).',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
           ],
         ),
         actions: [
@@ -312,8 +354,12 @@ class _ConnectionSection extends ConsumerWidget {
       }
     } on AuthException catch (e) {
       if (context.mounted) {
+        final hint = e.message.toLowerCase().contains('credentials')
+            ? 'E-Mail oder Passwort falsch — Daten vom Zugangszettel '
+                'übernehmen.'
+            : e.message;
         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Anmeldung fehlgeschlagen: ${e.message}')));
+            SnackBar(content: Text('Anmeldung fehlgeschlagen: $hint')));
       }
     } catch (e) {
       if (context.mounted) {

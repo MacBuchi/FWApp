@@ -22,7 +22,10 @@ Datenschutz. Technisches Server-Setup: [SERVER-SETUP.md](SERVER-SETUP.md).
 > 2. **Sync aktivieren:** App öffnen → **Mehr → Einstellungen → Sync**
 >    einschalten. Server ist bereits voreingestellt.
 > 3. **Einloggen** mit dem Mitglieder-Konto der Abteilung
->    (E-Mail + Passwort: siehe Zugangszettel im Gerätehaus).
+>    (E-Mail + Passwort: siehe Zugangszettel im Gerätehaus). Eine
+>    Registrierung gibt es nicht — Konten vergibt der Gerätewart.
+>    Ob die Verbindung steht, zeigt der grüne Haken „Server erreichbar“
+>    direkt über dem Login.
 > 4. Die App lädt den aktuellen Datenbestand und alle Gerätefotos –
 >    danach funktioniert **alles auch offline** (Einsatz, Funkloch, Keller).
 > 5. **Von außerhalb des Gerätehaus-/Heim-WLANs:** Für Updates der Daten
@@ -117,7 +120,7 @@ Prüfhistorie oder Instanzen – die hängen an den physischen Geräten.
 
 | Symptom | Ursache / Lösung |
 | --- | --- |
-| „Server nicht erreichbar“ zu Hause/im Gerätehaus | Handy hängt im **Gast-WLAN** (vom Heimnetz isoliert) → ins normale WLAN wechseln. |
+| „Server nicht erreichbar“ zu Hause/im Gerätehaus | Handy hängt im **Gast-WLAN** (vom Heimnetz isoliert) → ins normale WLAN wechseln. Status live prüfen: Einstellungen → Cloud-Synchronisation → Kachel „Server erreichbar“ (tippen = neu prüfen). |
 | „Server nicht erreichbar“ unterwegs | WireGuard-Verbindung aktivieren (nur nötig für Pull/Veröffentlichen – Lernen geht offline). |
 | Login schlägt fehl | Zugangsdaten vom Zugangszettel exakt übernehmen; Groß-/Kleinschreibung des Passworts beachten. |
 | Veröffentlichen: Versionskonflikt | Anderer Admin war schneller → Pull, prüfen, erneut veröffentlichen (siehe oben). |

@@ -1,8 +1,10 @@
 /// settings_screen_widget_test.dart – Settings states: sync section and the
 /// restart hint when credentials are configured but not yet active.
 library;
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/core/database/app_database.dart';
+import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/features/settings/presentation/screens/settings_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -50,4 +52,47 @@ void main() {
   // Bewusst kein Test für den metadata.json-FutureBuilder: Asset-I/O in
   // FutureBuildern lässt sich in der Fake-Async-Testumgebung nicht
   // zuverlässig antreiben, und die Kachel ist rein kosmetisch.
+
+  Widget readyApp(AppDatabase db, {required bool healthy}) => buildTestApp(
+        db: db,
+        home: const SettingsScreen(),
+        overrides: [
+          supabaseReadyProvider.overrideWithValue(true),
+          supabaseClientProvider.overrideWithValue(null),
+          serverHealthProvider.overrideWith((ref) async => healthy),
+        ],
+      );
+
+  testWidgets('Server erreichbar: grüner Status vor dem Login',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({'sync_enabled': true});
+    await tester.pumpWidget(readyApp(db, healthy: true));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Server erreichbar'), findsOneWidget);
+    expect(find.text('Mit Abteilung verbinden'), findsOneWidget);
+  });
+
+  testWidgets('Server nicht erreichbar: roter Status mit Gastnetz-Hinweis',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({'sync_enabled': true});
+    await tester.pumpWidget(readyApp(db, healthy: false));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Server nicht erreichbar'), findsOneWidget);
+    expect(find.textContaining('Gastnetz'), findsOneWidget);
+  });
+
+  testWidgets('Login-Dialog erklärt die fehlende Registrierung',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({'sync_enabled': true});
+    await tester.pumpWidget(readyApp(db, healthy: true));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Mit Abteilung verbinden'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Anmelden'), findsWidgets);
+    expect(find.textContaining('Keine Registrierung nötig'), findsOneWidget);
+  });
 }

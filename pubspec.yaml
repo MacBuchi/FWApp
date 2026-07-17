@@ -2,7 +2,7 @@ name: fwapp
 description: Feuerwehr-Lernapp – Fahrzeuge, Geräte, Beladepläne und Trainings-Spielmodi.
 publish_to: 'none'
 
-version: 1.1.0+2
+version: 1.1.1+3
 
 environment:
   sdk: ^3.7.0
@@ -37,6 +37,7 @@ dependencies:
   flutter_cache_manager: ^3.4.1
   image: ^4.3.0
   cross_file: ^0.3.4
+  http: ^1.2.0
 
   # Excel import
   excel: ^4.0.6
@@ -58,6 +59,8 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  # Nur für den Override-Typ im Test-Harness (riverpod/misc.dart).
+  riverpod: ^3.0.0
   build_runner: ^2.4.14
   drift_dev: ^2.21.0
   riverpod_generator: ^4.0.0

@@ -109,9 +109,17 @@ Enthalten: `ANON_KEY` (öffentlicher Client-Key für die App), `SERVICE_ROLE_KEY
   400 (Policy greift), Member-Lesen über `/object/authenticated/` 200,
   anonymer Zugriff 400.
 
+- Migration [supabase/migrations/20260717000000_role_geraetewart.sql](../supabase/migrations/20260717000000_role_geraetewart.sql)
+  (M7 Etappe 2, eingespielt + verifiziert 2026-07-17): Rollenmodell
+  `admin | geraetewart | member` — `is_editor()` erlaubt Admin UND Gerätewart
+  das Veröffentlichen und die Foto-Verwaltung; `is_admin()` bleibt für
+  Admin-only-Funktionen (Nutzerverwaltung, Etappe 3) bestehen.
+
 - Konten (Passwörter siehe Secrets-Datei):
-  - `admin@fw.local` – Rolle `admin` (darf publizieren)
+  - `admin@fw.local` – Rolle `admin` (volle Verwaltung, darf publizieren)
   - `member@fw.local` – Rolle `member` (liest)
+  - Gerätewart-Konten (Rolle `geraetewart`) entstehen mit der
+    Nutzerverwaltung aus M7 Etappe 3.
 
 ### Verifiziert (Abnahmetests vom 2026-07-14)
 

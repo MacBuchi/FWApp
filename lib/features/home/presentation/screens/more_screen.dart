@@ -11,7 +11,7 @@ class MoreScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isAdmin = ref.watch(isAdminProvider);
+    final isAdmin = ref.watch(canEditProvider);
     final syncMeta = ref.watch(syncMetaStreamProvider).value;
     final dirty = syncMeta?.localDirty ?? false;
 

@@ -122,8 +122,8 @@ Ziel: Die Wehr arbeitet mit der App.
    tägliche pg_dump-Backups mit geprobter Restore-Prozedur sind eingerichtet. Der ursprüngliche
    Plan (supabase.com Frankfurt + Keep-Alive + GitHub-Actions-Backup) ist damit überholt.
    Noch offen aus diesem Block:
-   - Accounts: individuelle Admin-Accounts (Marcus + Stellvertreter), EIN geteilter
-     Mitglieder-Account pro Abteilung (Zugangszettel im Gerätehaus). `profiles.role` per SQL setzen.
+   - Accounts: → **abgelöst durch M7 Etappe 3** (individuelle Konten mit Nutzername +
+     Initialpasswort-Pflichtwechsel; Entscheidung 2026-07-17).
      (`admin@fw.local` / `member@fw.local` existieren als Startpunkt.)
    - vzdump: ✅ eigener wöchentlicher Host-Backup-Job für die Sync-VM (2026-07-16).
      Optional bleibt `--onboot 1`.
@@ -154,6 +154,33 @@ Ziel: Die Wehr arbeitet mit der App.
 
 **Verifikation:** „Tag-1-Probe“: zwei fremde Geräte (1× Android, 1× iOS) onboarden, Pull,
 Flugmodus-Nutzung, Admin ändert + veröffentlicht, Geräte aktualisieren. Backup einspielen geprobt.
+
+## M7 – Öffentliche Erreichbarkeit & Rollen/Auth-Ausbau (beschlossen 2026-07-17)
+
+Entscheidungen Marcus (Domain, Cloudflare-Free- und Brevo-Konto vorhanden;
+Umsetzung in drei Etappen, Web-App **und** API öffentlich, individuelle
+Mitglieder-Konten; Passkeys bewusst später):
+
+1. **Cloudflare Tunnel + HTTPS + Brevo (Etappe 1):** `cloudflared`-Container in
+   der Sync-VM (nur ausgehende Verbindung — keine Portfreigabe, Heim-IP bleibt
+   verborgen). Subdomains `app.…` (nginx/Web-App) und `api.…` (Kong; nur
+   /auth, /rest, /storage — Studio bleibt intern), TLS an der Cloudflare-Edge,
+   Rate-Limit vor /auth. Damit wird die Web-App zur **vollen PWA** (Offline-
+   Start auf iOS) und die Android-App synct ohne WireGuard. Brevo als
+   GoTrue-SMTP (Passwort-Mails). ⏳ wartet auf Instanz-Inputs (Domain,
+   Tunnel-Token, SMTP-Key — Ablage in docs/private/).
+2. **Rollenmodell (Etappe 2): 🔨 in Arbeit.** `admin | geraetewart | member`:
+   Gerätewart darf bearbeiten (inkl. Geräte entfernen), veröffentlichen und
+   Fotos verwalten; Admin zusätzlich Nutzerverwaltung/Reset (Etappe 3).
+   Migration `20260717000000_role_geraetewart.sql` (`is_editor()`,
+   publish-Guard, Storage-Policies), App-Gating über `canEditProvider`.
+3. **Auth-UX (Etappe 3):** Login per **Nutzername** (App mappt intern auf
+   E-Mail-Form), Initialpasswort mit **Pflichtwechsel beim ersten Login**
+   (`must_change_password`-Flag), Admin-Nutzerverwaltung in der App über eine
+   **Edge Function** mit Service-Role-Rechten (Anlegen, Passwort-Reset,
+   Deaktivieren — der mächtige Key bleibt auf dem Server). Session übersteht
+   App-Updates (heute schon, bleibt Anforderung). Ersetzt den
+   M5-Punkt „Accounts".
 
 ## M6 – Open Source (~1 Tag)
 

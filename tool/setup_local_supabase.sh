@@ -32,9 +32,12 @@ ensure_user() {
 }
 
 ADMIN_ID=$(ensure_user admin@fw.local)
+GW_ID=$(ensure_user geraetewart@fw.local)
 ensure_user member@fw.local > /dev/null
 
 auth -X PATCH "$API/rest/v1/profiles?id=eq.$ADMIN_ID" \
   -H "Content-Type: application/json" -d '{"role":"admin"}' > /dev/null
+auth -X PATCH "$API/rest/v1/profiles?id=eq.$GW_ID" \
+  -H "Content-Type: application/json" -d '{"role":"geraetewart"}' > /dev/null
 
-echo "OK: admin@fw.local (admin) und member@fw.local (member) eingerichtet."
+echo "OK: admin@fw.local (admin), geraetewart@fw.local (geraetewart) und member@fw.local (member) eingerichtet."

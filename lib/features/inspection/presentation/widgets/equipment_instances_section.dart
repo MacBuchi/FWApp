@@ -37,7 +37,7 @@ class EquipmentInstancesSection extends ConsumerWidget {
               child: Text('Instanzen & Prüfungen',
                   style: Theme.of(context).textTheme.titleMedium),
             ),
-            if (ref.watch(isAdminProvider))
+            if (ref.watch(canEditProvider))
               IconButton(
                 icon: const Icon(Icons.add_circle_outline),
                 tooltip: 'Instanz hinzufügen',
@@ -140,7 +140,7 @@ class _InstanceCard extends ConsumerWidget {
               ],
             ),
           ),
-          if (ref.watch(isAdminProvider))
+          if (ref.watch(canEditProvider))
             OverflowBar(
               children: [
                 TextButton.icon(
@@ -226,7 +226,7 @@ class _ScheduleTile extends ConsumerWidget {
         children: [
           Text(_formatDate(schedule.dueAt),
               style: TextStyle(color: dueColor, fontWeight: FontWeight.bold)),
-          if (ref.watch(isAdminProvider))
+          if (ref.watch(canEditProvider))
             PopupMenuButton<String>(
             onSelected: (value) async {
               switch (value) {

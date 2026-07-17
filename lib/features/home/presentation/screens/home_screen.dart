@@ -14,7 +14,7 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final statsAsync = ref.watch(dashboardStatsProvider);
-    final isAdmin = ref.watch(isAdminProvider);
+    final isAdmin = ref.watch(canEditProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Moin! 👋')),

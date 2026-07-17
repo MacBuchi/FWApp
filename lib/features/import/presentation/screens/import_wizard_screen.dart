@@ -717,7 +717,7 @@ class _ResultView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isAdmin = ref.watch(isAdminProvider);
+    final isAdmin = ref.watch(canEditProvider);
     final syncService = ref.watch(syncServiceProvider);
 
     return ListView(

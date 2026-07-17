@@ -242,7 +242,7 @@ class _ConnectionSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final session = ref.watch(sessionStreamProvider).value;
     final role = ref.watch(currentUserRoleProvider).value;
-    final isAdmin = ref.watch(isAdminProvider);
+    final canEdit = ref.watch(canEditProvider);
     final syncMeta = ref.watch(syncMetaStreamProvider).value;
 
     if (session == null) {
@@ -254,16 +254,22 @@ class _ConnectionSection extends ConsumerWidget {
       );
     }
 
+    final roleLabel = switch (role) {
+      'admin' => 'Rolle: Admin – volle Verwaltung, darf bearbeiten und '
+          'veröffentlichen',
+      'geraetewart' =>
+        'Rolle: Gerätewart – darf bearbeiten und veröffentlichen',
+      'member' => 'Rolle: Mitglied – nur Lesezugriff',
+      null => 'Rolle wird geladen...',
+      _ => 'Rolle: $role',
+    };
+
     return Column(
       children: [
         ListTile(
-          leading: Icon(isAdmin ? Icons.admin_panel_settings : Icons.person),
+          leading: Icon(canEdit ? Icons.admin_panel_settings : Icons.person),
           title: Text(session.user.email ?? 'Angemeldet'),
-          subtitle: Text(isAdmin
-              ? 'Rolle: Admin – darf bearbeiten und veröffentlichen'
-              : role == null
-                  ? 'Rolle wird geladen...'
-                  : 'Rolle: Mitglied – nur Lesezugriff'),
+          subtitle: Text(roleLabel),
           trailing: TextButton(
             onPressed: () async {
               await ref.read(supabaseClientProvider)?.auth.signOut();
@@ -280,7 +286,7 @@ class _ConnectionSection extends ConsumerWidget {
                   '${_fmt(syncMeta.lastPulledAt!)}'),
           onTap: () => _pull(context, ref),
         ),
-        if (isAdmin)
+        if (canEdit)
           ListTile(
             leading: Icon(Icons.cloud_upload,
                 color: (syncMeta?.localDirty ?? false) ? Colors.orange : null),

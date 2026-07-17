@@ -3,13 +3,21 @@
 library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/database/database_providers.dart';
 
-Widget buildTestApp({required AppDatabase db, required Widget home}) =>
+Widget buildTestApp({
+  required AppDatabase db,
+  required Widget home,
+  List<Override> overrides = const [],
+}) =>
     ProviderScope(
-      overrides: [appDatabaseProvider.overrideWithValue(db)],
+      overrides: [
+        appDatabaseProvider.overrideWithValue(db),
+        ...overrides,
+      ],
       child: MaterialApp(home: home),
     );
 

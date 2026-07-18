@@ -6,10 +6,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:fwapp/core/sync/auth_utils.dart';
 import 'package:fwapp/core/sync/image_precache.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/features/settings/presentation/providers/settings_providers.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' show AuthException;
+import 'package:supabase_flutter/supabase_flutter.dart'
+    show AuthException, UserAttributes;
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -244,6 +246,7 @@ class _ConnectionSection extends ConsumerWidget {
     final role = ref.watch(currentUserRoleProvider).value;
     final canEdit = ref.watch(canEditProvider);
     final syncMeta = ref.watch(syncMetaStreamProvider).value;
+    final mustChange = ref.watch(mustChangePasswordProvider).value ?? false;
 
     if (session == null) {
       return ListTile(
@@ -277,6 +280,15 @@ class _ConnectionSection extends ConsumerWidget {
             child: const Text('Abmelden'),
           ),
         ),
+        if (mustChange)
+          ListTile(
+            leading: const Icon(Icons.lock_reset, color: Colors.red),
+            title: const Text('Passwort ändern erforderlich',
+                style: TextStyle(color: Colors.red)),
+            subtitle: const Text(
+                'Das Initialpasswort vom Zugangszettel muss ersetzt werden'),
+            onTap: () => showForcedPasswordChange(context, ref),
+          ),
         ListTile(
           leading: const Icon(Icons.refresh),
           title: const Text('Jetzt aktualisieren'),
@@ -313,8 +325,12 @@ class _ConnectionSection extends ConsumerWidget {
           children: [
             TextField(
               controller: emailCtrl,
-              decoration: const InputDecoration(labelText: 'E-Mail'),
+              decoration: const InputDecoration(
+                labelText: 'Nutzername',
+                helperText: 'Vom Zugangszettel (oder vollständige E-Mail)',
+              ),
               keyboardType: TextInputType.emailAddress,
+              autocorrect: false,
               autofocus: true,
             ),
             TextField(
@@ -343,12 +359,18 @@ class _ConnectionSection extends ConsumerWidget {
     if (ok != true || !context.mounted) return;
     try {
       await ref.read(supabaseClientProvider)?.auth.signInWithPassword(
-            email: emailCtrl.text.trim(),
+            email: loginInputToEmail(emailCtrl.text),
             password: passwordCtrl.text,
           );
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Angemeldet. Lade Datenbestand...')));
+      }
+      // Initialpasswort? Dann MUSS es jetzt geändert werden (M7 Etappe 3).
+      final mustChange =
+          await ref.refresh(mustChangePasswordProvider.future);
+      if (mustChange && context.mounted) {
+        await showForcedPasswordChange(context, ref);
       }
       final version = await ref.read(syncServiceProvider)?.pullIfNewer();
       if (version != null) {
@@ -436,6 +458,99 @@ class _ConnectionSection extends ConsumerWidget {
       '${dt.month.toString().padLeft(2, '0')}.'
       '${dt.year} ${dt.hour.toString().padLeft(2, '0')}:'
       '${dt.minute.toString().padLeft(2, '0')}';
+}
+
+/// Erzwungener Passwortwechsel nach dem ersten Login mit Initialpasswort
+/// (M7 Etappe 3). Nicht wegklickbar — die einzigen Auswege sind ein neues
+/// Passwort oder Abmelden. Löscht danach das must_change_password-Flag
+/// per RPC und invalidiert den Provider.
+Future<void> showForcedPasswordChange(
+    BuildContext context, WidgetRef ref) async {
+  final pw1 = TextEditingController();
+  final pw2 = TextEditingController();
+  String? error;
+  final changed = await showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (ctx) => PopScope(
+      canPop: false,
+      child: StatefulBuilder(
+        builder: (ctx, setState) => AlertDialog(
+          title: const Text('Neues Passwort festlegen'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Du bist mit einem Initialpasswort angemeldet. Bitte lege '
+                'jetzt dein eigenes Passwort fest (mindestens 8 Zeichen).',
+                style: TextStyle(fontSize: 13),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: pw1,
+                decoration:
+                    const InputDecoration(labelText: 'Neues Passwort'),
+                obscureText: true,
+                autofocus: true,
+              ),
+              TextField(
+                controller: pw2,
+                decoration:
+                    const InputDecoration(labelText: 'Passwort wiederholen'),
+                obscureText: true,
+              ),
+              if (error != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(error!,
+                      style: const TextStyle(color: Colors.red, fontSize: 12)),
+                ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                await ref.read(supabaseClientProvider)?.auth.signOut();
+                if (ctx.mounted) Navigator.pop(ctx, false);
+              },
+              child: const Text('Abmelden'),
+            ),
+            FilledButton(
+              onPressed: () async {
+                if (pw1.text.length < 8) {
+                  setState(() =>
+                      error = 'Mindestens 8 Zeichen erforderlich.');
+                  return;
+                }
+                if (pw1.text != pw2.text) {
+                  setState(
+                      () => error = 'Die Passwörter stimmen nicht überein.');
+                  return;
+                }
+                try {
+                  final client = ref.read(supabaseClientProvider);
+                  await client?.auth
+                      .updateUser(UserAttributes(password: pw1.text));
+                  await client?.rpc('clear_must_change_password');
+                  if (ctx.mounted) Navigator.pop(ctx, true);
+                } on AuthException catch (e) {
+                  setState(() => error = e.message);
+                } catch (e) {
+                  setState(() => error = 'Fehler: $e');
+                }
+              },
+              child: const Text('Passwort setzen'),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+  ref.invalidate(mustChangePasswordProvider);
+  if (changed == true && context.mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Passwort geändert – Zugangszettel wegwerfen.')));
+  }
 }
 
 /// Offline availability of the central photos: shows precache progress and

@@ -27,6 +27,7 @@ import 'package:fwapp/features/operation/presentation/screens/operation_summary_
 import 'package:fwapp/features/inventory/presentation/screens/inventory_screen.dart';
 import 'package:fwapp/features/inventory/presentation/screens/inventory_report_screen.dart';
 import 'package:fwapp/features/settings/presentation/screens/settings_screen.dart';
+import 'package:fwapp/features/settings/presentation/screens/user_management_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -125,6 +126,10 @@ final appRouter = GoRouter(
         GoRoute(
           path: '/inspections',
           builder: (_, __) => const InspectionDashboardScreen(),
+        ),
+        GoRoute(
+          path: '/user-management',
+          builder: (_, __) => const UserManagementScreen(),
         ),
         GoRoute(
           path: '/operation',

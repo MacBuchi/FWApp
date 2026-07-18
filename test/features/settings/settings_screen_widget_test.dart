@@ -73,14 +73,14 @@ void main() {
     expect(find.text('Mit Abteilung verbinden'), findsOneWidget);
   });
 
-  testWidgets('Server nicht erreichbar: roter Status mit Gastnetz-Hinweis',
+  testWidgets('Server nicht erreichbar: roter Status mit Netzwerk-Hinweis',
       (tester) async {
     SharedPreferences.setMockInitialValues({'sync_enabled': true});
     await tester.pumpWidget(readyApp(db, healthy: false));
     await tester.pumpAndSettle();
 
     expect(find.text('Server nicht erreichbar'), findsOneWidget);
-    expect(find.textContaining('Gastnetz'), findsOneWidget);
+    expect(find.textContaining('Internetverbindung'), findsOneWidget);
   });
 
   testWidgets('Login-Dialog erklärt die fehlende Registrierung',

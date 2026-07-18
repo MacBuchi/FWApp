@@ -137,12 +137,12 @@ Ziel: Die Wehr arbeitet mit der App.
      (Download-Link/QR im Gerätehaus). Signatur über festen Release-Keystore
      (Ablage/Secrets siehe private Notizen); PRs ohne Version-Bump lösen bewusst
      kein Release aus. Play Store optional später.
-   - **iOS: ✅ Zwischenlösung Web-App (2026-07-17, Entscheidung Marcus — kein Apple-Account
-     nötig):** Flutter-Web-Build als nginx-Container auf dem eigenen Server, `http://…:8080`
-     im LAN/WireGuard, „Zum Home-Bildschirm“ in Safari; Deploy per `tool/deploy_web.sh`
-     (siehe [SERVER-SETUP.md](SERVER-SETUP.md)). Einschränkung: braucht Serververbindung
-     beim Öffnen (kein Offline-Start ohne HTTPS). Falls später echtes iOS-Offline gewünscht:
-     Apple Developer Program (99 €/Jahr) → TestFlight, oder Domain + HTTPS für eine volle PWA.
+   - **iOS: ✅ Web-App (2026-07-17, Entscheidung Marcus — kein Apple-Account
+     nötig):** Flutter-Web-Build als nginx-Container auf dem eigenen Server, „Zum
+     Home-Bildschirm“ in Safari; Deploy per `tool/deploy_web.sh`
+     (siehe [SERVER-SETUP.md](SERVER-SETUP.md)). Seit M7 Etappe 1 (2026-07-18) öffentlich
+     per HTTPS → volle PWA inkl. Offline-Start. Falls später eine native iOS-App gewünscht:
+     Apple Developer Program (99 €/Jahr) → TestFlight.
    - **macOS (Admin-Gerät):** lokaler Build reicht für Marcus; für weitere Macs Developer-ID +
      Notarisierung (gleiche Apple-Mitgliedschaft).
    - **Web (Admin im Browser):** `build/web` auf Netlify/Vercel (kostenlos) oder nur lokal starten.
@@ -161,15 +161,17 @@ Entscheidungen Marcus (Domain, Cloudflare-Free- und Brevo-Konto vorhanden;
 Umsetzung in drei Etappen, Web-App **und** API öffentlich, individuelle
 Mitglieder-Konten; Passkeys bewusst später):
 
-1. **Cloudflare Tunnel + HTTPS + Brevo (Etappe 1):** `cloudflared`-Container in
-   der Sync-VM (nur ausgehende Verbindung — keine Portfreigabe, Heim-IP bleibt
-   verborgen). Subdomains `app.…` (nginx/Web-App) und `api.…` (Kong; nur
-   /auth, /rest, /storage — Studio bleibt intern), TLS an der Cloudflare-Edge,
-   Rate-Limit vor /auth. Damit wird die Web-App zur **vollen PWA** (Offline-
-   Start auf iOS) und die Android-App synct ohne WireGuard. Brevo als
-   GoTrue-SMTP (Passwort-Mails). ⏳ wartet auf Instanz-Inputs (Domain,
-   Tunnel-Token, SMTP-Key — Ablage in docs/private/).
-2. **Rollenmodell (Etappe 2): 🔨 in Arbeit.** `admin | geraetewart | member`:
+1. **Cloudflare Tunnel + HTTPS + Brevo (Etappe 1): ✅ live (2026-07-18).**
+   `cloudflared`-Container in der Sync-VM (nur ausgehende Verbindung — keine
+   Portfreigabe, Heim-IP bleibt verborgen). Subdomains `app.…` (Web-App) und
+   `api.…`, beide über nginx als Gateway (nur /auth, /rest, /storage gehen an
+   Kong — Studio bleibt intern), TLS an der Cloudflare-Edge,
+   `DISABLE_SIGNUP=true`. Web-App ist damit **volle PWA** (Offline-Start auf
+   iOS), die Android-App synct ohne WireGuard von überall. Brevo als
+   GoTrue-SMTP ist konfiguriert; **offen nur der Mail-Testversand** — er
+   wartet auf die Fritz!Box-Freigabe der VM (IPv4/ARP-Sperre, siehe
+   [SERVER-SETUP.md](SERVER-SETUP.md)).
+2. **Rollenmodell (Etappe 2): ✅ fertig (2026-07-17, v1.2.0).** `admin | geraetewart | member`:
    Gerätewart darf bearbeiten (inkl. Geräte entfernen), veröffentlichen und
    Fotos verwalten; Admin zusätzlich Nutzerverwaltung/Reset (Etappe 3).
    Migration `20260717000000_role_geraetewart.sql` (`is_editor()`,

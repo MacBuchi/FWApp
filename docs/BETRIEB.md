@@ -1,6 +1,6 @@
 # FWApp – Betriebshandbuch
 
-Stand: 2026-07-16. Zielgruppe: die Wehr, die die App produktiv nutzt —
+Stand: 2026-07-18. Zielgruppe: die Wehr, die die App produktiv nutzt —
 Onboarding neuer Mitglieder, tägliche Admin-Arbeit, Troubleshooting,
 Datenschutz. Technisches Server-Setup: [SERVER-SETUP.md](SERVER-SETUP.md).
 
@@ -28,16 +28,14 @@ Datenschutz. Technisches Server-Setup: [SERVER-SETUP.md](SERVER-SETUP.md).
 >    direkt über dem Login.
 > 4. Die App lädt den aktuellen Datenbestand und alle Gerätefotos –
 >    danach funktioniert **alles auch offline** (Einsatz, Funkloch, Keller).
-> 5. **Von außerhalb des Gerätehaus-/Heim-WLANs:** Für Updates der Daten
->    ist die WireGuard-Verbindung nötig (nur für Admins relevant –
->    Lernen geht immer, auch ohne Netz).
+> 5. Aktualisieren der Daten funktioniert **überall, wo Internet ist**
+>    (seit Juli 2026 ist der Server über eine verschlüsselte
+>    HTTPS-Adresse erreichbar — kein spezielles WLAN/VPN mehr nötig).
 >
-> **iPhone:** die App als **Web-App** nutzen — im Gerätehaus-/Heim-WLAN
-> `http://<server-adresse>:8080` in Safari öffnen (Adresse siehe
-> Zugangszettel), einloggen, dann über Teilen-Menü **„Zum Home-Bildschirm“**
-> — sieht danach aus wie eine App. Wichtig: braucht beim Öffnen Verbindung
-> zum Server (WLAN oder WireGuard); wer volles Offline braucht, nimmt ein
-> Android-Gerät mit APK.
+> **iPhone:** die App als **Web-App** nutzen — `https://<web-app-adresse>`
+> in Safari öffnen (Adresse siehe Zugangszettel), einloggen, dann über das
+> Teilen-Menü **„Zum Home-Bildschirm“** — sieht danach aus wie eine App
+> und startet dank HTTPS auch offline (nach dem ersten Laden).
 
 Updates: Neue App-Version installieren = einfach das neue APK vom Release
 laden und „drüberinstallieren“ – Lernstand und Daten bleiben erhalten
@@ -120,8 +118,7 @@ Prüfhistorie oder Instanzen – die hängen an den physischen Geräten.
 
 | Symptom | Ursache / Lösung |
 | --- | --- |
-| „Server nicht erreichbar“ zu Hause/im Gerätehaus | Handy hängt im **Gast-WLAN** (vom Heimnetz isoliert) → ins normale WLAN wechseln. Status live prüfen: Einstellungen → Cloud-Synchronisation → Kachel „Server erreichbar“ (tippen = neu prüfen). |
-| „Server nicht erreichbar“ unterwegs | WireGuard-Verbindung aktivieren (nur nötig für Pull/Veröffentlichen – Lernen geht offline). |
+| „Server nicht erreichbar“ | Internetverbindung des Geräts prüfen (Flugmodus? Gast-WLAN ohne Internet?). Status live prüfen: Einstellungen → Cloud-Synchronisation → Kachel „Server erreichbar“ (tippen = neu prüfen). Bleibt es rot: Server/Tunnel prüfen ([SERVER-SETUP.md](SERVER-SETUP.md)). Lernen geht immer offline weiter. |
 | Login schlägt fehl | Zugangsdaten vom Zugangszettel exakt übernehmen; Groß-/Kleinschreibung des Passworts beachten. |
 | Veröffentlichen: Versionskonflikt | Anderer Admin war schneller → Pull, prüfen, erneut veröffentlichen (siehe oben). |
 | Fotos fehlen auf einem Mitglieder-Gerät | Einstellungen → „Gerätefotos offline“ prüfen, ggf. erneut anstoßen; einmal WLAN mit Serverzugang nötig. |
@@ -149,8 +146,11 @@ Die App ist bewusst datensparsam aufgebaut:
   „erfasst von“ bei Inventuren. Empfehlung im Verein abstimmen: Kürzel
   statt Klarnamen verwenden. *(Abstimmung + kurzer Hinweistext in der App:
   offen, siehe ROADMAP M5.)*
-- Der Server ist nur im LAN/per WireGuard erreichbar (keine Portfreigabe),
-  Zugriff nur mit Login; tägliche Backups verbleiben auf dem Server.
+- Der Server ist über einen **Cloudflare-Tunnel** per HTTPS erreichbar
+  (keine Portfreigabe, Heim-IP bleibt verborgen); es sind nur die
+  API-Pfade der App exponiert, die Verwaltungsoberfläche bleibt intern.
+  Zugriff nur mit Login, eine Selbst-Registrierung ist serverseitig
+  deaktiviert; tägliche Backups verbleiben auf dem Server.
 - Betroffenenrechte (Auskunft/Löschung) sind bei diesem Datenbestand
   trivial erfüllbar: Admin-Konto löschen bzw. Freitexteinträge per SQL
   bereinigen – Ansprechpartner ist der Admin.

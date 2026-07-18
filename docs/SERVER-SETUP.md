@@ -242,8 +242,13 @@ Bausteine in der VM:
   Restart-Policy `unless-stopped`), gestartet mit dem Tunnel-Token aus dem
   Cloudflare-Dashboard.
 - `~/fwapp-web/nginx.conf`: zusätzlicher `location`-Block
-  `^/(auth|rest|storage)/` mit `proxy_pass http://supabase-kong:8000`,
-  `client_max_body_size 25m` (Foto-Uploads).
+  `^/(auth|rest|storage|functions)/`, der an `http://supabase-kong:8000`
+  durchreicht; `client_max_body_size 25m` (Foto-Uploads). Wichtig:
+  `resolver 127.0.0.11 valid=30s ipv6=off;` und `proxy_pass` über eine
+  Variable (`set $kong_upstream …`), damit nginx die Kong-IP **dynamisch**
+  auflöst — sonst zeigt er nach einer Neuerstellung des Kong-Containers
+  (z. B. `docker compose pull && up -d`) auf die alte IP und liefert 502,
+  bis jemand `fwapp-web` neu startet.
 - `~/fwapp-web/docker-compose.yml`: Container hängt zusätzlich im externen
   Netz `supabase_default`, damit er `supabase-kong` per Namen erreicht.
 - `~/supabase/.env`: `API_EXTERNAL_URL=https://api.<domain>`,
@@ -355,6 +360,26 @@ docker compose pull && docker compose up -d
 # Schema-Änderungen: neue Migration per psql einspielen, danach
 docker exec supabase-db psql -U supabase_admin -d postgres -c "NOTIFY pgrst, 'reload schema';"
 ```
+
+### Healthcheck-Intervalle (Idle-CPU, seit 2026-07-19)
+
+Die Standard-Compose-Datei prüft 11 Container **alle 5 Sekunden** — auf einer
+kleinen VM kostet allein dieses Dauerfeuer ~15–20 % CPU im Leerlauf (~130
+Prozessstarts pro Minute, darunter zwei komplette Node-Interpreter; in
+`docker stats` unsichtbar, weil die Prozesse zu kurz leben — messbar nur per
+`vmstat` bzw. in der Proxmox-Host-Sicht). Deshalb streckt
+`~/supabase/docker-compose.override.yml` alle Healthchecks auf
+`interval: 1h` mit `start_period: 10m` und `start_interval: 5s`, sodass die
+Startreihenfolge beim Boot schnell bleibt (braucht Docker ≥ 25). Ergebnis:
+Leerlauf bei ~2–5 % statt ~19 %. Zwei Stolperfallen:
+
+- Die `.env` setzt `COMPOSE_FILE` — dadurch lädt Compose die Override-Datei
+  **nicht** automatisch. Sie muss dort explizit angehängt sein:
+  `COMPOSE_FILE=docker-compose.yml:docker-compose.override.yml`.
+- Der Health-Status wird von nichts automatisch ausgewertet (Docker startet
+  unhealthy Container nicht neu); er dient nur der Anzeige in `docker ps`
+  und der Startreihenfolge (`depends_on: service_healthy`). Ein langes
+  Intervall verliert also keine Funktionalität.
 
 Die VM startet automatisch mit dem Host nicht – falls gewünscht, auf dem Host
 `qm set <vm-id> --onboot 1` setzen. Docker-Container haben Restart-Policys aus dem

@@ -21,9 +21,10 @@ Datenschutz. Technisches Server-Setup: [SERVER-SETUP.md](SERVER-SETUP.md).
 >    Apps aus dieser Quelle zu installieren – zulassen.
 > 2. **Sync aktivieren:** App öffnen → **Mehr → Einstellungen → Sync**
 >    einschalten. Server ist bereits voreingestellt.
-> 3. **Einloggen** mit dem Mitglieder-Konto der Abteilung
->    (E-Mail + Passwort: siehe Zugangszettel im Gerätehaus). Eine
->    Registrierung gibt es nicht — Konten vergibt der Gerätewart.
+> 3. **Einloggen** mit deinem **persönlichen Nutzernamen** und dem
+>    Initialpasswort von deinem Zugangszettel (gibt es beim
+>    Gerätewart/Admin — eine Registrierung gibt es nicht). Beim ersten
+>    Login fragt die App einmalig nach einem **eigenen neuen Passwort**.
 >    Ob die Verbindung steht, zeigt der grüne Haken „Server erreichbar“
 >    direkt über dem Login.
 > 4. Die App lädt den aktuellen Datenbestand und alle Gerätefotos –
@@ -64,6 +65,21 @@ neuen Stand beim nächsten App-Start bzw. manuellem Pull.
 
 Wichtig: Ein Re-Import ersetzt Zuordnungen (Gerät↔Fach), aber niemals
 Prüfhistorie oder Instanzen – die hängen an den physischen Geräten.
+
+### Nutzerverwaltung (nur Admin)
+
+- **Mehr → Nutzerverwaltung**: Konto anlegen mit **Nutzername**
+  (z. B. `max.m`), Rolle (Mitglied / Gerätewart / Admin) und generiertem
+  **Initialpasswort**. Die Zugangsdaten werden genau **einmal** angezeigt —
+  direkt auf den Zugangszettel übertragen.
+- Beim ersten Login muss die Person das Initialpasswort durch ein eigenes
+  ersetzen (die App erzwingt das); der Zettel ist danach wertlos.
+- **Passwort vergessen?** Konto in der Liste → „Passwort zurücksetzen“ →
+  neues Initialpasswort aushändigen (derselbe Pflichtwechsel greift wieder).
+- **Austritt/Gerätewechsel:** Konto **sperren** (umkehrbar) statt löschen;
+  Löschen nur für endgültige Aufräumarbeiten.
+- Das frühere Sammelkonto `member@fw.local` ist gesperrt — alte
+  Zugangszettel damit sind ungültig.
 
 ### Prüftermine pflegen (Gerätewart)
 
@@ -119,7 +135,8 @@ Prüfhistorie oder Instanzen – die hängen an den physischen Geräten.
 | Symptom | Ursache / Lösung |
 | --- | --- |
 | „Server nicht erreichbar“ | Internetverbindung des Geräts prüfen (Flugmodus? Gast-WLAN ohne Internet?). Status live prüfen: Einstellungen → Cloud-Synchronisation → Kachel „Server erreichbar“ (tippen = neu prüfen). Bleibt es rot: Server/Tunnel prüfen ([SERVER-SETUP.md](SERVER-SETUP.md)). Lernen geht immer offline weiter. |
-| Login schlägt fehl | Zugangsdaten vom Zugangszettel exakt übernehmen; Groß-/Kleinschreibung des Passworts beachten. |
+| Login schlägt fehl | Nutzername + Passwort vom Zugangszettel exakt übernehmen (Groß-/Kleinschreibung des Passworts!). Konto evtl. gesperrt oder noch nicht angelegt → Admin fragt in der Nutzerverwaltung nach. |
+| Passwort vergessen | Admin: Mehr → Nutzerverwaltung → Konto → „Passwort zurücksetzen“ → neues Initialpasswort aushändigen. |
 | Veröffentlichen: Versionskonflikt | Anderer Admin war schneller → Pull, prüfen, erneut veröffentlichen (siehe oben). |
 | Fotos fehlen auf einem Mitglieder-Gerät | Einstellungen → „Gerätefotos offline“ prüfen, ggf. erneut anstoßen; einmal WLAN mit Serverzugang nötig. |
 | App-Update lässt sich nicht installieren | Altbestand mit anders signierter Version (z. B. Entwickler-Build) → einmalig deinstallieren, Release-APK installieren. Danach nie wieder nötig. |
@@ -135,9 +152,11 @@ Die App ist bewusst datensparsam aufgebaut:
 
 - **Auf dem zentralen Server** liegen nur Sachdaten (Fahrzeuge, Fächer,
   Geräte, Prüftermine, Inventur-Reports, Gerätefotos) sowie die Konten:
-  wenige **persönliche Admin-E-Mail-Adressen** und **ein geteiltes
-  Mitglieder-Konto** pro Abteilung (keine persönlichen Mitgliederkonten,
-  keine Namen, keine Nutzungsstatistiken).
+  seit M7 Etappe 3 **individuelle Konten mit selbstgewähltem Nutzernamen**
+  (Empfehlung: Kürzel statt Klarnamen, z. B. `max.m`) — gespeichert werden
+  nur Nutzername-als-E-Mail-Form, Rolle und Login-Zeitpunkt; keine
+  Klarnamen, keine Nutzungsstatistiken. Das frühere geteilte
+  Mitglieder-Konto ist gesperrt.
 - **Lernfortschritt** (Streak, XP, Quiz-Ergebnisse) bleibt ausschließlich
   lokal auf dem jeweiligen Gerät und wird nie übertragen.
 - **Einsatz-Log** (virtuelles Ausladen) bleibt ebenfalls lokal; die App ist

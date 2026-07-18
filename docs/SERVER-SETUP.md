@@ -126,11 +126,44 @@ Enthalten: `ANON_KEY` (öffentlicher Client-Key für die App), `SERVICE_ROLE_KEY
   das Veröffentlichen und die Foto-Verwaltung; `is_admin()` bleibt für
   Admin-only-Funktionen (Nutzerverwaltung, Etappe 3) bestehen.
 
-- Konten (Passwörter siehe Secrets-Datei):
-  - `admin@fw.local` – Rolle `admin` (volle Verwaltung, darf publizieren)
-  - `member@fw.local` – Rolle `member` (liest)
-  - Gerätewart-Konten (Rolle `geraetewart`) entstehen mit der
-    Nutzerverwaltung aus M7 Etappe 3.
+- Migration [supabase/migrations/20260718000000_username_login_admin.sql](../supabase/migrations/20260718000000_username_login_admin.sql)
+  (M7 Etappe 3, eingespielt + E2E-verifiziert 2026-07-18):
+  `profiles.must_change_password` + RPC `clear_must_change_password()` —
+  Grundlage für Initialpasswörter mit Pflichtwechsel beim ersten Login.
+
+- Konten (seit M7 Etappe 3 **individuell**, Konvention `<nutzername>@fw.local`):
+  - `admin@fw.local` – Rolle `admin` (verwaltet, publiziert, Nutzerverwaltung)
+  - Alle weiteren Konten legt der Admin in der App an
+    (**Mehr → Nutzerverwaltung**): Nutzername + Rolle + Initialpasswort,
+    das beim ersten Login zwingend geändert wird.
+  - Das frühere Sammelkonto `member@fw.local` ist seit 2026-07-18 **gesperrt**
+    (Entscheidung: individuelle Konten statt geteiltem Login).
+
+### Edge Function `admin-users` (M7 Etappe 3)
+
+Die Nutzerverwaltung der App läuft über die Edge Function
+[supabase/functions/admin-users/index.ts](../supabase/functions/admin-users/index.ts)
+(`POST /functions/v1/admin-users`, Aktionen `list/create/reset/set_role/`
+`disable/enable/delete`). Sie prüft das mitgeschickte Nutzer-JWT gegen
+PostgREST (nur `role = 'admin'` darf) und nutzt für die eigentlichen
+Operationen den `SUPABASE_SERVICE_ROLE_KEY` aus der Container-Umgebung —
+der mächtige Key verlässt den Server nie.
+
+Deploy in der VM (edge-functions-Container läuft im Standard-Stack mit):
+
+```bash
+# Function-Ordner in den Stack kopieren, dann Runtime neu starten
+cp -r supabase/functions/admin-users ~/supabase/volumes/functions/
+cd ~/supabase && docker compose restart functions
+```
+
+**Eigenheit dieses Servers:** Der mitgelieferte `main`-Router des Stacks
+importiert `jsr:@panva/jose` — ohne IPv4-Internet scheitert der
+Modul-Download beim Kaltstart (502 für alle Functions). Er ist deshalb durch
+den abhängigkeitsfreien Dispatcher
+[supabase/functions/main/index.ts](../supabase/functions/main/index.ts)
+ersetzt (Original als `main/index.ts.orig` gesichert); JWT-/Rollenprüfung
+machen die Functions selbst.
 
 ### Verifiziert (Abnahmetests vom 2026-07-14)
 
@@ -197,8 +230,8 @@ application“; konkrete Namen siehe private Notizen):
 | `https://api.<domain>` | `http://localhost:8080` (nginx) | Supabase-API für App-Sync |
 
 Beide zeigen auf **nginx**, der als kleines Gateway arbeitet: `/auth/`,
-`/rest/` und `/storage/` werden an Kong (`supabase-kong:8000`) durchgereicht,
-alles andere liefert die Web-App aus. Dadurch sind **nur die App-Pfade**
+`/rest/`, `/storage/` und `/functions/` werden an Kong
+(`supabase-kong:8000`) durchgereicht, alles andere liefert die Web-App aus. Dadurch sind **nur die App-Pfade**
 öffentlich — Studio/Dashboard und alle übrigen Kong-Routen bleiben intern.
 TLS terminiert an der Cloudflare-Edge; der Tunnel selbst baut ausschließlich
 ausgehende Verbindungen auf (keine Portfreigabe, Heim-IP unsichtbar).

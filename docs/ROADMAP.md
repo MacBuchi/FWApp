@@ -176,13 +176,16 @@ Mitglieder-Konten; Passkeys bewusst später):
    Fotos verwalten; Admin zusätzlich Nutzerverwaltung/Reset (Etappe 3).
    Migration `20260717000000_role_geraetewart.sql` (`is_editor()`,
    publish-Guard, Storage-Policies), App-Gating über `canEditProvider`.
-3. **Auth-UX (Etappe 3):** Login per **Nutzername** (App mappt intern auf
-   E-Mail-Form), Initialpasswort mit **Pflichtwechsel beim ersten Login**
-   (`must_change_password`-Flag), Admin-Nutzerverwaltung in der App über eine
-   **Edge Function** mit Service-Role-Rechten (Anlegen, Passwort-Reset,
-   Deaktivieren — der mächtige Key bleibt auf dem Server). Session übersteht
-   App-Updates (heute schon, bleibt Anforderung). Ersetzt den
-   M5-Punkt „Accounts".
+3. **Auth-UX (Etappe 3): ✅ fertig (2026-07-18, v1.3.0).** Login per
+   **Nutzername** (App mappt auf `<name>@fw.local`; volle E-Mails bleiben
+   gültig), Initialpasswort mit **Pflichtwechsel beim ersten Login**
+   (`must_change_password`-Flag + nicht umgehbarer Dialog),
+   Admin-Nutzerverwaltung in der App (Mehr → Nutzerverwaltung) über die
+   **Edge Function `admin-users`** mit Service-Role-Rechten (Anlegen,
+   Passwort-Reset, Rolle, Sperren, Löschen — der mächtige Key bleibt auf
+   dem Server; serverseitiger Admin-Check). Session übersteht App-Updates.
+   Sammelkonto `member@fw.local` gesperrt (Entscheidung Marcus). Ersetzt
+   den M5-Punkt „Accounts". Passkeys bleiben bewusst späterer Ausbau.
 
 ## M6 – Open Source (~1 Tag)
 

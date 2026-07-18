@@ -60,6 +60,22 @@ final isAdminProvider = Provider<bool>((ref) {
   return ref.watch(currentUserRoleProvider).value == 'admin';
 });
 
+/// M7 Etappe 3: true, solange das vom Admin gesetzte Initialpasswort noch
+/// nicht geändert wurde. Die Settings zeigen dann einen nicht umgehbaren
+/// Pflichtwechsel-Dialog; nach dem Wechsel wird das Flag per RPC gelöscht
+/// und dieser Provider invalidiert.
+final mustChangePasswordProvider = FutureProvider<bool>((ref) async {
+  final client = ref.watch(supabaseClientProvider);
+  final session = ref.watch(sessionStreamProvider).value;
+  if (client == null || session == null) return false;
+  final row = await client
+      .from('profiles')
+      .select('must_change_password')
+      .eq('id', session.user.id)
+      .maybeSingle();
+  return (row?['must_change_password'] as bool?) ?? false;
+});
+
 /// Uploads local equipment photos to the central bucket (M2); null while
 /// Supabase is not initialised (pure local mode).
 final imageSyncServiceProvider = Provider<ImageSyncService?>((ref) {

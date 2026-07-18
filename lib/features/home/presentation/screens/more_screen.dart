@@ -11,7 +11,11 @@ class MoreScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isAdmin = ref.watch(canEditProvider);
+    final canEdit = ref.watch(canEditProvider);
+    // Nutzerverwaltung: nur echter Admin UND verbundener Server (im reinen
+    // Lokalmodus gibt es keine zentralen Konten).
+    final showUserManagement = ref.watch(isAdminProvider) &&
+        ref.watch(supabaseReadyProvider);
     final syncMeta = ref.watch(syncMetaStreamProvider).value;
     final dirty = syncMeta?.localDirty ?? false;
 
@@ -53,7 +57,7 @@ class MoreScreen extends ConsumerWidget {
               onTap: () => context.push('/settings'),
             ),
           ),
-          if (isAdmin) ...[
+          if (canEdit) ...[
             _Section('Verwaltung (Gerätewart)'),
             Card(
               child: Column(
@@ -82,6 +86,17 @@ class MoreScreen extends ConsumerWidget {
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => context.push('/inventory'),
                   ),
+                  if (showUserManagement) ...[
+                    const Divider(indent: 16, endIndent: 16),
+                    ListTile(
+                      leading: const Icon(Icons.manage_accounts),
+                      title: const Text('Nutzerverwaltung'),
+                      subtitle: const Text(
+                          'Konten anlegen, Passwörter zurücksetzen (Admin)'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => context.push('/user-management'),
+                    ),
+                  ],
                   if (dirty) ...[
                     const Divider(indent: 16, endIndent: 16),
                     ListTile(

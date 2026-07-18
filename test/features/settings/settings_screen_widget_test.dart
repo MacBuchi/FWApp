@@ -95,4 +95,17 @@ void main() {
     expect(find.text('Anmelden'), findsWidgets);
     expect(find.textContaining('Keine Registrierung nötig'), findsOneWidget);
   });
+
+  testWidgets('Login-Dialog fragt nach dem Nutzernamen (M7 Etappe 3)',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({'sync_enabled': true});
+    await tester.pumpWidget(readyApp(db, healthy: true));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Mit Abteilung verbinden'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Nutzername'), findsOneWidget);
+    expect(find.text('E-Mail'), findsNothing);
+  });
 }

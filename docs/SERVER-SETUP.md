@@ -1,8 +1,8 @@
 # FWApp Sync-Server – Setup-Dokumentation
 
-Stand: 2026-07-15. Beschreibt den selbst gehosteten Supabase-Sync-Server für die
-FWApp auf dem heimischen Proxmox-Host, inklusive Betrieb, Backup und
-Wiederherstellung.
+Stand: 2026-07-18. Beschreibt den selbst gehosteten Supabase-Sync-Server für die
+FWApp auf dem heimischen Proxmox-Host, inklusive öffentlicher Erreichbarkeit
+(Cloudflare Tunnel), Betrieb, Backup und Wiederherstellung.
 
 > Platzhalter wie `<server-ip>`, `<proxmox-ip>`, `<vm-id>` oder
 > `<backup-job-id>` stehen für instanzspezifische Werte. Unsere konkreten
@@ -13,20 +13,26 @@ Wiederherstellung.
 
 ## Überblick
 
-Die FWApp nutzt ein **Single-Writer-Modell**: Nur Admins publizieren den
-kompletten Datensatz (Fahrzeuge, Fächer, Geräte, Prüfungen) als Snapshot über
-die RPC-Funktion `publish_snapshot()`; Mitglieder lesen den publizierten Stand.
-Der Server ist **nur im LAN bzw. per WireGuard** erreichbar – es gibt bewusst
-**keine Portfreigabe** ins Internet.
+Die FWApp nutzt ein **Single-Writer-Modell**: Nur Editoren (Admin/Gerätewart)
+publizieren den kompletten Datensatz (Fahrzeuge, Fächer, Geräte, Prüfungen) als
+Snapshot über die RPC-Funktion `publish_snapshot()`; Mitglieder lesen den
+publizierten Stand. Seit M7 Etappe 1 (2026-07-18) ist der Server **öffentlich
+per HTTPS über einen Cloudflare Tunnel** erreichbar — weiterhin **ohne
+Portfreigabe** (der Tunnel baut nur ausgehende Verbindungen auf, die Heim-IP
+bleibt verborgen). LAN-Zugriff funktioniert parallel weiter.
 
 ```text
-MacBook (Admin)  ──┐
-                   ├── LAN / WireGuard ──► VM „fwapp-sync“ (<server-ip>)
-Handy (Member)   ──┘                        └── Docker: Supabase (Kong :8000)
-                                                 ├── Auth (GoTrue)
-                                                 ├── PostgREST
-                                                 ├── PostgreSQL
-                                                 └── Studio, Realtime, Storage …
+Handy/Web (überall) ── HTTPS ──► Cloudflare Edge
+                                   │ (Tunnel, nur ausgehend)
+                                   ▼
+LAN/WireGuard ─────────────► VM „fwapp-sync“ (<server-ip>)
+                               ├── cloudflared (Host-Netz)
+                               ├── nginx „fwapp-web“ :8080
+                               │     ├── /            → Web-App (Flutter)
+                               │     └── /auth|/rest|/storage → Kong :8000
+                               └── Docker: Supabase (Kong :8000)
+                                    ├── Auth (GoTrue)   ├── PostgREST
+                                    ├── PostgreSQL      └── Studio (nur intern!)
 ```
 
 ---
@@ -61,9 +67,14 @@ ssh -i ~/.ssh/fwapp_proxmox_ed25519 fwapp@<server-ip>   # VM
 ssh -i ~/.ssh/fwapp_proxmox_ed25519 root@<proxmox-ip>     # Proxmox-Host
 ```
 
-> **Eigenheit:** Die VM erreicht `github.com` nicht (Port 443 blockiert, übriges
-> Internet funktioniert). Downloads von GitHub daher auf dem Mac ziehen und per
-> `scp` in die VM kopieren.
+> **Eigenheit (Ursache 2026-07-18 gefunden):** Die VM hat **kein
+> funktionierendes IPv4-Internet** — die Fritz!Box beantwortet ARP-Anfragen
+> der VM-MAC nicht (Geräte-/Neugeräte-Sperre in der Box; andere VMs desselben
+> Hosts bekommen Antworten). **IPv6 funktioniert**, daher gehen Dienste mit
+> IPv6 (Cloudflare, Debian-Mirror, Docker Hub) — rein IPv4-basierte Ziele wie
+> `github.com` oder `smtp-relay.brevo.com` (SMTP) scheitern. Fix: Gerät
+> (`<server-ip>` / VM-MAC) in der Fritz!Box-Oberfläche freigeben. Bis dahin:
+> GitHub-Downloads auf dem Mac ziehen und per `scp` in die VM kopieren.
 
 ---
 
@@ -144,7 +155,8 @@ flutter build apk --dart-define-from-file=config/fwapp.local.json   # bzw. run/b
 Nach einer Neuinstallation eines solchen Builds muss nur noch Sync aktiviert
 und eingeloggt werden. Ohne Build-Flags (z. B. CI-PR-Builds) bleiben die Felder
 leer und werden unter **Settings → Sync** von Hand eingetragen.
-Von unterwegs muss auf dem Gerät die WireGuard-Verbindung ins Heimnetz aktiv sein.
+Über die öffentliche HTTPS-Adresse funktioniert der Sync von überall;
+WireGuard ist nur noch für SSH/Verwaltung nötig.
 
 **Release-APKs von GitHub** (seit 2026-07-16): Die Release-Pipeline
 (`.github/workflows/release.yml`) baut bei jedem Version-Bump in
@@ -152,9 +164,10 @@ Von unterwegs muss auf dem Gerät die WireGuard-Verbindung ins Heimnetz aktiv se
 Deinstallation) und bekommt URL + `ANON_KEY` über Actions-Secrets
 (`FWAPP_SUPABASE_URL`, `FWAPP_SUPABASE_ANON_KEY`) bereits eingebacken —
 Mitglieder laden das APK vom GitHub-Release und müssen nur noch einloggen.
-Bewusste Abwägung: beide Werte stecken damit im öffentlich herunterladbaren
-APK; der Anon-Key ist clientseitig-öffentlich (RLS schützt), die URL eine
-private LAN-Adresse.
+Seit M7 Etappe 1 zeigt `FWAPP_SUPABASE_URL` auf die öffentliche
+HTTPS-API-Adresse (`https://api.<domain>`) — die App synct damit von überall,
+ohne WireGuard. Der Anon-Key ist clientseitig-öffentlich (RLS schützt);
+eine Selbst-Registrierung ist serverseitig deaktiviert (`DISABLE_SIGNUP`).
 
 Hinweis: REST-Aufrufe ohne `Authorization`-Header beantwortet Kong mit 403 –
 das ist normal, der Supabase-Client sendet den Header immer mit.
@@ -165,32 +178,77 @@ Bild auf ≤ 1024 px / ≤ 300 KB JPEG und lädt es in den Bucket
 lokalen Offline-Cache (Fortschritt unter Einstellungen → „Gerätefotos
 offline“).
 
-**Achtung Gastnetz:** Aus dem Fritzbox-Gast-WLAN (Subnetz `192.168.179.x`)
-ist das Heimnetz per Design isoliert — Server dann nicht erreichbar, obwohl
-man „zu Hause“ ist. Fürs Publizieren/Synchronisieren ins normale WLAN wechseln.
+**Hinweis Gastnetz:** Die alte Falle „Gast-WLAN (`192.168.179.x`) ist vom
+Heimnetz isoliert“ betrifft seit der öffentlichen HTTPS-Adresse nur noch den
+direkten LAN-Zugriff (`http://<server-ip>:8000/8080`) — über die
+`https://…`-Adressen funktioniert die App auch im Gastnetz.
 
 ---
 
-## Web-App (iPhone-Zwischenlösung, seit 2026-07-17)
+## Öffentliche Erreichbarkeit: Cloudflare Tunnel (M7 Etappe 1, seit 2026-07-18)
+
+Zwei öffentliche Hostnames (DNS als CNAME auf `<tunnel-id>.cfargotunnel.com`,
+angelegt über Cloudflare Zero Trust → Networks → Tunnels → „Published
+application“; konkrete Namen siehe private Notizen):
+
+| Hostname | Ziel im Tunnel | Zweck |
+| --- | --- | --- |
+| `https://app.<domain>` | `http://localhost:8080` (nginx) | Web-App (volle PWA) |
+| `https://api.<domain>` | `http://localhost:8080` (nginx) | Supabase-API für App-Sync |
+
+Beide zeigen auf **nginx**, der als kleines Gateway arbeitet: `/auth/`,
+`/rest/` und `/storage/` werden an Kong (`supabase-kong:8000`) durchgereicht,
+alles andere liefert die Web-App aus. Dadurch sind **nur die App-Pfade**
+öffentlich — Studio/Dashboard und alle übrigen Kong-Routen bleiben intern.
+TLS terminiert an der Cloudflare-Edge; der Tunnel selbst baut ausschließlich
+ausgehende Verbindungen auf (keine Portfreigabe, Heim-IP unsichtbar).
+
+Bausteine in der VM:
+
+- Container `fwapp-tunnel` (`cloudflare/cloudflared`, `--network host`,
+  Restart-Policy `unless-stopped`), gestartet mit dem Tunnel-Token aus dem
+  Cloudflare-Dashboard.
+- `~/fwapp-web/nginx.conf`: zusätzlicher `location`-Block
+  `^/(auth|rest|storage)/` mit `proxy_pass http://supabase-kong:8000`,
+  `client_max_body_size 25m` (Foto-Uploads).
+- `~/fwapp-web/docker-compose.yml`: Container hängt zusätzlich im externen
+  Netz `supabase_default`, damit er `supabase-kong` per Namen erreicht.
+- `~/supabase/.env`: `API_EXTERNAL_URL=https://api.<domain>`,
+  `SITE_URL=https://app.<domain>`, `ADDITIONAL_REDIRECT_URLS`,
+  **`DISABLE_SIGNUP=true`** (Konten entstehen nur über die Admin-API) sowie
+  Brevo-SMTP (`SMTP_HOST=smtp-relay.brevo.com`, Port 587, Login/Key siehe
+  private Notizen). Danach `docker compose up -d`.
+
+Verifiziert am 2026-07-18 (öffentlich, durch den Tunnel): `/auth/v1/health`
+200, REST mit apikey 200, Storage antwortet, `/auth/v1/signup` →
+`signup_disabled`, Web-App liefert `version.json`.
+
+> **Offen: E-Mail-Versand.** Ausgehendes SMTP scheitert derzeit an der
+> IPv4-Sperre der VM in der Fritz!Box (siehe „Eigenheit“ oben — Brevo hat
+> kein IPv6). Nach Freigabe des Geräts in der Fritz!Box den Testversand
+> wiederholen; die GoTrue-Konfiguration ist bereits vollständig.
+
+---
+
+## Web-App (seit 2026-07-17, öffentlich seit 2026-07-18)
 
 Ohne Apple-Developer-Account läuft die App auf iPhones als **Web-App** aus
 dem Browser — gehostet als nginx-Container **in derselben VM** neben dem
-Supabase-Stack, erreichbar unter `http://<server-ip>:8080` (nur
-LAN/WireGuard, bewusst kein HTTPS/keine Portfreigabe).
+Supabase-Stack: öffentlich unter `https://app.<domain>`, im LAN weiterhin
+unter `http://<server-ip>:8080`.
 
-**Bewusste Einschränkung:** Ohne HTTPS gibt es auf iOS keinen Service
-Worker — die Web-App braucht daher beim Öffnen eine Verbindung zum Server
-(WLAN/WireGuard), kein Offline-Start wie bei der nativen App. Der lokale
-Datenbestand/Lernstand bleibt aber im Browser gespeichert (IndexedDB/OPFS).
-Falls später echtes Offline auf iOS gewünscht ist: eigene Domain +
-Let's-Encrypt-Zertifikat nachrüsten oder TestFlight (Apple-Account).
+Dank HTTPS ist sie eine **volle PWA**: Safari installiert einen Service
+Worker, „Zum Home-Bildschirm“ ergibt eine App, die nach dem ersten Laden
+auch **offline startet**. Datenbestand/Lernstand liegen im Browser-Speicher
+(IndexedDB/OPFS).
 
 Setup in der VM (`~/fwapp-web/`): `docker-compose.yml` mit `nginx:alpine`,
 Port `8080:80`, Volumes `./html` (Webroot, read-only) und `./nginx.conf`
 (gzip an; `Cache-Control: no-cache` für `index.html`/`flutter_bootstrap.js`,
-lange Cache-Zeiten für gehashte Assets). `docker compose up -d` — Restart-
-Policy bringt den Container nach Reboots selbst hoch. `rsync` muss in der
-VM installiert sein (`apt-get install rsync`).
+lange Cache-Zeiten für gehashte Assets; API-Gateway-Block siehe oben).
+`docker compose up -d` — Restart-Policy bringt den Container nach Reboots
+selbst hoch. `rsync` muss in der VM installiert sein
+(`apt-get install rsync`).
 
 **Deploy** (vom Admin-Rechner, LAN nötig):
 

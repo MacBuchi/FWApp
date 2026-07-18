@@ -201,7 +201,7 @@ class _LibraryInfoTile extends StatelessWidget {
 }
 
 /// Live-Verbindungsstatus zum Sync-Server — sichtbar schon VOR dem Login,
-/// damit Gastnetz-/WireGuard-Probleme nicht wie falsche Zugangsdaten aussehen.
+/// damit Netzwerkprobleme nicht wie falsche Zugangsdaten aussehen.
 class _ServerHealthTile extends ConsumerWidget {
   const _ServerHealthTile();
 
@@ -228,7 +228,7 @@ class _ServerHealthTile extends ConsumerWidget {
             reachable ? 'Server erreichbar' : 'Server nicht erreichbar'),
         subtitle: Text(reachable
             ? 'Verbindung steht – zum erneuten Prüfen tippen'
-            : 'WLAN/WireGuard prüfen (Gastnetz?) – zum erneuten Prüfen tippen'),
+            : 'Internetverbindung prüfen – zum erneuten Prüfen tippen'),
         onTap: () => ref.invalidate(serverHealthProvider),
       );
 }

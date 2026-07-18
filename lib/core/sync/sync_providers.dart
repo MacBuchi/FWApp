@@ -78,7 +78,7 @@ final syncServiceProvider = Provider<SyncService?>((ref) {
 
 /// Live-Erreichbarkeitscheck des Sync-Servers (GET /auth/v1/health).
 /// Zeigt VOR dem Login, ob der Server überhaupt antwortet — deckt die
-/// häufigen Fälle auf (Gastnetz, WireGuard aus, Server down), die sich
+/// häufigen Fälle auf (kein Internet, Server down), die sich
 /// sonst erst als fehlgeschlagener Login äußern. Erneut prüfen per
 /// ref.invalidate(serverHealthProvider).
 final serverHealthProvider = FutureProvider.autoDispose<bool>((ref) async {

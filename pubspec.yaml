@@ -2,7 +2,7 @@ name: fwapp
 description: Feuerwehr-Lernapp – Fahrzeuge, Geräte, Beladepläne und Trainings-Spielmodi.
 publish_to: 'none'
 
-version: 1.2.0+4
+version: 1.2.1+5
 
 environment:
   sdk: ^3.7.0

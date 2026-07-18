@@ -320,7 +320,10 @@ class _ConnectionSection extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Anmelden'),
-        content: Column(
+        // Scrollbar, damit auf kleinen Screens mit offener Tastatur nichts
+        // von den Buttons überlappt wird (Feldtest Pixel XL).
+        content: SingleChildScrollView(
+            child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
@@ -345,7 +348,7 @@ class _ConnectionSection extends ConsumerWidget {
               style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
           ],
-        ),
+        )),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
@@ -477,7 +480,10 @@ Future<void> showForcedPasswordChange(
       child: StatefulBuilder(
         builder: (ctx, setState) => AlertDialog(
           title: const Text('Neues Passwort festlegen'),
-          content: Column(
+          // Scrollbar: verhindert Button-Überlappung auf kleinen Screens
+          // mit offener Tastatur (Feldtest Pixel XL).
+          content: SingleChildScrollView(
+              child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               const Text(
@@ -506,7 +512,7 @@ Future<void> showForcedPasswordChange(
                       style: const TextStyle(color: Colors.red, fontSize: 12)),
                 ),
             ],
-          ),
+          )),
           actions: [
             TextButton(
               onPressed: () async {

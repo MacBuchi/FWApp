@@ -140,6 +140,7 @@ Prüfhistorie oder Instanzen – die hängen an den physischen Geräten.
 | Veröffentlichen: Versionskonflikt | Anderer Admin war schneller → Pull, prüfen, erneut veröffentlichen (siehe oben). |
 | Fotos fehlen auf einem Mitglieder-Gerät | Einstellungen → „Gerätefotos offline“ prüfen, ggf. erneut anstoßen; einmal WLAN mit Serverzugang nötig. |
 | App-Update lässt sich nicht installieren | Altbestand mit anders signierter Version (z. B. Entwickler-Build) → einmalig deinstallieren, Release-APK installieren. Danach nie wieder nötig. |
+| Sync geht nicht, obwohl Internet da ist (App-Version < 1.3.1) | Release-APKs vor 1.3.1 fehlte die Android-Netzwerkberechtigung — einfach das aktuelle APK vom Release drüberinstallieren. |
 | Import erkennt Geräte nicht | Im Abgleich-Schritt manuell zuordnen – die App lernt den Alias für das nächste Mal. |
 | Daten „weg“ nach Neuinstallation | Sync aktivieren + einloggen + Pull: der zentrale Stand kommt zurück. Nur der persönliche **Lernfortschritt** ist gerätelokal und geht bei Deinstallation verloren (bewusst, keine Personendaten auf dem Server). |
 | Serverausfall | Alle Geräte arbeiten mit dem letzten Stand normal weiter. Wiederherstellung: [SERVER-SETUP.md](SERVER-SETUP.md) → Backup & Wiederherstellung. |

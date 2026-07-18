@@ -76,7 +76,10 @@ class UserManagementScreen extends ConsumerWidget {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setState) => AlertDialog(
           title: const Text('Nutzer anlegen'),
-          content: Column(
+          // Scrollbar: verhindert Button-Überlappung auf kleinen Screens
+          // mit offener Tastatur (Feldtest Pixel XL).
+          content: SingleChildScrollView(
+              child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
@@ -125,7 +128,7 @@ class UserManagementScreen extends ConsumerWidget {
                       style: const TextStyle(color: Colors.red, fontSize: 12)),
                 ),
             ],
-          ),
+          )),
           actions: [
             TextButton(
                 onPressed: () => Navigator.pop(ctx, false),

@@ -36,7 +36,14 @@ flutter test
 ```bash
 flutter test                      # Unit- + Widget-Tests
 flutter test --coverage           # mit Coverage für das Gate
+flutter test integration_test -d <gerät>   # Geräte-Smoke-Test (echtes Gerät/Emulator)
 ```
+
+Der Geräte-Smoke-Test (`integration_test/`) startet die echte App auf einem
+angeschlossenen Gerät und prüft Navigation + Sync-Einstellungen programmatisch —
+Pflicht vor Releases mit Android-spezifischen Änderungen (Manifest, Permissions,
+Plugins): Nur so fallen Fehler auf, die Debug-Builds verschleiern (siehe
+v1.3.1: fehlende INTERNET-Permission im Release-Manifest).
 
 Der Sync-E2E-Test überspringt sich selbst, wenn kein lokaler Supabase-Stack
 läuft. Für den vollen Durchlauf:

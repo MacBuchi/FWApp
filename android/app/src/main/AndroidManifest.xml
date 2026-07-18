@@ -1,4 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Ohne diese Permission verweigert Android der Release-App jede
+         Netzwerk-/DNS-Nutzung ("Failed host lookup") — Debug-Builds mergen
+         sie automatisch, das Release-Manifest braucht sie explizit. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="FWApp"
         android:name="${applicationName}"

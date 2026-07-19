@@ -110,15 +110,15 @@ class _FWAppState extends ConsumerState<FWApp> {
 
   @override
   Widget build(BuildContext context) {
-    final darkModeAsync = ref.watch(themeModeProvider);
-    final isDark = darkModeAsync.value ?? false;
+    final themeModeAsync = ref.watch(themeModeProvider);
 
     return MaterialApp.router(
       title: 'Feuerwehr-Lernapp',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
-      themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
+      // Standard: Systemeinstellung; in den Settings überschreibbar.
+      themeMode: themeModeAsync.value ?? ThemeMode.system,
       routerConfig: appRouter,
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,

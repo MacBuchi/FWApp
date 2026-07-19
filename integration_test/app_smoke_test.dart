@@ -37,7 +37,9 @@ void main() {
 
     // Sync-Sektion vorhanden.
     expect(find.text('Supabase-Sync aktivieren'), findsOneWidget);
-    expect(find.text('Dunkles Design'), findsOneWidget);
+    // Design-Auswahl (seit v1.4.1: System/Hell/Dunkel statt Bool-Schalter).
+    expect(find.text('Design'), findsOneWidget);
+    expect(find.text('System'), findsOneWidget);
 
     // Wenn Sync aktiv und nicht angemeldet: Login-Dialog öffnen und den
     // Nutzername-Login (M7 Etappe 3) sichtprüfen, dann abbrechen.

@@ -18,7 +18,7 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final darkModeAsync = ref.watch(themeModeProvider);
+    final themeModeAsync = ref.watch(themeModeProvider);
     final syncAsync = ref.watch(syncSettingsProvider);
 
     return Scaffold(
@@ -27,15 +27,41 @@ class SettingsScreen extends ConsumerWidget {
         children: [
           // ─── Darstellung ─────────────────────────────────────
           _SectionHeader('Darstellung'),
-          darkModeAsync.when(
+          themeModeAsync.when(
             loading: () => const ListTile(title: Text('Lade...')),
             error: (e, _) => ListTile(title: Text('Fehler: $e')),
-            data: (isDark) => SwitchListTile(
-              secondary: const Icon(Icons.dark_mode),
-              title: const Text('Dunkles Design'),
-              value: isDark,
-              onChanged: (_) =>
-                  ref.read(themeModeProvider.notifier).toggle(),
+            data: (mode) => Column(
+              children: [
+                const ListTile(
+                  leading: Icon(Icons.brightness_6),
+                  title: Text('Design'),
+                  subtitle:
+                      Text('Standard: folgt der Systemeinstellung'),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                  child: SegmentedButton<ThemeMode>(
+                    segments: const [
+                      ButtonSegment(
+                          value: ThemeMode.system,
+                          icon: Icon(Icons.settings_suggest),
+                          label: Text('System')),
+                      ButtonSegment(
+                          value: ThemeMode.light,
+                          icon: Icon(Icons.light_mode),
+                          label: Text('Hell')),
+                      ButtonSegment(
+                          value: ThemeMode.dark,
+                          icon: Icon(Icons.dark_mode),
+                          label: Text('Dunkel')),
+                    ],
+                    selected: {mode},
+                    onSelectionChanged: (selection) => ref
+                        .read(themeModeProvider.notifier)
+                        .set(selection.first),
+                  ),
+                ),
+              ],
             ),
           ),
 

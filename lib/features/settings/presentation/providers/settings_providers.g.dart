@@ -50,11 +50,18 @@ final class SharedPreferencesProvider
 
 String _$sharedPreferencesHash() => r'ad13470fe866595ad0f58a3e26f11048d94ef22e';
 
+/// Design-Modus: Standard folgt der Systemeinstellung; der Nutzer kann
+/// explizit Hell oder Dunkel erzwingen.
+
 @ProviderFor(ThemeModeNotifier)
 final themeModeProvider = ThemeModeNotifierProvider._();
 
+/// Design-Modus: Standard folgt der Systemeinstellung; der Nutzer kann
+/// explizit Hell oder Dunkel erzwingen.
 final class ThemeModeNotifierProvider
-    extends $AsyncNotifierProvider<ThemeModeNotifier, bool> {
+    extends $AsyncNotifierProvider<ThemeModeNotifier, ThemeMode> {
+  /// Design-Modus: Standard folgt der Systemeinstellung; der Nutzer kann
+  /// explizit Hell oder Dunkel erzwingen.
   ThemeModeNotifierProvider._()
     : super(
         from: null,
@@ -74,19 +81,22 @@ final class ThemeModeNotifierProvider
   ThemeModeNotifier create() => ThemeModeNotifier();
 }
 
-String _$themeModeNotifierHash() => r'c7057c4f5dc25313058e1d5f1342e35e0d8585b8';
+String _$themeModeNotifierHash() => r'858a5cc9795f1395a8ff8fbe92bdbadcbe2880b5';
 
-abstract class _$ThemeModeNotifier extends $AsyncNotifier<bool> {
-  FutureOr<bool> build();
+/// Design-Modus: Standard folgt der Systemeinstellung; der Nutzer kann
+/// explizit Hell oder Dunkel erzwingen.
+
+abstract class _$ThemeModeNotifier extends $AsyncNotifier<ThemeMode> {
+  FutureOr<ThemeMode> build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<bool>, bool>;
+    final ref = this.ref as $Ref<AsyncValue<ThemeMode>, ThemeMode>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<bool>, bool>,
-              AsyncValue<bool>,
+              AnyNotifier<AsyncValue<ThemeMode>, ThemeMode>,
+              AsyncValue<ThemeMode>,
               Object?,
               Object?
             >;

@@ -2,7 +2,7 @@ name: fwapp
 description: Feuerwehr-Lernapp – Fahrzeuge, Geräte, Beladepläne und Trainings-Spielmodi.
 publish_to: 'none'
 
-version: 1.4.1+9
+version: 1.4.2+10
 
 environment:
   sdk: ^3.7.0
@@ -80,7 +80,8 @@ dev_dependencies:
 flutter_launcher_icons:
   image_path: assets/branding/app_icon.png
   android: true
-  adaptive_icon_background: "#B71C1C"
+  # Muss dem Theme-Seed in lib/core/theme/app_theme.dart entsprechen.
+  adaptive_icon_background: "#C62828"
   adaptive_icon_foreground: assets/branding/app_icon_foreground.png
   ios: true
   remove_alpha_ios: true
@@ -90,7 +91,7 @@ flutter_launcher_icons:
   web:
     generate: true
     image_path: assets/branding/app_icon.png
-    theme_color: "#B71C1C"
+    theme_color: "#C62828"
     background_color: "#FFFFFF"
 
 flutter:

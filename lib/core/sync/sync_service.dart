@@ -7,10 +7,8 @@ import 'dart:async';
 
 import 'package:drift/drift.dart';
 import 'package:fwapp/core/database/app_database.dart';
-import 'package:logger/logger.dart';
+import 'package:fwapp/core/logging/app_logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
-final _log = Logger();
 
 /// Drift tables mirrored to Supabase (SQL names, parent→child order).
 const kSyncedTables = [
@@ -106,7 +104,7 @@ class SyncService {
     } finally {
       _suppressDirty = false;
     }
-    _log.i('Pulled dataset version $remoteVersion '
+    appLog.i('Pulled dataset version $remoteVersion '
         '(${data.values.fold<int>(0, (n, rows) => n + rows.length)} rows).');
     return remoteVersion;
   }
@@ -269,7 +267,7 @@ class SyncService {
     } finally {
       _suppressDirty = false;
     }
-    _log.i('Published dataset version $newVersion.');
+    appLog.i('Published dataset version $newVersion.');
     return newVersion;
   }
 

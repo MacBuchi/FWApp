@@ -5,7 +5,9 @@ library;
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  static const _seed = Color(0xFFC62828); // Feuerwehrrot
+  // Feuerwehrrot; muss mit adaptive_icon_background/theme_color in
+  // pubspec.yaml übereinstimmen (Icons neu: dart run flutter_launcher_icons).
+  static const _seed = Color(0xFFC62828);
 
   static ThemeData light() => _base(Brightness.light);
   static ThemeData dark() => _base(Brightness.dark);

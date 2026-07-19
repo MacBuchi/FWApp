@@ -72,6 +72,68 @@ werden nicht gemerged:
 - Feature-first-Struktur unter `lib/features/`, Abhängigkeitsrichtung
   `presentation → domain ← data`.
 
+### Schichtung je Feature
+
+Nicht jedes Feature trägt die volle Schichtung – das ist Absicht, nicht
+Wildwuchs:
+
+- **Synchronisierte Kern-Entitäten** (`vehicle`, `equipment`, `compartment`,
+  `assignment`, `inspection`): volle Schichtung mit Entity,
+  Repository-Interface (`domain`) und Drift-Implementierung (`data`).
+- **Rein lokale/ephemere Features** (`home`-Dashboard, `inventory`,
+  `operation`, `game`): Provider dürfen direkt auf `appDatabaseProvider`/DAOs
+  zugreifen; die Entscheidung steht als Begründung im Kopf der
+  Provider-Datei.
+- **`import`** nutzt Services (`ImportService`, `EquipmentMatcher`) statt
+  Repositories – der Wizard ist ein Ablauf, keine Entität.
+
+Neue Features ordnen sich vor dem ersten Commit einer der Kategorien zu.
+
+### Provider: Codegen ist der Standard
+
+Neue Provider werden mit `@riverpod` (riverpod_generator) geschrieben.
+Manuelle Provider sind nur zulässig mit Begründungskommentar am Dateikopf –
+akzeptierte Gründe: Generator-Limitierung (z. B. kann er
+supabase_flutter-Typen nicht abbilden, siehe `core/sync/sync_providers.dart`)
+oder ein bewusst rein lokales Modul (siehe
+`features/home/.../dashboard_providers.dart`).
+
+### UI-State: handgeschrieben, freezed nur für Domain
+
+Form-/Wizard-State (`VehicleFormState`, `ImportWizardState`) bleibt als
+handgeschriebene immutable Klasse mit `copyWith` inkl. expliziter
+`clearX`-Flags zum Nullen. freezed ist den Domain-Entities vorbehalten.
+Bewusste Entscheidung: die wenigen State-Klassen rechtfertigen keinen
+Codegen-Zyklus, und das Nullen von Feldern bleibt explizit lesbar.
+
+### Fehlerbehandlung und Logging
+
+- Geloggt wird über die zentrale Instanz `appLog`
+  (`lib/core/logging/app_logger.dart`) – kein `Logger()` pro Datei.
+- Leere Catch-Blöcke (`catch (_) {}`) nur mit Begründungskommentar direkt am
+  Catch. Im Kernpfad (Sync, Seeder, Persistenz) werden Fehler nie stumm
+  verschluckt: mindestens `appLog.w(...)`, nutzerrelevante Fälle zusätzlich
+  in der UI sichtbar machen.
+
+### Checkliste: neue Spalte/Tabelle
+
+Das Schema wird an mehreren Stellen von Hand gemappt – bei jeder
+Schema-Änderung alle Stationen abklappern:
+
+1. Drift-Tabelle in `lib/core/database/app_database.dart` ändern,
+   `schemaVersion` erhöhen, Migration ergänzen → `dart run build_runner
+   build --delete-conflicting-outputs`.
+2. Entity (`features/<x>/domain`, freezed) und Repository-Mapping
+   (`features/<x>/data`: `_toEntity` + Companion-Aufbau) nachziehen.
+3. Sync: `lib/core/sync/sync_service.dart` → `_buildPayload` **und**
+   `_applySnapshot` (bei neuer Tabelle zusätzlich `kSyncedTables`).
+4. Server: neue SQL-Migration unter `supabase/migrations/` anlegen und auf
+   dem Server einspielen.
+5. Seeder: `lib/core/database/library_seeder.dart`, falls das Feld aus den
+   gebündelten JSON-Assets befüllt wird.
+6. Tests: Drift-Schema-Snapshots (`test/core/database/generated/`) und
+   Migrationstest aktualisieren.
+
 ## Releases
 
 Ein Release entsteht automatisch, wenn ein PR mit erhöhter `version:` in
@@ -86,3 +148,8 @@ bitte die Version **nicht** anfassen, sofern nicht abgesprochen.
 Code, Bezeichner und Commit-Titel: Englisch oder Deutsch ist beides im
 Bestand – bitte im jeweiligen Umfeld konsistent bleiben. UI-Texte und
 Doku: Deutsch (Zielgruppe sind deutsche Feuerwehren).
+
+**Keine Lokalisierung:** Es gibt bewusst kein ARB/gen-l10n-Setup – alle
+UI-Texte sind hart deutsch. Die Zielgruppe ist einsprachig; ein
+Übersetzungs-Layer würde nur Indirektion ohne Nutzen einführen. PRs, die
+l10n-Infrastruktur einführen, bitte vorher als Issue diskutieren.

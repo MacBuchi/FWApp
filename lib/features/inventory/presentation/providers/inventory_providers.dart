@@ -1,5 +1,8 @@
 /// inventory_providers.dart – Inventurassistent: Session anlegen (mit Soll-
 /// Snapshot je Zuweisung), Prüfstatus setzen, Session abschließen.
+/// Schichtung: bewusst ohne data/domain-Schicht, direkter DAO-Zugriff —
+/// Inventurdaten sind rein lokal und werden nicht synchronisiert
+/// (siehe CONTRIBUTING.md „Schichtung je Feature").
 library;
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

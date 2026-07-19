@@ -6,10 +6,8 @@ import 'dart:convert';
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:fwapp/core/database/app_database.dart';
+import 'package:fwapp/core/logging/app_logger.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
-import 'package:logger/logger.dart';
-
-final _log = Logger();
 
 class LibrarySeeder {
   final AppDatabase _db;
@@ -23,7 +21,7 @@ class LibrarySeeder {
             ..where((t) => t.id.equals(1)))
           .getSingleOrNull();
       if ((syncMeta?.lastPulledVersion ?? 0) > 0) {
-        _log.i('Central dataset present – skipping library seed.');
+        appLog.i('Central dataset present – skipping library seed.');
         return;
       }
 
@@ -35,14 +33,14 @@ class LibrarySeeder {
       // vor dem Demo-Fahrzeug laufen, dessen Beladeplan Katalog-IDs referenziert.
       await _seedCatalog();
       if (!seeded) {
-        _log.i('Starting library seed...');
+        appLog.i('Starting library seed...');
         await _seedVehicle('hlf20_demo');
-        _log.i('Library seed complete.');
+        appLog.i('Library seed complete.');
       } else {
-        _log.i('Library already seeded – skipping full seed.');
+        appLog.i('Library already seeded – skipping full seed.');
       }
     } catch (e, st) {
-      _log.e('Library seed failed', error: e, stackTrace: st);
+      appLog.e('Library seed failed', error: e, stackTrace: st);
     }
   }
 
@@ -256,7 +254,7 @@ class LibrarySeeder {
       created++;
     }
     if (created > 0) {
-      _log.i('Standard-Katalog: $created Geräte ergänzt.');
+      appLog.i('Standard-Katalog: $created Geräte ergänzt.');
     }
   }
 
@@ -264,7 +262,10 @@ class LibrarySeeder {
     try {
       final raw = await rootBundle.loadString(assetPath);
       return jsonDecode(raw) as Map<String, dynamic>;
-    } catch (_) {
+    } catch (e) {
+      // Die Aufrufer tolerieren fehlende Assets, aber ein nicht lesbares
+      // gebündeltes Asset ist ein Build-Fehler und muss im Log auftauchen.
+      appLog.w('Bundle-Asset nicht lesbar: $assetPath', error: e);
       return null;
     }
   }

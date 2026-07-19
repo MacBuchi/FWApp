@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/features/home/presentation/providers/dashboard_providers.dart';
+import 'package:fwapp/features/home/presentation/widgets/home_banners.dart';
 import 'package:fwapp/features/inspection/presentation/providers/inspection_providers.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -24,6 +25,7 @@ class HomeScreen extends ConsumerWidget {
         data: (stats) => ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            const HomeBanners(),
             Row(
               children: [
                 Expanded(child: _StreakCard(stats: stats)),

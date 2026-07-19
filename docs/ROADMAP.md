@@ -26,6 +26,7 @@ Demo-HLF 20 mit; die echten Beladelisten kommen per Import-Wizard.)
 | UI-/Widget-Tests kritischer Flows + Coverage-Gate | ✅ M1 |
 | Lernzentriertes Redesign (Dashboard, Rollen, Piktogramme, Grundkatalog) | ✅ |
 | Zentrale Gerätefotos (Sync-fähig) | ✅ M2 (Server verifiziert 15.07.; Feldtest iPhone→MacBook offen) |
+| In-App-Feedback (→ GitHub-Issue-Bot) + Update-Banner mit In-App-Installation | ✅ (19.07., v1.4.0) |
 | Produktiv-Betrieb (Cloud, Verteilung, Backups) | 🔨 M5 |
 | Open Source | 🔨 M6 |
 

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pfade, die der FileProvider fürs In-App-Update (ota_update) freigibt. -->
+<paths>
+    <files-path name="ota_update" path="ota_update/"/>
+    <external-path name="external_files" path="."/>
+</paths>

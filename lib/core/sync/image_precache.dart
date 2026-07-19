@@ -6,10 +6,8 @@ library;
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/database/database_providers.dart';
+import 'package:fwapp/core/logging/app_logger.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
-import 'package:logger/logger.dart';
-
-final _log = Logger();
 
 class ImagePrecacheState {
   final bool running;
@@ -66,14 +64,14 @@ class ImagePrecacheNotifier extends Notifier<ImagePrecacheState> {
         done++;
       } catch (e) {
         failed++;
-        _log.w('Bild-Precache fehlgeschlagen für $path: $e');
+        appLog.w('Bild-Precache fehlgeschlagen für $path: $e');
       }
       state = ImagePrecacheState(
           running: true, done: done, failed: failed, total: paths.length);
     }
     state = ImagePrecacheState(
         running: false, done: done, failed: failed, total: paths.length);
-    _log.i('Bild-Precache: $done/${paths.length} geladen, $failed Fehler.');
+    appLog.i('Bild-Precache: $done/${paths.length} geladen, $failed Fehler.');
   }
 }
 

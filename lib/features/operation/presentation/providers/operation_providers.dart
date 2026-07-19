@@ -2,6 +2,8 @@
 /// Deliberately in-memory only: an Einsatz is transient, works fully offline,
 /// and is NOT part of the synced dataset (no Einsatzdokumentation im
 /// rechtlichen Sinn).
+/// Schichtung: bewusst ohne data/domain-Schicht
+/// (siehe CONTRIBUTING.md „Schichtung je Feature").
 library;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_enums.dart';

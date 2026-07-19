@@ -1,6 +1,8 @@
 /// dashboard_providers.dart – Personal learning dashboard: streak, XP/level,
 /// weekly goal, and a "Weiterlernen" suggestion (weakest compartment).
 /// Manual providers (no codegen) — everything is local-device data.
+/// Schichtung: bewusst ohne data/domain-Schicht, direkter DAO-Zugriff
+/// (rein lokales Feature, siehe CONTRIBUTING.md „Schichtung je Feature").
 library;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/database/app_database.dart';

@@ -1,6 +1,11 @@
 /// app_router.dart – GoRouter configuration for all app routes.
+///
+/// Edit-/Admin-Routen sind zusätzlich zur ausgeblendeten UI per [guardRedirect]
+/// geschützt, damit auch Deep-Links (Web!) die Rollenregeln respektieren.
 library;
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fwapp/features/home/presentation/screens/home_screen.dart';
 import 'package:fwapp/features/home/presentation/screens/more_screen.dart';
@@ -29,9 +34,50 @@ import 'package:fwapp/features/inventory/presentation/screens/inventory_report_s
 import 'package:fwapp/features/settings/presentation/screens/settings_screen.dart';
 import 'package:fwapp/features/settings/presentation/screens/user_management_screen.dart';
 
-final appRouter = GoRouter(
-  initialLocation: '/',
-  routes: [
+/// Routen, die Bearbeitungsrechte voraussetzen (Spiegel der UI-Gates:
+/// `canEditProvider` blendet genau diese Einstiege aus).
+final _editRoutePattern = RegExp(r'^(/vehicles/(new|[^/]+/(edit|compartments))'
+    r'|/equipment/(new|[^/]+/edit)'
+    r'|/import'
+    r'|/inspections'
+    r'|/inventory(/.*)?)$');
+
+/// Pure Guard-Logik, getrennt vom Router für direkte Testbarkeit.
+/// Liefert das Redirect-Ziel oder null (= Navigation erlaubt).
+String? guardRedirect({
+  required String path,
+  required bool canEdit,
+  required bool isAdmin,
+  required bool supabaseReady,
+}) {
+  if (_editRoutePattern.hasMatch(path) && !canEdit) return '/';
+  // Nutzerverwaltung braucht wie die Mehr-Kachel Admin UND Serververbindung.
+  if (path == '/user-management' && !(isAdmin && supabaseReady)) return '/';
+  return null;
+}
+
+final routerProvider = Provider<GoRouter>((ref) {
+  // Die Rolle lädt nach dem Login asynchron nach; der Router muss anstehende
+  // Redirects neu bewerten, sobald sich canEdit/isAdmin ändern.
+  final refresh = ValueNotifier(0);
+  ref.onDispose(refresh.dispose);
+  ref.listen(canEditProvider, (_, __) => refresh.value++);
+  ref.listen(isAdminProvider, (_, __) => refresh.value++);
+
+  return GoRouter(
+    initialLocation: '/',
+    refreshListenable: refresh,
+    redirect: (context, state) => guardRedirect(
+      path: state.uri.path,
+      canEdit: ref.read(canEditProvider),
+      isAdmin: ref.read(isAdminProvider),
+      supabaseReady: ref.read(supabaseReadyProvider),
+    ),
+    routes: _routes,
+  );
+});
+
+final _routes = [
     ShellRoute(
       builder: (context, state, child) =>
           _AppShell(location: state.uri.path, child: child),
@@ -179,8 +225,7 @@ final appRouter = GoRouter(
         ),
       ],
     ),
-  ],
-);
+];
 
 class _AppShell extends StatelessWidget {
   final String location;

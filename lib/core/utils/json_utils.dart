@@ -6,7 +6,7 @@ List<String> jsonToStringList(String json) {
   try {
     final decoded = jsonDecode(json);
     if (decoded is List) return decoded.cast<String>();
-  } catch (_) {}
+  } catch (_) {} // defekter Spalteninhalt → leere Liste statt Crash
   return [];
 }
 
@@ -16,7 +16,7 @@ Map<String, dynamic> jsonToMap(String json) {
   try {
     final decoded = jsonDecode(json);
     if (decoded is Map<String, dynamic>) return decoded;
-  } catch (_) {}
+  } catch (_) {} // defekter Spalteninhalt → leere Map statt Crash
   return {};
 }
 

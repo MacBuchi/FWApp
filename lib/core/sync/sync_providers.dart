@@ -109,6 +109,7 @@ final serverHealthProvider = FutureProvider.autoDispose<bool>((ref) async {
   } on TimeoutException {
     return false;
   } catch (_) {
+    // Jeder Netz-/DNS-Fehler bedeutet schlicht: Server nicht erreichbar.
     return false;
   }
 });

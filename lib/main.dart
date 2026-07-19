@@ -15,12 +15,10 @@ import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/sync/image_precache.dart';
 import 'package:fwapp/core/theme/app_theme.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
+import 'package:fwapp/core/logging/app_logger.dart';
 import 'package:fwapp/features/settings/presentation/providers/settings_providers.dart';
-import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
-final _log = Logger();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,12 +26,12 @@ Future<void> main() async {
   // Central error reporting: uncaught framework and async errors end up in
   // one place instead of dying silently in release builds.
   FlutterError.onError = (details) {
-    _log.e('Flutter framework error',
+    appLog.e('Flutter framework error',
         error: details.exception, stackTrace: details.stack);
     FlutterError.presentError(details);
   };
   PlatformDispatcher.instance.onError = (error, stack) {
-    _log.e('Uncaught async error', error: error, stackTrace: stack);
+    appLog.e('Uncaught async error', error: error, stackTrace: stack);
     return true;
   };
 
@@ -65,8 +63,10 @@ Future<void> main() async {
         };
       };
     }
-  } catch (_) {
+  } catch (e, s) {
     // Offline or misconfigured – app stays fully usable in local mode.
+    appLog.w('Supabase-Init fehlgeschlagen – App startet im Lokalmodus',
+        error: e, stackTrace: s);
   }
 
   runApp(
@@ -102,8 +102,10 @@ class _FWAppState extends ConsumerState<FWApp> {
         await sync.pullIfNewer();
         // Warm the offline image cache in the background (M2).
         unawaited(ref.read(imagePrecacheProvider.notifier).run());
-      } catch (_) {
+      } catch (e) {
         // Offline – last pulled snapshot stays in place.
+        appLog.w('Start-Pull fehlgeschlagen (Server nicht erreichbar?)',
+            error: e);
       }
     }
   }
@@ -119,7 +121,7 @@ class _FWAppState extends ConsumerState<FWApp> {
       darkTheme: AppTheme.dark(),
       // Standard: Systemeinstellung; in den Settings überschreibbar.
       themeMode: themeModeAsync.value ?? ThemeMode.system,
-      routerConfig: appRouter,
+      routerConfig: ref.watch(routerProvider),
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,

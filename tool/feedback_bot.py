@@ -35,7 +35,13 @@ def issue_exists(title: str) -> bool:
 def api(method: str, path: str, body=None):
     url = os.environ["SUPABASE_URL"] + path
     key = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
-    headers = {"apikey": key, "Content-Type": "application/json"}
+    headers = {
+        "apikey": key,
+        "Content-Type": "application/json",
+        # Cloudflare (Bot-Fight-Mode) blockt den Default-UA
+        # "Python-urllib/3.x" mit 403 — eigener UA nötig.
+        "User-Agent": "fwapp-feedback-bot/1.0",
+    }
     # Legacy-service_role-Keys sind JWTs und gehören zusätzlich in den
     # Authorization-Header; neue sb_secret_*-Keys nutzen nur apikey.
     if key.startswith("eyJ"):

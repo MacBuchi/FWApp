@@ -1,11 +1,13 @@
 /// settings_providers.dart – Riverpod providers for app settings (theme, sync).
 library;
+import 'package:flutter/material.dart' show ThemeMode;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 part 'settings_providers.g.dart';
 
-const _kDarkMode = 'dark_mode';
+const _kThemeMode = 'theme_mode'; // 'system' | 'light' | 'dark'
+const _kDarkMode = 'dark_mode'; // Alt-Schalter bis v1.4.0 (nur Migration)
 const _kSyncEnabled = 'sync_enabled';
 const _kSupabaseUrl = 'supabase_url';
 const _kSupabaseKey = 'supabase_key';
@@ -27,19 +29,30 @@ const kDefaultSupabaseAnonKey =
 Future<SharedPreferences> sharedPreferences(Ref ref) =>
     SharedPreferences.getInstance();
 
+/// Design-Modus: Standard folgt der Systemeinstellung; der Nutzer kann
+/// explizit Hell oder Dunkel erzwingen.
 @riverpod
 class ThemeModeNotifier extends _$ThemeModeNotifier {
   @override
-  Future<bool> build() async {
+  Future<ThemeMode> build() async {
     final prefs = await ref.watch(sharedPreferencesProvider.future);
-    return prefs.getBool(_kDarkMode) ?? false;
+    final stored = prefs.getString(_kThemeMode);
+    if (stored != null) {
+      return ThemeMode.values.asNameMap()[stored] ?? ThemeMode.system;
+    }
+    // Migration vom alten Bool-Schalter: wer Dunkel aktiv hatte, behält
+    // Dunkel — alle anderen bekommen den neuen Standard "System".
+    if (prefs.getBool(_kDarkMode) == true) {
+      await prefs.setString(_kThemeMode, ThemeMode.dark.name);
+      return ThemeMode.dark;
+    }
+    return ThemeMode.system;
   }
 
-  Future<void> toggle() async {
-    final current = state.value ?? false;
+  Future<void> set(ThemeMode mode) async {
     final prefs = await ref.read(sharedPreferencesProvider.future);
-    await prefs.setBool(_kDarkMode, !current);
-    state = AsyncValue.data(!current);
+    await prefs.setString(_kThemeMode, mode.name);
+    state = AsyncValue.data(mode);
   }
 }
 

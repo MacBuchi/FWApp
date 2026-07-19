@@ -29,6 +29,40 @@ void main() {
     expect(find.text('Neustart erforderlich'), findsNothing);
   });
 
+  testWidgets('Design: Standard System, Auswahl Hell/Dunkel vorhanden',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester
+        .pumpWidget(buildTestApp(db: db, home: const SettingsScreen()));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Design'), findsOneWidget);
+    final segmented = tester.widget<SegmentedButton<ThemeMode>>(
+        find.byType(SegmentedButton<ThemeMode>));
+    expect(segmented.selected, {ThemeMode.system});
+
+    await tester.tap(find.text('Dunkel'));
+    await tester.pumpAndSettle();
+    expect(
+        tester
+            .widget<SegmentedButton<ThemeMode>>(
+                find.byType(SegmentedButton<ThemeMode>))
+            .selected,
+        {ThemeMode.dark});
+  });
+
+  testWidgets('Design-Migration: alter Dunkel-Schalter bleibt Dunkel',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({'dark_mode': true});
+    await tester
+        .pumpWidget(buildTestApp(db: db, home: const SettingsScreen()));
+    await tester.pumpAndSettle();
+
+    final segmented = tester.widget<SegmentedButton<ThemeMode>>(
+        find.byType(SegmentedButton<ThemeMode>));
+    expect(segmented.selected, {ThemeMode.dark});
+  });
+
   testWidgets(
       'Sync konfiguriert, aber nicht initialisiert: Neustart-Hinweis',
       (tester) async {

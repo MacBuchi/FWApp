@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
+import 'package:fwapp/features/home/presentation/widgets/home_banners.dart';
 
 class MoreScreen extends ConsumerWidget {
   const MoreScreen({super.key});
@@ -12,6 +13,9 @@ class MoreScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final canEdit = ref.watch(canEditProvider);
+    // Feedback landet in Supabase — braucht Server + Login.
+    final showFeedback = ref.watch(supabaseReadyProvider) &&
+        ref.watch(sessionStreamProvider).value != null;
     // Nutzerverwaltung: nur echter Admin UND verbundener Server (im reinen
     // Lokalmodus gibt es keine zentralen Konten).
     final showUserManagement = ref.watch(isAdminProvider) &&
@@ -49,12 +53,27 @@ class MoreScreen extends ConsumerWidget {
           ),
           _Section('App'),
           Card(
-            child: ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Einstellungen'),
-              subtitle: const Text('Design, Synchronisation, Konto'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => context.push('/settings'),
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.settings),
+                  title: const Text('Einstellungen'),
+                  subtitle: const Text('Design, Synchronisation, Konto'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.push('/settings'),
+                ),
+                if (showFeedback) ...[
+                  const Divider(indent: 16, endIndent: 16),
+                  ListTile(
+                    leading: const Icon(Icons.lightbulb_outline),
+                    title: const Text('Feedback senden'),
+                    subtitle:
+                        const Text('Wunsch oder Fehler an den Entwickler'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => showFeedbackDialog(context, ref),
+                  ),
+                ],
+              ],
             ),
           ),
           if (canEdit) ...[

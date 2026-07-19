@@ -361,6 +361,16 @@ docker compose pull && docker compose up -d
 docker exec supabase-db psql -U supabase_admin -d postgres -c "NOTIFY pgrst, 'reload schema';"
 ```
 
+### Feedback-Tabelle & Issue-Bot (seit 2026-07-19)
+
+Die App schreibt In-App-Feedback (Feature/Bug) in die Tabelle `feedback`
+(Migration `20260719000000_feedback.sql`; RLS: jeder nur eigene Zeilen).
+Der GitHub-Actions-Workflow `feedback.yml` (Cron alle 6 Std.) ruft
+`tool/feedback_bot.py` auf: liest unverarbeitete Zeilen über das
+öffentliche API-Gateway mit dem Repo-Secret `SUPABASE_SERVICE_ROLE_KEY`,
+erzeugt daraus öffentliche Issues (Label `enhancement`/`bug`) und stempelt
+`processed_at`. Manuell anstoßen: `gh workflow run feedback.yml`.
+
 ### Healthcheck-Intervalle (Idle-CPU, seit 2026-07-19)
 
 Die Standard-Compose-Datei prüft 11 Container **alle 5 Sekunden** — auf einer

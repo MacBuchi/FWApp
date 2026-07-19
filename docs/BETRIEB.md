@@ -130,6 +130,33 @@ Prüfhistorie oder Instanzen – die hängen an den physischen Geräten.
 
 ---
 
+## Feedback & App-Updates (seit v1.4.0)
+
+### Wunsch oder Fehler melden
+
+- Auf dem **Start-Dashboard** erscheint (angemeldet) ein Banner „💡 Wunsch
+  oder Fehler melden“; dauerhaft gibt es die Kachel **Mehr → Feedback
+  senden**. Kategorie wählen (Feature/Bug), kurz beschreiben, senden.
+- Die Meldung landet zunächst auf dem eigenen Server und wird dann
+  automatisch (alle 6 Std.) als **öffentliches GitHub-Issue** im
+  App-Projekt angelegt — inklusive Nutzername. Deshalb zeigt der Dialog
+  den Hinweis: **keine persönlichen Daten in den Text schreiben.**
+
+### App-Updates
+
+- Gibt es ein neues Release, zeigt die Android-App auf dem Start-Dashboard
+  den Banner „🔄 Update auf v… verfügbar“. Antippen → „Jetzt
+  aktualisieren“: Das APK lädt mit Fortschrittsbalken direkt in der App,
+  danach fragt der Android-Installer einmalig um Bestätigung.
+- Beim allerersten In-App-Update fragt Android zusätzlich nach der
+  Erlaubnis „Unbekannte Apps installieren“ für die FWApp — einmal
+  erlauben, fertig.
+- Klappt der Direkt-Download nicht, bietet der Dialog den Browser-Download
+  an. Die **Web-App** aktualisiert sich beim nächsten Öffnen von selbst
+  und zeigt daher keinen Banner.
+
+---
+
 ## Troubleshooting
 
 | Symptom | Ursache / Lösung |
@@ -160,6 +187,9 @@ Die App ist bewusst datensparsam aufgebaut:
   Mitglieder-Konto ist gesperrt.
 - **Lernfortschritt** (Streak, XP, Quiz-Ergebnisse) bleibt ausschließlich
   lokal auf dem jeweiligen Gerät und wird nie übertragen.
+- **In-App-Feedback** wird mit Nutzername als öffentliches GitHub-Issue
+  veröffentlicht (der Dialog weist darauf hin) — Meldungen daher ohne
+  Personenbezug formulieren.
 - **Einsatz-Log** (virtuelles Ausladen) bleibt ebenfalls lokal; die App ist
   ausdrücklich **kein** Einsatzdokumentationssystem.
 - Freitextfelder mit Personenbezug: „Erledigt von“ bei Prüfungen und

@@ -1,0 +1,31 @@
+name: Feedback Bot
+
+# Macht aus In-App-Feedback (Supabase-Tabelle `feedback`, erreichbar über
+# das öffentliche API-Gateway) automatisch GitHub-Issues.
+on:
+  schedule:
+    - cron: "41 */6 * * *" # alle sechs Stunden
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Process feedback
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          SUPABASE_URL: https://fwapp-api.musikmanufaktur-schwerin-bawue.de
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "::error::Repository secret SUPABASE_SERVICE_ROLE_KEY is missing."
+            exit 1
+          fi
+          python3 tool/feedback_bot.py

@@ -32,12 +32,14 @@ flutter test
 3. **Coverage-Gate:** Die Logik-Schichten (`data`/`domain`/`core`) müssen
    ≥ 65 % Testabdeckung behalten (`dart run tool/check_coverage.dart --min 65`
    nach `flutter test --coverage`).
-4. **Version-Bump nicht vergessen:** Ändert ein PR ausgelieferte Dateien
+4. **Version-Bump bis zum Merge:** Ändert ein PR ausgelieferte Dateien
    (`lib/`, `android/`, `ios/`, `macos/`, `web/`, `assets/`, `pubspec.*`),
    muss `version:` in `pubspec.yaml` steigen — sonst legt `release.yml` kein
-   Tag an und die Änderung erreicht kein Gerät. Der Check „Version Guard“
-   warnt im PR und schlägt auf `main` fehl. Reine Doku-, Test-, `tool/`- oder
-   CI-PRs brauchen keinen Bump.
+   Tag an und die Änderung erreicht kein Gerät. Reine Doku-, Test-, `tool/`-
+   oder CI-PRs brauchen keinen Bump. Wer von außen beiträgt, lässt die
+   Version in Ruhe (siehe [Releases](#releases)) — den Bump setzt die
+   Maintainerin bzw. der Maintainer vor dem Merge. Genau deshalb **warnt**
+   der Check „Version Guard“ im PR nur und schlägt erst auf `main` fehl.
 
 ## Tests
 

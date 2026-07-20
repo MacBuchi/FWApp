@@ -11,6 +11,7 @@
 library;
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/main.dart' as app;
 import 'package:integration_test/integration_test.dart';
@@ -18,6 +19,52 @@ import 'package:url_launcher/url_launcher.dart';
 
 Future<void> settle(WidgetTester tester) async =>
     tester.pumpAndSettle(const Duration(milliseconds: 250));
+
+/// Pumpt, bis [finder] fündig wird.
+///
+/// `pumpAndSettle` reicht hier nicht: Die Einstellungen hängen an
+/// asynchronen Providern (SharedPreferences, Drift). Solange die auf I/O
+/// warten, steht kein Frame an — `pumpAndSettle` kehrt also sofort zurück,
+/// während noch „Lade…“ auf dem Schirm steht. Auf dem schnellen Emulator
+/// gewinnt das Rennen meist der Provider, auf einem echten Pixel XL nicht.
+/// Alle gerade gebauten Text-Widgets — die einzige Sicht auf den Bildschirm,
+/// die man bei einem Geräte-Lauf hat.
+List<String> visibleTexts(WidgetTester tester) => tester
+    .widgetList<Text>(find.byType(Text))
+    .map((t) => t.data)
+    .whereType<String>()
+    .toList();
+
+Future<void> waitFor(
+  WidgetTester tester,
+  Finder finder, {
+  Duration timeout = const Duration(seconds: 20),
+}) async {
+  for (var waited = Duration.zero;
+      waited < timeout;
+      waited += const Duration(milliseconds: 100)) {
+    if (finder.evaluate().isNotEmpty) return;
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+  // Ohne die Liste des tatsächlich Sichtbaren ist ein Fehlschlag auf einem
+  // Gerät kaum zu deuten — man sieht den Bildschirm ja nicht.
+  fail('Nach ${timeout.inSeconds}s nicht gefunden: '
+      '${finder.describeMatch(Plurality.one)}'
+      '\nSichtbar: ${visibleTexts(tester)}');
+}
+
+/// Wartet auf [finder] und scrollt das Ziel in den sichtbaren Bereich.
+///
+/// Nötig, weil das Testgerät nicht zwingend hochkant liegt: Der Pixel XL im
+/// Testrig meldet 683 × 411 dp. In diesem flachen Fenster rutschen
+/// Listeneinträge unter die Navigationsleiste — `tester.tap` trifft dann die
+/// Leiste und der Test wandert wortlos in einen anderen Tab, statt dem Link
+/// zu folgen.
+Future<void> ensureVisible(WidgetTester tester, Finder finder) async {
+  await waitFor(tester, finder);
+  await tester.ensureVisible(finder);
+  await settle(tester);
+}
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -28,26 +75,30 @@ void main() {
     await settle(tester);
 
     // Start-Dashboard mit Bottom-Navigation.
-    expect(find.text('Start'), findsWidgets);
+    await waitFor(tester, find.text('Start'));
     expect(find.text('Mehr'), findsWidgets);
 
     // Mehr → Einstellungen.
     await tester.tap(find.text('Mehr').last);
     await settle(tester);
-    expect(find.text('Einstellungen'), findsWidgets);
-    await tester.tap(find.text('Einstellungen').first);
+    final settingsTile = find.widgetWithText(ListTile, 'Einstellungen').first;
+    await ensureVisible(tester, settingsTile);
+    await tester.tap(settingsTile);
     await settle(tester);
 
-    // Sync-Sektion vorhanden.
-    expect(find.text('Supabase-Sync aktivieren'), findsOneWidget);
     // Design-Auswahl (seit v1.4.1: System/Hell/Dunkel statt Bool-Schalter).
-    expect(find.text('Design'), findsOneWidget);
+    // Steht oben im Screen, wird also vor dem Scrollen geprüft.
+    await waitFor(tester, find.text('Design'));
     expect(find.text('System'), findsOneWidget);
+
+    // Sync-Sektion vorhanden.
+    await ensureVisible(tester, find.text('Supabase-Sync aktivieren'));
 
     // Wenn Sync aktiv und nicht angemeldet: Login-Dialog öffnen und den
     // Nutzername-Login (M7 Etappe 3) sichtprüfen, dann abbrechen.
     final loginTile = find.text('Mit Abteilung verbinden');
     if (loginTile.evaluate().isNotEmpty) {
+      await ensureVisible(tester, loginTile);
       await tester.tap(loginTile);
       await settle(tester);
       expect(find.text('Nutzername'), findsOneWidget,

@@ -6,7 +6,90 @@ on:
   pull_request:
   workflow_dispatch:
 
+# Ein überholter Push auf einen Feature-Branch bricht seinen Vorgänger ab;
+# Läufe auf main bleiben unangetastet (sie speisen die Release-Pipeline).
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
+  # Ohne Version-Bump in pubspec.yaml legt release.yml kein Tag an — eine
+  # Änderung an der App käme dann nie auf den Geräten an. Im PR bleibt das
+  # eine Warnung (der Bump darf bis kurz vor dem Merge fehlen), auf main
+  # ist es ein Fehler, weil dort niemand mehr gegensteuert.
+  version-guard:
+    name: Version Guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Verify pubspec version bump
+        env:
+          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            echo "Manueller Lauf ohne Vergleichsbasis — übersprungen." | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          if [[ -z "$BASE_SHA" || "$BASE_SHA" =~ ^0+$ ]] || ! git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
+            echo "Kein brauchbarer Vergleichs-Commit (Erst- oder Force-Push) — übersprungen." | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          version_at() {
+            git show "$1:pubspec.yaml" 2>/dev/null |
+              sed -n 's/^version:[[:space:]]*\(.*\)/\1/p' | tr -d '[:space:]'
+          }
+
+          # Nur diese Pfade landen im ausgelieferten Build. Doku, Tests, CI,
+          # tool/-Skripte und Server-Migrationen brauchen keinen Bump.
+          shipping=$(git diff --name-only "$BASE_SHA" HEAD -- \
+            lib android ios macos web assets pubspec.yaml pubspec.lock)
+
+          base_version=$(version_at "$BASE_SHA")
+          head_version=$(version_at HEAD)
+
+          if [[ -z "$shipping" ]]; then
+            verdict="✅ Keine ausgelieferten Dateien geändert — kein Version-Bump nötig."
+            status=ok
+          elif [[ -n "$head_version" && "$head_version" != "$base_version" ]]; then
+            verdict="✅ Version gebumpt: \`$base_version\` → \`$head_version\`"
+            status=ok
+          else
+            verdict="⚠️ Ausgelieferte Dateien geändert, aber \`version:\` steht unverändert auf \`$head_version\`. Ohne Bump erzeugt release.yml kein Tag und kein APK."
+            status=missing
+          fi
+
+          {
+            echo "### Version Guard"
+            echo ""
+            echo "$verdict"
+            if [[ -n "$shipping" ]]; then
+              echo ""
+              echo "<details><summary>Geänderte ausgelieferte Dateien</summary>"
+              echo ""
+              echo '```'
+              echo "$shipping"
+              echo '```'
+              echo ""
+              echo "</details>"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [[ "$status" == ok ]]; then
+            echo "$verdict"
+            exit 0
+          fi
+          if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            echo "::warning file=pubspec.yaml::${verdict//\`/}"
+            exit 0
+          fi
+          echo "::error file=pubspec.yaml::${verdict//\`/}"
+          exit 1
+
   test:
     name: Analyze & Test
     runs-on: ubuntu-latest

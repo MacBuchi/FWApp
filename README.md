@@ -12,6 +12,13 @@ Entstanden für eine Wehr in Baden-Württemberg, aber bewusst so gebaut, dass
 andere Wehren sie mit eigenen Beladelisten und eigenem Server nachnutzen
 können.
 
+| Beladefächer | Lernmodi | Gerätekatalog |
+| --- | --- | --- |
+| ![Fahrzeugdetail mit den neun Beladefächern eines HLF 20 und der Zahl der Geräte je Fach](docs/screenshots/01-beladefaecher.png) | ![Übersicht der sechs Lernmodi: Fach-Quiz, Drag & Drop, Bild-Erkennung, Wo liegt's, Karteikarten und Fahrzeugkunde](docs/screenshots/02-lernen.png) | ![Durchsuchbarer Gerätekatalog mit Piktogrammen, Filtern nach Funktion und Einsatz](docs/screenshots/03-geraetekatalog.png) |
+
+*Screenshots vom Demo-Datenbestand, der der App beiliegt (fiktives HLF 20 +
+110 Normgeräte) – keine echten Wehrdaten.*
+
 ---
 
 ## Was die App kann
@@ -58,8 +65,9 @@ können.
   Nur Admins bearbeiten und **veröffentlichen** komplette Snapshots
   (`publish_snapshot()`-RPC mit Versionszähler); alle Mitglieder **lesen**
   denselben Stand per Pull. Keine Konfliktauflösung nötig – gewollt.
-- **Rollen:** `admin` (bearbeiten + veröffentlichen) und `member` (lesen,
-  lernen) über Supabase Auth + RLS; Mitglieder sehen keine Bearbeitungs-UI.
+- **Rollen:** `admin` (bearbeiten, veröffentlichen, Nutzer verwalten),
+  `geraetewart` (bearbeiten und veröffentlichen) und `member` (lesen, lernen)
+  über Supabase Auth + RLS; Mitglieder sehen keine Bearbeitungs-UI.
 - **Gerätefotos:** privater Storage-Bucket; die DB speichert portable Marker
   (`supabase://…`), aufgelöst zur Laufzeit, angezeigt über
   `cached_network_image`, vorgeladen nach jedem Pull.

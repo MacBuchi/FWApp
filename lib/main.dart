@@ -94,12 +94,18 @@ class _FWAppState extends ConsumerState<FWApp> {
   Future<void> _seedAndSync() async {
     final db = ref.read(appDatabaseProvider);
     await LibrarySeeder(db).seedIfNeeded();
+    // Nach jedem await prüfen: Wird die App während des Seedens beendet,
+    // läuft diese Methode weiter, während das Widget schon abgebaut ist —
+    // `ref` wirft dann "Using ref when a widget is about to or has been
+    // unmounted is unsafe".
+    if (!mounted) return;
     // Pull the central dataset on start when connected and signed in.
     final sync = ref.read(syncServiceProvider);
     final session = ref.read(supabaseClientProvider)?.auth.currentSession;
     if (sync != null && session != null) {
       try {
         await sync.pullIfNewer();
+        if (!mounted) return;
         // Warm the offline image cache in the background (M2).
         unawaited(ref.read(imagePrecacheProvider.notifier).run());
       } catch (e) {

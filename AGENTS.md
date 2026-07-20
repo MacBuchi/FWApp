@@ -11,6 +11,13 @@ diese Datei hier ist das technische Arbeitsgedächtnis, nicht die Einladung zum
 Mitmachen. Widersprechen sich beide, gilt CONTRIBUTING.md für alles, was einen
 PR betrifft.
 
+Diese Datei ersetzt `.github/copilot-instructions.md`. Die stammte aus der
+Aufbauphase und beschrieb, wie die App zu *bauen* wäre — von Rollen,
+In-App-Update, Feedback-Bot, Release-Pipeline und Branch Protection wusste sie
+nichts. Wer dort nachschlagen will: `git show 6dc6f5c`. Die Agent-Definition
+unter `.github/agents/` bleibt bestehen, sie beschreibt eine Testrolle und
+keine Projektregeln.
+
 ## 1. Projekt
 
 **FWApp** – Lern- und Verwaltungs-App für eine Freiwillige Feuerwehr: Fahrzeuge,

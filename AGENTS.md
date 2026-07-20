@@ -11,6 +11,13 @@ diese Datei hier ist das technische Arbeitsgedächtnis, nicht die Einladung zum
 Mitmachen. Widersprechen sich beide, gilt CONTRIBUTING.md für alles, was einen
 PR betrifft.
 
+Diese Datei ersetzt `.github/copilot-instructions.md`. Die stammte aus der
+Aufbauphase und beschrieb, wie die App zu *bauen* wäre — von Rollen,
+In-App-Update, Feedback-Bot, Release-Pipeline und Branch Protection wusste sie
+nichts. Wer dort nachschlagen will: `git show 6dc6f5c`. Die Agent-Definition
+unter `.github/agents/` bleibt bestehen, sie beschreibt eine Testrolle und
+keine Projektregeln.
+
 ## 1. Projekt
 
 **FWApp** – Lern- und Verwaltungs-App für eine Freiwillige Feuerwehr: Fahrzeuge,
@@ -290,3 +297,59 @@ ein Abbruch keine Duplikate erzeugt.
   (`jsr:`/`npm:`) ziehen, sonst 502 beim Kaltstart.
 - **Der Demo-Datenbestand ist fiktiv.** Die echte AB-G-Beladeliste ist bewusst
   aus dem Arbeitsstand entfernt; der Seeder legt Katalog **vor** Fahrzeug an.
+
+## 13. Zurückgestellt — bewusst nicht jetzt
+
+Diese Punkte sind analysiert und entschieden, aber absichtlich vertagt. Sie
+gehören **nicht** in den nächsten PR, und sie sollen auch nicht in jeder
+Session neu aufgerollt werden. Wer sie anfassen will, holt vorher Marcus'
+Zustimmung ein.
+
+### Crash-Reporting (Issue #34)
+
+**Entschieden:** Selbst hosten, nicht sentry.io. **Vertagt:** ja, bis auf
+Weiteres.
+
+Zwei Randbedingungen, die vor dem Start geklärt sein müssen:
+
+- **Sentry `self-hosted` ist zu groß für VM 104.** Offiziell 4 Kerne und
+  16 GB RAM, rund 40 Container (Kafka, ClickHouse, Snuba, Relay, Worker).
+  Neben dem Supabase-Stack ist das keine Zusatzinstallation, sondern eine
+  eigene VM. Die schlankere Alternative heißt **GlitchTip**: implementiert die
+  Sentry-Ingest-API, läuft also mit dem unveränderten `sentry_flutter`-SDK
+  (nur die DSN zeigt woanders hin), braucht aber nur Postgres, Redis und zwei
+  Django-Prozesse. Postgres ist ohnehin da.
+- **Ohne IPv4 auf der VM geht gar nichts.** Neue Container-Images lassen sich
+  nicht ziehen, solange die Fritz!Box den ARP der VM-MAC nicht beantwortet —
+  derselbe offene Punkt, der auch den Brevo-Testversand blockiert.
+
+Vorher zu erledigen: **Issue #39** (Release-Builds loggen gar nichts). Solange
+die lokale Logging-Kette im Release stumm ist, verdeckt ein Crash-Backend nur
+die Ursache.
+
+### Mindestversions-Check (Issue #35)
+
+**Vertagt**, obwohl es das Issue mit dem größten Schadenspotenzial ist — es ist
+ein Entwurf, kein Fix, und braucht eine Server-Migration plus eine Entscheidung
+darüber, ab wann eine Version zu alt ist.
+
+Was die Analyse ergeben hat, damit es niemand zweimal herausfindet:
+
+- Der gefährliche Pfad ist **nicht** der Pull, sondern `publish()`. Ein
+  Gerätewart auf altem Stand kann per `publish_snapshot` einen Snapshot
+  hochladen, der aus seiner lokalen DB gebaut ist; `jsonb_populate_recordset`
+  setzt fehlende Keys kommentarlos auf NULL. Eine neu hinzugekommene
+  Sync-Spalte wäre danach für die ganze Wehr leer — ohne Fehlermeldung.
+  `expected_version` schützt nur gegen parallele Publishes.
+- Die Server-Tabelle heißt **`dataset_meta`** (eine Zeile, `check (id = 1)`),
+  nicht `sync_meta` — das ist die lokale Drift-Tabelle. Der Pull liest
+  `dataset_meta` ohnehin schon, ein `minimum_supported_version` dort wäre eine
+  Ein-Zeilen-Migration.
+- Ein Gate darf **nicht** an `updateInfoProvider` hängen: Der liefert auf Web
+  und iOS grundsätzlich `null`. Ausgerechnet die Web-App ist aber der Weg, über
+  den Admins publizieren.
+- `isNewerVersion` behandelt Pre-Release-Suffixe falsch (`1.5.1-rc1` wird zu
+  `[1,5,0]`). Aktuell folgenlos, weil das Projekt nur `MAJOR.MINOR.PATCH+BUILD`
+  verwendet und `release.yml` den Tag auf Ziffern und Punkte filtert — vor
+  einer Nutzung im Gate aber zu härten.
+- Local-first bleibt unangetastet: Ein Gate darf den Sync sperren, nie die App.

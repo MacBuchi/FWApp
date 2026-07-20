@@ -35,6 +35,20 @@ List<String> visibleTexts(WidgetTester tester) => tester
     .whereType<String>()
     .toList();
 
+/// Trifft [finder] gerade etwas?
+///
+/// `evaluate()` ist auf `.first`/`.last`-Findern nicht harmlos: Solange nichts
+/// passt, werfen sie `Bad state: No element` statt eine leere Liste zu
+/// liefern — beim Warten auf noch nicht geladene Inhalte also genau dann,
+/// wenn man es am wenigsten brauchen kann.
+bool matches(Finder finder) {
+  try {
+    return finder.evaluate().isNotEmpty;
+  } on StateError {
+    return false;
+  }
+}
+
 Future<void> waitFor(
   WidgetTester tester,
   Finder finder, {
@@ -43,7 +57,7 @@ Future<void> waitFor(
   for (var waited = Duration.zero;
       waited < timeout;
       waited += const Duration(milliseconds: 100)) {
-    if (finder.evaluate().isNotEmpty) return;
+    if (matches(finder)) return;
     await tester.pump(const Duration(milliseconds: 100));
   }
   // Ohne die Liste des tatsächlich Sichtbaren ist ein Fehlschlag auf einem
@@ -97,7 +111,7 @@ void main() {
     // Wenn Sync aktiv und nicht angemeldet: Login-Dialog öffnen und den
     // Nutzername-Login (M7 Etappe 3) sichtprüfen, dann abbrechen.
     final loginTile = find.text('Mit Abteilung verbinden');
-    if (loginTile.evaluate().isNotEmpty) {
+    if (matches(loginTile)) {
       await ensureVisible(tester, loginTile);
       await tester.tap(loginTile);
       await settle(tester);

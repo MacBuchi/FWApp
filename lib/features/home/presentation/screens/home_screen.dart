@@ -73,7 +73,19 @@ class _StreakCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(active ? '🔥' : '🩶', style: const TextStyle(fontSize: 28)),
+            // Material-Icon statt Emoji: Das zuvor genutzte 🩶 stammt aus
+            // Emoji 15.1 (2023) und fehlt in der Schrift älterer Geräte —
+            // auf Android 10 stand hier ein Ersatzkästchen, und zwar im
+            // Standardzustand auf dem ersten Bildschirm der App. Icons
+            // rendern auf jeder Android-Version gleich.
+            Icon(
+              Icons.local_fire_department,
+              size: 32,
+              color: active
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).disabledColor,
+              semanticLabel: active ? 'Serie aktiv' : 'Keine Serie',
+            ),
             const SizedBox(height: 8),
             Text('${stats.streakDays}',
                 style: Theme.of(context)

@@ -18,18 +18,26 @@ dart run build_runner build --delete-conflicting-outputs
 flutter test
 ```
 
-## Die drei wichtigsten Regeln
+## Die vier wichtigsten Regeln
 
 1. **Codegen committen:** Nach jeder Änderung an `@riverpod`-, `@freezed`-
    oder Drift-annotierten Dateien `dart run build_runner build
    --delete-conflicting-outputs` ausführen und die `.g.dart`/`.freezed.dart`
    mitcommitten. Die CI schlägt sonst fehl („Generated files are stale“).
 2. **Kein Direkt-Push auf `main`:** Feature-Branch → Pull Request → alle
-   CI-Checks grün („Analyze & Test“, „Build Android APK“, „Build Web“) →
-   Squash-Merge.
+   CI-Checks grün („Analyze & Test“, „Build Android APK“, „Build Web“,
+   „Version Guard“) → Squash-Merge. Die vier Checks sind auf `main` als
+   *Required Status Checks* hinterlegt, ein PR mit rotem CI ist also nicht
+   mergebar; zusätzlich muss der Branch auf dem Stand von `main` sein.
 3. **Coverage-Gate:** Die Logik-Schichten (`data`/`domain`/`core`) müssen
    ≥ 65 % Testabdeckung behalten (`dart run tool/check_coverage.dart --min 65`
    nach `flutter test --coverage`).
+4. **Version-Bump nicht vergessen:** Ändert ein PR ausgelieferte Dateien
+   (`lib/`, `android/`, `ios/`, `macos/`, `web/`, `assets/`, `pubspec.*`),
+   muss `version:` in `pubspec.yaml` steigen — sonst legt `release.yml` kein
+   Tag an und die Änderung erreicht kein Gerät. Der Check „Version Guard“
+   warnt im PR und schlägt auf `main` fehl. Reine Doku-, Test-, `tool/`- oder
+   CI-PRs brauchen keinen Bump.
 
 ## Tests
 

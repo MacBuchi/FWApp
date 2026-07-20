@@ -21,10 +21,17 @@ on:
 permissions:
   contents: write
 
+# Releases dürfen sich nie gegenseitig abbrechen: ein halb gelaufener Job
+# hinterlässt sonst ein Tag ohne APK. Läufe reihen sich stattdessen auf.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   version:
     name: Determine release tag
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     outputs:
       tag: ${{ steps.check.outputs.tag }}
       release: ${{ steps.check.outputs.release }}
@@ -79,6 +86,28 @@ jobs:
 
       - run: flutter pub get
 
+      # Ohne diese Secrets würde Gradle still auf die Debug-Signatur
+      # zurückfallen und ein debug-signiertes "Release"-APK veröffentlichen.
+      # Dessen Signatur passt nicht zu den installierten Versionen — jedes
+      # In-App-Update schlüge danach dauerhaft fehl. Also hart abbrechen.
+      - name: Verify signing secrets
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          missing=()
+          for name in ANDROID_KEYSTORE_BASE64 ANDROID_KEYSTORE_PASSWORD \
+                      ANDROID_KEY_PASSWORD ANDROID_KEY_ALIAS; do
+            [[ -n "${!name}" ]] || missing+=("$name")
+          done
+          if (( ${#missing[@]} )); then
+            echo "::error::Signing-Secrets fehlen: ${missing[*]}. Abbruch statt debug-signiertem Release."
+            exit 1
+          fi
+          echo "Alle vier Signing-Secrets vorhanden."
+
       - name: Write signing config
         run: |
           echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/fwapp-release.jks
@@ -109,6 +138,7 @@ jobs:
     needs: [version, build-android]
     if: needs.version.outputs.release == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/download-artifact@v8
         with:

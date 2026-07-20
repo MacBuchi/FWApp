@@ -146,12 +146,35 @@ class SettingsScreen extends ConsumerWidget {
             future: PackageInfo.fromPlatform(),
             builder: (context, snap) {
               final info = snap.data;
-              return ListTile(
-                leading: const Icon(Icons.info_outline),
-                title: const Text('Version'),
-                subtitle: Text(info != null
-                    ? '${info.version} (Build ${info.buildNumber})'
-                    : '...'),
+              return Column(
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.info_outline),
+                    title: const Text('Version'),
+                    subtitle: Text(info != null
+                        ? '${info.version} (Build ${info.buildNumber})'
+                        : '...'),
+                  ),
+                  // MIT, BSD und Apache verlangen, dass ihr Lizenztext dem
+                  // ausgelieferten Produkt beiliegt — die LICENSE im Repo
+                  // reicht dafür nicht. showLicensePage sammelt die Texte
+                  // über LicenseRegistry aus allen Paketen selbst ein.
+                  ListTile(
+                    leading: const Icon(Icons.workspace_premium_outlined),
+                    title: const Text('Open-Source-Lizenzen'),
+                    subtitle: const Text(
+                        'Verwendete Bibliotheken und ihre Lizenzen'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => showLicensePage(
+                      context: context,
+                      applicationName: 'FWApp',
+                      applicationVersion: info != null
+                          ? '${info.version} (Build ${info.buildNumber})'
+                          : null,
+                      applicationLegalese: '© 2026 Marcus Bucher · MIT-Lizenz',
+                    ),
+                  ),
+                ],
               );
             },
           ),

@@ -108,15 +108,31 @@ jobs:
           fi
           echo "Alle vier Signing-Secrets vorhanden."
 
+      # Secrets kommen über env: herein statt direkt interpoliert zu werden.
+      # Bei ${{ }} setzt der Runner den Klartext ins Shell-Skript ein — ein
+      # Passwort mit $, Backtick oder Anführungszeichen würde dann vom Parser
+      # zerlegt, und Gradle fiele mit einer kaputten key.properties still auf
+      # Debug-Signing zurück. Also genau der Ausfall, den der Preflight oben
+      # verhindert, nur durch die Hintertür. `printf '%s'` mit quotierter
+      # Variable reicht die Werte unverändert durch.
       - name: Write signing config
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
         run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/fwapp-release.jks
-          cat > android/key.properties <<EOF
-          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
-          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
-          storeFile=fwapp-release.jks
-          EOF
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/fwapp-release.jks
+          # Hinweis für den Tag der Keystore-Rotation: .properties ist ein
+          # Java-Format, in dem der Backslash als Escape-Zeichen gilt. Ein
+          # Passwort mit \ gehört dort verdoppelt — am einfachsten gar keins
+          # verwenden.
+          {
+            printf 'storePassword=%s\n' "$ANDROID_KEYSTORE_PASSWORD"
+            printf 'keyPassword=%s\n' "$ANDROID_KEY_PASSWORD"
+            printf 'keyAlias=%s\n' "$ANDROID_KEY_ALIAS"
+            printf 'storeFile=fwapp-release.jks\n'
+          } > android/key.properties
 
       # Ein einzelnes arm64-APK reicht: deckt praktisch jedes Android-Gerät
       # ab ca. 2017 ab.

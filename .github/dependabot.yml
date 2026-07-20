@@ -1,0 +1,30 @@
+version: 2
+
+# Monatlich statt wöchentlich: Das Projekt hat einen Solo-Maintainer, und
+# jeder PR kostet hier einen kompletten CI-Durchlauf inklusive Android-Build.
+updates:
+  - package-ecosystem: "pub"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    # Dependabot-PRs fassen pubspec.yaml/lock an — das sind ausgelieferte
+    # Pfade. Der Version Guard warnt dort also; der Bump gehört wie bei jeder
+    # anderen ausgelieferten Änderung zum Merge dazu. Das ist gewollt.
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "ci"
+
+# Bewusst NICHT aktiviert: package-ecosystem "gradle". Die Android-Seite eines
+# Flutter-Projekts zieht ihre Versionen groesstenteils aus dem Flutter-SDK
+# (compileSdk/minSdk/targetSdk kommen aus flutter.*Version). Dependabot sieht
+# davon nur AGP und Kotlin und schlaegt dort gern Spruenge vor, die das
+# Flutter-Gradle-Plugin noch nicht vertraegt. Diese beiden Versionen werden
+# stattdessen beim Flutter-Upgrade von Hand mitgezogen.

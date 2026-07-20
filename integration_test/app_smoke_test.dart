@@ -9,9 +9,12 @@
 /// mit aktiviertem Sync (angemeldet oder nicht) und ändert nichts am
 /// Datenbestand — reine Navigation + Sichtprüfungen.
 library;
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/main.dart' as app;
 import 'package:integration_test/integration_test.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 Future<void> settle(WidgetTester tester) async =>
     tester.pumpAndSettle(const Duration(milliseconds: 250));
@@ -53,5 +56,23 @@ void main() {
       await tester.tap(find.text('Abbrechen'));
       await settle(tester);
     }
+  });
+
+  // Regressionstest zu Issue #27: Ab Android 11 sieht eine App nur die
+  // Pakete, die sie im <queries>-Block deklariert. Fehlt dort der
+  // VIEW/https-Eintrag, meldet canLaunchUrl still `false` — der Browser-
+  // Fallback des Update-Dialogs ("Im Browser laden") läuft dann ins Leere,
+  // ohne dass irgendwo ein Fehler auftaucht. Der Test prüft genau diese
+  // Sichtbarkeit; auf Android ≤ 10 greift die Beschränkung nicht, dort ist
+  // er nur eine Bestätigung, dass überhaupt ein Browser da ist.
+  testWidgets('Ein Browser ist für https-Links sichtbar (Package Visibility)',
+      (tester) async {
+    if (!Platform.isAndroid) return;
+    expect(
+      await canLaunchUrl(Uri.parse('https://github.com/MacBuchi/FWApp')),
+      isTrue,
+      reason: 'Kein Handler für https sichtbar — fehlt der VIEW/https-Intent '
+          'im <queries>-Block von AndroidManifest.xml?',
+    );
   });
 }

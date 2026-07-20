@@ -59,5 +59,13 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <!-- Ohne diesen Eintrag sieht die App unter Android 11+ keinen
+             Browser: canLaunchUrl/launchUrl liefern dann still false — genau
+             im Fallback "Im Browser laden" des Update-Dialogs, wenn die
+             In-App-Installation scheitert. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="https"/>
+        </intent>
     </queries>
 </manifest>

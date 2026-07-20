@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // StateProvider lebt in Riverpod 3 im legacy-Namespace.
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:fwapp/core/logging/app_logger.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/update/update_check.dart';
 import 'package:fwapp/features/feedback/data/feedback_repository.dart';
@@ -155,6 +156,7 @@ enum _UpdatePhase { idle, downloading, installing, error }
 class _UpdateDialogState extends State<_UpdateDialog> {
   _UpdatePhase _phase = _UpdatePhase.idle;
   double _progress = 0;
+  bool _fallbackFailed = false;
   StreamSubscription<OtaEvent>? _subscription;
 
   @override
@@ -193,9 +195,21 @@ class _UpdateDialogState extends State<_UpdateDialog> {
     }
   }
 
+  /// Letzter Ausweg, wenn der Direkt-Download scheitert. `launchUrl` liefert
+  /// still `false`, wenn Android keinen Browser herausrückt — dann bleibt nur,
+  /// die Adresse zum Abtippen stehen zu lassen, statt den Knopf ins Leere
+  /// laufen zu lassen.
   Future<void> _browserFallback() async {
-    await launchUrl(Uri.parse(widget.info.downloadUrl),
-        mode: LaunchMode.externalApplication);
+    try {
+      final opened = await launchUrl(Uri.parse(widget.info.downloadUrl),
+          mode: LaunchMode.externalApplication);
+      if (opened) return;
+      appLog.w('Browser-Fallback: launchUrl lieferte false '
+          '(${widget.info.downloadUrl})');
+    } catch (e) {
+      appLog.w('Browser-Fallback fehlgeschlagen: $e');
+    }
+    if (mounted) setState(() => _fallbackFailed = true);
   }
 
   @override
@@ -231,6 +245,14 @@ class _UpdateDialogState extends State<_UpdateDialog> {
                   'Update stattdessen über den Browser laden — nach dem '
                   'Download in der Benachrichtigung auf die Datei tippen.'),
             },
+            if (_fallbackFailed) ...[
+              const SizedBox(height: 12),
+              const Text('Es ließ sich kein Browser öffnen. Die Adresse zum '
+                  'manuellen Download:'),
+              const SizedBox(height: 4),
+              SelectableText(info.downloadUrl,
+                  style: Theme.of(context).textTheme.bodySmall),
+            ],
             if (_phase == _UpdatePhase.idle &&
                 info.releaseNotes != null &&
                 info.releaseNotes!.trim().isNotEmpty) ...[

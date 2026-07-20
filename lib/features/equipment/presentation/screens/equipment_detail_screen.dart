@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:fwapp/core/logging/app_logger.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_enums.dart';
@@ -235,11 +236,27 @@ class EquipmentDetailScreen extends ConsumerWidget {
                 OutlinedButton.icon(
                   icon: const Icon(Icons.open_in_browser),
                   label: const Text('Lernmaterial öffnen'),
+                  // Kein canLaunchUrl-Vortest: der ist unter Android 11+ von
+                  // der Package Visibility abhängig und meldete den Knopf
+                  // stumm als tot. launchUrl selbst sagt, ob es geklappt hat.
                   onPressed: () async {
+                    final messenger = ScaffoldMessenger.of(context);
                     final uri = Uri.tryParse(item.trainingUrl!);
-                    if (uri != null && await canLaunchUrl(uri)) {
-                      await launchUrl(uri,
-                          mode: LaunchMode.externalApplication);
+                    var opened = false;
+                    if (uri != null) {
+                      try {
+                        opened = await launchUrl(uri,
+                            mode: LaunchMode.externalApplication);
+                      } catch (e) {
+                        appLog.w('Lernmaterial "${item.trainingUrl}" '
+                            'ließ sich nicht öffnen: $e');
+                      }
+                    }
+                    if (!opened) {
+                      messenger.showSnackBar(SnackBar(
+                        content: Text('Link ließ sich nicht öffnen: '
+                            '${item.trainingUrl}'),
+                      ));
                     }
                   },
                 ),

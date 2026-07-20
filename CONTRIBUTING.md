@@ -4,6 +4,13 @@ Danke fürs Interesse! Das Projekt wird von einer kleinen Freiwilligen
 Feuerwehr getragen – Beiträge sind willkommen, solange sie die
 Kernentscheidungen respektieren (siehe unten).
 
+Diese Datei beschreibt, **wie** man beiträgt: Setup, Regeln, Tests, PR-Weg.
+Die technische Tiefe – Toolchain, Signing, In-App-Update, Secrets, bekannte
+Stolperfallen – steht in [AGENTS.md](AGENTS.md), dem Arbeitsgedächtnis des
+Projekts. Projektübergreifende Guidelines liegen im DocuHub unter
+`/Volumes/MacStore/Programming/ProgrammingGuidelineDocuHub/`; AGENTS.md hält
+fest, wo die FWApp bewusst davon abweicht.
+
 ## Entwicklungs-Setup
 
 - Flutter 3.41.x (stable), Dart ≥ 3.11
@@ -41,6 +48,17 @@ flutter test
    Maintainerin bzw. der Maintainer vor dem Merge. Genau deshalb **warnt**
    der Check „Version Guard“ im PR nur und schlägt erst auf `main` fehl.
 
+## Git-Workflow
+
+- Branch-Namen: `feat/<thema>`, `fix/<thema>`, `docs/`, `chore/`, `ci/`
+  (im Bestand existiert auch `feature/` – neue Branches bitte mit `feat/`).
+- Commit- und PR-Titel im Conventional-Commits-Stil (`feat:`, `fix:`,
+  `chore:`, `docs:`, `ci:`). Der Bestand enthält deutsche Prosa-Titel;
+  neue Beiträge bitte im Conventional-Format.
+- Merge-Strategie: Squash. Gemergte Branches löschen.
+- Der Merge wird vom Maintainer gemacht – Beiträge (auch agentengestützte)
+  mergen sich nicht selbst, weil ein Merge auf `main` ein Release auslösen kann.
+
 ## Tests
 
 ```bash
@@ -48,6 +66,14 @@ flutter test                      # Unit- + Widget-Tests
 flutter test --coverage           # mit Coverage für das Gate
 flutter test integration_test -d <gerät>   # Geräte-Smoke-Test (echtes Gerät/Emulator)
 ```
+
+Widget-Tests sind der Hebel für UI-Absicherung – Layout, Zustände und
+Breakpoints lassen sich pixelfrei prüfen (`tester.getSize`/`getTopLeft`,
+`tester.view.physicalSize` für Breakpoints; ein RenderFlex-Overflow lässt den
+Test automatisch fehlschlagen). Screenshots/Goldens sind dafür nicht nötig.
+Harness: `test/helpers/widget_harness.dart` (`buildTestApp` mit
+In-Memory-Drift-DB); am Testende `endTestApp(tester)` aufrufen, sonst bleiben
+Drift-Stream-Timer hängen („A Timer is still pending").
 
 Der Geräte-Smoke-Test (`integration_test/`) startet die echte App auf einem
 angeschlossenen Gerät und prüft Navigation + Sync-Einstellungen programmatisch —
@@ -144,6 +170,29 @@ Schema-Änderung alle Stationen abklappern:
 6. Tests: Drift-Schema-Snapshots (`test/core/database/generated/`) und
    Migrationstest aktualisieren.
 
+## Android-Release-Bausteine (nicht anfassen ohne Gerätetest)
+
+Signierung und In-App-Update hängen an einer Handvoll Manifest- und
+Gradle-Details, die zusammengehören: `INTERNET` und
+`REQUEST_INSTALL_PACKAGES`, der FileProvider mit Authority
+`${applicationId}.ota_update_provider`, `res/xml/filepaths.xml`, der
+`<queries>`-Eintrag für VIEW/https und Core Library Desugaring. Fehlt einer
+davon, fällt es **erst beim Nutzer** auf – nie im Debug-Lauf.
+
+Die vollständige Liste mit Begründung steht in
+[AGENTS.md § 7–8](AGENTS.md#7-signierung--secrets). Für Beitragende gilt vor
+allem: Nach jeder Änderung an Manifest, Permissions oder Plugins ist der
+Geräte-Smoke-Test Pflicht (siehe [Tests](#tests)), und der Release-Keystore
+wird **nie** ausgetauscht.
+
+## Feedback
+
+Ein Teil der Issues hier stammt direkt aus der App: Der Feedback-Dialog
+schreibt in eine Supabase-Tabelle, ein Bot macht daraus **öffentliche**
+GitHub-Issues. Wer am Feedback-Weg arbeitet, muss den
+Öffentlichkeits-Hinweis im Dialog erhalten – Mechanik und Fallstricke stehen
+in [AGENTS.md § 9](AGENTS.md#9-in-app-feedback--github-issue).
+
 ## Releases
 
 Ein Release entsteht automatisch, wenn ein PR mit erhöhter `version:` in
@@ -155,9 +204,11 @@ bitte die Version **nicht** anfassen, sofern nicht abgesprochen.
 
 ## Sprache
 
-Code, Bezeichner und Commit-Titel: Englisch oder Deutsch ist beides im
-Bestand – bitte im jeweiligen Umfeld konsistent bleiben. UI-Texte und
-Doku: Deutsch (Zielgruppe sind deutsche Feuerwehren).
+Code und Bezeichner: Englisch oder Deutsch ist beides im Bestand – bitte im
+jeweiligen Umfeld konsistent bleiben. UI-Texte und Doku: Deutsch (Zielgruppe
+sind deutsche Feuerwehren). **Commits, PR- und Issue-Texte: Deutsch** – eine
+bewusste Abweichung von der DocuHub-Vorgabe, begründet in
+[AGENTS.md § 3](AGENTS.md#code-regeln).
 
 **Keine Lokalisierung:** Es gibt bewusst kein ARB/gen-l10n-Setup – alle
 UI-Texte sind hart deutsch. Die Zielgruppe ist einsprachig; ein

@@ -9,11 +9,14 @@
 ///   * v1.3.1 – fehlende INTERNET-Permission: Release-App ohne jedes Netz.
 ///   * Issue #27 – fehlender VIEW/https-Eintrag: Browser-Fallback des
 ///     Updates scheiterte still auf Android 11+.
-///   * Issue #39 – fehlender ProductionFilter: Release-Builds loggen nichts,
-///     auch nicht aus den globalen Fehler-Handlern.
+///   * Issue #33 – fehlende Backup-Regeln: das Supabase-Refresh-Token landete
+///     im Google-Konto des Nutzers.
 ///
 /// Der Geräte-Smoke-Test deckt manches davon ab, läuft aber nicht in CI.
 /// Diese Tests tun es.
+///
+/// Dieselbe Gattung, aber in Dart statt XML/Gradle: der Logger-Filter aus
+/// Issue #39 – geprüft in `test/core/logging/app_logger_test.dart`.
 library;
 
 import 'dart:io';
@@ -136,17 +139,5 @@ void main() {
           'der Gradle-Build.',
     );
     expect(gradle, contains('coreLibraryDesugaring('));
-  });
-
-  test('appLog setzt einen ProductionFilter (Issue #39)', () {
-    final source = File('lib/core/logging/app_logger.dart').readAsStringSync();
-    expect(
-      source,
-      contains('ProductionFilter()'),
-      reason: 'Der Default DevelopmentFilter setzt sein shouldLog innerhalb '
-          'eines assert-Blocks. Asserts fallen im Release weg, damit wird '
-          'dort NICHTS geloggt — auch nicht aus den globalen Fehler-Handlern. '
-          'Per Verhalten ist das nicht testbar: Im Test sind Asserts aktiv.',
-    );
   });
 }

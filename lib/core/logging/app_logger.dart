@@ -9,13 +9,18 @@ library;
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:logger/logger.dart';
 
+/// Der Filter der App-Instanz – exportiert, damit die Verdrahtung überhaupt
+/// prüfbar ist: `Logger` hält sein Filter-Feld privat.
+///
+/// **Muss ein [ProductionFilter] bleiben.** Der Paket-Default
+/// [DevelopmentFilter] wertet das Level innerhalb eines `assert`-Blocks aus.
+/// Im Release werden Asserts wegoptimiert, sein `shouldLog` liefert dann
+/// konstant `false` – die App loggt gar nichts mehr, auch keine Fehler.
+/// [ProductionFilter] wertet dasselbe Level ohne `assert` aus.
+final LogFilter appLogFilter = ProductionFilter();
+
 final Logger appLog = Logger(
-  // ProductionFilter ist Pflicht, nicht Geschmackssache: Der Default
-  // (DevelopmentFilter) setzt sein `shouldLog` INNERHALB eines assert-Blocks.
-  // Asserts fallen im Release-Build weg, damit bleibt der Rückgabewert dort
-  // immer false — es wird dann gar nichts geloggt, auch nicht ab Info, und
-  // auch nicht aus den globalen Fehler-Handlern in main.dart.
-  filter: ProductionFilter(),
+  filter: appLogFilter,
   // Release-Builds loggen ab Info (Debug-Geplapper kostet dort nur Zeit),
   // Debug-Builds alles.
   level: kDebugMode ? Level.debug : Level.info,

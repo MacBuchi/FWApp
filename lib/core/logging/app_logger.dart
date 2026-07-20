@@ -10,6 +10,12 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:logger/logger.dart';
 
 final Logger appLog = Logger(
+  // ProductionFilter ist Pflicht, nicht Geschmackssache: Der Default
+  // (DevelopmentFilter) setzt sein `shouldLog` INNERHALB eines assert-Blocks.
+  // Asserts fallen im Release-Build weg, damit bleibt der Rückgabewert dort
+  // immer false — es wird dann gar nichts geloggt, auch nicht ab Info, und
+  // auch nicht aus den globalen Fehler-Handlern in main.dart.
+  filter: ProductionFilter(),
   // Release-Builds loggen ab Info (Debug-Geplapper kostet dort nur Zeit),
   // Debug-Builds alles.
   level: kDebugMode ? Level.debug : Level.info,

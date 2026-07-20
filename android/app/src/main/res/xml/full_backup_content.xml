@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pendant zu backup_rules.xml für Android 11 und älter
+     (android:fullBackupContent). Gleiche Begründung: Datenbank bleibt im
+     Backup, die Prefs mit der Supabase-Session nicht. -->
+<full-backup-content>
+    <exclude domain="sharedpref" path="FlutterSharedPreferences.xml"/>
+</full-backup-content>

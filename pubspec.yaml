@@ -31,7 +31,7 @@ dependencies:
   json_annotation: ^4.9.0
 
   # File handling / images
-  file_picker: ^8.1.7
+  file_picker: ^12.0.0-beta.7
   image_picker: ^1.1.2
   cached_network_image: ^3.4.1
   flutter_cache_manager: ^3.4.1
@@ -54,7 +54,7 @@ dependencies:
   ota_update: ^7.0.0
   uuid: ^4.5.1
   shared_preferences: ^2.3.5
-  package_info_plus: ^9.0.1
+  package_info_plus: ^10.2.1
   url_launcher: ^6.3.1
   csv: ^8.0.0
 

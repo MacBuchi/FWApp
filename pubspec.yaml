@@ -14,24 +14,24 @@ dependencies:
     sdk: flutter
 
   # State management
-  flutter_riverpod: ^3.0.0
+  flutter_riverpod: ^3.3.2
   riverpod_annotation: ^4.0.0
 
   # Local database
-  drift: ^2.21.0
-  sqlite3_flutter_libs: ^0.5.29
+  drift: ^2.34.2
+  sqlite3_flutter_libs: ^0.6.0+eol
   path_provider: ^2.1.5
   path: ^1.9.1
 
   # Navigation
-  go_router: ^14.6.3
+  go_router: ^17.3.0
 
   # Domain models
   freezed_annotation: ^3.0.0
-  json_annotation: ^4.9.0
+  json_annotation: ^4.12.0
 
   # File handling / images
-  file_picker: ^8.1.7
+  file_picker: ^12.0.0-beta.7
   image_picker: ^1.1.2
   cached_network_image: ^3.4.1
   flutter_cache_manager: ^3.4.1
@@ -54,7 +54,7 @@ dependencies:
   ota_update: ^7.0.0
   uuid: ^4.5.1
   shared_preferences: ^2.3.5
-  package_info_plus: ^9.0.1
+  package_info_plus: ^10.2.1
   url_launcher: ^6.3.1
   csv: ^8.0.0
 
@@ -72,7 +72,7 @@ dev_dependencies:
   riverpod_generator: ^4.0.0
   freezed: ^3.0.0
   json_serializable: ^6.8.0
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.3
 
 # App-Icon (Quelle: assets/branding/*.svg, gerendert mit rsvg-convert).

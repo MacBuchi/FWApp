@@ -48,6 +48,9 @@ Future<void> main() async {
     if (url.isEmpty) url = kDefaultSupabaseUrl;
     if (key.isEmpty) key = kDefaultSupabaseAnonKey;
     if (enabled && url.isNotEmpty && key.isNotEmpty) {
+      // Self-hosted stack still issues legacy anon keys; publishableKey
+      // (sb_publishable_...) requires the new API-key scheme server-side.
+      // ignore: deprecated_member_use
       await Supabase.initialize(url: url, anonKey: key);
       supabaseReady = true;
       // Lets resolveImage() and the precache fetch from the private bucket.

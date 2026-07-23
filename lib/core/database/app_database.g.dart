@@ -5,21 +5,74 @@ part of 'app_database.dart';
 // ignore_for_file: type=lint
 mixin _$VehicleDaoMixin on DatabaseAccessor<AppDatabase> {
   $VehiclesTable get vehicles => attachedDatabase.vehicles;
+  VehicleDaoManager get managers => VehicleDaoManager(this);
 }
+
+class VehicleDaoManager {
+  final _$VehicleDaoMixin _db;
+  VehicleDaoManager(this._db);
+  $$VehiclesTableTableManager get vehicles =>
+      $$VehiclesTableTableManager(_db.attachedDatabase, _db.vehicles);
+}
+
 mixin _$CompartmentDaoMixin on DatabaseAccessor<AppDatabase> {
   $VehiclesTable get vehicles => attachedDatabase.vehicles;
   $CompartmentsTable get compartments => attachedDatabase.compartments;
+  CompartmentDaoManager get managers => CompartmentDaoManager(this);
 }
+
+class CompartmentDaoManager {
+  final _$CompartmentDaoMixin _db;
+  CompartmentDaoManager(this._db);
+  $$VehiclesTableTableManager get vehicles =>
+      $$VehiclesTableTableManager(_db.attachedDatabase, _db.vehicles);
+  $$CompartmentsTableTableManager get compartments =>
+      $$CompartmentsTableTableManager(_db.attachedDatabase, _db.compartments);
+}
+
 mixin _$EquipmentDaoMixin on DatabaseAccessor<AppDatabase> {
   $EquipmentItemsTable get equipmentItems => attachedDatabase.equipmentItems;
+  EquipmentDaoManager get managers => EquipmentDaoManager(this);
 }
+
+class EquipmentDaoManager {
+  final _$EquipmentDaoMixin _db;
+  EquipmentDaoManager(this._db);
+  $$EquipmentItemsTableTableManager get equipmentItems =>
+      $$EquipmentItemsTableTableManager(
+        _db.attachedDatabase,
+        _db.equipmentItems,
+      );
+}
+
 mixin _$AssignmentDaoMixin on DatabaseAccessor<AppDatabase> {
   $VehiclesTable get vehicles => attachedDatabase.vehicles;
   $CompartmentsTable get compartments => attachedDatabase.compartments;
   $EquipmentItemsTable get equipmentItems => attachedDatabase.equipmentItems;
   $EquipmentAssignmentsTable get equipmentAssignments =>
       attachedDatabase.equipmentAssignments;
+  AssignmentDaoManager get managers => AssignmentDaoManager(this);
 }
+
+class AssignmentDaoManager {
+  final _$AssignmentDaoMixin _db;
+  AssignmentDaoManager(this._db);
+  $$VehiclesTableTableManager get vehicles =>
+      $$VehiclesTableTableManager(_db.attachedDatabase, _db.vehicles);
+  $$CompartmentsTableTableManager get compartments =>
+      $$CompartmentsTableTableManager(_db.attachedDatabase, _db.compartments);
+  $$EquipmentItemsTableTableManager get equipmentItems =>
+      $$EquipmentItemsTableTableManager(
+        _db.attachedDatabase,
+        _db.equipmentItems,
+      );
+  $$EquipmentAssignmentsTableTableManager get equipmentAssignments =>
+      $$EquipmentAssignmentsTableTableManager(
+        _db.attachedDatabase,
+        _db.equipmentAssignments,
+      );
+}
+
 mixin _$InspectionDaoMixin on DatabaseAccessor<AppDatabase> {
   $EquipmentItemsTable get equipmentItems => attachedDatabase.equipmentItems;
   $VehiclesTable get vehicles => attachedDatabase.vehicles;
@@ -29,21 +82,95 @@ mixin _$InspectionDaoMixin on DatabaseAccessor<AppDatabase> {
   $InspectionSchedulesTable get inspectionSchedules =>
       attachedDatabase.inspectionSchedules;
   $InspectionLogTable get inspectionLog => attachedDatabase.inspectionLog;
+  InspectionDaoManager get managers => InspectionDaoManager(this);
 }
+
+class InspectionDaoManager {
+  final _$InspectionDaoMixin _db;
+  InspectionDaoManager(this._db);
+  $$EquipmentItemsTableTableManager get equipmentItems =>
+      $$EquipmentItemsTableTableManager(
+        _db.attachedDatabase,
+        _db.equipmentItems,
+      );
+  $$VehiclesTableTableManager get vehicles =>
+      $$VehiclesTableTableManager(_db.attachedDatabase, _db.vehicles);
+  $$CompartmentsTableTableManager get compartments =>
+      $$CompartmentsTableTableManager(_db.attachedDatabase, _db.compartments);
+  $$EquipmentInstancesTableTableManager get equipmentInstances =>
+      $$EquipmentInstancesTableTableManager(
+        _db.attachedDatabase,
+        _db.equipmentInstances,
+      );
+  $$InspectionSchedulesTableTableManager get inspectionSchedules =>
+      $$InspectionSchedulesTableTableManager(
+        _db.attachedDatabase,
+        _db.inspectionSchedules,
+      );
+  $$InspectionLogTableTableManager get inspectionLog =>
+      $$InspectionLogTableTableManager(_db.attachedDatabase, _db.inspectionLog);
+}
+
 mixin _$QuizDaoMixin on DatabaseAccessor<AppDatabase> {
   $VehiclesTable get vehicles => attachedDatabase.vehicles;
   $QuizResultsTable get quizResults => attachedDatabase.quizResults;
+  QuizDaoManager get managers => QuizDaoManager(this);
 }
+
+class QuizDaoManager {
+  final _$QuizDaoMixin _db;
+  QuizDaoManager(this._db);
+  $$VehiclesTableTableManager get vehicles =>
+      $$VehiclesTableTableManager(_db.attachedDatabase, _db.vehicles);
+  $$QuizResultsTableTableManager get quizResults =>
+      $$QuizResultsTableTableManager(_db.attachedDatabase, _db.quizResults);
+}
+
 mixin _$InventoryDaoMixin on DatabaseAccessor<AppDatabase> {
   $VehiclesTable get vehicles => attachedDatabase.vehicles;
   $InventorySessionsTable get inventorySessions =>
       attachedDatabase.inventorySessions;
   $InventoryChecksTable get inventoryChecks => attachedDatabase.inventoryChecks;
+  InventoryDaoManager get managers => InventoryDaoManager(this);
 }
+
+class InventoryDaoManager {
+  final _$InventoryDaoMixin _db;
+  InventoryDaoManager(this._db);
+  $$VehiclesTableTableManager get vehicles =>
+      $$VehiclesTableTableManager(_db.attachedDatabase, _db.vehicles);
+  $$InventorySessionsTableTableManager get inventorySessions =>
+      $$InventorySessionsTableTableManager(
+        _db.attachedDatabase,
+        _db.inventorySessions,
+      );
+  $$InventoryChecksTableTableManager get inventoryChecks =>
+      $$InventoryChecksTableTableManager(
+        _db.attachedDatabase,
+        _db.inventoryChecks,
+      );
+}
+
 mixin _$LearningDaoMixin on DatabaseAccessor<AppDatabase> {
   $EquipmentItemsTable get equipmentItems => attachedDatabase.equipmentItems;
   $LearningProgressTable get learningProgress =>
       attachedDatabase.learningProgress;
+  LearningDaoManager get managers => LearningDaoManager(this);
+}
+
+class LearningDaoManager {
+  final _$LearningDaoMixin _db;
+  LearningDaoManager(this._db);
+  $$EquipmentItemsTableTableManager get equipmentItems =>
+      $$EquipmentItemsTableTableManager(
+        _db.attachedDatabase,
+        _db.equipmentItems,
+      );
+  $$LearningProgressTableTableManager get learningProgress =>
+      $$LearningProgressTableTableManager(
+        _db.attachedDatabase,
+        _db.learningProgress,
+      );
 }
 
 class $VehiclesTable extends Vehicles

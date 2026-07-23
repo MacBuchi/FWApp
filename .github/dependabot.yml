@@ -11,6 +11,16 @@ updates:
     commit-message:
       prefix: "chore"
       include: "scope"
+    # Ein Sammel-PR statt einer pro Paket: Jedes pub-Update zieht die ganze
+    # pubspec.lock mit (inkl. Codegen-Paketen), danach stimmt der committete
+    # build_runner-Output nicht mehr und der Staleness-Guard schlägt in jedem
+    # Einzel-PR fehl (2026-07: #44–#48, sogar beim path_provider-Patch-Bump).
+    # Der Sammel-PR braucht trotzdem Handarbeit: Codegen frisch laufen lassen,
+    # generierte Dateien committen, Version bumpen.
+    groups:
+      dart:
+        patterns:
+          - "*"
     # Dependabot-PRs fassen pubspec.yaml/lock an — das sind ausgelieferte
     # Pfade. Der Version Guard warnt dort also; der Bump gehört wie bei jeder
     # anderen ausgelieferten Änderung zum Merge dazu. Das ist gewollt.
@@ -21,6 +31,10 @@ updates:
       interval: "monthly"
     commit-message:
       prefix: "ci"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
 
 # Bewusst NICHT aktiviert: package-ecosystem "gradle". Die Android-Seite eines
 # Flutter-Projekts zieht ihre Versionen groesstenteils aus dem Flutter-SDK

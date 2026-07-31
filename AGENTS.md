@@ -71,12 +71,6 @@ Es gilt die GitHub-Guideline des DocuHub. FWApp-spezifisch bzw. betont:
   > deutsch — nicht nachträglich übersetzen. Die Feedback-Issues aus der App
   > sind weiterhin deutsch, die schreiben Nutzer.
 
-- ⚠️ **Issues immer mit englischem Schlagwort schließen, und für jedes Issue
-  einzeln:** `Closes #34` · `Closes #35` — nicht „Schließt #34" und nicht
-  `Closes #34, #35`. GitHub erkennt nur die englischen Schlüsselwörter und
-  wertet sie **pro Nennung** aus. Das ist am 2026-07-31 dreimal schiefgegangen
-  (#51, #34/#35, #56): PR gemergt, Issue blieb offen und musste von Hand
-  geschlossen werden.
 - **Zu jedem Versions-Bump gehört ein [CHANGELOG.md](CHANGELOG.md)-Eintrag**
   aus Anwendersicht, auf Deutsch. ⚠️ Die Datei ist **kein reines
   Repo-Dokument**: Sie wird als Asset ausgeliefert und in der App unter

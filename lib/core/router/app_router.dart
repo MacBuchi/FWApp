@@ -12,6 +12,7 @@ import 'package:fwapp/features/home/presentation/screens/more_screen.dart';
 import 'package:fwapp/features/vehicle/presentation/screens/vehicle_list_screen.dart';
 import 'package:fwapp/features/vehicle/presentation/screens/vehicle_detail_screen.dart';
 import 'package:fwapp/features/vehicle/presentation/screens/vehicle_form_screen.dart';
+import 'package:fwapp/features/vehicle/presentation/screens/vehicle_template_screen.dart';
 import 'package:fwapp/features/vehicle/presentation/screens/compartment_manager_screen.dart';
 import 'package:fwapp/features/equipment/presentation/screens/equipment_list_screen.dart';
 import 'package:fwapp/features/equipment/presentation/screens/equipment_detail_screen.dart';
@@ -37,7 +38,7 @@ import 'package:fwapp/features/settings/presentation/screens/user_management_scr
 
 /// Routen, die Bearbeitungsrechte voraussetzen (Spiegel der UI-Gates:
 /// `canEditProvider` blendet genau diese Einstiege aus).
-final _editRoutePattern = RegExp(r'^(/vehicles/(new|[^/]+/(edit|compartments))'
+final _editRoutePattern = RegExp(r'^(/vehicles/(new(/template)?|[^/]+/(edit|compartments))'
     r'|/equipment/(new|[^/]+/edit)'
     r'|/import'
     r'|/inspections'
@@ -94,6 +95,12 @@ final _routes = [
             GoRoute(
               path: 'new',
               builder: (_, _) => const VehicleFormScreen(),
+              routes: [
+                GoRoute(
+                  path: 'template',
+                  builder: (_, _) => const VehicleTemplateScreen(),
+                ),
+              ],
             ),
             GoRoute(
               path: ':id',

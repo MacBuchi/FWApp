@@ -11,6 +11,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // StateProvider lebt in Riverpod 3 im legacy-Namespace.
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter/services.dart' show Clipboard, ClipboardData;
+import 'package:fwapp/core/crash/crash_store.dart';
 import 'package:fwapp/core/logging/app_logger.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/update/update_check.dart';
@@ -23,6 +25,10 @@ final updateBannerDismissedProvider = StateProvider<bool>((ref) => false);
 
 /// Feedback-Banner für diese Sitzung ausgeblendet (oder Feedback gesendet)?
 final feedbackBannerDismissedProvider = StateProvider<bool>((ref) => false);
+
+/// Absturz-Banner ausgeblendet? Anders als die beiden oberen bedeutet das
+/// zugleich, dass die Berichte verworfen wurden (siehe `onDismiss`).
+final crashBannerDismissedProvider = StateProvider<bool>((ref) => false);
 
 /// Öffnet den Feedback-Dialog und sendet die Meldung; wird vom Banner und
 /// von der „Mehr“-Kachel verwendet.
@@ -70,11 +76,39 @@ class HomeBanners extends ConsumerWidget {
     final showFeedback =
         signedIn && !ref.watch(feedbackBannerDismissedProvider);
 
-    if (!showUpdate && !showFeedback) return const SizedBox.shrink();
+    // Abstürze des vorherigen Laufs (Issue #34). Bewusst ohne Login-Bedingung:
+    // Der Bericht lässt sich auch ohne Server in die Zwischenablage holen.
+    final crashes = ref.watch(pendingCrashesProvider).value ?? const [];
+    final showCrash =
+        crashes.isNotEmpty && !ref.watch(crashBannerDismissedProvider);
+
+    if (!showUpdate && !showFeedback && !showCrash) {
+      return const SizedBox.shrink();
+    }
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        // Zuerst: Ein Absturz ist die dringendste der drei Meldungen.
+        if (showCrash)
+          _BannerCard(
+            emoji: '⚠️',
+            text: crashes.length == 1
+                ? 'Die App hatte zuletzt ein Problem'
+                : 'Die App hatte zuletzt ${crashes.length} Probleme',
+            color: Theme.of(context).colorScheme.errorContainer,
+            onTap: () => showDialog<void>(
+              context: context,
+              builder: (context) => _CrashDialog(crashes: crashes),
+            ),
+            onDismiss: () async {
+              // Wegklicken verwirft die Berichte endgültig — sonst käme das
+              // Banner bei jedem Start wieder und würde zur Gewohnheit, die
+              // man wegtippt.
+              ref.read(crashBannerDismissedProvider.notifier).state = true;
+              await globalCrashStore?.clear();
+            },
+          ),
         if (showUpdate)
           _BannerCard(
             emoji: '🔄',
@@ -136,6 +170,118 @@ class _BannerCard extends StatelessWidget {
         onTap: onTap,
       ),
     );
+  }
+}
+
+/// Absturz-Dialog (Issue #34): zeigt die festgehaltenen Berichte und bietet
+/// an, sie über den bestehenden Feedback-Kanal als GitHub-Issue zu melden.
+///
+/// „Kopieren" gibt es zusätzlich und ohne Bedingung: Melden braucht Server und
+/// Login, und ausgerechnet nach einem Absturz ist beides nicht garantiert.
+/// Ohne diesen zweiten Weg wäre der Bericht dann unerreichbar.
+class _CrashDialog extends ConsumerStatefulWidget {
+  const _CrashDialog({required this.crashes});
+
+  final List<CrashReport> crashes;
+
+  @override
+  ConsumerState<_CrashDialog> createState() => _CrashDialogState();
+}
+
+class _CrashDialogState extends ConsumerState<_CrashDialog> {
+  var _sending = false;
+
+  String get _reportText =>
+      widget.crashes.map((c) => c.toReportText()).join('\n\n---\n\n');
+
+  @override
+  Widget build(BuildContext context) {
+    final signedIn = ref.watch(supabaseReadyProvider) &&
+        ref.watch(sessionStreamProvider).value != null;
+
+    return AlertDialog(
+      title: const Text('Problem melden'),
+      // Scrollbar: verhindert, dass ein langer Stacktrace die Buttons
+      // auf kleinen Screens aus dem Dialog drückt.
+      content: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Beim letzten Start ist ein Fehler aufgetreten. Wenn du ihn '
+              'meldest, können wir ihn beheben — der Bericht enthält nur '
+              'technische Angaben, keine Gerätedaten.',
+            ),
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                _reportText,
+                style: const TextStyle(fontFamily: 'monospace', fontSize: 11),
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _sending ? null : () => Navigator.pop(context),
+          child: const Text('Später'),
+        ),
+        TextButton(
+          onPressed: _sending
+              ? null
+              : () async {
+                  await Clipboard.setData(ClipboardData(text: _reportText));
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      content: Text('Bericht in die Zwischenablage kopiert')));
+                },
+          child: const Text('Kopieren'),
+        ),
+        FilledButton(
+          onPressed: !signedIn || _sending ? null : _send,
+          child: _sending
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2))
+              : const Text('Melden'),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _send() async {
+    setState(() => _sending = true);
+    try {
+      await submitFeedback(
+        ref.read(supabaseClientProvider),
+        type: FeedbackType.bug,
+        message: 'Automatischer Absturzbericht\n\n$_reportText',
+      );
+      // Erst nach erfolgreichem Senden verwerfen — sonst wäre der Bericht bei
+      // einem Netzfehler weg.
+      await globalCrashStore?.clear();
+      if (!mounted) return;
+      ref.read(crashBannerDismissedProvider.notifier).state = true;
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Danke — der Bericht ist raus. 🐛')));
+    } catch (e) {
+      appLog.w('Absturzbericht konnte nicht gesendet werden', error: e);
+      if (!mounted) return;
+      setState(() => _sending = false);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Senden fehlgeschlagen. Internetverbindung prüfen? '
+              'Der Bericht bleibt erhalten.')));
+    }
   }
 }
 

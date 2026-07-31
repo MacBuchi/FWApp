@@ -6,6 +6,7 @@ library;
 import 'dart:async';
 
 import 'package:drift/drift.dart';
+import 'package:fwapp/core/app_version.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/logging/app_logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -21,14 +22,37 @@ const kSyncedTables = [
   'inspection_log',
 ];
 
+/// Der Server hat das Veröffentlichen abgelehnt, weil diese App-Version
+/// unterhalb des gepflegten Minimums liegt (Issue #35).
+///
+/// Betrifft **nur** das Veröffentlichen. Lesen, Pull und der gesamte lokale
+/// Betrieb laufen unverändert weiter.
+class OutdatedClientException implements Exception {
+  final String serverMessage;
+  const OutdatedClientException(this.serverMessage);
+
+  @override
+  String toString() => 'OutdatedClientException: $serverMessage';
+}
+
+/// Erkennt die Ablehnung des Mindestversions-Gates an der Kennung, die
+/// `publish_snapshot` in die Meldung schreibt.
+bool isOutdatedClientError(String message) =>
+    message.contains('client too old');
+
 class SyncService {
   final AppDatabase db;
   final SupabaseClient client;
 
+  /// Wird beim Veröffentlichen mitgeschickt. Getrennt injizierbar, damit
+  /// Tests eine Version vorgeben können, ohne PackageInfo zu brauchen.
+  final String? appVersion;
+
   bool _suppressDirty = false;
   StreamSubscription<Set<TableUpdate>>? _dirtySub;
 
-  SyncService(this.db, this.client);
+  SyncService(this.db, this.client, {String? appVersion})
+      : appVersion = appVersion ?? currentAppVersion;
 
   // ── SyncMeta helpers ──
 
@@ -253,13 +277,33 @@ class SyncService {
   /// Uploads the full local dataset as the new central snapshot.
   /// Fails with a version conflict if someone else published since the last
   /// pull — pull first, then republish.
+  ///
+  /// Schickt zusätzlich die eigene App-Version mit. Der Server lehnt damit zu
+  /// alte Clients ab (Issue #35): Deren Payload hätte für inzwischen
+  /// hinzugekommene Spalten stillschweigend NULL, und `publish_snapshot`
+  /// ersetzt den zentralen Bestand vollständig. Wird serverseitig kein
+  /// Minimum gepflegt, ändert der Parameter nichts.
+  ///
+  /// Wirft [OutdatedClientException], wenn der Server ablehnt — der Aufrufer
+  /// zeigt dann den Hinweis auf das Update. **Nur das Veröffentlichen ist
+  /// gesperrt; die App bleibt lokal vollständig nutzbar.**
   Future<int> publish() async {
     final meta = await getMeta();
     final payload = await _buildPayload();
-    final result = await client.rpc('publish_snapshot', params: {
-      'expected_version': meta.lastPulledVersion,
-      'payload': payload,
-    });
+    final Object? result;
+    try {
+      result = await client.rpc('publish_snapshot', params: {
+        'expected_version': meta.lastPulledVersion,
+        'payload': payload,
+        'client_version': appVersion,
+      });
+    } on PostgrestException catch (e) {
+      if (isOutdatedClientError(e.message)) {
+        appLog.w('Veröffentlichen abgelehnt: App zu alt (${e.message})');
+        throw OutdatedClientException(e.message);
+      }
+      rethrow;
+    }
     final newVersion = (result as num).toInt();
     _suppressDirty = true;
     try {

@@ -11,6 +11,24 @@ Anwenderin, nicht aus Sicht des Codes. Das Format orientiert sich an
 Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md § 5.
 
+## [1.5.0] – 2026-07-31
+
+### Neu
+
+- Stürzt die App ab, bietet sie beim nächsten Start an, das Problem zu melden —
+  mit den technischen Angaben, die zur Behebung nötig sind. Vorher blieben
+  solche Fehler unbemerkt, wenn niemand von sich aus schrieb. Der Bericht
+  enthält keine Gerätedaten und geht nur auf ausdrückliche Bestätigung raus;
+  alternativ lässt er sich kopieren.
+
+### Geändert
+
+- Ist eine App-Version zu alt, lehnt der Server das **Veröffentlichen** ab und
+  sagt das mit klarem Hinweis. Das schützt den gemeinsamen Datenbestand davor,
+  von einem alten Stand unvollständig überschrieben zu werden. Wichtig: Nur das
+  Veröffentlichen ist betroffen — die App bleibt vollständig nutzbar, lokale
+  Daten bleiben erhalten, und Aktualisieren funktioniert weiter.
+
 ## [1.4.9] – 2026-07-31
 
 ### Neu
@@ -145,6 +163,7 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 - Erste Ausgabe: Fahrzeuge, Geräteräume, Beladepläne, Lernspiele und
   Serverabgleich.
 
+[1.5.0]: https://github.com/MacBuchi/FWApp/compare/v1.4.9...v1.5.0
 [1.4.9]: https://github.com/MacBuchi/FWApp/compare/v1.4.8...v1.4.9
 [1.4.8]: https://github.com/MacBuchi/FWApp/compare/v1.4.7...v1.4.8
 [1.4.7]: https://github.com/MacBuchi/FWApp/compare/v1.4.6...v1.4.7

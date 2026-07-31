@@ -20,6 +20,16 @@ const _url = 'http://127.0.0.1:54321';
 const _anonKey =
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
 
+/// Nur fürs Setzen von `dataset_meta.minimum_supported_version` im
+/// Gate-Test — die App selbst hat dafür bewusst kein Recht.
+///
+/// Kein Geheimnis: Das ist der in jedem lokalen Supabase-Stack identische
+/// Demo-Key aus der offiziellen Doku, genau wie `_anonKey` darüber und wie in
+/// tool/setup_local_supabase.sh. Über die Env überschreibbar, falls jemand
+/// einen abweichend konfigurierten Stack fährt.
+final _serviceRoleKey = Platform.environment['SUPABASE_SERVICE_ROLE_KEY'] ??
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU';
+
 Future<bool> _stackAvailable() async {
   try {
     final client = HttpClient()..connectionTimeout = const Duration(seconds: 2);
@@ -189,5 +199,121 @@ Future<void> main() async {
     await memberSync.pullIfNewer();
     final memberVehicles = await memberDb.vehicleDao.getAll();
     expect(memberVehicles.map((v) => v.name), contains('MTW GW-E2E'));
+  });
+
+  // ── Mindestversions-Gate (Issue #35) ────────────────────────
+  //
+  // Der gefährliche Pfad ist publish(), nicht der Pull: Ein zu alter Client
+  // baut den Snapshot aus seiner lokalen DB, und jsonb_populate_recordset
+  // setzt ihm unbekannte Spalten kommentarlos auf NULL — danach wäre eine neu
+  // hinzugekommene Sync-Spalte für die ganze Wehr leer.
+  //
+  // Diese Tests laufen gegen die echte SQL-Funktion, weil genau dort die
+  // Entscheidung fällt. Ein nachgebauter Fake würde die Frage nicht beweisen.
+
+  group('Mindestversions-Gate', () {
+    /// Setzt das Minimum über den Service-Role-Key (die App darf das nicht).
+    Future<void> setMinimum(String? version) async {
+      final admin = SupabaseClient(_url, _serviceRoleKey);
+      try {
+        await admin
+            .from('dataset_meta')
+            .update({'minimum_supported_version': version}).eq('id', 1);
+      } finally {
+        await admin.dispose();
+      }
+    }
+
+    // Nach jedem Test das Gate wieder entschärfen, sonst hängen die übrigen
+    // E2E-Tests am selben Stack fest.
+    tearDown(() => setMinimum(null));
+
+    Future<SyncService> editorSync(String? appVersion) async {
+      final db = createTestDatabase();
+      final client = SupabaseClient(_url, _anonKey);
+      addTearDown(() async {
+        await db.close();
+        await client.dispose();
+      });
+      await client.auth.signInWithPassword(
+          email: 'geraetewart@fw.local', password: 'test1234');
+      final sync = SyncService(db, client, appVersion: appVersion);
+      await sync.pullIfNewer(force: true);
+      return sync;
+    }
+
+    test('ohne gesetztes Minimum darf auch eine uralte Version publizieren',
+        () async {
+      // Aussperr-Schutz 1: Die Migration allein ändert nichts am Verhalten.
+      await setMinimum(null);
+      final sync = await editorSync('0.0.1');
+      expect(await sync.publish(), greaterThan(0));
+    });
+
+    test('zu alte Version wird abgelehnt', () async {
+      await setMinimum('99.0.0');
+      final sync = await editorSync('1.0.0');
+      await expectLater(sync.publish(), throwsA(isA<OutdatedClientException>()));
+    });
+
+    test('Version genau auf dem Minimum darf publizieren', () async {
+      await setMinimum('2.0.0');
+      final sync = await editorSync('2.0.0');
+      expect(await sync.publish(), greaterThan(0));
+    });
+
+    test('neuere Version darf publizieren', () async {
+      await setMinimum('2.0.0');
+      final sync = await editorSync('2.0.1');
+      expect(await sync.publish(), greaterThan(0));
+    });
+
+    test('1.10.0 gilt als neuer als 1.9.9 (numerisch, nicht alphabetisch)',
+        () async {
+      await setMinimum('1.9.9');
+      final sync = await editorSync('1.10.0');
+      expect(await sync.publish(), greaterThan(0));
+    });
+
+    test('Client ohne bekannte Version wird abgelehnt', () async {
+      // Entspricht einem Alt-Client, der client_version noch nicht kennt.
+      await setMinimum('1.0.0');
+      final sync = await editorSync(null);
+      await expectLater(sync.publish(), throwsA(isA<OutdatedClientException>()));
+    });
+
+    test('Abweisung sperrt NUR das Publizieren, nicht das Lesen', () async {
+      // Aussperr-Schutz 2 und der Kern von local-first: Wer nicht publizieren
+      // darf, muss trotzdem arbeiten und lesen können.
+      await setMinimum('99.0.0');
+      final sync = await editorSync('1.0.0');
+
+      await expectLater(sync.publish(), throwsA(isA<OutdatedClientException>()));
+
+      // Pull geht weiter — und wirft nicht.
+      await expectLater(sync.pullIfNewer(force: true), completes);
+    });
+
+    test('lokale Daten überleben eine Abweisung', () async {
+      await setMinimum('99.0.0');
+      final db = createTestDatabase();
+      final client = SupabaseClient(_url, _anonKey);
+      addTearDown(() async {
+        await db.close();
+        await client.dispose();
+      });
+      await client.auth.signInWithPassword(
+          email: 'geraetewart@fw.local', password: 'test1234');
+      final sync = SyncService(db, client, appVersion: '1.0.0');
+      await sync.pullIfNewer(force: true);
+
+      await db.vehicleDao.insertVehicle(
+          VehiclesCompanion.insert(name: 'LF 8 Aussperrtest', type: 'LF'));
+      await expectLater(sync.publish(), throwsA(isA<OutdatedClientException>()));
+
+      // Die Arbeit des Gerätewarts darf nicht verloren gehen.
+      final local = await db.vehicleDao.getAll();
+      expect(local.map((v) => v.name), contains('LF 8 Aussperrtest'));
+    });
   });
 }

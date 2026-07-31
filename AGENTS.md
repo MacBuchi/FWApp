@@ -329,10 +329,22 @@ gehören **nicht** in den nächsten PR, und sie sollen auch nicht in jeder
 Session neu aufgerollt werden. Wer sie anfassen will, holt vorher Marcus'
 Zustimmung ein.
 
-### Crash-Reporting (Issue #34)
+### Crash-Reporting (Issue #34) — teilweise erledigt
 
-**Entschieden:** Selbst hosten, nicht sentry.io. **Vertagt:** ja, bis auf
-Weiteres.
+**Umgesetzt (2026-07-31):** Der lokale Absturzspeicher
+([core/crash/crash_store.dart](lib/core/crash/crash_store.dart)). Dart-Fehler
+aus `FlutterError.onError` und `PlatformDispatcher.onError` landen in den
+SharedPreferences (max. 3, Stacktrace gekappt) und werden beim nächsten Start
+als Banner angeboten — Meldung über den bestehenden Feedback→GitHub-Kanal oder
+in die Zwischenablage. Damit sind Feldabstürze nicht mehr unsichtbar, ohne
+Server-Abhängigkeit.
+
+**Nicht abgedeckt und weiterhin offen:** harte native Abstürze (der Prozess
+stirbt, bevor Dart-Code läuft) und die Auswertung über alle Geräte hinweg
+(Häufigkeit, Verteilung je Version). Dafür bleibt das Backend nötig.
+
+**Entschieden fürs Backend:** Selbst hosten, nicht sentry.io. **Vertagt:** ja,
+bis auf Weiteres.
 
 Zwei Randbedingungen, die vor dem Start geklärt sein müssen:
 
@@ -347,17 +359,41 @@ Zwei Randbedingungen, die vor dem Start geklärt sein müssen:
   nicht ziehen, solange die Fritz!Box den ARP der VM-MAC nicht beantwortet —
   derselbe offene Punkt, der auch den Brevo-Testversand blockiert.
 
-Vorher zu erledigen: **Issue #39** (Release-Builds loggen gar nichts). Solange
-die lokale Logging-Kette im Release stumm ist, verdeckt ein Crash-Backend nur
-die Ursache.
+Die Vorbedingung **Issue #39** (Release-Builds loggen gar nichts) ist seit
+v1.4.4 erledigt.
 
-### Mindestversions-Check (Issue #35)
+### Mindestversions-Check (Issue #35) — erledigt
 
-**Vertagt**, obwohl es das Issue mit dem größten Schadenspotenzial ist — es ist
-ein Entwurf, kein Fix, und braucht eine Server-Migration plus eine Entscheidung
-darüber, ab wann eine Version zu alt ist.
+**Umgesetzt (2026-07-31).** Migration
+`20260731000000_minimum_supported_version.sql`. Die Analyse von damals hat
+sich bestätigt und ist unten als Begründung erhalten.
 
-Was die Analyse ergeben hat, damit es niemand zweimal herausfindet:
+**Wie es scharf geschaltet wird — bewusst ein Handgriff:**
+
+```sql
+update public.dataset_meta set minimum_supported_version = '1.5.0' where id = 1;
+-- Abschalten:
+update public.dataset_meta set minimum_supported_version = null where id = 1;
+```
+
+Die App hat auf diese Spalte **kein Schreibrecht**; das läuft über den
+Service-Role-Key. Gedacht als bewusster Schritt beim Ausrollen einer neuen
+Sync-Spalte, nicht als Automatik.
+
+⚠️ **Drei Aussperr-Garantien, die beim Anfassen erhalten bleiben müssen** (alle
+in `test/integration/sync_e2e_test.dart` gegen die echte SQL-Funktion geprüft):
+
+1. **NULL = kein Gate.** Die Migration allein ändert nichts. Nur ein bewusst
+   gesetzter Wert greift.
+2. **Nur `publish_snapshot` ist betroffen.** Pull, Lesen und der gesamte lokale
+   Betrieb laufen weiter — local-first bleibt local-first. Ein abgewiesener
+   Gerätewart kann weiterarbeiten, seine lokalen Daten bleiben erhalten.
+3. **Fail-open.** Ist der Wert unlesbar, wird durchgelassen, nicht gesperrt.
+   Sonst könnte ein Tippfehler die ganze Wehr vom Veröffentlichen abschneiden,
+   reparierbar nur noch mit DB-Zugriff. Der CHECK auf der Spalte hält Unsinn
+   ohnehin fern; fail-open ist der Notnagel dahinter.
+
+Was die Analyse ergeben hatte und weiterhin gilt:
 
 - Der gefährliche Pfad ist **nicht** der Pull, sondern `publish()`. Ein
   Gerätewart auf altem Stand kann per `publish_snapshot` einen Snapshot
@@ -366,14 +402,15 @@ Was die Analyse ergeben hat, damit es niemand zweimal herausfindet:
   Sync-Spalte wäre danach für die ganze Wehr leer — ohne Fehlermeldung.
   `expected_version` schützt nur gegen parallele Publishes.
 - Die Server-Tabelle heißt **`dataset_meta`** (eine Zeile, `check (id = 1)`),
-  nicht `sync_meta` — das ist die lokale Drift-Tabelle. Der Pull liest
-  `dataset_meta` ohnehin schon, ein `minimum_supported_version` dort wäre eine
-  Ein-Zeilen-Migration.
-- Ein Gate darf **nicht** an `updateInfoProvider` hängen: Der liefert auf Web
-  und iOS grundsätzlich `null`. Ausgerechnet die Web-App ist aber der Weg, über
-  den Admins publizieren.
-- `isNewerVersion` behandelt Pre-Release-Suffixe falsch (`1.5.1-rc1` wird zu
-  `[1,5,0]`). Aktuell folgenlos, weil das Projekt nur `MAJOR.MINOR.PATCH+BUILD`
-  verwendet und `release.yml` den Tag auf Ziffern und Punkte filtert — vor
-  einer Nutzung im Gate aber zu härten.
-- Local-first bleibt unangetastet: Ein Gate darf den Sync sperren, nie die App.
+  nicht `sync_meta` — das ist die lokale Drift-Tabelle.
+- Das Gate hängt **nicht** an `updateInfoProvider`: Der liefert auf Web und iOS
+  grundsätzlich `null`. Ausgerechnet die Web-App ist aber der Weg, über den
+  Admins publizieren. Die Version kommt stattdessen aus
+  [core/app_version.dart](lib/core/app_version.dart), gesetzt in main.dart.
+- `isNewerVersion` behandelte Pre-Release-Suffixe falsch (`1.5.1-rc1` wurde zu
+  `[1,5,0]`) — mit diesem PR gehärtet: `parseVersion` schneidet `+build` und
+  `-prerelease` ab und liefert `null` statt zu raten.
+- ⚠️ Die alte 2-argumentige `publish_snapshot` **musste weichen**, sonst wäre
+  der Aufruf mit zwei Argumenten zwischen ihr und der neuen Fassung mit Default
+  mehrdeutig („function is not unique"). Alt-Clients landen dadurch automatisch
+  bei `client_version = NULL` — genau der Fall, den das Gate abfangen soll.

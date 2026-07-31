@@ -24,19 +24,56 @@ class UpdateInfo {
   });
 }
 
+/// Zerlegt `MAJOR.MINOR.PATCH` in drei Zahlen.
+///
+/// Toleriert die Zusätze, die real vorkommen: ein Build-Suffix (`1.4.9+17`),
+/// einen Pre-Release-Teil (`1.5.1-rc1`) und ein führendes `v` (`v1.4.9`).
+/// Liefert `null`, wenn daraus keine drei Zahlen werden — der Aufrufer
+/// entscheidet dann, was ein unlesbarer Wert bedeutet, statt still `0` zu
+/// erhalten.
+///
+/// Vorher wurde `1.5.1-rc1` zu `[1, 5, 0]` verrechnet: `int.tryParse('1-rc1')`
+/// ergibt `null`, und der Fallback `?? 0` machte daraus eine *kleinere*
+/// Version. Folgenlos, solange nur `MAJOR.MINOR.PATCH+BUILD` verwendet wird —
+/// aber das Mindestversions-Gate (Issue #35) darf sich darauf nicht verlassen.
+List<int>? parseVersion(String raw) {
+  var v = raw.trim();
+  if (v.startsWith('v') || v.startsWith('V')) v = v.substring(1);
+  // Build-Metadaten und Pre-Release abschneiden: beide sind für die
+  // Vorrang-Frage hier ohne Belang.
+  final plus = v.indexOf('+');
+  if (plus >= 0) v = v.substring(0, plus);
+  final dash = v.indexOf('-');
+  if (dash >= 0) v = v.substring(0, dash);
+
+  // 1–3 Segmente: `2` und `1.4` bleiben wie bisher gültig und werden zu
+  // 2.0.0 bzw. 1.4.0 aufgefüllt. Alles darüber ist kein MAJOR.MINOR.PATCH.
+  final parts = v.split('.');
+  if (parts.isEmpty || parts.length > 3) return null;
+  final out = <int>[];
+  for (final part in parts) {
+    final n = int.tryParse(part.trim());
+    if (n == null || n < 0) return null;
+    out.add(n);
+  }
+  while (out.length < 3) {
+    out.add(0);
+  }
+  return out;
+}
+
 /// `true`, wenn [latest] eine neuere Version als [current] ist
 /// (numerischer Vergleich je Segment, z. B. 1.10.0 > 1.9.2).
+///
+/// Ist eine der beiden Seiten unlesbar, lautet die Antwort `false` — es wird
+/// dann also **kein** Update angeboten. Ein Fehlalarm wäre hier schlimmer als
+/// ein verpasster Hinweis.
 bool isNewerVersion(String latest, String current) {
-  List<int> parse(String v) => v
-      .split('.')
-      .map((part) => int.tryParse(part.trim()) ?? 0)
-      .toList();
-  final l = parse(latest);
-  final c = parse(current);
+  final l = parseVersion(latest);
+  final c = parseVersion(current);
+  if (l == null || c == null) return false;
   for (var i = 0; i < 3; i++) {
-    final li = i < l.length ? l[i] : 0;
-    final ci = i < c.length ? c[i] : 0;
-    if (li != ci) return li > ci;
+    if (l[i] != c[i]) return l[i] > c[i];
   }
   return false;
 }

@@ -9,7 +9,8 @@ Anwenderin, nicht aus Sicht des Codes. Das Format orientiert sich an
 [Semantic Versioning](https://semver.org/lang/de/).
 
 Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
-ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md § 5.
+ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
+Abschnitt „Workflow".
 
 ## [1.5.1] – 2026-07-31
 

@@ -136,7 +136,14 @@ mitcommitten — auch bei reinen Methodenbody-Änderungen in `@riverpod`-Dateien
 manuelles Taggen.
 
 1. Der PR, der eine ausgelieferte Änderung abschließt, **bumpt die Version**
-   (beide Teile, z. B. `1.4.2+10` → `1.4.3+11`).
+   (beide Teile, z. B. `1.4.2+10` → `1.4.3+11`) und trägt seinen Eintrag oben
+   in [CHANGELOG.md](CHANGELOG.md) nach.
+   ⚠️ Die CHANGELOG.md ist **kein reines Repo-Dokument**: Sie wird als Asset
+   ausgeliefert und in der App unter *Einstellungen → Was ist neu?* gerendert
+   (Issue #51). Einträge deshalb aus Anwendersicht formulieren, nicht aus
+   Codesicht. `test/core/changelog/changelog_test.dart` erzwingt, dass der
+   oberste Eintrag die Version aus `pubspec.yaml` ist — sonst liefert ein
+   Release Notizen für eine Version aus, die es nicht gibt.
 2. Merge auf `main` mit ungetaggter Version → [release.yml](.github/workflows/release.yml)
    erzeugt Tag `vX.Y.Z`, baut das signierte APK und legt das GitHub-Release an.
 3. Ohne Bump gibt es kein Release. **Version Guard** warnt im PR und **failt auf

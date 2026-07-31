@@ -32,6 +32,7 @@ import 'package:fwapp/features/operation/presentation/screens/operation_summary_
 import 'package:fwapp/features/inventory/presentation/screens/inventory_screen.dart';
 import 'package:fwapp/features/inventory/presentation/screens/inventory_report_screen.dart';
 import 'package:fwapp/features/settings/presentation/screens/settings_screen.dart';
+import 'package:fwapp/features/settings/presentation/screens/changelog_screen.dart';
 import 'package:fwapp/features/settings/presentation/screens/user_management_screen.dart';
 
 /// Routen, die Bearbeitungsrechte voraussetzen (Spiegel der UI-Gates:
@@ -222,6 +223,10 @@ final _routes = [
         GoRoute(
           path: '/settings',
           builder: (_, _) => const SettingsScreen(),
+        ),
+        GoRoute(
+          path: '/changelog',
+          builder: (_, _) => const ChangelogScreen(),
         ),
       ],
     ),

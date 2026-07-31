@@ -85,7 +85,7 @@ Widget resolveImage({
       width: width,
       height: height,
       fit: fit,
-      errorBuilder: (_, __, ___) => fallback,
+      errorBuilder: (_, _, _) => fallback,
     );
   } else if (isRemoteImagePath(path)) {
     final url = isSupabaseImagePath(path) ? supabaseImageUrl(path) : path;
@@ -99,8 +99,8 @@ Widget resolveImage({
       width: width,
       height: height,
       fit: fit,
-      placeholder: (_, __) => fallback,
-      errorWidget: (_, __, ___) => fallback,
+      placeholder: (_, _) => fallback,
+      errorWidget: (_, _, _) => fallback,
     );
   } else {
     image = Image.file(
@@ -108,7 +108,7 @@ Widget resolveImage({
       width: width,
       height: height,
       fit: fit,
-      errorBuilder: (_, __, ___) => fallback,
+      errorBuilder: (_, _, _) => fallback,
     );
   }
 

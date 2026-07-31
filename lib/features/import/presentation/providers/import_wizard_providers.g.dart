@@ -48,7 +48,7 @@ abstract class _$ImportWizardNotifier extends $Notifier<ImportWizardState> {
   ImportWizardState build();
   @$mustCallSuper
   @override
-  void runBuild() {
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<ImportWizardState, ImportWizardState>;
     final element =
         ref.element
@@ -58,6 +58,6 @@ abstract class _$ImportWizardNotifier extends $Notifier<ImportWizardState> {
               Object?,
               Object?
             >;
-    element.handleCreate(ref, build);
+    return element.handleCreate(ref, build);
   }
 }

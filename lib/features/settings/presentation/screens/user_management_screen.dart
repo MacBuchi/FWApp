@@ -56,7 +56,7 @@ class UserManagementScreen extends ConsumerWidget {
         data: (users) => ListView.separated(
           padding: const EdgeInsets.only(bottom: 88),
           itemCount: users.length,
-          separatorBuilder: (_, __) =>
+          separatorBuilder: (_, _) =>
               const Divider(height: 1, indent: 16, endIndent: 16),
           itemBuilder: (context, i) => _UserTile(user: users[i]),
         ),

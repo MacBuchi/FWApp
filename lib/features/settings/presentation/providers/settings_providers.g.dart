@@ -90,7 +90,7 @@ abstract class _$ThemeModeNotifier extends $AsyncNotifier<ThemeMode> {
   FutureOr<ThemeMode> build();
   @$mustCallSuper
   @override
-  void runBuild() {
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<AsyncValue<ThemeMode>, ThemeMode>;
     final element =
         ref.element
@@ -100,7 +100,7 @@ abstract class _$ThemeModeNotifier extends $AsyncNotifier<ThemeMode> {
               Object?,
               Object?
             >;
-    element.handleCreate(ref, build);
+    return element.handleCreate(ref, build);
   }
 }
 
@@ -135,7 +135,7 @@ abstract class _$SyncSettingsNotifier extends $AsyncNotifier<SyncSettings> {
   FutureOr<SyncSettings> build();
   @$mustCallSuper
   @override
-  void runBuild() {
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<AsyncValue<SyncSettings>, SyncSettings>;
     final element =
         ref.element
@@ -145,6 +145,6 @@ abstract class _$SyncSettingsNotifier extends $AsyncNotifier<SyncSettings> {
               Object?,
               Object?
             >;
-    element.handleCreate(ref, build);
+    return element.handleCreate(ref, build);
   }
 }

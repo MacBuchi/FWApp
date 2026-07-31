@@ -82,7 +82,7 @@ class VehicleDetailScreen extends ConsumerWidget {
               SliverToBoxAdapter(
                 child: compartmentsAsync.when(
                   loading: () => const SizedBox.shrink(),
-                  error: (_, __) => const SizedBox.shrink(),
+                  error: (_, _) => const SizedBox.shrink(),
                   data: (compartments) => compartments.isEmpty
                       ? const SizedBox.shrink()
                       : Padding(
@@ -283,7 +283,7 @@ class _CompartmentTile extends ConsumerWidget {
             style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: assignmentsAsync.when(
           loading: () => const Text('Lade...'),
-          error: (_, __) => const Text('Fehler'),
+          error: (_, _) => const Text('Fehler'),
           data: (a) => Text('${a.length} Gerät(e)'),
         ),
         children: [
@@ -328,7 +328,7 @@ class _AssignmentRow extends ConsumerWidget {
     final itemAsync = ref.watch(equipmentDetailProvider(equipmentId));
     return itemAsync.when(
       loading: () => const ListTile(title: Text('...')),
-      error: (_, __) => const ListTile(title: Text('Fehler')),
+      error: (_, _) => const ListTile(title: Text('Fehler')),
       data: (item) => ListTile(
         dense: true,
         leading: EquipmentAvatar(

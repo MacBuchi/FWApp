@@ -6419,7 +6419,7 @@ final class $$VehiclesTableReferences
   static MultiTypedResultKey<$CompartmentsTable, List<CompartmentData>>
   _compartmentsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.compartments,
-    aliasName: $_aliasNameGenerator(db.vehicles.id, db.compartments.vehicleId),
+    aliasName: 'vehicles__id__compartments__vehicle_id',
   );
 
   $$CompartmentsTableProcessedTableManager get compartmentsRefs {
@@ -6437,7 +6437,7 @@ final class $$VehiclesTableReferences
   static MultiTypedResultKey<$QuizResultsTable, List<QuizResultData>>
   _quizResultsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.quizResults,
-    aliasName: $_aliasNameGenerator(db.vehicles.id, db.quizResults.vehicleId),
+    aliasName: 'vehicles__id__quiz_results__vehicle_id',
   );
 
   $$QuizResultsTableProcessedTableManager get quizResultsRefs {
@@ -6459,10 +6459,7 @@ final class $$VehiclesTableReferences
   _equipmentInstancesRefsTable(_$AppDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.equipmentInstances,
-        aliasName: $_aliasNameGenerator(
-          db.vehicles.id,
-          db.equipmentInstances.vehicleId,
-        ),
+        aliasName: 'vehicles__id__equipment_instances__vehicle_id',
       );
 
   $$EquipmentInstancesTableProcessedTableManager get equipmentInstancesRefs {
@@ -6486,10 +6483,7 @@ final class $$VehiclesTableReferences
   _inventorySessionsRefsTable(_$AppDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.inventorySessions,
-        aliasName: $_aliasNameGenerator(
-          db.vehicles.id,
-          db.inventorySessions.vehicleId,
-        ),
+        aliasName: 'vehicles__id__inventory_sessions__vehicle_id',
       );
 
   $$InventorySessionsTableProcessedTableManager get inventorySessionsRefs {
@@ -7069,9 +7063,7 @@ final class $$CompartmentsTableReferences
   $$CompartmentsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $VehiclesTable _vehicleIdTable(_$AppDatabase db) =>
-      db.vehicles.createAlias(
-        $_aliasNameGenerator(db.compartments.vehicleId, db.vehicles.id),
-      );
+      db.vehicles.createAlias('compartments__vehicle_id__vehicles__id');
 
   $$VehiclesTableProcessedTableManager get vehicleId {
     final $_column = $_itemColumn<int>('vehicle_id')!;
@@ -7091,10 +7083,7 @@ final class $$CompartmentsTableReferences
   _equipmentAssignmentsRefsTable(_$AppDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.equipmentAssignments,
-        aliasName: $_aliasNameGenerator(
-          db.compartments.id,
-          db.equipmentAssignments.compartmentId,
-        ),
+        aliasName: 'compartments__id__equipment_assignments__compartment_id',
       );
 
   $$EquipmentAssignmentsTableProcessedTableManager
@@ -7119,10 +7108,7 @@ final class $$CompartmentsTableReferences
   _equipmentInstancesRefsTable(_$AppDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.equipmentInstances,
-        aliasName: $_aliasNameGenerator(
-          db.compartments.id,
-          db.equipmentInstances.compartmentId,
-        ),
+        aliasName: 'compartments__id__equipment_instances__compartment_id',
       );
 
   $$EquipmentInstancesTableProcessedTableManager get equipmentInstancesRefs {
@@ -7678,10 +7664,7 @@ final class $$EquipmentItemsTableReferences
   _equipmentAssignmentsRefsTable(_$AppDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.equipmentAssignments,
-        aliasName: $_aliasNameGenerator(
-          db.equipmentItems.id,
-          db.equipmentAssignments.equipmentId,
-        ),
+        aliasName: 'equipment_items__id__equipment_assignments__equipment_id',
       );
 
   $$EquipmentAssignmentsTableProcessedTableManager
@@ -7706,10 +7689,7 @@ final class $$EquipmentItemsTableReferences
   _equipmentInstancesRefsTable(_$AppDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.equipmentInstances,
-        aliasName: $_aliasNameGenerator(
-          db.equipmentItems.id,
-          db.equipmentInstances.equipmentId,
-        ),
+        aliasName: 'equipment_items__id__equipment_instances__equipment_id',
       );
 
   $$EquipmentInstancesTableProcessedTableManager get equipmentInstancesRefs {
@@ -7729,10 +7709,7 @@ final class $$EquipmentItemsTableReferences
   static MultiTypedResultKey<$UserAliasesTable, List<UserAliasData>>
   _userAliasesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.userAliases,
-    aliasName: $_aliasNameGenerator(
-      db.equipmentItems.id,
-      db.userAliases.equipmentId,
-    ),
+    aliasName: 'equipment_items__id__user_aliases__equipment_id',
   );
 
   $$UserAliasesTableProcessedTableManager get userAliasesRefs {
@@ -7750,10 +7727,7 @@ final class $$EquipmentItemsTableReferences
   static MultiTypedResultKey<$LearningProgressTable, List<LearningProgressData>>
   _learningProgressRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.learningProgress,
-    aliasName: $_aliasNameGenerator(
-      db.equipmentItems.id,
-      db.learningProgress.equipmentId,
-    ),
+    aliasName: 'equipment_items__id__learning_progress__equipment_id',
   );
 
   $$LearningProgressTableProcessedTableManager get learningProgressRefs {
@@ -8474,13 +8448,9 @@ final class $$EquipmentAssignmentsTableReferences
     super.$_typedResult,
   );
 
-  static $CompartmentsTable _compartmentIdTable(_$AppDatabase db) =>
-      db.compartments.createAlias(
-        $_aliasNameGenerator(
-          db.equipmentAssignments.compartmentId,
-          db.compartments.id,
-        ),
-      );
+  static $CompartmentsTable _compartmentIdTable(_$AppDatabase db) => db
+      .compartments
+      .createAlias('equipment_assignments__compartment_id__compartments__id');
 
   $$CompartmentsTableProcessedTableManager get compartmentId {
     final $_column = $_itemColumn<int>('compartment_id')!;
@@ -8496,13 +8466,9 @@ final class $$EquipmentAssignmentsTableReferences
     );
   }
 
-  static $EquipmentItemsTable _equipmentIdTable(_$AppDatabase db) =>
-      db.equipmentItems.createAlias(
-        $_aliasNameGenerator(
-          db.equipmentAssignments.equipmentId,
-          db.equipmentItems.id,
-        ),
-      );
+  static $EquipmentItemsTable _equipmentIdTable(_$AppDatabase db) => db
+      .equipmentItems
+      .createAlias('equipment_assignments__equipment_id__equipment_items__id');
 
   $$EquipmentItemsTableProcessedTableManager get equipmentId {
     final $_column = $_itemColumn<int>('equipment_id')!;
@@ -8903,9 +8869,7 @@ final class $$QuizResultsTableReferences
   $$QuizResultsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $VehiclesTable _vehicleIdTable(_$AppDatabase db) =>
-      db.vehicles.createAlias(
-        $_aliasNameGenerator(db.quizResults.vehicleId, db.vehicles.id),
-      );
+      db.vehicles.createAlias('quiz_results__vehicle_id__vehicles__id');
 
   $$VehiclesTableProcessedTableManager? get vehicleId {
     final $_column = $_itemColumn<int>('vehicle_id');
@@ -9250,13 +9214,9 @@ final class $$EquipmentInstancesTableReferences
     super.$_typedResult,
   );
 
-  static $EquipmentItemsTable _equipmentIdTable(_$AppDatabase db) =>
-      db.equipmentItems.createAlias(
-        $_aliasNameGenerator(
-          db.equipmentInstances.equipmentId,
-          db.equipmentItems.id,
-        ),
-      );
+  static $EquipmentItemsTable _equipmentIdTable(_$AppDatabase db) => db
+      .equipmentItems
+      .createAlias('equipment_instances__equipment_id__equipment_items__id');
 
   $$EquipmentItemsTableProcessedTableManager get equipmentId {
     final $_column = $_itemColumn<int>('equipment_id')!;
@@ -9273,9 +9233,7 @@ final class $$EquipmentInstancesTableReferences
   }
 
   static $VehiclesTable _vehicleIdTable(_$AppDatabase db) =>
-      db.vehicles.createAlias(
-        $_aliasNameGenerator(db.equipmentInstances.vehicleId, db.vehicles.id),
-      );
+      db.vehicles.createAlias('equipment_instances__vehicle_id__vehicles__id');
 
   $$VehiclesTableProcessedTableManager? get vehicleId {
     final $_column = $_itemColumn<int>('vehicle_id');
@@ -9291,13 +9249,9 @@ final class $$EquipmentInstancesTableReferences
     );
   }
 
-  static $CompartmentsTable _compartmentIdTable(_$AppDatabase db) =>
-      db.compartments.createAlias(
-        $_aliasNameGenerator(
-          db.equipmentInstances.compartmentId,
-          db.compartments.id,
-        ),
-      );
+  static $CompartmentsTable _compartmentIdTable(_$AppDatabase db) => db
+      .compartments
+      .createAlias('equipment_instances__compartment_id__compartments__id');
 
   $$CompartmentsTableProcessedTableManager? get compartmentId {
     final $_column = $_itemColumn<int>('compartment_id');
@@ -9320,10 +9274,7 @@ final class $$EquipmentInstancesTableReferences
   _inspectionSchedulesRefsTable(_$AppDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.inspectionSchedules,
-        aliasName: $_aliasNameGenerator(
-          db.equipmentInstances.id,
-          db.inspectionSchedules.instanceId,
-        ),
+        aliasName: 'equipment_instances__id__inspection_schedules__instance_id',
       );
 
   $$InspectionSchedulesTableProcessedTableManager get inspectionSchedulesRefs {
@@ -9950,10 +9901,7 @@ final class $$InspectionSchedulesTableReferences
 
   static $EquipmentInstancesTable _instanceIdTable(_$AppDatabase db) =>
       db.equipmentInstances.createAlias(
-        $_aliasNameGenerator(
-          db.inspectionSchedules.instanceId,
-          db.equipmentInstances.id,
-        ),
+        'inspection_schedules__instance_id__equipment_instances__id',
       );
 
   $$EquipmentInstancesTableProcessedTableManager get instanceId {
@@ -9973,10 +9921,7 @@ final class $$InspectionSchedulesTableReferences
   static MultiTypedResultKey<$InspectionLogTable, List<InspectionLogData>>
   _inspectionLogRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.inspectionLog,
-    aliasName: $_aliasNameGenerator(
-      db.inspectionSchedules.id,
-      db.inspectionLog.scheduleId,
-    ),
+    aliasName: 'inspection_schedules__id__inspection_log__schedule_id',
   );
 
   $$InspectionLogTableProcessedTableManager get inspectionLogRefs {
@@ -10455,13 +10400,9 @@ final class $$InspectionLogTableReferences
     super.$_typedResult,
   );
 
-  static $InspectionSchedulesTable _scheduleIdTable(_$AppDatabase db) =>
-      db.inspectionSchedules.createAlias(
-        $_aliasNameGenerator(
-          db.inspectionLog.scheduleId,
-          db.inspectionSchedules.id,
-        ),
-      );
+  static $InspectionSchedulesTable _scheduleIdTable(_$AppDatabase db) => db
+      .inspectionSchedules
+      .createAlias('inspection_log__schedule_id__inspection_schedules__id');
 
   $$InspectionSchedulesTableProcessedTableManager get scheduleId {
     final $_column = $_itemColumn<int>('schedule_id')!;
@@ -10777,10 +10718,9 @@ final class $$UserAliasesTableReferences
     extends BaseReferences<_$AppDatabase, $UserAliasesTable, UserAliasData> {
   $$UserAliasesTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $EquipmentItemsTable _equipmentIdTable(_$AppDatabase db) =>
-      db.equipmentItems.createAlias(
-        $_aliasNameGenerator(db.userAliases.equipmentId, db.equipmentItems.id),
-      );
+  static $EquipmentItemsTable _equipmentIdTable(_$AppDatabase db) => db
+      .equipmentItems
+      .createAlias('user_aliases__equipment_id__equipment_items__id');
 
   $$EquipmentItemsTableProcessedTableManager get equipmentId {
     final $_column = $_itemColumn<int>('equipment_id')!;
@@ -11273,13 +11213,9 @@ final class $$LearningProgressTableReferences
     super.$_typedResult,
   );
 
-  static $EquipmentItemsTable _equipmentIdTable(_$AppDatabase db) =>
-      db.equipmentItems.createAlias(
-        $_aliasNameGenerator(
-          db.learningProgress.equipmentId,
-          db.equipmentItems.id,
-        ),
-      );
+  static $EquipmentItemsTable _equipmentIdTable(_$AppDatabase db) => db
+      .equipmentItems
+      .createAlias('learning_progress__equipment_id__equipment_items__id');
 
   $$EquipmentItemsTableProcessedTableManager get equipmentId {
     final $_column = $_itemColumn<int>('equipment_id')!;
@@ -11616,9 +11552,7 @@ final class $$InventorySessionsTableReferences
   );
 
   static $VehiclesTable _vehicleIdTable(_$AppDatabase db) =>
-      db.vehicles.createAlias(
-        $_aliasNameGenerator(db.inventorySessions.vehicleId, db.vehicles.id),
-      );
+      db.vehicles.createAlias('inventory_sessions__vehicle_id__vehicles__id');
 
   $$VehiclesTableProcessedTableManager get vehicleId {
     final $_column = $_itemColumn<int>('vehicle_id')!;
@@ -11637,10 +11571,7 @@ final class $$InventorySessionsTableReferences
   static MultiTypedResultKey<$InventoryChecksTable, List<InventoryCheckData>>
   _inventoryChecksRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.inventoryChecks,
-    aliasName: $_aliasNameGenerator(
-      db.inventorySessions.id,
-      db.inventoryChecks.sessionId,
-    ),
+    aliasName: 'inventory_sessions__id__inventory_checks__session_id',
   );
 
   $$InventoryChecksTableProcessedTableManager get inventoryChecksRefs {
@@ -12063,13 +11994,9 @@ final class $$InventoryChecksTableReferences
     super.$_typedResult,
   );
 
-  static $InventorySessionsTable _sessionIdTable(_$AppDatabase db) =>
-      db.inventorySessions.createAlias(
-        $_aliasNameGenerator(
-          db.inventoryChecks.sessionId,
-          db.inventorySessions.id,
-        ),
-      );
+  static $InventorySessionsTable _sessionIdTable(_$AppDatabase db) => db
+      .inventorySessions
+      .createAlias('inventory_checks__session_id__inventory_sessions__id');
 
   $$InventorySessionsTableProcessedTableManager get sessionId {
     final $_column = $_itemColumn<int>('session_id')!;

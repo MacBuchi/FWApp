@@ -21,15 +21,15 @@ fest, wo die FWApp bewusst davon abweicht.
 
 ```bash
 flutter pub get
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build
 flutter test
 ```
 
 ## Die vier wichtigsten Regeln
 
 1. **Codegen committen:** Nach jeder Änderung an `@riverpod`-, `@freezed`-
-   oder Drift-annotierten Dateien `dart run build_runner build
-   --delete-conflicting-outputs` ausführen und die `.g.dart`/`.freezed.dart`
+   oder Drift-annotierten Dateien `dart run build_runner build`
+   ausführen und die `.g.dart`/`.freezed.dart`
    mitcommitten. Die CI schlägt sonst fehl („Generated files are stale“).
 2. **Kein Direkt-Push auf `main`:** Feature-Branch → Pull Request → alle
    CI-Checks grün („Analyze & Test“, „Build Android APK“, „Build Web“,
@@ -158,7 +158,7 @@ Schema-Änderung alle Stationen abklappern:
 
 1. Drift-Tabelle in `lib/core/database/app_database.dart` ändern,
    `schemaVersion` erhöhen, Migration ergänzen → `dart run build_runner
-   build --delete-conflicting-outputs`.
+   build`.
 2. Entity (`features/<x>/domain`, freezed) und Repository-Mapping
    (`features/<x>/data`: `_toEntity` + Companion-Aufbau) nachziehen.
 3. Sync: `lib/core/sync/sync_service.dart` → `_buildPayload` **und**

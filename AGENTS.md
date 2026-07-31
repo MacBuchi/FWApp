@@ -71,6 +71,12 @@ Es gilt die GitHub-Guideline des DocuHub. FWApp-spezifisch bzw. betont:
   > deutsch — nicht nachträglich übersetzen. Die Feedback-Issues aus der App
   > sind weiterhin deutsch, die schreiben Nutzer.
 
+- ⚠️ **Issues immer mit englischem Schlagwort schließen, und für jedes Issue
+  einzeln:** `Closes #34` · `Closes #35` — nicht „Schließt #34" und nicht
+  `Closes #34, #35`. GitHub erkennt nur die englischen Schlüsselwörter und
+  wertet sie **pro Nennung** aus. Das ist am 2026-07-31 dreimal schiefgegangen
+  (#51, #34/#35, #56): PR gemergt, Issue blieb offen und musste von Hand
+  geschlossen werden.
 - **Zu jedem Versions-Bump gehört ein [CHANGELOG.md](CHANGELOG.md)-Eintrag**
   aus Anwendersicht, auf Deutsch. ⚠️ Die Datei ist **kein reines
   Repo-Dokument**: Sie wird als Asset ausgeliefert und in der App unter
@@ -282,39 +288,47 @@ Analysiert und entschieden, aber absichtlich vertagt. Gehört **nicht** in den
 nächsten PR und soll nicht in jeder Session neu aufgerollt werden. Wer es
 anfassen will, holt vorher Marcus' Zustimmung ein.
 
-### Crash-Reporting (Issue #34) — umgesetzt, aber am Hausmuster vorbei
+### Crash-Reporting (Issue #34) — Client-Seite auf dem Hausmuster, Rest offen
 
-**Umgesetzt (2026-07-31, v1.5.0):** der lokale Absturzspeicher
-([core/crash/crash_store.dart](lib/core/crash/crash_store.dart)). Dart-Fehler
-aus `FlutterError.onError` und `PlatformDispatcher.onError` landen in den
-SharedPreferences (max. 3, Stacktrace gekappt) und werden beim nächsten Start
-als Banner angeboten — Meldung über den Feedback→GitHub-Kanal oder in die
-Zwischenablage.
+Der lokale Absturzspeicher ([core/crash/](lib/core/crash/)) folgt seit v1.5.2
+dem Bauplan „Route A" der Observability-Guideline
+(`guidelines/observability.md` im DocuHub, an PilzBuddy produktiv gemessen):
 
-⚠️ **Das weicht in vier Punkten vom Bauplan „Route A" der Observability-Guideline
-ab** (`guidelines/observability.md` im DocuHub). Der Bauplan ist an PilzBuddy
-produktiv gemessen, diese Umsetzung ist es nicht — beim Nacharbeiten gilt der
-Hub:
+- **Synchron auf Platte, bevor irgendetwas anderes passiert** — Datei im
+  Application-Support-Verzeichnis, `writeAsStringSync`. Bis v1.5.1 lief hier
+  `unawaited(...)` gegen asynchrone SharedPreferences; der Hub führt genau das
+  unter „So nicht", weil es bei harten Abstürzen nie ankommt.
+- **Ring-Buffer 20**, Format **versioniert** (`v`) und legacy-tolerant gelesen
+  (Berichte aus v1.5.0/1.5.1 tragen kein `v` und bekommen ihren Fingerprint
+  nachträglich).
+- **Dedupe-Fingerprint** aus Fehlertyp und den obersten *eigenen* Frames,
+  gehasht mit **FNV-1a** — nie `String.hashCode`, dessen Wert ist zwischen
+  Läufen nicht stabil. Zeilen-/Spaltennummern fliegen raus, damit eine
+  verschobene Codezeile derselbe Absturz bleibt.
+- **Log-Ring-Buffer** am zentralen Logger (50 Zeilen): Ein Stacktrace ohne
+  Vorgeschichte ist oft nicht diagnostizierbar. ⚠️ Der Rahmen des
+  `PrettyPrinter` wird herausgefiltert — ungefiltert belegt eine Meldung drei
+  Ringplätze, und der Bericht trüge statt 50 Meldungen knapp 17 (auf dem
+  Emulator nachgemessen).
+- **PII-Regressionstest** (`test/core/crash/crash_pii_test.dart`): Die Repos
+  sind public, und der Bericht landet auf Wunsch in einem öffentlichen Issue.
 
-1. **Eine Senke, kein Issue pro Absturz.** Dort wurden 37 Berichte für ein
-   Abmelden und 193 für abgebrochene Hintergrundaufträge gemessen. Hier bremst
-   bisher nur, dass jeder Versand eine bewusste Nutzeraktion ist.
-2. **Synchron auf Platte schreiben, bevor irgendetwas anderes passiert.** Hier
-   läuft `unawaited(recordCrash(...))` gegen asynchrone SharedPreferences — der
-   Hub führt genau das unter „So nicht", weil es bei harten Abstürzen nie
-   ankommt.
-3. **Dedupe-Fingerprint** (Exception-Typ + oberste eigene Frames, FNV-1a, nie
-   `String.hashCode`) und Rate-Limit fehlen.
-4. **Log-Ring-Buffer** fehlt: Ein Stacktrace ohne Vorgeschichte ist oft nicht
-   diagnostizierbar. Dazu ein **PII-Regressionstest** — die Repos sind public.
+**Bewusst abweichend: ein Issue pro Bericht statt einer eigenen Senke.** Der
+Hub rät davon ab, weil dort **automatisch** gemeldet wird (gemessen: 37
+Berichte für ein Abmelden, 193 für abgebrochene Hintergrundaufträge). In FWApp
+ist jeder Versand eine bewusste Nutzeraktion und leert danach den Speicher —
+die Menge ist damit durch Menschen begrenzt, nicht durch Fehlerhäufigkeit.
+Sobald automatisch gemeldet wird (etwa mit den ANRs unten), **muss** die eigene
+Senke kommen.
 
-**Korrektur einer früheren Aussage:** Hier stand, harte native Abstürze und
-ANRs bräuchten das Backend. **Das stimmt nicht.** Ab Android 11 liefert
-`getHistoricalProcessExitReasons` über einen MethodChannel Grund, Zeitpunkt,
-Speicherstand und bei ANRs den Thread-Dump — **ohne Dienst und ohne
-Berechtigung**. PilzBuddy setzt das ein (`lib/data/exit_info_repository.dart`);
-der erste Feldfang dort war ein ANR, von dem sonst nur ein schwarzer Bildschirm
-übrig geblieben wäre.
+**Noch offen: ANRs und harte native Tode.** Sie brauchen **kein** Backend. Ab
+Android 11 liefert `getHistoricalProcessExitReasons` über einen MethodChannel
+Grund, Zeitpunkt, Speicherstand und bei ANRs den Thread-Dump — ohne Dienst und
+ohne Berechtigung. PilzBuddy setzt das ein
+(`lib/data/exit_info_repository.dart`); der erste Feldfang dort war ein ANR,
+von dem sonst nur ein schwarzer Bildschirm übrig geblieben wäre. Beim Einbau
+die Regeln aus dem Hub beachten: nur anormale Gründe melden, Todes- statt
+Meldezeitpunkt, Merker gegen Doppelmeldungen, Felder plausibilisieren.
 
 **Was wirklich noch das Backend braucht:** Cluster-Bildung und der Vergleich
 über Releases („seit 1.4.2 dreimal so viele"). Entschieden ist Selbst-Hosting

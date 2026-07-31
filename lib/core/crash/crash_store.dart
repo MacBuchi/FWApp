@@ -4,109 +4,47 @@
 /// Warum lokal statt direkt an ein Crash-Backend: Ein selbst gehostetes
 /// GlitchTip ist entschieden, aber blockiert (AGENTS.md „Zurückgestellt" — die
 /// VM zieht ohne IPv4 keine Container-Images). Bis dahin wäre die Alternative
-/// „gar nichts", und Feldabstürze blieben unsichtbar. Der Bericht landet
-/// deshalb erst auf dem Gerät und geht beim nächsten Start über den bereits
-/// bestehenden Feedback→GitHub-Issue-Kanal raus — mit Stacktrace und Version,
-/// die bei einer freiwilligen Rückmeldung sonst fehlen.
+/// „gar nichts", und Feldabstürze blieben unsichtbar.
 ///
-/// **Reichweite:** Das erfasst Dart-Fehler aus `FlutterError.onError` und
-/// `PlatformDispatcher.onError`, also genau das, was main.dart heute schon
-/// loggt. Ein harter nativer Absturz beendet den Prozess, bevor Dart-Code
-/// läuft — der ist hiermit nicht abgedeckt.
+/// ⚠️ **Der Bericht muss den Absturz überleben.** Deshalb wird im Handler
+/// **synchron auf Platte** geschrieben, bevor irgendetwas anderes passiert.
+/// Bis v1.5.1 lief hier `unawaited(...)` gegen asynchrone SharedPreferences —
+/// die Observability-Guideline führt genau das unter „So nicht", weil es bei
+/// harten Abstürzen nie ankommt. Der Pfad wird beim Start einmal aufgelöst
+/// und gemerkt, damit der Handler ohne `await` schreiben kann.
 ///
-/// ⚠️ **Diese Umsetzung weicht vom Bauplan „Route A" der
-/// Observability-Guideline im DocuHub ab** (dort produktiv an PilzBuddy
-/// gemessen). Offen sind: synchrones Schreiben im Handler statt `unawaited`,
-/// Dedupe-Fingerprint, Log-Ring-Buffer im Bericht und eine eigene Senke statt
-/// eines Issues pro Absturz. Für harte Abstürze und ANRs braucht es **kein**
-/// Backend, sondern `getHistoricalProcessExitReasons` (ab Android 11, ohne
-/// Berechtigung). Details und Reihenfolge stehen in AGENTS.md.
+/// **Reichweite:** Dart-Fehler aus `FlutterError.onError` und
+/// `PlatformDispatcher.onError`. Ein harter nativer Absturz beendet den
+/// Prozess, bevor Dart-Code läuft — dafür ist
+/// `getHistoricalProcessExitReasons` vorgesehen (ab Android 11, ohne
+/// Berechtigung, siehe AGENTS.md), noch nicht umgesetzt.
+///
+/// **Ablage:** Application-Support-Verzeichnis, nicht neben Nutzerdaten.
 library;
 
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fwapp/core/crash/crash_report.dart';
 import 'package:fwapp/core/logging/app_logger.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
-/// Schlüssel in den SharedPreferences.
-const kCrashReportsKey = 'crash_reports';
+/// Dateiname im Application-Support-Verzeichnis.
+const kCrashFileName = 'crash_reports.json';
 
-/// Mehr als diese Zahl an Berichten wird nicht aufgehoben — die ältesten
-/// fliegen raus. Verhindert, dass eine Absturzschleife die Prefs vollschreibt.
-const kMaxStoredCrashes = 3;
+/// Ring-Buffer-Grenze: Mehr Berichte werden nicht aufgehoben, die ältesten
+/// fliegen raus. Eine Absturzschleife darf die Platte nicht füllen.
+const kMaxStoredCrashes = 20;
 
-/// Stacktraces werden hart gekürzt. Die obersten Frames tragen die Information;
-/// ein vollständiger Trace kann Dutzende Kilobyte haben und würde sowohl die
-/// Prefs als auch das GitHub-Issue sprengen.
-const kMaxStackChars = 4000;
-
-/// Ein festgehaltener Absturz.
-class CrashReport {
-  /// Zeitpunkt in UTC.
-  final DateTime time;
-
-  /// `1.4.9 (Build 17)` — ohne die ist ein Bericht kaum auswertbar.
-  final String appVersion;
-
-  /// Woher der Fehler kam, z. B. `Flutter framework` oder `Async`.
-  final String source;
-  final String error;
-  final String stackTrace;
-
-  const CrashReport({
-    required this.time,
-    required this.appVersion,
-    required this.source,
-    required this.error,
-    required this.stackTrace,
-  });
-
-  Map<String, dynamic> toJson() => {
-        'time': time.toIso8601String(),
-        'appVersion': appVersion,
-        'source': source,
-        'error': error,
-        'stackTrace': stackTrace,
-      };
-
-  static CrashReport? fromJson(Map<String, dynamic> json) {
-    final time = DateTime.tryParse(json['time'] as String? ?? '');
-    if (time == null) return null;
-    return CrashReport(
-      time: time,
-      appVersion: json['appVersion'] as String? ?? 'unbekannt',
-      source: json['source'] as String? ?? 'unbekannt',
-      error: json['error'] as String? ?? '',
-      stackTrace: json['stackTrace'] as String? ?? '',
-    );
-  }
-
-  /// Text für das GitHub-Issue bzw. die Zwischenablage.
-  String toReportText() => '''
-Absturz vom ${time.toLocal()}
-App-Version: $appVersion
-Quelle: $source
-
-$error
-
-$stackTrace''';
-}
-
-/// Kürzt einen Stacktrace auf [kMaxStackChars] und vermerkt das sichtbar,
-/// damit niemand einen abgeschnittenen Trace für vollständig hält.
-String truncateStack(String stack, {int max = kMaxStackChars}) {
-  if (stack.length <= max) return stack;
-  return '${stack.substring(0, max)}\n… (gekürzt)';
-}
-
-/// Serialisiert eine Liste von Berichten und behält nur die [kMaxStoredCrashes]
-/// jüngsten. Rein, damit der Test das Kappen direkt prüfen kann.
+/// Serialisiert eine Liste von Berichten und behält nur die
+/// [kMaxStoredCrashes] jüngsten. Rein, damit der Test das Kappen direkt prüft.
 String encodeCrashReports(List<CrashReport> reports,
     {int max = kMaxStoredCrashes}) {
-  final kept = reports.length <= max
-      ? reports
-      : reports.sublist(reports.length - max);
+  final kept =
+      reports.length <= max ? reports : reports.sublist(reports.length - max);
   return jsonEncode(kept.map((r) => r.toJson()).toList());
 }
 
@@ -128,59 +66,145 @@ List<CrashReport> decodeCrashReports(String? raw) {
   }
 }
 
-/// Schreibt und liest die Berichte in den SharedPreferences.
+/// Schreibt und liest die Berichte als Datei.
 ///
-/// Bewusst SharedPreferences statt einer Datei: Die App bindet das Paket
-/// ohnehin ein, es funktioniert auf allen Zielplattformen inklusive Web, und
-/// der Datenumfang ist durch [kMaxStoredCrashes] und [kMaxStackChars] gedeckelt.
+/// Bewusst eine Datei und keine SharedPreferences: Nur so lässt sich im
+/// Fehler-Handler **synchron** schreiben.
 class CrashStore {
-  final SharedPreferences _prefs;
+  /// Zieldatei. Wird beim Start aufgelöst, damit [recordSync] ohne `await`
+  /// auskommt.
+  final File file;
 
-  CrashStore(this._prefs);
+  CrashStore(this.file);
 
-  List<CrashReport> load() => decodeCrashReports(_prefs.getString(kCrashReportsKey));
-
-  Future<void> record(CrashReport report) async {
-    final reports = [...load(), report];
-    await _prefs.setString(kCrashReportsKey, encodeCrashReports(reports));
+  List<CrashReport> load() {
+    try {
+      if (!file.existsSync()) return const [];
+      return decodeCrashReports(file.readAsStringSync());
+    } catch (e) {
+      appLog.w('Absturzberichte nicht lesbar', error: e);
+      return const [];
+    }
   }
 
-  Future<void> clear() => _prefs.remove(kCrashReportsKey);
+  /// Hängt einen Bericht an — **synchron**, damit er einen sofortigen
+  /// Prozesstod übersteht.
+  void recordSync(CrashReport report) {
+    final reports = [...load(), report];
+    file.writeAsStringSync(encodeCrashReports(reports), flush: true);
+  }
+
+  void clear() {
+    if (file.existsSync()) file.deleteSync();
+  }
 }
 
 /// Global gehalten, weil die Fehler-Handler in main.dart keinen `Ref` haben:
 /// `FlutterError.onError` wird vor `runApp` gesetzt und läuft ausserhalb des
-/// Provider-Baums. Bleibt `null`, solange die Prefs nicht geladen sind — dann
-/// geht der Bericht verloren, was hinnehmbar ist (der reine Startpfad).
+/// Provider-Baums. Bleibt `null` auf Web (kein Dateisystem) und solange der
+/// Pfad nicht aufgelöst ist.
 CrashStore? globalCrashStore;
 
-/// Nimmt einen Absturz entgegen. Fängt eigene Fehler ab: Ein Fehlschlag beim
-/// Festhalten darf den ohnehin schon fehlerhaften Zustand nicht verschlimmern.
-Future<void> recordCrash({
+/// Kontext, den jeder Bericht mitbekommt. Beim Start einmal ermittelt, weil
+/// der Handler dafür keine Zeit hat.
+class CrashContext {
+  final String appVersion;
+  final String device;
+  final String locale;
+
+  const CrashContext({
+    this.appVersion = 'unbekannt',
+    this.device = '',
+    this.locale = '',
+  });
+}
+
+CrashContext globalCrashContext = const CrashContext();
+
+/// Plattform und OS-Version, z. B. `android — Android 16 (API 36)`.
+///
+/// Bewusst ohne `device_info_plus`: `dart:io` liefert Plattform und
+/// OS-Version ohne zusätzliche Abhängigkeit, und die tragen den Großteil der
+/// Aussage. Das **Gerätemodell** fehlt dadurch — es käme erst mit dem Paket,
+/// und dafür ist der Gewinn zu klein.
+String describeDevice() {
+  if (kIsWeb) return 'web';
+  try {
+    return '${Platform.operatingSystem} — ${Platform.operatingSystemVersion}';
+  } catch (_) {
+    // Auf exotischen Zielen kann das werfen; ein fehlendes Feld ist besser
+    // als ein Absturz im Absturzpfad.
+    return '';
+  }
+}
+
+/// Richtet den Absturzspeicher ein. Aus main.dart **vor** den Handlern
+/// aufrufen. Auf Web wirkungslos (kein beschreibbares Dateisystem).
+Future<void> initCrashStore({required CrashContext context}) async {
+  globalCrashContext = context;
+  if (kIsWeb) return;
+  try {
+    final dir = await getApplicationSupportDirectory();
+    await dir.create(recursive: true);
+    globalCrashStore = CrashStore(File(p.join(dir.path, kCrashFileName)));
+  } catch (e, s) {
+    appLog.w('Absturzspeicher nicht verfügbar', error: e, stackTrace: s);
+  }
+}
+
+/// Nimmt einen Absturz entgegen — synchron und ohne `await`.
+///
+/// Fängt eigene Fehler ab: Ein Fehlschlag beim Festhalten darf den ohnehin
+/// schon fehlerhaften Zustand nicht verschlimmern.
+void recordCrash({
   required String source,
   required Object error,
   StackTrace? stackTrace,
-  required String appVersion,
-}) async {
+}) {
   final store = globalCrashStore;
   if (store == null) return;
   try {
-    await store.record(CrashReport(
+    final errorText = error.toString();
+    final stackText = stackTrace?.toString() ?? '';
+    store.recordSync(CrashReport(
       time: DateTime.now().toUtc(),
-      appVersion: appVersion,
+      appVersion: globalCrashContext.appVersion,
+      device: globalCrashContext.device,
+      locale: globalCrashContext.locale,
       source: source,
-      error: error.toString(),
-      stackTrace: truncateStack(stackTrace?.toString() ?? ''),
+      error: errorText,
+      stackTrace: truncateStack(stackText),
+      fingerprint: crashFingerprint(errorText, stackText),
+      // Vorgeschichte aus dem Ring — ein Stacktrace allein ist oft nicht
+      // diagnostizierbar.
+      log: appLogRing.lines,
     ));
   } catch (e) {
     appLog.w('Absturzbericht konnte nicht gespeichert werden', error: e);
   }
 }
 
-/// Die beim Start vorgefundenen Berichte (also die des *vorherigen* Laufs).
-final pendingCrashesProvider =
-    FutureProvider<List<CrashReport>>((ref) async {
+/// Die beim Start vorgefundenen Berichte (also die des *vorherigen* Laufs),
+/// **dedupliziert**: pro Fingerprint bleibt der jüngste stehen.
+///
+/// Ohne das erzeugt eine Absturzschleife zwanzig gleiche Meldungen, und die
+/// Nutzerin sieht „20 Probleme", wo es einer ist.
+final pendingCrashesProvider = FutureProvider<List<CrashReport>>((ref) async {
   final store = globalCrashStore;
   if (store == null) return const [];
-  return store.load();
+  return dedupeCrashes(store.load());
 });
+
+/// Behält je Fingerprint den jüngsten Bericht, Reihenfolge nach Zeit.
+List<CrashReport> dedupeCrashes(List<CrashReport> reports) {
+  final newest = <String, CrashReport>{};
+  for (final report in reports) {
+    final existing = newest[report.fingerprint];
+    if (existing == null || report.time.isAfter(existing.time)) {
+      newest[report.fingerprint] = report;
+    }
+  }
+  final result = newest.values.toList()
+    ..sort((a, b) => a.time.compareTo(b.time));
+  return result;
+}

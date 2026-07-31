@@ -4,6 +4,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fwapp/core/crash/crash_report.dart';
 import 'package:fwapp/core/crash/crash_store.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
@@ -59,13 +60,15 @@ void main() {
         ],
       );
 
-  final crash = CrashReport(
-    time: DateTime.utc(2026, 7, 31, 12),
-    appVersion: '1.4.9 (Build 17)',
-    source: 'Async',
-    error: 'StateError: kaputt',
-    stackTrace: '#0 irgendwo (paket:fwapp/datei.dart:1:1)',
-  );
+  CrashReport crashWith({String fingerprint = 'abc12345'}) => CrashReport(
+        time: DateTime.utc(2026, 7, 31, 12),
+        appVersion: '1.4.9 (Build 17)',
+        source: 'Async',
+        error: 'StateError: kaputt',
+        stackTrace: '#0 irgendwo (package:fwapp/datei.dart:1:1)',
+        fingerprint: fingerprint,
+      );
+  final crash = crashWith();
 
   testWidgets('Ohne Update und ohne Login: keine Banner', (tester) async {
     await tester.pumpWidget(app());
@@ -155,8 +158,12 @@ void main() {
     expect(find.text('Die App hatte zuletzt ein Problem'), findsOneWidget);
   });
 
-  testWidgets('Mehrere Abstürze werden gezählt', (tester) async {
-    await tester.pumpWidget(app(crashes: [crash, crash, crash]));
+  testWidgets('Mehrere verschiedene Abstürze werden gezählt', (tester) async {
+    await tester.pumpWidget(app(crashes: [
+      crashWith(fingerprint: 'aa'),
+      crashWith(fingerprint: 'bb'),
+      crashWith(fingerprint: 'cc'),
+    ]));
     await tester.pumpAndSettle();
 
     expect(find.text('Die App hatte zuletzt 3 Probleme'), findsOneWidget);
@@ -172,8 +179,9 @@ void main() {
     expect(find.text('Problem melden'), findsOneWidget);
     expect(find.textContaining('1.4.9 (Build 17)'), findsOneWidget);
     expect(find.textContaining('StateError: kaputt'), findsOneWidget);
-    // Datenschutz-Zusage im Dialogtext.
-    expect(find.textContaining('keine Gerätedaten'), findsOneWidget);
+    // Die Datenschutz-Zusage muss zum tatsächlichen Inhalt passen: Seit dem
+    // Kontextfeld stehen Android-Version und Sprache im Bericht.
+    expect(find.textContaining('keine Namen, Zugangsdaten'), findsOneWidget);
   });
 
   testWidgets('Ohne Login ist "Melden" gesperrt, "Kopieren" nicht',

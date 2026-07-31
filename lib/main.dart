@@ -8,6 +8,8 @@ import 'dart:ui' show PlatformDispatcher;
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fwapp/core/app_version.dart';
+import 'package:fwapp/core/crash/crash_store.dart';
 import 'package:fwapp/core/database/database_providers.dart';
 import 'package:fwapp/core/database/library_seeder.dart';
 import 'package:fwapp/core/router/app_router.dart';
@@ -17,21 +19,51 @@ import 'package:fwapp/core/theme/app_theme.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
 import 'package:fwapp/core/logging/app_logger.dart';
 import 'package:fwapp/features/settings/presentation/providers/settings_providers.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Absturzberichte auf dem Gerät festhalten (Issue #34). Muss vor den
+  // Handlern stehen, damit ein Fehler in der Startsequenz schon mitgenommen
+  // wird. Schlägt das fehl, laufen die Handler wie bisher rein über appLog.
+  var appVersion = 'unbekannt';
+  try {
+    final info = await PackageInfo.fromPlatform();
+    appVersion = '${info.version} (Build ${info.buildNumber})';
+    // Ohne Build-Nummer: Das Mindestversions-Gate vergleicht reines
+    // MAJOR.MINOR.PATCH (Issue #35).
+    currentAppVersion = info.version;
+    globalCrashStore = CrashStore(await SharedPreferences.getInstance());
+  } catch (e, s) {
+    appLog.w('Absturzspeicher nicht verfügbar', error: e, stackTrace: s);
+  }
+
   // Central error reporting: uncaught framework and async errors end up in
   // one place instead of dying silently in release builds.
   FlutterError.onError = (details) {
     appLog.e('Flutter framework error',
         error: details.exception, stackTrace: details.stack);
+    // Nicht awaiten: onError ist synchron, und ein blockierender Prefs-Write
+    // im Fehlerpfad würde die Fehlerbehandlung selbst zur Fehlerquelle machen.
+    unawaited(recordCrash(
+      source: 'Flutter framework',
+      error: details.exception,
+      stackTrace: details.stack,
+      appVersion: appVersion,
+    ));
     FlutterError.presentError(details);
   };
   PlatformDispatcher.instance.onError = (error, stack) {
     appLog.e('Uncaught async error', error: error, stackTrace: stack);
+    unawaited(recordCrash(
+      source: 'Async',
+      error: error,
+      stackTrace: stack,
+      appVersion: appVersion,
+    ));
     return true;
   };
 

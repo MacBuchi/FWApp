@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
+import 'package:fwapp/core/sync/sync_service.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_item.dart';
 import 'package:fwapp/features/equipment/presentation/providers/equipment_providers.dart';
 import 'package:fwapp/features/import/data/equipment_matcher.dart';
@@ -762,6 +763,19 @@ class _ResultView extends ConsumerWidget {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                       content: Text('Version $version veröffentlicht.')));
+                }
+              } on OutdatedClientException {
+                // Der Import selbst ist durch — nur das Hochladen ist
+                // gesperrt (Issue #35). Die Daten liegen lokal vor.
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                    duration: Duration(seconds: 8),
+                    content: Text(
+                      'Diese App-Version ist zu alt zum Veröffentlichen. Der '
+                      'Import ist lokal gespeichert — bitte die App '
+                      'aktualisieren und dann veröffentlichen.',
+                    ),
+                  ));
                 }
               } catch (e) {
                 if (context.mounted) {

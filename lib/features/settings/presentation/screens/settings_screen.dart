@@ -10,6 +10,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:fwapp/core/sync/auth_utils.dart';
 import 'package:fwapp/core/sync/image_precache.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
+import 'package:fwapp/core/sync/sync_service.dart';
 import 'package:fwapp/features/settings/presentation/providers/settings_providers.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'
     show AuthException, UserAttributes;
@@ -500,6 +501,19 @@ class _ConnectionSection extends ConsumerWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text('Version $version veröffentlicht.')));
+      }
+    } on OutdatedClientException {
+      // Nur das Veröffentlichen ist gesperrt — die App bleibt lokal nutzbar
+      // (Issue #35). Deshalb ein Hinweis, keine Blockade.
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          duration: Duration(seconds: 8),
+          content: Text(
+            'Diese App-Version ist zu alt zum Veröffentlichen. Bitte zuerst '
+            'die App aktualisieren — deine lokalen Daten bleiben erhalten '
+            'und du kannst weiterarbeiten.',
+          ),
+        ));
       }
     } catch (e) {
       if (context.mounted) {

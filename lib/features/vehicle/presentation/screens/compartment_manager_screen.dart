@@ -24,7 +24,7 @@ class CompartmentManagerScreen extends ConsumerWidget {
         appBar: AppBar(
           title: vehicleAsync.when(
             loading: () => const Text('Fächer'),
-            error: (_, __) => const Text('Fächer'),
+            error: (_, _) => const Text('Fächer'),
             data: (v) => Text('Fächer – ${v?.name ?? ''}'),
           ),
           actions: [
@@ -77,7 +77,7 @@ class CompartmentManagerScreen extends ConsumerWidget {
           return ReorderableListView.builder(
             padding: const EdgeInsets.all(12),
             itemCount: compartments.length,
-            onReorder: (oldIndex, newIndex) =>
+            onReorderItem: (oldIndex, newIndex) =>
                 _reorder(ref, compartments, oldIndex, newIndex),
             itemBuilder: (context, index) {
               final c = compartments[index];
@@ -203,7 +203,8 @@ class CompartmentManagerScreen extends ConsumerWidget {
 
   Future<void> _reorder(WidgetRef ref, List<Compartment> compartments,
       int oldIndex, int newIndex) async {
-    if (newIndex > oldIndex) newIndex--;
+    // Kein `newIndex--` mehr: onReorderItem (ab Flutter 3.41) rechnet die
+    // Verkuerzung durch das entnommene Element bereits selbst heraus.
     final repo = ref.read(compartmentRepositoryProvider);
     final list = [...compartments];
     final item = list.removeAt(oldIndex);

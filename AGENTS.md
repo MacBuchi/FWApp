@@ -50,7 +50,7 @@ Bundle-ID: **`com.feuerwehr.fwapp`**
 
 ```text
 Flutter SDK: /Volumes/MacStore/Programming/Flutter/SDK/flutter   (PATH exportieren!)
-Flutter-Version: 3.41.2  — identisch in ci.yml und release.yml gepinnt
+Flutter-Version: 3.44.8  — identisch in ci.yml und release.yml gepinnt
 Java 17 für Android-Builds (neuere JDKs kann das Flutter-Gradle-Plugin nicht)
 ```
 
@@ -62,7 +62,7 @@ flutter pub get
 flutter analyze
 flutter test                                                # Unit + Widget
 flutter test --coverage                                     # für das Gate
-dart run build_runner build --delete-conflicting-outputs    # Pflicht, siehe unten
+dart run build_runner build                                 # Pflicht, siehe unten
 flutter test integration_test -d <gerät>                    # Geräte-Smoke-Test
 ```
 
@@ -102,8 +102,7 @@ flutter test integration_test -d <gerät>                    # Geräte-Smoke-Tes
   Issue-Referenz.
 
 **Codegen ist Pflicht vor jedem Commit:** Nach Änderungen an `@riverpod`-,
-`@freezed`- oder Drift-annotierten Dateien `dart run build_runner build
---delete-conflicting-outputs` laufen lassen und die `.g.dart`/`.freezed.dart`
+`@freezed`- oder Drift-annotierten Dateien `dart run build_runner build` laufen lassen und die `.g.dart`/`.freezed.dart`
 mitcommitten — auch bei reinen Methodenbody-Änderungen in `@riverpod`-Dateien
 (der Hash ändert sich). Die CI prüft das per `git diff --exit-code`.
 
@@ -288,6 +287,24 @@ ein Abbruch keine Duplikate erzeugt.
   `Ref` – Helfern den Client als Parameter geben statt `Ref`.
 - ⚠️ **Drift `replace()`** wirft bei partiellen Companions → `patchEquipment` /
   `write()` nutzen.
+- ⚠️ **`drift` und `drift_dev` sind exakt gepinnt und gehören zusammen.**
+  `drift_dev` hängt bei 2.34.0 fest (ab 2.34.4 verlangt es `analyzer ^13`, den
+  `riverpod_generator`/`freezed` hier nicht mitgehen), und `drift` 2.34.1+
+  ändert die `drift3_preview`-API, die `drift_dev` 2.34.0 benutzt. Das schlägt
+  **nicht** in `flutter analyze` auf, sondern erst als Compile-Fehler beim
+  Laden von `test/core/database/migration_test.dart`. Nur gemeinsam anheben.
+- ⚠️ **`sqlite3_flutter_libs` ist entfernt, nicht vergessen worden.** Ab
+  `sqlite3` 3.x kommen die nativen Libs über Build-Hooks aus `sqlite3` selbst;
+  `sqlite3_flutter_libs 0.6.0+eol` ist eine leere Hülle. Wer den EOL-Bump
+  blind übernimmt, verliert `libsqlite3.so` im APK — und merkt es erst zur
+  Laufzeit auf dem Gerät, nicht im Build. Gegenprobe:
+  `unzip -l build/app/outputs/flutter-apk/app-*.apk | grep libsqlite3`.
+- ⚠️ **`file_picker` ab 11:** `FilePicker.platform.pickFiles(...)` gibt es
+  nicht mehr, die Methoden sind jetzt statisch → `FilePicker.pickFiles(...)`.
+- ⚠️ **`ReorderableListView.onReorder` ist deprecated** → `onReorderItem`. Das
+  ist kein reines Umbenennen: `onReorderItem` rechnet das `newIndex--` für das
+  entnommene Element bereits selbst heraus. Wer die eigene Korrekturzeile
+  stehen lässt, verschiebt still um eine Position zu weit.
 - ⚠️ **`rootBundle`-Loads in `FutureBuilder`** hängen in Widget-Tests (fake async).
 - ⚠️ **AlertDialogs mit 2+ Feldern** brauchen `SingleChildScrollView` im
   `content` – sonst überlappen auf kleinen Screens Buttons und zweites Feld.

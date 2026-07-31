@@ -267,7 +267,7 @@ class _ServerHealthTile extends ConsumerWidget {
             child: CircularProgressIndicator(strokeWidth: 2.5)),
         title: Text('Prüfe Server…'),
       ),
-      error: (_, __) => _statusTile(ref, reachable: false),
+      error: (_, _) => _statusTile(ref, reachable: false),
       data: (reachable) => _statusTile(ref, reachable: reachable),
     );
   }

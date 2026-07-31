@@ -276,7 +276,7 @@ abstract class _$VehicleFormNotifier extends $Notifier<VehicleFormState> {
   VehicleFormState build();
   @$mustCallSuper
   @override
-  void runBuild() {
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<VehicleFormState, VehicleFormState>;
     final element =
         ref.element
@@ -286,6 +286,6 @@ abstract class _$VehicleFormNotifier extends $Notifier<VehicleFormState> {
               Object?,
               Object?
             >;
-    element.handleCreate(ref, build);
+    return element.handleCreate(ref, build);
   }
 }

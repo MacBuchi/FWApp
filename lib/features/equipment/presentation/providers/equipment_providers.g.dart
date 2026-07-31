@@ -364,7 +364,7 @@ abstract class _$EquipmentFilterNotifier extends $Notifier<EquipmentFilter> {
   EquipmentFilter build();
   @$mustCallSuper
   @override
-  void runBuild() {
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<EquipmentFilter, EquipmentFilter>;
     final element =
         ref.element
@@ -374,7 +374,7 @@ abstract class _$EquipmentFilterNotifier extends $Notifier<EquipmentFilter> {
               Object?,
               Object?
             >;
-    element.handleCreate(ref, build);
+    return element.handleCreate(ref, build);
   }
 }
 

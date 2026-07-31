@@ -150,7 +150,7 @@ class _FileStep extends ConsumerWidget {
           onPressed: state.busy
               ? null
               : () async {
-                  final picked = await FilePicker.platform.pickFiles(
+                  final picked = await FilePicker.pickFiles(
                     type: FileType.custom,
                     allowedExtensions: ['xlsx', 'xls', 'csv', 'txt'],
                     withData: true,

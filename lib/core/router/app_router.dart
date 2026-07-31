@@ -61,8 +61,8 @@ final routerProvider = Provider<GoRouter>((ref) {
   // Redirects neu bewerten, sobald sich canEdit/isAdmin ändern.
   final refresh = ValueNotifier(0);
   ref.onDispose(refresh.dispose);
-  ref.listen(canEditProvider, (_, __) => refresh.value++);
-  ref.listen(isAdminProvider, (_, __) => refresh.value++);
+  ref.listen(canEditProvider, (_, _) => refresh.value++);
+  ref.listen(isAdminProvider, (_, _) => refresh.value++);
 
   return GoRouter(
     initialLocation: '/',
@@ -84,15 +84,15 @@ final _routes = [
       routes: [
         GoRoute(
           path: '/',
-          builder: (_, __) => const HomeScreen(),
+          builder: (_, _) => const HomeScreen(),
         ),
         GoRoute(
           path: '/vehicles',
-          builder: (_, __) => const VehicleListScreen(),
+          builder: (_, _) => const VehicleListScreen(),
           routes: [
             GoRoute(
               path: 'new',
-              builder: (_, __) => const VehicleFormScreen(),
+              builder: (_, _) => const VehicleFormScreen(),
             ),
             GoRoute(
               path: ':id',
@@ -117,11 +117,11 @@ final _routes = [
         ),
         GoRoute(
           path: '/equipment',
-          builder: (_, __) => const EquipmentListScreen(),
+          builder: (_, _) => const EquipmentListScreen(),
           routes: [
             GoRoute(
               path: 'new',
-              builder: (_, __) => const EquipmentFormScreen(),
+              builder: (_, _) => const EquipmentFormScreen(),
             ),
             GoRoute(
               path: ':id',
@@ -141,59 +141,59 @@ final _routes = [
         ),
         GoRoute(
           path: '/game',
-          builder: (_, __) => const GameMenuScreen(),
+          builder: (_, _) => const GameMenuScreen(),
           routes: [
             GoRoute(
               path: 'compartment-quiz',
-              builder: (_, __) => const CompartmentQuizScreen(),
+              builder: (_, _) => const CompartmentQuizScreen(),
             ),
             GoRoute(
               path: 'cutaway-quiz',
-              builder: (_, __) => const CutawayQuizScreen(),
+              builder: (_, _) => const CutawayQuizScreen(),
             ),
             GoRoute(
               path: 'flashcards',
-              builder: (_, __) => const FlashcardScreen(),
+              builder: (_, _) => const FlashcardScreen(),
             ),
             GoRoute(
               path: 'drag-drop',
-              builder: (_, __) => const DragDropScreen(),
+              builder: (_, _) => const DragDropScreen(),
             ),
             GoRoute(
               path: 'image-quiz',
-              builder: (_, __) => const ImageRecognitionQuizScreen(),
+              builder: (_, _) => const ImageRecognitionQuizScreen(),
             ),
             GoRoute(
               path: 'deployment',
-              builder: (_, __) => const DeploymentModeScreen(),
+              builder: (_, _) => const DeploymentModeScreen(),
             ),
           ],
         ),
         GoRoute(
           path: '/inspections',
-          builder: (_, __) => const InspectionDashboardScreen(),
+          builder: (_, _) => const InspectionDashboardScreen(),
         ),
         GoRoute(
           path: '/user-management',
-          builder: (_, __) => const UserManagementScreen(),
+          builder: (_, _) => const UserManagementScreen(),
         ),
         GoRoute(
           path: '/operation',
-          builder: (_, __) => const OperationSetupScreen(),
+          builder: (_, _) => const OperationSetupScreen(),
           routes: [
             GoRoute(
               path: 'run',
-              builder: (_, __) => const OperationRunScreen(),
+              builder: (_, _) => const OperationRunScreen(),
             ),
             GoRoute(
               path: 'summary',
-              builder: (_, __) => const OperationSummaryScreen(),
+              builder: (_, _) => const OperationSummaryScreen(),
             ),
           ],
         ),
         GoRoute(
           path: '/inventory',
-          builder: (_, __) => const InventorySetupScreen(),
+          builder: (_, _) => const InventorySetupScreen(),
           routes: [
             GoRoute(
               path: 'run/:id',
@@ -209,19 +209,19 @@ final _routes = [
         ),
         GoRoute(
           path: '/import',
-          builder: (_, __) => const ImportWizardScreen(),
+          builder: (_, _) => const ImportWizardScreen(),
         ),
         GoRoute(
           path: '/more',
-          builder: (_, __) => const MoreScreen(),
+          builder: (_, _) => const MoreScreen(),
         ),
         GoRoute(
           path: '/image-library',
-          builder: (_, __) => const ImageLibraryScreen(),
+          builder: (_, _) => const ImageLibraryScreen(),
         ),
         GoRoute(
           path: '/settings',
-          builder: (_, __) => const SettingsScreen(),
+          builder: (_, _) => const SettingsScreen(),
         ),
       ],
     ),

@@ -2,7 +2,7 @@ name: fwapp
 description: Feuerwehr-Lernapp – Fahrzeuge, Geräte, Beladepläne und Trainings-Spielmodi.
 publish_to: 'none'
 
-version: 1.4.7+15
+version: 1.4.8+16
 
 environment:
   sdk: ^3.7.0
@@ -18,20 +18,31 @@ dependencies:
   riverpod_annotation: ^4.0.0
 
   # Local database
-  drift: ^2.21.0
-  sqlite3_flutter_libs: ^0.5.29
+  #
+  # EXAKT gepinnt, zusammen mit drift_dev unten. drift_dev haengt bei 2.34.0
+  # fest (ab 2.34.4 verlangt es analyzer ^13, den riverpod_generator/freezed
+  # hier nicht mitgehen), und drift 2.34.1+ aendert die drift3_preview-API,
+  # die drift_dev 2.34.0 benutzt: `GeneratedDatabase.allSchemaEntities` faellt
+  # weg, `schema` kommt dazu. Folge waere kein Analyse-Fehler, sondern ein
+  # Compile-Fehler beim Laden von test/core/database/migration_test.dart.
+  # Beide zusammen anheben, sobald die Codegen-Kette auf analyzer 13 kann.
+  drift: 2.34.0
+  # sqlite3 3.x liefert die nativen SQLite-Libs selbst ueber Build-Hooks.
+  # sqlite3_flutter_libs ist damit hinfaellig (0.6.0+eol ist eine leere
+  # Huelle) und wurde bewusst entfernt, nicht hochgezogen.
+  sqlite3: ^3.5.0
   path_provider: ^2.1.5
   path: ^1.9.1
 
   # Navigation
-  go_router: ^14.6.3
+  go_router: ^17.3.0
 
   # Domain models
   freezed_annotation: ^3.0.0
   json_annotation: ^4.9.0
 
   # File handling / images
-  file_picker: ^8.1.7
+  file_picker: ^11.0.3
   image_picker: ^1.1.2
   cached_network_image: ^3.4.1
   flutter_cache_manager: ^3.4.1
@@ -54,6 +65,9 @@ dependencies:
   ota_update: ^7.0.0
   uuid: ^4.5.1
   shared_preferences: ^2.3.5
+  # Bleibt auf 9.x: 10.x verlangt win32 ^6, file_picker liefert win32 ^6 erst
+  # ab der 12.0.0-Beta. Windows ist kein Target, der Konflikt ist also rein
+  # rechnerisch — trotzdem bleiben wir lieber auf zwei stabilen Versionen.
   package_info_plus: ^9.0.1
   url_launcher: ^6.3.1
   csv: ^8.0.0
@@ -68,11 +82,17 @@ dev_dependencies:
   # Nur für den Override-Typ im Test-Harness (riverpod/misc.dart).
   riverpod: ^3.0.0
   build_runner: ^2.4.14
-  drift_dev: ^2.21.0
+  # Exakt gepinnt — siehe die Begruendung bei `drift` oben. Nur zusammen mit
+  # der drift-Laufzeitversion anheben, sonst bricht der Migrationstest.
+  drift_dev: 2.34.0
   riverpod_generator: ^4.0.0
+  # Loest hier bewusst auf 3.2.6-dev.1 auf: Die neueste stabile freezed-Version
+  # (3.2.5) deckelt analyzer <11, riverpod_generator 4.0.4 verlangt aber
+  # analyzer ^12. Es gibt keine stabile Kombination. Reiner Codegen, landet
+  # nicht im Build-Artefakt. Sobald 3.2.6 stabil ist, zieht `pub upgrade` nach.
   freezed: ^3.0.0
   json_serializable: ^6.8.0
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.3
 
 # App-Icon (Quelle: assets/branding/*.svg, gerendert mit rsvg-convert).

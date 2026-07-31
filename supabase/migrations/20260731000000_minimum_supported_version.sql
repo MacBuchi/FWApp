@@ -161,8 +161,19 @@ begin
 end;
 $$;
 
--- Ausführungsrechte wie zuvor: Die Funktion prüft die Rolle selbst.
+-- ── 4) Rechte ────────────────────────────────────────────────────────────
+
+-- WICHTIG: `create function` vergibt EXECUTE per Default an PUBLIC. Die
+-- Init-Migration hatte das für publish_snapshot bewusst wieder entzogen
+-- (20260713000000, Zeile 209) — durch das Drop/Recreate oben wäre der
+-- Default sonst still zurück. Die Funktion prüft zwar selbst `is_editor()`,
+-- ein anonymer Aufruf käme also nicht durch; das hier ist die zweite Schicht.
+revoke execute on function public.publish_snapshot(bigint, jsonb, text)
+  from public, anon;
 grant execute on function public.publish_snapshot(bigint, jsonb, text)
   to authenticated;
+
+revoke execute on function public.compare_app_versions(text, text)
+  from public, anon;
 grant execute on function public.compare_app_versions(text, text)
   to authenticated;

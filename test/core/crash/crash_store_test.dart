@@ -1,154 +1,258 @@
-/// crash_store_test.dart – Lokaler Absturzspeicher (Issue #34).
+/// crash_store_test.dart – Lokaler Absturzspeicher (Issue #34) nach dem
+/// Bauplan „Route A" der Observability-Guideline.
 library;
-import 'package:flutter_test/flutter_test.dart';
-import 'package:fwapp/core/crash/crash_store.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+import 'dart:io';
 
-CrashReport report(int n, {String stack = 'stack'}) => CrashReport(
-      time: DateTime.utc(2026, 7, 31, 12, n),
-      appVersion: '1.4.9 (Build 17)',
+import 'package:flutter_test/flutter_test.dart';
+import 'package:fwapp/core/crash/crash_report.dart';
+import 'package:fwapp/core/crash/crash_store.dart';
+import 'package:fwapp/core/logging/app_logger.dart';
+
+CrashReport report(
+  int n, {
+  String stack = 'stack',
+  String? fingerprint,
+  DateTime? time,
+}) =>
+    CrashReport(
+      time: time ?? DateTime.utc(2026, 7, 31, 12, n),
+      appVersion: '1.5.2 (Build 20)',
       source: 'Async',
       error: 'Fehler $n',
       stackTrace: stack,
+      fingerprint: fingerprint ?? 'fp$n',
     );
 
 void main() {
+  late Directory tempDir;
+  late CrashStore store;
+
+  setUp(() {
+    tempDir = Directory.systemTemp.createTempSync('fwapp_crash_test');
+    store = CrashStore(File('${tempDir.path}/crash_reports.json'));
+    globalCrashStore = store;
+    globalCrashContext = const CrashContext(appVersion: '1.5.2 (Build 20)');
+    appLogRing.clear();
+  });
+
+  tearDown(() {
+    globalCrashStore = null;
+    tempDir.deleteSync(recursive: true);
+  });
+
   group('Serialisierung', () {
     test('überlebt eine Runde encode/decode verlustfrei', () {
-      final decoded = decodeCrashReports(encodeCrashReports([report(1)]));
+      final decoded = decodeCrashReports(encodeCrashReports([
+        CrashReport(
+          time: DateTime.utc(2026, 7, 31, 12),
+          appVersion: '1.5.2 (Build 20)',
+          source: 'Async',
+          error: 'Fehler',
+          stackTrace: 'stack',
+          fingerprint: 'abc12345',
+          device: 'android — Android 16',
+          locale: 'de_DE',
+          log: const ['erste Zeile', 'zweite Zeile'],
+        ),
+      ]));
       expect(decoded, hasLength(1));
-      expect(decoded.single.error, 'Fehler 1');
-      expect(decoded.single.appVersion, '1.4.9 (Build 17)');
-      expect(decoded.single.source, 'Async');
-      expect(decoded.single.time, DateTime.utc(2026, 7, 31, 12, 1));
+      final r = decoded.single;
+      expect(r.error, 'Fehler');
+      expect(r.fingerprint, 'abc12345');
+      expect(r.device, 'android — Android 16');
+      expect(r.locale, 'de_DE');
+      expect(r.log, ['erste Zeile', 'zweite Zeile']);
     });
 
     test('behält nur die jüngsten Berichte', () {
-      final many = [for (var i = 1; i <= 10; i++) report(i)];
+      final many = [for (var i = 1; i <= 30; i++) report(i)];
       final decoded = decodeCrashReports(encodeCrashReports(many));
       expect(decoded, hasLength(kMaxStoredCrashes));
-      // Die ältesten fliegen raus, die jüngsten bleiben.
-      expect(decoded.first.error, 'Fehler 8');
-      expect(decoded.last.error, 'Fehler 10');
+      expect(decoded.last.error, 'Fehler 30');
     });
 
     test('verwirft kaputte Daten, statt zu werfen', () {
-      // Ein unlesbarer Eintrag darf den App-Start nicht blockieren.
       expect(decodeCrashReports('kein json'), isEmpty);
       expect(decodeCrashReports('{"nicht":"eine liste"}'), isEmpty);
       expect(decodeCrashReports(null), isEmpty);
       expect(decodeCrashReports(''), isEmpty);
     });
 
-    test('überspringt einzelne Einträge ohne brauchbaren Zeitstempel', () {
-      const raw = '[{"time":"unsinn","error":"a"},'
-          '{"time":"2026-07-31T12:00:00.000Z","error":"b"}]';
+    test('liest Berichte ohne Formatversion (v1.5.0/1.5.1) weiter', () {
+      // Legacy-Toleranz: Diese Berichte sind der Grund, warum jemand meldet —
+      // sie wegzuwerfen wäre der schlechteste Zeitpunkt für Strenge.
+      const legacy = '[{"time":"2026-07-31T12:00:00.000Z",'
+          '"appVersion":"1.5.0 (Build 18)","source":"Async",'
+          '"error":"Bad state: kaputt",'
+          '"stackTrace":"#0 x (package:fwapp/a.dart:1:1)"}]';
+      final decoded = decodeCrashReports(legacy);
+      expect(decoded, hasLength(1));
+      expect(decoded.single.appVersion, '1.5.0 (Build 18)');
+      // Fingerprint wird nachträglich gebildet, damit auch alte Berichte an
+      // der Dedupe teilnehmen.
+      expect(decoded.single.fingerprint, isNotEmpty);
+    });
+
+    test('überspringt Einträge aus einem neueren Format', () {
+      final raw = jsonEncode([
+        {'v': kCrashFormatVersion + 1, 'time': '2026-07-31T12:00:00.000Z'},
+        {
+          'v': kCrashFormatVersion,
+          'time': '2026-07-31T12:01:00.000Z',
+          'error': 'lesbar',
+        },
+      ]);
       final decoded = decodeCrashReports(raw);
       expect(decoded, hasLength(1));
-      expect(decoded.single.error, 'b');
+      expect(decoded.single.error, 'lesbar');
+    });
+
+    test('überspringt Einträge ohne brauchbaren Zeitstempel', () {
+      const raw = '[{"time":"unsinn","error":"a"},'
+          '{"time":"2026-07-31T12:00:00.000Z","error":"b"}]';
+      expect(decodeCrashReports(raw).single.error, 'b');
     });
   });
 
-  group('truncateStack', () {
-    test('lässt kurze Stacktraces unangetastet', () {
-      expect(truncateStack('kurz'), 'kurz');
-    });
-
-    test('kürzt lange und macht das sichtbar', () {
-      final long = 'x' * 100;
-      final cut = truncateStack(long, max: 10);
-      expect(cut, startsWith('x' * 10));
-      expect(cut, contains('gekürzt'));
-      expect(cut.length, lessThan(long.length));
-    });
-  });
-
-  group('CrashStore', () {
-    setUp(() => SharedPreferences.setMockInitialValues({}));
-
-    test('legt Berichte ab und liest sie wieder', () async {
-      final store = CrashStore(await SharedPreferences.getInstance());
+  group('CrashStore (Datei)', () {
+    test('legt Berichte ab und liest sie wieder', () {
       expect(store.load(), isEmpty);
-
-      await store.record(report(1));
-      await store.record(report(2));
-
-      final loaded = store.load();
-      expect(loaded, hasLength(2));
-      expect(loaded.map((r) => r.error), ['Fehler 1', 'Fehler 2']);
+      store.recordSync(report(1));
+      store.recordSync(report(2));
+      expect(store.load().map((r) => r.error), ['Fehler 1', 'Fehler 2']);
     });
 
-    test('kappt auch über mehrere Aufrufe hinweg', () async {
-      final store = CrashStore(await SharedPreferences.getInstance());
-      for (var i = 1; i <= 6; i++) {
-        await store.record(report(i));
+    test('schreibt synchron — die Datei steht sofort nach dem Aufruf', () {
+      // Der Kern der Übung: Ein Bericht muss den sofortigen Prozesstod
+      // überstehen. Ein asynchroner Write wäre hier noch nicht auf Platte.
+      store.recordSync(report(1));
+      expect(store.file.existsSync(), isTrue);
+      expect(store.file.readAsStringSync(), contains('Fehler 1'));
+    });
+
+    test('kappt auch über mehrere Aufrufe hinweg', () {
+      for (var i = 1; i <= 25; i++) {
+        store.recordSync(report(i));
       }
       expect(store.load(), hasLength(kMaxStoredCrashes));
-      expect(store.load().last.error, 'Fehler 6');
+      expect(store.load().last.error, 'Fehler 25');
     });
 
-    test('clear() räumt vollständig ab', () async {
-      final store = CrashStore(await SharedPreferences.getInstance());
-      await store.record(report(1));
-      await store.clear();
+    test('clear() räumt vollständig ab', () {
+      store.recordSync(report(1));
+      store.clear();
       expect(store.load(), isEmpty);
+      expect(store.file.existsSync(), isFalse);
+    });
+
+    test('liefert bei fehlender Datei eine leere Liste', () {
+      expect(
+          CrashStore(File('${tempDir.path}/gibtsnicht.json')).load(), isEmpty);
     });
   });
 
   group('recordCrash', () {
-    setUp(() => SharedPreferences.setMockInitialValues({}));
-    tearDown(() => globalCrashStore = null);
+    test('schreibt über den globalen Store, mit Kontext und Log', () {
+      appLogRing.add('etwas vorher passiert');
+      globalCrashContext = const CrashContext(
+        appVersion: '1.5.2 (Build 20)',
+        device: 'android — Android 16',
+        locale: 'de_DE',
+      );
 
-    test('schreibt über den globalen Store', () async {
-      globalCrashStore = CrashStore(await SharedPreferences.getInstance());
-      await recordCrash(
+      recordCrash(
         source: 'Flutter framework',
         error: StateError('kaputt'),
-        stackTrace: StackTrace.fromString('frame 1'),
-        appVersion: '1.4.9 (Build 17)',
+        stackTrace: StackTrace.fromString('#0 f (package:fwapp/a.dart:3:4)'),
       );
-      final loaded = globalCrashStore!.load();
+
+      final loaded = store.load();
       expect(loaded, hasLength(1));
-      expect(loaded.single.error, contains('kaputt'));
-      expect(loaded.single.source, 'Flutter framework');
-      expect(loaded.single.stackTrace, 'frame 1');
+      final r = loaded.single;
+      expect(r.error, contains('kaputt'));
+      expect(r.source, 'Flutter framework');
+      expect(r.appVersion, '1.5.2 (Build 20)');
+      expect(r.device, 'android — Android 16');
+      expect(r.locale, 'de_DE');
+      expect(r.fingerprint, isNotEmpty);
+      expect(r.log, contains('etwas vorher passiert'));
     });
 
-    test('tut nichts (und wirft nicht), wenn kein Store bereitsteht', () async {
-      // Passiert im echten Start, wenn die Prefs noch nicht geladen sind. Der
-      // Fehlerpfad darf dann keinen zweiten Fehler erzeugen.
+    test('tut nichts (und wirft nicht), wenn kein Store bereitsteht', () {
       globalCrashStore = null;
-      await expectLater(
-        recordCrash(
-          source: 'Async',
-          error: Exception('egal'),
-          appVersion: 'unbekannt',
-        ),
-        completes,
+      expect(
+        () => recordCrash(source: 'Async', error: Exception('egal')),
+        returnsNormally,
       );
     });
 
-    test('kürzt lange Stacktraces beim Ablegen', () async {
-      globalCrashStore = CrashStore(await SharedPreferences.getInstance());
-      await recordCrash(
+    test('kürzt lange Stacktraces beim Ablegen', () {
+      recordCrash(
         source: 'Async',
         error: Exception('x'),
         stackTrace: StackTrace.fromString('y' * (kMaxStackChars + 500)),
-        appVersion: '1.4.9',
       );
-      final stored = globalCrashStore!.load().single.stackTrace;
+      final stored = store.load().single.stackTrace;
       expect(stored.length, lessThan(kMaxStackChars + 100));
       expect(stored, contains('gekürzt'));
     });
   });
 
+  group('dedupeCrashes', () {
+    test('behält je Fingerprint den jüngsten Bericht', () {
+      // Eine Absturzschleife darf nicht als „20 Probleme" erscheinen.
+      final deduped = dedupeCrashes([
+        report(1, fingerprint: 'aa', time: DateTime.utc(2026, 7, 31, 10)),
+        report(2, fingerprint: 'aa', time: DateTime.utc(2026, 7, 31, 11)),
+        report(3, fingerprint: 'bb', time: DateTime.utc(2026, 7, 31, 12)),
+      ]);
+      expect(deduped, hasLength(2));
+      expect(deduped.map((r) => r.fingerprint), ['aa', 'bb']);
+      expect(deduped.first.error, 'Fehler 2', reason: 'der jüngste bleibt');
+    });
+
+    test('sortiert nach Zeit', () {
+      final deduped = dedupeCrashes([
+        report(1, fingerprint: 'bb', time: DateTime.utc(2026, 7, 31, 12)),
+        report(2, fingerprint: 'aa', time: DateTime.utc(2026, 7, 31, 10)),
+      ]);
+      expect(deduped.map((r) => r.fingerprint), ['aa', 'bb']);
+    });
+
+    test('leere Liste bleibt leer', () {
+      expect(dedupeCrashes(const []), isEmpty);
+    });
+  });
+
   group('toReportText', () {
-    test('enthält Version, Quelle, Fehler und Stacktrace', () {
-      final text = report(1, stack: 'frame A').toReportText();
-      expect(text, contains('1.4.9 (Build 17)'));
+    test('enthält Version, Quelle, Kennung, Fehler und Stacktrace', () {
+      final text = CrashReport(
+        time: DateTime.utc(2026, 7, 31, 12),
+        appVersion: '1.5.2 (Build 20)',
+        source: 'Async',
+        error: 'Bad state: kaputt',
+        stackTrace: '#0 f (package:fwapp/a.dart:3:4)',
+        fingerprint: 'abc12345',
+        device: 'android — Android 16',
+        locale: 'de_DE',
+        log: const ['vorher passiert'],
+      ).toReportText();
+
+      expect(text, contains('1.5.2 (Build 20)'));
       expect(text, contains('Async'));
-      expect(text, contains('Fehler 1'));
-      expect(text, contains('frame A'));
+      expect(text, contains('abc12345'));
+      expect(text, contains('Bad state: kaputt'));
+      expect(text, contains('package:fwapp/a.dart'));
+      expect(text, contains('android — Android 16'));
+      expect(text, contains('vorher passiert'));
+    });
+
+    test('lässt leere Felder weg statt leere Zeilen zu schreiben', () {
+      final text = report(1).toReportText();
+      expect(text, isNot(contains('Gerät:')));
+      expect(text, isNot(contains('Sprache:')));
+      expect(text, isNot(contains('Letzte Log-Zeilen')));
     });
   });
 }

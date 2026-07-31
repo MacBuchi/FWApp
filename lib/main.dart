@@ -29,14 +29,20 @@ Future<void> main() async {
   // Absturzberichte auf dem Gerät festhalten (Issue #34). Muss vor den
   // Handlern stehen, damit ein Fehler in der Startsequenz schon mitgenommen
   // wird. Schlägt das fehl, laufen die Handler wie bisher rein über appLog.
-  var appVersion = 'unbekannt';
   try {
     final info = await PackageInfo.fromPlatform();
-    appVersion = '${info.version} (Build ${info.buildNumber})';
     // Ohne Build-Nummer: Das Mindestversions-Gate vergleicht reines
     // MAJOR.MINOR.PATCH (Issue #35).
     currentAppVersion = info.version;
-    globalCrashStore = CrashStore(await SharedPreferences.getInstance());
+    await initCrashStore(
+      context: CrashContext(
+        appVersion: '${info.version} (Build ${info.buildNumber})',
+        device: describeDevice(),
+        // Kein Nutzername, keine Region über die Locale hinaus — siehe die
+        // PII-Regeln im Kopf von crash_report.dart.
+        locale: PlatformDispatcher.instance.locale.toString(),
+      ),
+    );
   } catch (e, s) {
     appLog.w('Absturzspeicher nicht verfügbar', error: e, stackTrace: s);
   }
@@ -44,26 +50,20 @@ Future<void> main() async {
   // Central error reporting: uncaught framework and async errors end up in
   // one place instead of dying silently in release builds.
   FlutterError.onError = (details) {
-    appLog.e('Flutter framework error',
-        error: details.exception, stackTrace: details.stack);
-    // Nicht awaiten: onError ist synchron, und ein blockierender Prefs-Write
-    // im Fehlerpfad würde die Fehlerbehandlung selbst zur Fehlerquelle machen.
-    unawaited(recordCrash(
+    // Erst sichern, dann loggen: Ein synchroner Schreibvorgang übersteht auch
+    // einen sofortigen Prozesstod, alles danach womöglich nicht mehr.
+    recordCrash(
       source: 'Flutter framework',
       error: details.exception,
       stackTrace: details.stack,
-      appVersion: appVersion,
-    ));
+    );
+    appLog.e('Flutter framework error',
+        error: details.exception, stackTrace: details.stack);
     FlutterError.presentError(details);
   };
   PlatformDispatcher.instance.onError = (error, stack) {
+    recordCrash(source: 'Async', error: error, stackTrace: stack);
     appLog.e('Uncaught async error', error: error, stackTrace: stack);
-    unawaited(recordCrash(
-      source: 'Async',
-      error: error,
-      stackTrace: stack,
-      appVersion: appVersion,
-    ));
     return true;
   };
 

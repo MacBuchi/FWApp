@@ -12,6 +12,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // StateProvider lebt in Riverpod 3 im legacy-Namespace.
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
+import 'package:fwapp/core/crash/crash_report.dart';
 import 'package:fwapp/core/crash/crash_store.dart';
 import 'package:fwapp/core/logging/app_logger.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
@@ -101,12 +102,12 @@ class HomeBanners extends ConsumerWidget {
               context: context,
               builder: (context) => _CrashDialog(crashes: crashes),
             ),
-            onDismiss: () async {
+            onDismiss: () {
               // Wegklicken verwirft die Berichte endgültig — sonst käme das
               // Banner bei jedem Start wieder und würde zur Gewohnheit, die
               // man wegtippt.
               ref.read(crashBannerDismissedProvider.notifier).state = true;
-              await globalCrashStore?.clear();
+              globalCrashStore?.clear();
             },
           ),
         if (showUpdate)
@@ -209,9 +210,14 @@ class _CrashDialogState extends ConsumerState<_CrashDialog> {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
+              // Der Text muss zum Inhalt passen: Seit dem Kontextfeld stehen
+              // Android-Version und Sprache im Bericht. „Keine Gerätedaten"
+              // wäre schlicht falsch — und der Bericht wird öffentlich.
               'Beim letzten Start ist ein Fehler aufgetreten. Wenn du ihn '
-              'meldest, können wir ihn beheben — der Bericht enthält nur '
-              'technische Angaben, keine Gerätedaten.',
+              'meldest, können wir ihn beheben. Der Bericht enthält den '
+              'Fehler, App- und Android-Version, die Spracheinstellung und '
+              'die letzten Protokollzeilen — keine Namen, Zugangsdaten oder '
+              'Inhalte. Du siehst unten genau, was gesendet würde.',
             ),
             const SizedBox(height: 12),
             Container(
@@ -268,7 +274,7 @@ class _CrashDialogState extends ConsumerState<_CrashDialog> {
       );
       // Erst nach erfolgreichem Senden verwerfen — sonst wäre der Bericht bei
       // einem Netzfehler weg.
-      await globalCrashStore?.clear();
+      globalCrashStore?.clear();
       if (!mounted) return;
       ref.read(crashBannerDismissedProvider.notifier).state = true;
       Navigator.pop(context);

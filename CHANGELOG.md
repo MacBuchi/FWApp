@@ -12,6 +12,26 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.5.2] – 2026-07-31
+
+### Behoben
+
+- **Absturzberichte gingen ausgerechnet bei den schlimmsten Abstürzen
+  verloren.** Der Bericht wurde nebenher geschrieben; stürzte die App hart ab,
+  war er weg. Jetzt wird er sofort gesichert, bevor irgendetwas anderes
+  passiert.
+
+### Geändert
+
+- Ein Absturzbericht enthält jetzt auch Android-Version, Spracheinstellung und
+  die letzten Protokollzeilen davor. Ohne diese Vorgeschichte lässt sich ein
+  Fehler oft gar nicht nachvollziehen.
+- Stürzt dieselbe Sache mehrfach ab, erscheint sie nur noch **einmal** statt
+  als lange Liste gleicher Meldungen.
+- Der Hinweis im Melde-Dialog sagt jetzt genau, was im Bericht steht — vorher
+  stand dort „keine Gerätedaten", obwohl inzwischen die Android-Version
+  mitgeschickt wird.
+
 ## [1.5.1] – 2026-07-31
 
 ### Geändert
@@ -178,6 +198,7 @@ Abschnitt „Workflow".
 - Erste Ausgabe: Fahrzeuge, Geräteräume, Beladepläne, Lernspiele und
   Serverabgleich.
 
+[1.5.2]: https://github.com/MacBuchi/FWApp/compare/v1.5.1...v1.5.2
 [1.5.1]: https://github.com/MacBuchi/FWApp/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/MacBuchi/FWApp/compare/v1.4.9...v1.5.0
 [1.4.9]: https://github.com/MacBuchi/FWApp/compare/v1.4.8...v1.4.9

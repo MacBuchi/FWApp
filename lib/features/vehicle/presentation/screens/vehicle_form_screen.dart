@@ -83,6 +83,8 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
               color: Theme.of(context).colorScheme.secondaryContainer,
               margin: EdgeInsets.zero,
               child: ListTile(
+                textColor: Theme.of(context).colorScheme.onSecondaryContainer,
+                iconColor: Theme.of(context).colorScheme.onSecondaryContainer,
                 leading: const Icon(Icons.auto_awesome_motion),
                 title: const Text('Aus Vorlage anlegen'),
                 subtitle: const Text(

@@ -98,6 +98,7 @@ class HomeBanners extends ConsumerWidget {
                 ? 'Die App hatte zuletzt ein Problem'
                 : 'Die App hatte zuletzt ${crashes.length} Probleme',
             color: Theme.of(context).colorScheme.errorContainer,
+            onColor: Theme.of(context).colorScheme.onErrorContainer,
             onTap: () => showDialog<void>(
               context: context,
               builder: (context) => _CrashDialog(crashes: crashes),
@@ -115,6 +116,7 @@ class HomeBanners extends ConsumerWidget {
             emoji: '🔄',
             text: 'Update auf v${updateInfo.latestVersion} verfügbar',
             color: Theme.of(context).colorScheme.primaryContainer,
+            onColor: Theme.of(context).colorScheme.onPrimaryContainer,
             onTap: () => showDialog<void>(
               context: context,
               builder: (context) => _UpdateDialog(info: updateInfo),
@@ -127,6 +129,7 @@ class HomeBanners extends ConsumerWidget {
             emoji: '💡',
             text: 'Wunsch oder Fehler melden',
             color: Theme.of(context).colorScheme.secondaryContainer,
+            onColor: Theme.of(context).colorScheme.onSecondaryContainer,
             onTap: () => showFeedbackDialog(context, ref),
             onDismiss: () => ref
                 .read(feedbackBannerDismissedProvider.notifier)
@@ -143,6 +146,11 @@ class _BannerCard extends StatelessWidget {
   final String emoji;
   final String text;
   final Color color;
+
+  /// Partnerfarbe zu [color] — Fläche und Schrift immer als Paar übergeben,
+  /// die geerbte onSurface passt nur zufällig, solange die Fläche pastellhell
+  /// ist (Issue #58: bei kräftigen Konzeptfarben wurde sie unlesbar).
+  final Color onColor;
   final VoidCallback onTap;
   final VoidCallback onDismiss;
 
@@ -150,6 +158,7 @@ class _BannerCard extends StatelessWidget {
     required this.emoji,
     required this.text,
     required this.color,
+    required this.onColor,
     required this.onTap,
     required this.onDismiss,
   });
@@ -160,11 +169,14 @@ class _BannerCard extends StatelessWidget {
       color: color,
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
+        textColor: onColor,
+        iconColor: onColor,
         leading: Text(emoji, style: const TextStyle(fontSize: 24)),
         title: Text(text,
             style: const TextStyle(fontWeight: FontWeight.w600)),
         trailing: IconButton(
           icon: const Icon(Icons.close, size: 20),
+          color: onColor,
           tooltip: 'Ausblenden',
           onPressed: onDismiss,
         ),

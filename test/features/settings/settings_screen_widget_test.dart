@@ -97,11 +97,22 @@ void main() {
         ],
       );
 
+  /// Scrollt zum Verbinden-Bereich. Nötig, seit die Darstellungs-Sektion um
+  /// die Farbthema-Auswahl gewachsen ist (#58): Was im 600-px-Testfenster
+  /// unter der Kante liegt, baut die ListView gar nicht erst.
+  Future<void> scrollToConnect(WidgetTester tester) => tester.scrollUntilVisible(
+        find.text('Mit Abteilung verbinden'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+
   testWidgets('Server erreichbar: grüner Status vor dem Login',
       (tester) async {
     SharedPreferences.setMockInitialValues({'sync_enabled': true});
     await tester.pumpWidget(readyApp(db, healthy: true));
     await tester.pumpAndSettle();
+
+    await scrollToConnect(tester);
 
     expect(find.text('Server erreichbar'), findsOneWidget);
     expect(find.text('Mit Abteilung verbinden'), findsOneWidget);
@@ -123,6 +134,7 @@ void main() {
     await tester.pumpWidget(readyApp(db, healthy: true));
     await tester.pumpAndSettle();
 
+    await scrollToConnect(tester);
     await tester.tap(find.text('Mit Abteilung verbinden'));
     await tester.pumpAndSettle();
 
@@ -136,6 +148,7 @@ void main() {
     await tester.pumpWidget(readyApp(db, healthy: true));
     await tester.pumpAndSettle();
 
+    await scrollToConnect(tester);
     await tester.tap(find.text('Mit Abteilung verbinden'));
     await tester.pumpAndSettle();
 

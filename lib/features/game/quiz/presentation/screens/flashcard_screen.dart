@@ -1,6 +1,7 @@
 /// flashcard_screen.dart – "Geräte-Wissen": open training questions as
 /// flashcards with self-grading (gewusst / nicht gewusst).
 library;
+
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -44,26 +45,32 @@ class _FlashcardScreenState extends ConsumerState<FlashcardScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text(
-                'Karteikarten mit Trainingsfragen zu den Geräten. '
-                'Beantworte die Frage im Kopf, decke die Antwort auf und '
-                'bewerte dich selbst.',
-                style: TextStyle(fontSize: 16)),
+              'Karteikarten mit Trainingsfragen zu den Geräten. '
+              'Beantworte die Frage im Kopf, decke die Antwort auf und '
+              'bewerte dich selbst.',
+              style: TextStyle(fontSize: 16),
+            ),
             const SizedBox(height: 16),
             vehiclesAsync.when(
               loading: () => const CircularProgressIndicator(),
               error: (e, _) => Text('Fehler: $e'),
-              data: (vehicles) => DropdownButtonFormField<Vehicle?>(
-                initialValue: _selectedVehicle,
-                decoration:
-                    const InputDecoration(labelText: 'Fahrzeug (optional)'),
-                items: [
-                  const DropdownMenuItem(
-                      value: null, child: Text('Alle Geräte')),
-                  ...vehicles.map(
-                      (v) => DropdownMenuItem(value: v, child: Text(v.name))),
-                ],
-                onChanged: (v) => setState(() => _selectedVehicle = v),
-              ),
+              data:
+                  (vehicles) => DropdownButtonFormField<Vehicle?>(
+                    initialValue: _selectedVehicle,
+                    decoration: const InputDecoration(
+                      labelText: 'Fahrzeug (optional)',
+                    ),
+                    items: [
+                      const DropdownMenuItem(
+                        value: null,
+                        child: Text('Alle Geräte'),
+                      ),
+                      ...vehicles.map(
+                        (v) => DropdownMenuItem(value: v, child: Text(v.name)),
+                      ),
+                    ],
+                    onChanged: (v) => setState(() => _selectedVehicle = v),
+                  ),
             ),
             const SizedBox(height: 24),
             FilledButton.icon(
@@ -82,8 +89,9 @@ class _FlashcardScreenState extends ConsumerState<FlashcardScreen> {
 
     List<EquipmentItemData> items;
     if (_selectedVehicle != null) {
-      final assignments =
-          await db.assignmentDao.getByVehicle(_selectedVehicle!.id);
+      final assignments = await db.assignmentDao.getByVehicle(
+        _selectedVehicle!.id,
+      );
       final ids = assignments.map((a) => a.equipmentId).toSet();
       final all = await db.equipmentDao.getAll();
       items = all.where((e) => ids.contains(e.id)).toList();
@@ -96,24 +104,27 @@ class _FlashcardScreenState extends ConsumerState<FlashcardScreen> {
       final questions = jsonToStringList(item.trainingQuestionsJson);
       final typicalUse = jsonToStringList(item.typicalUseJson);
       for (final q in questions) {
-        cards.add(_Flashcard(
-          equipmentId: item.id,
-          equipmentName: item.name,
-          imagePath: item.imagePath,
-          functions: jsonToStringList(item.equipmentFunctionsJson),
-          question: q,
-          description: item.description,
-          typicalUse: typicalUse,
-          technicalData: jsonToMap(item.extraAttributesJson),
-        ));
+        cards.add(
+          _Flashcard(
+            equipmentId: item.id,
+            equipmentName: item.name,
+            imagePath: item.imagePath,
+            functions: jsonToStringList(item.equipmentFunctionsJson),
+            question: q,
+            description: item.description,
+            typicalUse: typicalUse,
+            technicalData: jsonToMap(item.extraAttributesJson),
+          ),
+        );
       }
     }
     cards.shuffle();
 
     if (cards.isEmpty) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Keine Trainingsfragen vorhanden.')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Keine Trainingsfragen vorhanden.')),
+        );
       }
       return;
     }
@@ -129,9 +140,8 @@ class _FlashcardScreenState extends ConsumerState<FlashcardScreen> {
 
   Widget _buildCard() {
     final card = _cards[_currentIndex];
-    final technicalEntries = card.technicalData.entries
-        .where((e) => e.key != 'image_todo')
-        .toList();
+    final technicalEntries =
+        card.technicalData.entries.where((e) => e.key != 'image_todo').toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -149,10 +159,11 @@ class _FlashcardScreenState extends ConsumerState<FlashcardScreen> {
             width: double.infinity,
           ),
           const SizedBox(height: 8),
-          Text(card.equipmentName,
-              style:
-                  const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center),
+          Text(
+            card.equipmentName,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          ),
           const SizedBox(height: 16),
           Card(
             child: Padding(
@@ -160,12 +171,17 @@ class _FlashcardScreenState extends ConsumerState<FlashcardScreen> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.help_outline,
-                      color: Theme.of(context).colorScheme.primary),
+                  Icon(
+                    Icons.help_outline,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
-                      child: Text(card.question,
-                          style: const TextStyle(fontSize: 16))),
+                    child: Text(
+                      card.question,
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -182,26 +198,37 @@ class _FlashcardScreenState extends ConsumerState<FlashcardScreen> {
               color: Theme.of(context).colorScheme.secondaryContainer,
               child: Padding(
                 padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (card.description.isNotEmpty) ...[
-                      Text(card.description),
-                      const SizedBox(height: 8),
+                // Schriftfarbe als Partner der Fläche, nicht geerbt (#58).
+                child: DefaultTextStyle.merge(
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSecondaryContainer,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (card.description.isNotEmpty) ...[
+                        Text(card.description),
+                        const SizedBox(height: 8),
+                      ],
+                      if (card.typicalUse.isNotEmpty) ...[
+                        const Text(
+                          'Typische Verwendung:',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        ...card.typicalUse.map((u) => Text('• $u')),
+                        const SizedBox(height: 8),
+                      ],
+                      if (technicalEntries.isNotEmpty) ...[
+                        const Text(
+                          'Technische Daten:',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        ...technicalEntries.map(
+                          (e) => Text('${e.key}: ${e.value}'),
+                        ),
+                      ],
                     ],
-                    if (card.typicalUse.isNotEmpty) ...[
-                      const Text('Typische Verwendung:',
-                          style: TextStyle(fontWeight: FontWeight.bold)),
-                      ...card.typicalUse.map((u) => Text('• $u')),
-                      const SizedBox(height: 8),
-                    ],
-                    if (technicalEntries.isNotEmpty) ...[
-                      const Text('Technische Daten:',
-                          style: TextStyle(fontWeight: FontWeight.bold)),
-                      ...technicalEntries
-                          .map((e) => Text('${e.key}: ${e.value}')),
-                    ],
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -219,7 +246,8 @@ class _FlashcardScreenState extends ConsumerState<FlashcardScreen> {
                 Expanded(
                   child: FilledButton.icon(
                     style: FilledButton.styleFrom(
-                        backgroundColor: Colors.green.shade700),
+                      backgroundColor: Colors.green.shade700,
+                    ),
                     icon: const Icon(Icons.check),
                     label: const Text('Gewusst'),
                     onPressed: () => _next(known: true),
@@ -250,12 +278,14 @@ class _FlashcardScreenState extends ConsumerState<FlashcardScreen> {
 
   Future<void> _saveResult() async {
     final db = ref.read(appDatabaseProvider);
-    await db.quizDao.insertResult(QuizResultsCompanion.insert(
-      quizType: 'flashcards',
-      score: _known,
-      total: _cards.length,
-      vehicleId: Value(_selectedVehicle?.id),
-    ));
+    await db.quizDao.insertResult(
+      QuizResultsCompanion.insert(
+        quizType: 'flashcards',
+        score: _known,
+        total: _cards.length,
+        vehicleId: Value(_selectedVehicle?.id),
+      ),
+    );
   }
 
   Widget _buildResults() {
@@ -268,28 +298,35 @@ class _FlashcardScreenState extends ConsumerState<FlashcardScreen> {
           children: [
             CircleAvatar(
               radius: 60,
-              backgroundColor: pct >= 80
-                  ? Colors.green
-                  : pct >= 50
+              backgroundColor:
+                  pct >= 80
+                      ? Colors.green
+                      : pct >= 50
                       ? Colors.orange
                       : Colors.red,
-              child: Text('$pct%',
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold)),
+              child: Text(
+                '$pct%',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
             const SizedBox(height: 20),
-            Text('$_known von ${_cards.length} gewusst',
-                style: const TextStyle(fontSize: 20)),
+            Text(
+              '$_known von ${_cards.length} gewusst',
+              style: const TextStyle(fontSize: 20),
+            ),
             const SizedBox(height: 30),
             FilledButton.icon(
               icon: const Icon(Icons.replay),
               label: const Text('Nochmal lernen'),
-              onPressed: () => setState(() {
-                _started = false;
-                _cards = [];
-              }),
+              onPressed:
+                  () => setState(() {
+                    _started = false;
+                    _cards = [];
+                  }),
             ),
           ],
         ),

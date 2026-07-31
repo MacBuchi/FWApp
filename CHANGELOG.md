@@ -12,6 +12,36 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.5.4] – 2026-08-01
+
+### Neu
+
+- **Drei wählbare Farbkonzepte** unter Einstellungen → Darstellung
+  (Issue #58): **Florian** (Feuerrot auf ruhigem Grund, der Ton des
+  App-Icons), **Blaulicht** (Signalblau mit rotem Zweitakzent — die
+  Farbpaarung des Einsatzfahrzeugs) und **Glut** (Warnorange wie
+  Einsatzjacke und Helm). Dazu **Eigenes Farbthema** mit freier Farbwahl.
+  Jedes Konzept unterstützt Hell und Dunkel; welcher Modus gilt, steuert
+  wie bisher der Design-Schalter (Standard: folgt dem System).
+- Auf einer verbundenen Installation legt die **Verwaltung** das Farbthema
+  fest; im reinen Lokalbetrieb wählt ihr frei.
+
+### Verbessert
+
+- **Modernere Formensprache:** randlose Karten mit großen Radien statt
+  umrandeter Kästen, Symbole in getönten Kacheln, ein Handlungsaufruf mit
+  Farbverlauf und die aktualisierten Material-Fortschrittsbalken mit
+  abgerundeten Enden.
+- **Die Farben sitzen jetzt, wo sie hingehören:** Der Handlungsaufruf auf
+  der Startseite, die Navigationsleiste und die Fortschrittsbalken tragen
+  die kräftige Konzeptfarbe; Flächen und Karten bleiben ruhig. Vorher
+  wirkte die App durch die vielen Pastellflächen blasser als gedacht.
+- Mehrere Stellen repariert, an denen Schrift auf getönten Flächen die
+  falsche Farbe erbte und je nach Thema schwer lesbar werden konnte
+  (Startseiten-Banner, „Weiterlernen", Karteikarten, Fahrzeug-Formular).
+  Ein automatischer Test prüft jetzt jede Farbkombination aller Konzepte
+  gegen die WCAG-Lesbarkeitsschwelle.
+
 ## [1.5.3] – 2026-07-31
 
 ### Neu
@@ -217,6 +247,7 @@ Abschnitt „Workflow".
 - Erste Ausgabe: Fahrzeuge, Geräteräume, Beladepläne, Lernspiele und
   Serverabgleich.
 
+[1.5.4]: https://github.com/MacBuchi/FWApp/compare/v1.5.3...v1.5.4
 [1.5.3]: https://github.com/MacBuchi/FWApp/compare/v1.5.2...v1.5.3
 [1.5.2]: https://github.com/MacBuchi/FWApp/compare/v1.5.1...v1.5.2
 [1.5.1]: https://github.com/MacBuchi/FWApp/compare/v1.5.0...v1.5.1

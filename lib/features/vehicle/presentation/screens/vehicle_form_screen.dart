@@ -3,7 +3,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:fwapp/core/images/image_capture.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';
 
@@ -49,23 +49,12 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
   }
 
   Future<void> _pickImage() async {
-    // Ask for desired size/quality before opening the gallery
-    final sizeOption = await showModalBottomSheet<_ImageSize>(
-      context: context,
-      builder: (_) => const _ImageSizeSheet(),
-    );
-    if (sizeOption == null || !mounted) return;
-
-    final picker = ImagePicker();
-    final file = await picker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: sizeOption.maxDim,
-      maxHeight: sizeOption.maxDim,
-      imageQuality: sizeOption.quality,
-    );
-    if (file != null && mounted) {
-      ref.read(vehicleFormProvider.notifier).setImagePath(file.path);
-    }
+    // Quelle waehlen, zuschneiden, drehen — gemeinsam mit den Geraetebildern
+    // (Issue #56). Die Groesse wird nicht mehr vorab abgefragt: captureImage
+    // rechnet das Ergebnis ohnehin auf das Auslieferungsbudget.
+    final image = await captureImage(context);
+    if (image?.path == null || !mounted) return;
+    ref.read(vehicleFormProvider.notifier).setImagePath(image!.path!);
   }
 
   Future<void> _submit() async {
@@ -163,57 +152,3 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
 }
 
 // ─── Image size selection ──────────────────────────────────────────────────
-
-enum _ImageSize {
-  original(null, null, 'Original', 'Volle Auflösung, keine Komprimierung'),
-  large(1024, 85, 'Groß', 'Max. 1024 × 1024 px  –  empfohlen'),
-  medium(600, 80, 'Mittel', 'Max. 600 × 600 px'),
-  small(300, 75, 'Klein', 'Max. 300 × 300 px');
-
-  const _ImageSize(this.maxDim, this.quality, this.label, this.sublabel);
-  final double? maxDim;
-  final int? quality;
-  final String label;
-  final String sublabel;
-}
-
-class _ImageSizeSheet extends StatelessWidget {
-  const _ImageSizeSheet();
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-              child: Text(
-                'Bildgröße wählen',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-            ),
-            for (final size in _ImageSize.values)
-              ListTile(
-                leading: Icon(_sizeIcon(size)),
-                title: Text(size.label),
-                subtitle: Text(size.sublabel),
-                onTap: () => Navigator.of(context).pop(size),
-              ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
-    );
-  }
-
-  IconData _sizeIcon(_ImageSize size) => switch (size) {
-        _ImageSize.original => Icons.image_outlined,
-        _ImageSize.large    => Icons.photo_size_select_large,
-        _ImageSize.medium   => Icons.photo_size_select_actual,
-        _ImageSize.small    => Icons.photo_size_select_small,
-      };
-}

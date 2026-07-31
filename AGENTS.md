@@ -313,6 +313,19 @@ ein Abbruch keine Duplikate erzeugt.
   entnommene Element bereits selbst heraus. Wer die eigene Korrekturzeile
   stehen lässt, verschiebt still um eine Position zu weit.
 - ⚠️ **`rootBundle`-Loads in `FutureBuilder`** hängen in Widget-Tests (fake async).
+- ⚠️ **`pumpAndSettle` bei dauerlaufenden Fortschrittsringen** läuft in einen
+  Timeout statt in einen Fehlschlag — es wartet auf einen Ruhezustand, den ein
+  `CircularProgressIndicator` nie erreicht. Betrifft den Bildaufnahme-Editor
+  (Issue #56), solange das Bild lädt: dort `pump(Duration)` in einer kleinen
+  Schleife statt `pumpAndSettle`.
+- ⚠️ **`compute()` läuft in Widget-Tests nicht in der simulierten Zeit ab.**
+  `pump(Duration)` schiebt nur die Fake-Uhr vor, das echte Isolate liefert
+  dabei nie. Für solche Stellen `tester.runAsync(...)` verwenden — und
+  **vorher pumpen**, damit die Route überhaupt gebaut ist und ihr `initState`
+  die Arbeit angestoßen hat; sonst läuft das `runAsync`-Fenster ins Leere.
+  Zwei aufeinanderfolgende echte Schritte (Isolate, dann Engine) brauchen
+  entsprechend zwei Fenster. Sonst scheitert der Test mit
+  „Expected: not null" an einem Zustand, der real längst gesetzt wäre.
 - ⚠️ **AlertDialogs mit 2+ Feldern** brauchen `SingleChildScrollView` im
   `content` – sonst überlappen auf kleinen Screens Buttons und zweites Feld.
 - **Die VM hat kein IPv4-Internet** (Fritz!Box beantwortet den ARP der VM-MAC

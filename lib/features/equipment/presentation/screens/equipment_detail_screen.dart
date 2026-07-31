@@ -3,7 +3,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:fwapp/core/images/image_capture.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:fwapp/core/logging/app_logger.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
@@ -320,27 +320,22 @@ class EquipmentDetailScreen extends ConsumerWidget {
   /// bucket when connected; otherwise the photo stays local to this device.
   Future<void> _captureAndUploadPhoto(
       BuildContext context, WidgetRef ref, EquipmentItem item) async {
-    final picker = ImagePicker();
-    final source = picker.supportsImageSource(ImageSource.camera)
-        ? ImageSource.camera
-        : ImageSource.gallery;
-    // Bounded pick: forces JPEG (no iOS HEIC) and keeps originals small.
-    final file = await picker.pickImage(
-      source: source,
-      maxWidth: 2048,
-      maxHeight: 2048,
-      imageQuality: 90,
-    );
-    if (file == null || !context.mounted) return;
+    // Quelle waehlen, zuschneiden, drehen (Issue #56). Das Ergebnis liegt als
+    // Bytes vor und geht direkt in den Upload — das funktioniert auch in der
+    // Web-App, wo es keinen lokalen Dateipfad gibt.
+    final image = await captureImage(context);
+    if (image == null || !context.mounted) return;
 
-    var newPath = file.path;
+    // Ohne Server bleibt nur der lokale Pfad; in der Web-App gibt es den
+    // nicht, dann ist das Foto ohne Upload nicht speicherbar.
+    var newPath = image.path;
     var uploaded = false;
     final imageSync = ref.read(imageSyncServiceProvider);
     if (imageSync != null) {
       try {
-        newPath = await imageSync.uploadEquipmentImage(
+        newPath = await imageSync.uploadEquipmentImageBytes(
           equipmentId: item.id,
-          localPath: file.path,
+          bytes: image.bytes,
           previousPath: item.imagePath,
         );
         uploaded = true;
@@ -351,6 +346,17 @@ class EquipmentDetailScreen extends ConsumerWidget {
                   'fehlgeschlagen: $e')));
         }
       }
+    }
+
+    // Kein Pfad und kein Upload: nichts zu speichern. Ohne diese Pruefung
+    // wuerde copyWith(imagePath: null) das vorhandene Bild loeschen.
+    if (newPath == null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Foto konnte nicht gespeichert werden — dafür '
+                'braucht es eine Serververbindung.')));
+      }
+      return;
     }
 
     await ref

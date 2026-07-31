@@ -3,7 +3,8 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:image_picker/image_picker.dart' show ImageSource;
+import 'package:fwapp/core/images/image_capture.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_enums.dart';
@@ -55,10 +56,18 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
   }
 
   Future<void> _pickImage() async {
+    // Drei Wege in EINEM Menue: Die Quelle wird hier schon erfragt, deshalb
+    // bekommt captureImage sie uebergeben und zeigt kein zweites Sheet.
     final choice = await showModalBottomSheet<String>(
       context: context,
       builder: (context) => SafeArea(
         child: Wrap(children: [
+          if (cameraAvailable)
+            ListTile(
+              leading: const Icon(Icons.photo_camera),
+              title: const Text('Foto aufnehmen'),
+              onTap: () => Navigator.pop(context, 'camera'),
+            ),
           ListTile(
             leading: const Icon(Icons.photo_library),
             title: const Text('Aus Galerie'),
@@ -80,15 +89,12 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
       return;
     }
 
-    // Bounded pick: keeps huge originals off disk and forces JPEG/PNG
-    // (avoids iOS HEIC, which the upload compressor cannot decode).
-    final file = await ImagePicker().pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 2048,
-      maxHeight: 2048,
-      imageQuality: 90,
+    final image = await captureImage(
+      context,
+      source: choice == 'camera' ? ImageSource.camera : ImageSource.gallery,
     );
-    if (file != null) setState(() => _imagePath = file.path);
+    if (image?.path == null || !mounted) return;
+    setState(() => _imagePath = image!.path!);
   }
 
   /// Uploads a freshly picked local image to the central bucket and rewrites

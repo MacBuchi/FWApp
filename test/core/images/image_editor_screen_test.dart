@@ -1,10 +1,15 @@
-/// image_editor_screen_test.dart – Der Zuschneide-/Dreh-Editor der
-/// Bildaufnahme (Issue #56).
+/// image_editor_screen_test.dart – Der Zuschneide-Editor der Bildaufnahme
+/// (Issue #56). Der Rahmen steht fest, das Bild wird darin bewegt.
 ///
-/// ⚠️ Hier **kein** `pumpAndSettle`: Der Crop-Widget zeigt beim Parsen einen
-/// dauerlaufenden Fortschrittsring, und `pumpAndSettle` wartet auf einen
-/// Ruhezustand, der damit nie eintritt (Timeout statt Fehlschlag). Deshalb
-/// überall gezieltes `pump()` mit Dauer.
+/// ⚠️ Hier **kein** `pumpAndSettle`: Solange das Bild lädt, läuft ein
+/// `CircularProgressIndicator`, und `pumpAndSettle` wartet auf einen
+/// Ruhezustand, der damit nie eintritt (Timeout statt Fehlschlag).
+///
+/// ⚠️ Und **`runAsync` beim Aufziehen**: Das Bild wird über `compute()`
+/// aufbereitet und von der Engine dekodiert — beides läuft nicht in der
+/// simulierten Testzeit ab. Ohne das prüfen die Tests nur den Ladezustand.
+///
+/// Die Transformationsmathematik selbst steht in crop_render_test.dart.
 library;
 import 'dart:typed_data';
 
@@ -21,10 +26,23 @@ Uint8List _testImage({int width = 120, int height = 80}) {
   return img.encodeJpg(image);
 }
 
-/// Genug Frames, damit Routenwechsel und Bild-Parsing durch sind.
 Future<void> _settleABit(WidgetTester tester) async {
   for (var i = 0; i < 10; i++) {
     await tester.pump(const Duration(milliseconds: 100));
+  }
+}
+
+/// Lässt echte Arbeit laufen und pumpt danach.
+///
+/// Mehrere Runden, weil das Laden zwei aufeinanderfolgende echte Schritte hat
+/// (Bytes im Isolate aufbereiten, dann über die Engine dekodieren). Nach dem
+/// ersten `runAsync` läuft wieder die simulierte Uhr, in der der zweite
+/// Schritt nicht fertig würde.
+Future<void> _letRealWorkRun(WidgetTester tester, {int rounds = 3}) async {
+  for (var i = 0; i < rounds; i++) {
+    await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 400)));
+    await _settleABit(tester);
   }
 }
 
@@ -34,6 +52,7 @@ void main() {
   Future<void> pumpEditor(
     WidgetTester tester, {
     required void Function(Uint8List?) onResult,
+    Uint8List? source,
   }) async {
     await tester.pumpWidget(MaterialApp(
       home: Builder(
@@ -43,7 +62,8 @@ void main() {
               onPressed: () async {
                 final result = await Navigator.of(context).push<Uint8List>(
                   MaterialPageRoute(
-                    builder: (_) => ImageEditorScreen(source: _testImage()),
+                    builder: (_) =>
+                        ImageEditorScreen(source: source ?? _testImage()),
                   ),
                 );
                 onResult(result);
@@ -55,23 +75,41 @@ void main() {
       ),
     ));
     await tester.tap(find.text('start'));
+    // Erst pumpen, damit die Route gebaut ist und initState() das Laden
+    // anstoesst — sonst liefe das runAsync-Fenster ins Leere und der Editor
+    // haenge im Ladezustand fest.
     await _settleABit(tester);
+    await _letRealWorkRun(tester);
   }
 
-  IconButton rotateButton(WidgetTester tester) => tester.widget<IconButton>(
-        find.ancestor(
-          of: find.byIcon(Icons.rotate_right),
-          matching: find.byType(IconButton),
-        ),
+  T buttonWith<T extends Widget>(WidgetTester tester, IconData icon) =>
+      tester.widget<T>(
+        find.ancestor(of: find.byIcon(icon), matching: find.byType(T)),
       );
 
-  testWidgets('zeigt Titel, Dreh-Knopf und beide Aktionen', (tester) async {
+  testWidgets('zeigt Titel, beide Werkzeuge, beide Aktionen und den Hinweis',
+      (tester) async {
     await pumpEditor(tester, onResult: (_) {});
 
     expect(find.text('Bild zuschneiden'), findsOneWidget);
     expect(find.byIcon(Icons.rotate_right), findsOneWidget);
+    expect(find.byIcon(Icons.restart_alt), findsOneWidget);
     expect(find.text('Abbrechen'), findsOneWidget);
     expect(find.text('Übernehmen'), findsOneWidget);
+    // Die Geste ist nicht selbsterklärend genug, um sie unerwähnt zu lassen.
+    expect(find.textContaining('zwei Fingern'), findsOneWidget);
+  });
+
+  testWidgets('ist nach dem Laden bedienbar (kein Dauer-Ladezustand)',
+      (tester) async {
+    await pumpEditor(tester, onResult: (_) {});
+
+    // Solange das Bild fehlt, ist Übernehmen gesperrt — das darf nach dem
+    // Laden nicht mehr so sein.
+    final apply = tester.widget<FilledButton>(
+        find.widgetWithText(FilledButton, 'Übernehmen'));
+    expect(apply.onPressed, isNotNull);
+    expect(find.byType(CustomPaint), findsWidgets);
   });
 
   testWidgets('Abbrechen liefert null zurück', (tester) async {
@@ -105,40 +143,80 @@ void main() {
     }
   });
 
-  testWidgets('Drehen sperrt den Knopf, solange es läuft', (tester) async {
+  testWidgets('90°-Drehen wirkt sofort und sperrt nichts', (tester) async {
+    // Anders als früher wird beim Drehen nichts neu codiert — es ändert nur
+    // die Transformation. Ein Wartezustand wäre hier also ein Fehler.
     await pumpEditor(tester, onResult: (_) {});
-    expect(rotateButton(tester).onPressed, isNotNull);
 
     await tester.tap(find.byIcon(Icons.rotate_right));
-    await tester.pump(); // setState(_busy = true), Drehung läuft noch
-
-    expect(rotateButton(tester).onPressed, isNull,
-        reason: 'ein zweiter Tipp während des Drehens darf nicht durchgehen');
-
-    // ⚠️ `runAsync`: Das Drehen läuft über `compute()` in einem echten
-    // Isolate. `pump(Duration)` schiebt nur die simulierte Testzeit vor —
-    // das Ergebnis des Isolates käme dabei nie an.
-    await tester.runAsync(() => Future<void>.delayed(
-        const Duration(milliseconds: 800)));
     await tester.pump();
 
-    expect(rotateButton(tester).onPressed, isNotNull,
-        reason: 'danach muss wieder gedreht werden können');
+    expect(buttonWith<IconButton>(tester, Icons.rotate_right).onPressed,
+        isNotNull);
+    expect(tester.takeException(), isNull);
+    expect(find.text('Übernehmen'), findsOneWidget);
   });
 
-  testWidgets('nach dem Drehen ist der Editor unverändert bedienbar',
+  testWidgets('Zurücksetzen bleibt bedienbar', (tester) async {
+    await pumpEditor(tester, onResult: (_) {});
+
+    await tester.tap(find.byIcon(Icons.restart_alt));
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Bild zuschneiden'), findsOneWidget);
+  });
+
+  testWidgets('Ziehen und Zwei-Finger-Geste laufen ohne Fehler durch',
       (tester) async {
     await pumpEditor(tester, onResult: (_) {});
 
-    await tester.tap(find.byIcon(Icons.rotate_right));
-    await tester.runAsync(() => Future<void>.delayed(
-        const Duration(milliseconds: 800)));
-    await _settleABit(tester);
+    final area = find.byType(CustomPaint).first;
 
-    // Insbesondere ist er nicht in den Fehlerpfad gelaufen.
-    expect(find.text('Bild zuschneiden'), findsOneWidget);
-    expect(find.text('Übernehmen'), findsOneWidget);
-    expect(find.textContaining('konnte nicht gedreht'), findsNothing);
+    // Ein Finger: verschieben.
+    await tester.drag(area, const Offset(40, -25));
+    await tester.pump();
     expect(tester.takeException(), isNull);
+
+    // Zwei Finger: zoomen und drehen zugleich.
+    final center = tester.getCenter(area);
+    final g1 = await tester.startGesture(center - const Offset(40, 0));
+    final g2 = await tester.startGesture(center + const Offset(40, 0));
+    await g1.moveBy(const Offset(-30, -20));
+    await g2.moveBy(const Offset(30, 20));
+    await tester.pump();
+    await g1.up();
+    await g2.up();
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Übernehmen'), findsOneWidget);
+  });
+
+  testWidgets('Übernehmen liefert Bytes zurück', (tester) async {
+    Uint8List? result;
+    await pumpEditor(tester, onResult: (r) => result = r);
+
+    await tester.tap(find.text('Übernehmen'));
+    await _letRealWorkRun(tester);
+
+    expect(result, isNotNull);
+    expect(result!.length, greaterThan(100),
+        reason: 'ein leeres Ergebnis wäre kein Bild');
+  });
+
+  testWidgets('unlesbare Daten zeigen einen Hinweis statt eines Absturzes',
+      (tester) async {
+    await pumpEditor(
+      tester,
+      onResult: (_) {},
+      source: Uint8List.fromList([1, 2, 3, 4]),
+    );
+
+    expect(find.textContaining('nicht unterstützt'), findsOneWidget);
+    // Übernehmen bleibt gesperrt — es gibt nichts zu übernehmen.
+    final apply = tester.widget<FilledButton>(
+        find.widgetWithText(FilledButton, 'Übernehmen'));
+    expect(apply.onPressed, isNull);
   });
 }

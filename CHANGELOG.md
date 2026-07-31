@@ -17,9 +17,11 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 
 - **Bilder auswählen ist deutlich besser geworden.** Beim Fahrzeug- und
   Gerätebild lässt sich jetzt wählen, ob man ein Foto aufnimmt oder eins aus
-  der Galerie holt. Danach öffnet sich ein Editor, in dem man den Ausschnitt
-  mit dem Finger ziehen und zoomen sowie das Bild drehen kann — mit großen
-  Schaltflächen, die sich auch mit Handschuh treffen lassen.
+  der Galerie holt. Danach öffnet sich ein Editor: Der Rahmen steht fest und
+  ist der spätere Bildausschnitt, das Bild bewegt man darin — mit zwei Fingern
+  zoomen und drehen, mit einem verschieben. Dazu ein Knopf für 90°-Sprünge und
+  einer zum Zurücksetzen, mit großen Schaltflächen, die sich auch mit Handschuh
+  treffen lassen.
 - Bilder werden automatisch auf eine sinnvolle Größe gerechnet. Die vorher
   vorgeschaltete Frage nach der Bildgröße entfällt damit.
 

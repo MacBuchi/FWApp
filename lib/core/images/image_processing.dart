@@ -36,19 +36,15 @@ img.Image decodeUpright(Uint8List input) {
   return img.bakeOrientation(decoded);
 }
 
-/// Dreht [input] um [quarterTurns] × 90° im Uhrzeigersinn und gibt wieder
-/// JPEG-Bytes zurück.
+/// Wendet nur die EXIF-Ausrichtung an und gibt wieder JPEG-Bytes zurück.
 ///
-/// Wird zwischen zwei Zuschnitt-Schritten aufgerufen, deshalb bewusst ohne
-/// Verkleinerung: Das endgültige Verkleinern passiert einmal am Schluss in
-/// [compressImageForUpload], sonst würde jede Drehung die Qualität weiter
-/// abbauen.
-Uint8List rotateImageBytes(Uint8List input, int quarterTurns) {
-  final turns = quarterTurns % 4;
-  final image = decodeUpright(input);
-  if (turns == 0) return img.encodeJpg(image, quality: 95);
-  return img.encodeJpg(img.copyRotate(image, angle: turns * 90), quality: 95);
-}
+/// Wird vor dem Anzeigen im Editor aufgerufen: `ui.decodeImageFromList`
+/// wertet EXIF nicht zuverlässig aus, und ein liegendes Foto im Editor wäre
+/// verwirrend. Bewusst ohne Verkleinerung — klein gerechnet wird einmal am
+/// Schluss in [compressImageForUpload], sonst baut sich die Qualität über
+/// die Zwischenschritte ab. Top-level für `compute`.
+Uint8List bakeOrientationBytes(Uint8List input) =>
+    img.encodeJpg(decodeUpright(input), quality: 95);
 
 /// Dekodiert, verkleinert auf [kMaxImageDimension] und codiert als JPEG neu —
 /// mit absteigender Qualität (und notfalls Größe), bis das Ergebnis unter

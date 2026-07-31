@@ -5,6 +5,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:fwapp/core/sync/auth_utils.dart';
 import 'package:fwapp/core/sync/image_precache.dart';
@@ -154,6 +155,13 @@ class SettingsScreen extends ConsumerWidget {
                     subtitle: Text(info != null
                         ? '${info.version} (Build ${info.buildNumber})'
                         : '...'),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.history),
+                    title: const Text('Was ist neu?'),
+                    subtitle: const Text('Änderungen der letzten Versionen'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.push('/changelog'),
                   ),
                   // MIT, BSD und Apache verlangen, dass ihr Lizenztext dem
                   // ausgelieferten Produkt beiliegt — die LICENSE im Repo

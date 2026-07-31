@@ -2,17 +2,25 @@
 /// nächsten Start gemeldet werden können (Issue #34).
 ///
 /// Warum lokal statt direkt an ein Crash-Backend: Ein selbst gehostetes
-/// GlitchTip ist entschieden, aber blockiert (AGENTS.md § 13 — die VM zieht
-/// ohne IPv4 keine Container-Images). Bis dahin wäre die Alternative „gar
-/// nichts", und Feldabstürze blieben unsichtbar. Der Bericht landet deshalb
-/// erst auf dem Gerät und geht beim nächsten Start über den bereits
+/// GlitchTip ist entschieden, aber blockiert (AGENTS.md „Zurückgestellt" — die
+/// VM zieht ohne IPv4 keine Container-Images). Bis dahin wäre die Alternative
+/// „gar nichts", und Feldabstürze blieben unsichtbar. Der Bericht landet
+/// deshalb erst auf dem Gerät und geht beim nächsten Start über den bereits
 /// bestehenden Feedback→GitHub-Issue-Kanal raus — mit Stacktrace und Version,
 /// die bei einer freiwilligen Rückmeldung sonst fehlen.
 ///
 /// **Reichweite:** Das erfasst Dart-Fehler aus `FlutterError.onError` und
 /// `PlatformDispatcher.onError`, also genau das, was main.dart heute schon
 /// loggt. Ein harter nativer Absturz beendet den Prozess, bevor Dart-Code
-/// läuft — der ist hiermit nicht abgedeckt und braucht später das Backend.
+/// läuft — der ist hiermit nicht abgedeckt.
+///
+/// ⚠️ **Diese Umsetzung weicht vom Bauplan „Route A" der
+/// Observability-Guideline im DocuHub ab** (dort produktiv an PilzBuddy
+/// gemessen). Offen sind: synchrones Schreiben im Handler statt `unawaited`,
+/// Dedupe-Fingerprint, Log-Ring-Buffer im Bericht und eine eigene Senke statt
+/// eines Issues pro Absturz. Für harte Abstürze und ANRs braucht es **kein**
+/// Backend, sondern `getHistoricalProcessExitReasons` (ab Android 11, ohne
+/// Berechtigung). Details und Reihenfolge stehen in AGENTS.md.
 library;
 
 import 'dart:convert';

@@ -13,7 +13,8 @@ fest, wo die FWApp bewusst davon abweicht.
 
 ## Entwicklungs-Setup
 
-- Flutter 3.41.x (stable), Dart ≥ 3.11
+- Flutter 3.44.8 (stable), Dart ≥ 3.12 — dieselbe Version ist in
+  `ci.yml` und `release.yml` gepinnt
 - Java 17 für Android-Builds (neuere JDKs werden vom Flutter-Gradle-Plugin
   nicht unterstützt): `flutter config --jdk-dir=<pfad-zu-jdk-17>`
 - Docker + [Supabase CLI](https://supabase.com/docs/guides/cli), falls du am
@@ -56,8 +57,16 @@ flutter test
   `chore:`, `docs:`, `ci:`). Der Bestand enthält deutsche Prosa-Titel;
   neue Beiträge bitte im Conventional-Format.
 - Merge-Strategie: Squash. Gemergte Branches löschen.
-- Der Merge wird vom Maintainer gemacht – Beiträge (auch agentengestützte)
-  mergen sich nicht selbst, weil ein Merge auf `main` ein Release auslösen kann.
+- **Wer mergen darf, entscheidet der Versions-Bump** – denn der Merge ist die
+  Veröffentlichung:
+  - **Ohne Bump** (nur `*.md`, `.github/`, `test/`, `tool/`, `supabase/`,
+    `LICENSE`): darf nach grüner CI selbst gemergt werden. Es entsteht kein
+    Release, auf den Geräten ändert sich nichts.
+  - **Mit Bump: Der Merge gehört dem Maintainer.** Er löst Tag, signiertes APK
+    und GitHub-Release aus.
+
+  > Externe Beiträge bumpen die Version ohnehin nicht – siehe Punkt 4 oben.
+  > Für sie läuft es damit unverändert auf „der Maintainer merged" hinaus.
 
 ## Tests
 
@@ -97,9 +106,9 @@ werden nicht gemerged:
 
 - **Local-first:** Drift/SQLite ist der Laufzeitspeicher; die App muss ohne
   Netz vollständig funktionieren (Einsatz!).
-- **Single-Writer-Sync:** Nur Admins veröffentlichen komplette Snapshots mit
-  Versionszähler; Mitglieder lesen. Keine CRDTs, keine Offline-Write-Queues,
-  keine Konfliktauflösung.
+- **Single-Writer-Sync:** Nur Editoren (Admin/Gerätewart) veröffentlichen
+  komplette Snapshots mit Versionszähler; Mitglieder lesen. Keine CRDTs, keine
+  Offline-Write-Queues, keine Konfliktauflösung.
 - **Prüf- und Inventurdaten** hängen an physischen Geräteinstanzen
   (`EquipmentInstances`) bzw. Snapshots – nie an `EquipmentAssignments`
   (die überleben Re-Importe nicht).
@@ -180,7 +189,7 @@ Gradle-Details, die zusammengehören: `INTERNET` und
 davon, fällt es **erst beim Nutzer** auf – nie im Debug-Lauf.
 
 Die vollständige Liste mit Begründung steht in
-[AGENTS.md § 7–8](AGENTS.md#7-signierung--secrets). Für Beitragende gilt vor
+[AGENTS.md → Technik-Notizen](AGENTS.md#technik-notizen). Für Beitragende gilt vor
 allem: Nach jeder Änderung an Manifest, Permissions oder Plugins ist der
 Geräte-Smoke-Test Pflicht (siehe [Tests](#tests)), und der Release-Keystore
 wird **nie** ausgetauscht.
@@ -191,7 +200,7 @@ Ein Teil der Issues hier stammt direkt aus der App: Der Feedback-Dialog
 schreibt in eine Supabase-Tabelle, ein Bot macht daraus **öffentliche**
 GitHub-Issues. Wer am Feedback-Weg arbeitet, muss den
 Öffentlichkeits-Hinweis im Dialog erhalten – Mechanik und Fallstricke stehen
-in [AGENTS.md § 9](AGENTS.md#9-in-app-feedback--github-issue).
+in [AGENTS.md → Technik-Notizen](AGENTS.md#technik-notizen).
 
 ## Releases
 
@@ -205,10 +214,17 @@ bitte die Version **nicht** anfassen, sofern nicht abgesprochen.
 ## Sprache
 
 Code und Bezeichner: Englisch oder Deutsch ist beides im Bestand – bitte im
-jeweiligen Umfeld konsistent bleiben. UI-Texte und Doku: Deutsch (Zielgruppe
-sind deutsche Feuerwehren). **Commits, PR- und Issue-Texte: Deutsch** – eine
-bewusste Abweichung von der DocuHub-Vorgabe, begründet in
-[AGENTS.md § 3](AGENTS.md#code-regeln).
+jeweiligen Umfeld konsistent bleiben.
+
+**Auf GitHub wird Englisch gesprochen:** Commit-Messages, PR-Titel und
+-Beschreibungen, Issues und Kommentare. Deutsch bleibt für UI-Texte,
+`CHANGELOG.md`, README und die Kommunikation mit dem Betreiber – Zielgruppe
+sind deutsche Feuerwehren.
+
+> Umgestellt am 2026-07-31; vorher galt hier Deutsch. Grund für den Wechsel ist
+> die Einheitlichkeit mit den übrigen Projekten. Der Bestand bleibt deutsch und
+> wird **nicht** nachträglich übersetzt. Die Feedback-Issues aus der App sind
+> weiterhin deutsch – die schreiben Nutzerinnen und Nutzer.
 
 **Keine Lokalisierung:** Es gibt bewusst kein ARB/gen-l10n-Setup – alle
 UI-Texte sind hart deutsch. Die Zielgruppe ist einsprachig; ein

@@ -4,7 +4,7 @@
 /// Vorher gab es drei Aufrufstellen mit je eigenem Verhalten — Fahrzeugformular
 /// nur Galerie mit vorgeschalteter Größenabfrage, Gerätedetail bevorzugt
 /// Kamera, Geräteformular nur Galerie — und nirgends Zuschneiden oder Drehen.
-/// AGENTS.md § 3 („Zweitverwendung = Extraktion") verlangt genau hier eine
+/// AGENTS.md („Zweitverwendung = Extraktion") verlangt genau hier eine
 /// gemeinsame Stelle.
 ///
 /// Der Editor kommt ohne Zuschneide-Paket aus: Die Zwei-Finger-Geste liefert

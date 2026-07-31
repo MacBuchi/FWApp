@@ -2,7 +2,7 @@ name: fwapp
 description: Feuerwehr-Lernapp – Fahrzeuge, Geräte, Beladepläne und Trainings-Spielmodi.
 publish_to: 'none'
 
-version: 1.5.2+20
+version: 1.5.3+21
 
 environment:
   sdk: ^3.7.0
@@ -126,4 +126,17 @@ flutter:
     - assets/equipment_library/vehicles/hlf20_demo/loading_plan.json
     - assets/equipment_library/images/
     - assets/images/placeholder_equipment.png
+    # Fahrzeug-Vorlagen (Issue #55). Einzeln gelistet statt als Verzeichnis:
+    # Ein Verzeichnis-Eintrag bündelt zwar alles, aber die Vorlagen werden
+    # namentlich geladen (kBundledVehicleTemplateIds), und eine fehlende Datei soll
+    # beim Build auffallen, nicht erst zur Laufzeit.
+    - assets/vehicle_templates/lf10/template.json
+    - assets/vehicle_templates/lf20/template.json
+    - assets/vehicle_templates/hlf20/template.json
+    - assets/vehicle_templates/tsf_w/template.json
+    - assets/vehicle_templates/dlk23_12/template.json
+    - assets/vehicle_templates/rw/template.json
+    - assets/vehicle_templates/gw_l/template.json
+    - assets/vehicle_templates/mtw/template.json
+    - assets/vehicle_templates/elw1/template.json
 

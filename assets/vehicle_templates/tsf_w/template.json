@@ -1,0 +1,32 @@
+{
+  "id": "tsf_w",
+  "name": "TSF-W",
+  "type": "TSF-W",
+  "note": "Tragkraftspritzenfahrzeug mit Wassertank nach DIN 14530-21. Für diesen Typ liegt keine öffentliche Beladeliste vor — nur Geräteräume.",
+  "compartments": [
+    {
+      "label": "G1",
+      "position": 0
+    },
+    {
+      "label": "G2",
+      "position": 1
+    },
+    {
+      "label": "G3",
+      "position": 2
+    },
+    {
+      "label": "G4",
+      "position": 3
+    },
+    {
+      "label": "Heck (GR)",
+      "position": 4
+    },
+    {
+      "label": "Dach",
+      "position": 5
+    }
+  ]
+}

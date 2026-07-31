@@ -1,0 +1,32 @@
+{
+  "id": "dlk23_12",
+  "name": "DLK 23/12",
+  "type": "DLK 23/12",
+  "note": "Drehleiter mit Korb nach DIN EN 14043. Für diesen Typ liegt keine öffentliche Beladeliste vor — nur Geräteräume.",
+  "compartments": [
+    {
+      "label": "G1",
+      "position": 0
+    },
+    {
+      "label": "G2",
+      "position": 1
+    },
+    {
+      "label": "G3",
+      "position": 2
+    },
+    {
+      "label": "G4",
+      "position": 3
+    },
+    {
+      "label": "Rettungskorb",
+      "position": 4
+    },
+    {
+      "label": "Podium",
+      "position": 5
+    }
+  ]
+}

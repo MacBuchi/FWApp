@@ -60,6 +60,40 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
+/// Icon in getönter, abgerundeter Kachel — der moderne Ersatz für das nackte
+/// Icon in der Kartenecke. Farbpaar geschlossen aus dem Schema (#58).
+class _IconChip extends StatelessWidget {
+  const _IconChip(this.icon, {this.muted = false, this.semanticLabel});
+
+  final IconData icon;
+
+  /// Gedämpfte Ausführung für inaktive Zustände (z. B. Serie gerissen).
+  final bool muted;
+  final String? semanticLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        color:
+            muted ? scheme.surfaceContainerHighest : scheme.secondaryContainer,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Icon(
+        icon,
+        size: 24,
+        color: muted
+            ? scheme.onSurfaceVariant
+            : scheme.onSecondaryContainer,
+        semanticLabel: semanticLabel,
+      ),
+    );
+  }
+}
+
 class _StreakCard extends StatelessWidget {
   final DashboardStats stats;
   const _StreakCard({required this.stats});
@@ -78,20 +112,14 @@ class _StreakCard extends StatelessWidget {
             // auf Android 10 stand hier ein Ersatzkästchen, und zwar im
             // Standardzustand auf dem ersten Bildschirm der App. Icons
             // rendern auf jeder Android-Version gleich.
-            Icon(
+            _IconChip(
               Icons.local_fire_department,
-              size: 32,
-              color: active
-                  ? Theme.of(context).colorScheme.primary
-                  : Theme.of(context).disabledColor,
+              muted: !active,
               semanticLabel: active ? 'Serie aktiv' : 'Keine Serie',
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Text('${stats.streakDays}',
-                style: Theme.of(context)
-                    .textTheme
-                    .headlineMedium
-                    ?.copyWith(fontWeight: FontWeight.w800)),
+                style: Theme.of(context).textTheme.headlineMedium),
             Text(
               stats.streakDays == 1 ? 'Tag Serie' : 'Tage Serie',
               style: Theme.of(context).textTheme.bodySmall,
@@ -124,22 +152,14 @@ class _LevelCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.military_tech,
-                size: 28, color: Theme.of(context).colorScheme.primary),
-            const SizedBox(height: 8),
+            const _IconChip(Icons.military_tech),
+            const SizedBox(height: 12),
             Text('Level ${stats.level}',
-                style: Theme.of(context)
-                    .textTheme
-                    .headlineMedium
-                    ?.copyWith(fontWeight: FontWeight.w800)),
+                style: Theme.of(context).textTheme.headlineMedium),
             Text('${stats.xp} XP',
                 style: Theme.of(context).textTheme.bodySmall),
-            const SizedBox(height: 6),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicator(
-                  value: stats.levelProgress, minHeight: 6),
-            ),
+            const SizedBox(height: 8),
+            LinearProgressIndicator(value: stats.levelProgress, minHeight: 8),
           ],
         ),
       ),
@@ -156,19 +176,17 @@ class _WeekGoalCard extends ConsumerWidget {
     final done = stats.weekSessions >= stats.weekGoal;
     return Card(
       child: ListTile(
-        leading: Icon(done ? Icons.emoji_events : Icons.flag,
-            color: done
-                ? Colors.amber.shade700
-                : Theme.of(context).colorScheme.primary),
-        title: Text(done ? 'Wochenziel erreicht!' : 'Wochenziel'),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        leading: _IconChip(
+          done ? Icons.emoji_events : Icons.flag,
+        ),
+        title: Text(done ? 'Wochenziel erreicht!' : 'Wochenziel',
+            style: const TextStyle(fontWeight: FontWeight.w600)),
         subtitle: Padding(
-          padding: const EdgeInsets.only(top: 6),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: (stats.weekSessions / stats.weekGoal).clamp(0.0, 1.0),
-              minHeight: 6,
-            ),
+          padding: const EdgeInsets.only(top: 8),
+          child: LinearProgressIndicator(
+            value: (stats.weekSessions / stats.weekGoal).clamp(0.0, 1.0),
+            minHeight: 8,
           ),
         ),
         trailing: Text('${stats.weekSessions}/${stats.weekGoal}',
@@ -208,21 +226,73 @@ class _SuggestionCard extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     // Die eine Karte, die den vollen Konzept-Akzent trägt (Issue #58): Sie ist
     // der Haupt-Handlungsaufruf des Dashboards, alles andere bleibt ruhig.
-    // Schrift und Icons immer als Partnerfarbe der Fläche — die geerbte
-    // onSurface passt nur zufällig zur Fläche darunter.
-    return Card(
-      color: scheme.primary,
-      child: ListTile(
-        textColor: scheme.onPrimary,
-        iconColor: scheme.onPrimary,
-        leading: const Icon(Icons.play_circle_fill, size: 36),
-        title: const Text('Weiterlernen',
-            style: TextStyle(fontWeight: FontWeight.w700)),
-        subtitle: Text(
-            '${suggestion.vehicleName} · Fach ${suggestion.compartmentLabel} · '
-            '$percent % geübt'),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () => context.push('/game/cutaway-quiz'),
+    // Der diagonale Weiß-Schimmer liegt ÜBER der garantierten primary/
+    // onPrimary-Paarung und bleibt bewusst unter 12 % Deckung — Zierde,
+    // die den geprüften Kontrast nicht anfassen darf.
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Material(
+        color: scheme.primary,
+        borderRadius: BorderRadius.circular(22),
+        clipBehavior: Clip.antiAlias,
+        child: Ink(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withValues(alpha: 0.12),
+                Colors.white.withValues(alpha: 0.0),
+              ],
+            ),
+          ),
+          child: InkWell(
+            onTap: () => context.push('/game/cutaway-quiz'),
+            child: Padding(
+              padding: const EdgeInsets.all(18),
+              child: Row(
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: scheme.onPrimary.withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Icon(Icons.play_arrow_rounded,
+                        size: 34, color: scheme.onPrimary),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Weiterlernen',
+                            style: TextStyle(
+                              color: scheme.onPrimary,
+                              fontSize: 19,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.2,
+                            )),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${suggestion.vehicleName} · '
+                          'Fach ${suggestion.compartmentLabel} · '
+                          '$percent % geübt',
+                          style: TextStyle(
+                            color: scheme.onPrimary.withValues(alpha: 0.85),
+                            fontSize: 13.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(Icons.chevron_right, color: scheme.onPrimary),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

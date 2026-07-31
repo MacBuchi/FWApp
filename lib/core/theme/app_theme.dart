@@ -1,6 +1,7 @@
 /// AppTheme – Material 3 theme for the FWApp.
-/// Design language: modern, schlank, übersichtlich — flat outlined cards
-/// instead of shadows, consistent radii, calm surfaces, Feuerwehr red as seed.
+/// Design language: modern, schlank, übersichtlich — randlose getönte Karten
+/// mit großen Radien statt Rahmen und Schatten, ruhige Flächen, ein kräftiger
+/// Akzent, aktualisierte M3-Fortschrittsanzeigen (year2023: false).
 ///
 /// Die Farbe kommt aus einer [AppPalette] (Issue #58); alles andere — Radien,
 /// Flächen, Abstände — bleibt für jede Palette gleich, damit die Auswahl das
@@ -101,45 +102,77 @@ class AppTheme {
         backgroundColor: scheme.surface,
         titleTextStyle: TextStyle(
           color: scheme.onSurface,
-          fontSize: 20,
-          fontWeight: FontWeight.w700,
+          fontSize: 22,
+          fontWeight: FontWeight.w800,
+          letterSpacing: -0.3,
         ),
       ),
+      // Kräftigere Hierarchie: Zahlen und Titel dürfen tragen, Nebentext
+      // tritt zurück. Tabellenziffern, damit XP/Zähler nicht tanzen.
+      textTheme: Typography.material2021(colorScheme: scheme)
+          .englishLike
+          .apply(bodyColor: scheme.onSurface, displayColor: scheme.onSurface)
+          .copyWith(
+            headlineMedium: TextStyle(
+              fontSize: 30,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.5,
+              color: scheme.onSurface,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+            titleLarge: TextStyle(
+              fontSize: 21,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.3,
+              color: scheme.onSurface,
+            ),
+            titleMedium: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: scheme.onSurface,
+            ),
+          ),
+      // Randlose, getönte Karten mit großem Radius statt umrandeter Kästen —
+      // die Trennung übernimmt der Farbabstand zur Fläche, nicht eine Linie.
       cardTheme: CardThemeData(
         elevation: 0,
         color: scheme.surfaceContainerLow,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.5)),
+          borderRadius: BorderRadius.circular(22),
         ),
-        margin: const EdgeInsets.symmetric(vertical: 4),
+        margin: const EdgeInsets.symmetric(vertical: 5),
       ),
       listTileTheme: ListTileThemeData(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
       inputDecorationTheme: InputDecorationTheme(
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide.none,
+        ),
         filled: true,
-        fillColor: scheme.surfaceContainerLow,
+        fillColor: scheme.surfaceContainerHigh,
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-          textStyle: const TextStyle(fontWeight: FontWeight.w600),
+          textStyle: const TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          textStyle: const TextStyle(fontWeight: FontWeight.w600),
         ),
       ),
       chipTheme: ChipThemeData(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        side: BorderSide(color: scheme.outlineVariant),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        side: BorderSide.none,
+        backgroundColor: scheme.surfaceContainerHigh,
       ),
       // Wo die Konzeptfarbe wirklich auftritt (Issue #58): Pille und
       // Fortschritt tragen den vollen Akzent, die Spur bleibt neutral. Vorher
@@ -162,24 +195,29 @@ class AppTheme {
             fontWeight: FontWeight.w600,
             color: scheme.onSurface)),
       ),
+      // year2023: false schaltet auf die aktualisierte M3-Optik um:
+      // abgerundete Enden, Lücke zwischen Wert und Spur, Stopp-Punkt —
+      // wirkt deutlich zeitgemäßer als der durchgezogene Balken.
       progressIndicatorTheme: ProgressIndicatorThemeData(
+        // ignore: deprecated_member_use — Flag heißt so, bis die alte Optik fällt.
+        year2023: false,
         color: scheme.primary,
         linearTrackColor: scheme.surfaceContainerHighest,
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
       dividerTheme: DividerThemeData(
         color: scheme.outlineVariant.withValues(alpha: 0.5),
         space: 1,
       ),
       dialogTheme: DialogThemeData(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       ),
       bottomSheetTheme: const BottomSheetThemeData(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
         showDragHandle: true,
       ),

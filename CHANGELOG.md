@@ -28,6 +28,10 @@ Abschnitt „Workflow".
 
 ### Verbessert
 
+- **Modernere Formensprache:** randlose Karten mit großen Radien statt
+  umrandeter Kästen, Symbole in getönten Kacheln, ein Handlungsaufruf mit
+  Farbverlauf und die aktualisierten Material-Fortschrittsbalken mit
+  abgerundeten Enden.
 - **Die Farben sitzen jetzt, wo sie hingehören:** Der Handlungsaufruf auf
   der Startseite, die Navigationsleiste und die Fortschrittsbalken tragen
   die kräftige Konzeptfarbe; Flächen und Karten bleiben ruhig. Vorher

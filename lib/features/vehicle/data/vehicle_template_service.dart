@@ -1,0 +1,125 @@
+/// vehicle_template_service.dart – Legt ein Fahrzeug aus einer Vorlage an
+/// (Issue #55).
+///
+/// Geschäftslogik im Service, nicht im Widget (AGENTS.md). Alles in **einer**
+/// Transaktion: Ein halb angelegtes Fahrzeug mit drei von acht Geräteräumen
+/// wäre schlimmer als gar keines — der Gerätewart müsste erst aufräumen, bevor
+/// er neu anfangen kann.
+library;
+
+import 'package:drift/drift.dart';
+import 'package:fwapp/core/database/app_database.dart';
+import 'package:fwapp/core/logging/app_logger.dart';
+import 'package:fwapp/features/vehicle/data/vehicle_template.dart';
+
+/// Was beim Anlegen aus der Vorlage entstanden ist.
+class TemplateApplyResult {
+  final int vehicleId;
+  final int compartmentCount;
+
+  /// Angelegte Beladungspositionen.
+  final int itemCount;
+
+  /// Katalog-IDs, zu denen kein Gerät gefunden wurde.
+  ///
+  /// Sollte leer sein — ein Test prüft die Vorlagen gegen den Katalog. Wenn
+  /// hier doch etwas steht, ist die Bibliothek noch nicht geseedet, und der
+  /// Aufrufer muss es sagen statt es zu verschlucken.
+  final List<String> missingEquipment;
+
+  const TemplateApplyResult({
+    required this.vehicleId,
+    required this.compartmentCount,
+    required this.itemCount,
+    this.missingEquipment = const [],
+  });
+}
+
+class VehicleTemplateService {
+  final AppDatabase db;
+
+  VehicleTemplateService(this.db);
+
+  /// Legt Fahrzeug, Geräteräume und — wenn [withLoading] — die Beladung an.
+  ///
+  /// [name] überschreibt den Vorlagennamen; [imagePath] ist optional.
+  /// Die Beladung landet gesammelt in [kUnassignedCompartmentLabel], **nicht**
+  /// verteilt auf G1…G6: Die Raumzuordnung ist nicht genormt und unterscheidet
+  /// sich je Wehr — sie zu erfinden wäre genau an der Stelle falsch, um die es
+  /// beim Lernen geht.
+  Future<TemplateApplyResult> apply(
+    VehicleTemplate template, {
+    required String name,
+    String? licensePlate,
+    String? imagePath,
+    required bool withLoading,
+  }) async {
+    return db.transaction(() async {
+      final vehicleId = await db.vehicleDao.insertVehicle(
+        VehiclesCompanion.insert(
+          name: name,
+          type: template.type,
+          licensePlate: Value(licensePlate),
+          imagePath: Value(imagePath),
+        ),
+      );
+
+      for (final c in template.compartments) {
+        await db.compartmentDao.insertCompartment(
+          CompartmentsCompanion.insert(
+            vehicleId: vehicleId,
+            label: c.label,
+            position: Value(c.position),
+          ),
+        );
+      }
+
+      if (!withLoading || !template.hasLoading) {
+        return TemplateApplyResult(
+          vehicleId: vehicleId,
+          compartmentCount: template.compartments.length,
+          itemCount: 0,
+        );
+      }
+
+      // Sammelfach ans Ende, damit es die gewohnte G-Reihenfolge nicht stört.
+      final unassignedId = await db.compartmentDao.insertCompartment(
+        CompartmentsCompanion.insert(
+          vehicleId: vehicleId,
+          label: kUnassignedCompartmentLabel,
+          position: Value(template.compartments.length),
+        ),
+      );
+
+      final missing = <String>[];
+      var placed = 0;
+      for (final item in template.loading!.items) {
+        final equipment = await db.equipmentDao.getByLibraryId(item.equipmentId);
+        if (equipment == null) {
+          missing.add(item.equipmentId);
+          continue;
+        }
+        await db.assignmentDao.insertAssignment(
+          EquipmentAssignmentsCompanion.insert(
+            compartmentId: unassignedId,
+            equipmentId: equipment.id,
+            quantity: Value(item.quantity),
+          ),
+        );
+        placed++;
+      }
+
+      if (missing.isNotEmpty) {
+        appLog.w('Vorlage ${template.id}: ${missing.length} Geräte nicht im '
+            'Katalog gefunden — Bibliothek geseedet?');
+      }
+
+      return TemplateApplyResult(
+        vehicleId: vehicleId,
+        compartmentCount: template.compartments.length + 1,
+        itemCount: placed,
+        missingEquipment: missing,
+      );
+    });
+  }
+}

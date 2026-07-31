@@ -1,0 +1,16 @@
+{
+  "id": "mtw",
+  "name": "MTW",
+  "type": "MTW",
+  "note": "Mannschaftstransportwagen nach DIN 14507-6. Für diesen Typ liegt keine öffentliche Beladeliste vor — nur Geräteräume.",
+  "compartments": [
+    {
+      "label": "Laderaum",
+      "position": 0
+    },
+    {
+      "label": "Heck",
+      "position": 1
+    }
+  ]
+}

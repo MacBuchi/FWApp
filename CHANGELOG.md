@@ -12,6 +12,25 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.5.3] – 2026-07-31
+
+### Neu
+
+- **Fahrzeuge lassen sich aus einer Vorlage anlegen.** Beim Anlegen gibt es
+  jetzt Vorlagen für LF 10, LF 20, HLF 20, TSF-W, DLK 23/12, RW, GW-L, MTW und
+  ELW 1: Die Geräteräume (G1–G6, Heck, Dach) entstehen mit einem Griff statt
+  von Hand.
+- Für **LF 20 und HLF 20** lässt sich zusätzlich die Normbeladung übernehmen —
+  63 bzw. 73 Positionen. ⚠️ Die Liste ist **ungeprüft** und stammt aus einer
+  öffentlichen Beladeliste einer Feuerwehrschule; sie gehört durchgegangen.
+  Weil die Norm nur vorschreibt, *was* an Bord ist und nicht, in welchem
+  Geräteraum es liegt, landen die Positionen gesammelt in einem eigenen Fach.
+  Von dort verteilt ihr sie auf eure Räume — genau so, wie sie bei euch
+  wirklich liegen.
+- Für die übrigen Fahrzeugtypen liegt keine belegbare Liste vor; dort legt die
+  Vorlage nur die Geräteräume an. Beladung kommt weiterhin über den
+  Import-Assistenten oder von Hand dazu.
+
 ## [1.5.2] – 2026-07-31
 
 ### Behoben
@@ -198,6 +217,7 @@ Abschnitt „Workflow".
 - Erste Ausgabe: Fahrzeuge, Geräteräume, Beladepläne, Lernspiele und
   Serverabgleich.
 
+[1.5.3]: https://github.com/MacBuchi/FWApp/compare/v1.5.2...v1.5.3
 [1.5.2]: https://github.com/MacBuchi/FWApp/compare/v1.5.1...v1.5.2
 [1.5.1]: https://github.com/MacBuchi/FWApp/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/MacBuchi/FWApp/compare/v1.4.9...v1.5.0

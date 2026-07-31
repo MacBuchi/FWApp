@@ -1,0 +1,40 @@
+{
+  "id": "lf10",
+  "name": "LF 10",
+  "type": "LF 10",
+  "note": "Löschgruppenfahrzeug nach DIN 14530-5. Für diesen Typ liegt keine öffentliche Beladeliste vor — nur Geräteräume.",
+  "compartments": [
+    {
+      "label": "G1",
+      "position": 0
+    },
+    {
+      "label": "G2",
+      "position": 1
+    },
+    {
+      "label": "G3",
+      "position": 2
+    },
+    {
+      "label": "G4",
+      "position": 3
+    },
+    {
+      "label": "G5",
+      "position": 4
+    },
+    {
+      "label": "G6",
+      "position": 5
+    },
+    {
+      "label": "Heck (GR)",
+      "position": 6
+    },
+    {
+      "label": "Dach",
+      "position": 7
+    }
+  ]
+}

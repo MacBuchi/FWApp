@@ -75,6 +75,32 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          // Beim Anlegen zuerst der Weg über eine Vorlage (Issue #55): Alles
+          // von Hand zu erstellen war die eigentliche Beschwerde. Beim
+          // Bearbeiten wäre der Einstieg sinnlos.
+          if (widget.editId == null) ...[
+            Card(
+              color: Theme.of(context).colorScheme.secondaryContainer,
+              margin: EdgeInsets.zero,
+              child: ListTile(
+                leading: const Icon(Icons.auto_awesome_motion),
+                title: const Text('Aus Vorlage anlegen'),
+                subtitle: const Text(
+                    'Geräteräume passend zum Fahrzeugtyp, auf Wunsch mit '
+                    'Normbeladung'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.push('/vehicles/new/template'),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Center(
+              child: Text(
+                'oder von Hand:',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
           // Image preview – tap to change
           GestureDetector(
             onTap: _pickImage,

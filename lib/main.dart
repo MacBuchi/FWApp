@@ -15,6 +15,7 @@ import 'package:fwapp/core/database/library_seeder.dart';
 import 'package:fwapp/core/router/app_router.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/sync/image_precache.dart';
+import 'package:fwapp/core/theme/app_palette.dart';
 import 'package:fwapp/core/theme/app_theme.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
 import 'package:fwapp/core/logging/app_logger.dart';
@@ -154,12 +155,15 @@ class _FWAppState extends ConsumerState<FWApp> {
   @override
   Widget build(BuildContext context) {
     final themeModeAsync = ref.watch(themeModeProvider);
+    // Palette erst nach dem Laden der Preferences bekannt; bis dahin die
+    // Standardfarbe, damit der erste Frame nicht farblos aufblitzt.
+    final palette = ref.watch(appPaletteProvider).value ?? kAppPalettes.first;
 
     return MaterialApp.router(
       title: 'Feuerwehr-Lernapp',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light(),
-      darkTheme: AppTheme.dark(),
+      theme: AppTheme.light(palette),
+      darkTheme: AppTheme.dark(palette),
       // Standard: Systemeinstellung; in den Settings überschreibbar.
       themeMode: themeModeAsync.value ?? ThemeMode.system,
       routerConfig: ref.watch(routerProvider),

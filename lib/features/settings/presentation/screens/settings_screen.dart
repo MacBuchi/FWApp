@@ -12,6 +12,7 @@ import 'package:fwapp/core/sync/image_precache.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/sync/sync_service.dart';
 import 'package:fwapp/features/settings/presentation/providers/settings_providers.dart';
+import 'package:fwapp/features/settings/presentation/widgets/palette_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'
     show AuthException, UserAttributes;
 
@@ -66,6 +67,19 @@ class SettingsScreen extends ConsumerWidget {
               ],
             ),
           ),
+          // Farbthema nur für Admins (Issue #58): Im reinen Lokalbetrieb ist
+          // isAdmin true, alleinstehende Nutzer wählen also frei. Auf einer
+          // verbundenen Installation gehört das Erscheinungsbild der Wehr und
+          // nicht dem einzelnen Gerät.
+          if (ref.watch(isAdminProvider))
+            const PalettePicker()
+          else
+            const ListTile(
+              leading: Icon(Icons.palette_outlined),
+              title: Text('Farbthema'),
+              subtitle: Text('Legt die Verwaltung der Wehr fest.'),
+              enabled: false,
+            ),
 
           // ─── Supabase Sync ────────────────────────────────────
           _SectionHeader('Cloud-Synchronisation'),

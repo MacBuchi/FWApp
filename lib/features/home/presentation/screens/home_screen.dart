@@ -205,11 +205,17 @@ class _SuggestionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final percent = (suggestion.coverage * 100).round();
+    final scheme = Theme.of(context).colorScheme;
+    // Die eine Karte, die den vollen Konzept-Akzent trägt (Issue #58): Sie ist
+    // der Haupt-Handlungsaufruf des Dashboards, alles andere bleibt ruhig.
+    // Schrift und Icons immer als Partnerfarbe der Fläche — die geerbte
+    // onSurface passt nur zufällig zur Fläche darunter.
     return Card(
-      color: Theme.of(context).colorScheme.primaryContainer,
+      color: scheme.primary,
       child: ListTile(
-        leading: Icon(Icons.play_circle_fill,
-            size: 36, color: Theme.of(context).colorScheme.primary),
+        textColor: scheme.onPrimary,
+        iconColor: scheme.onPrimary,
+        leading: const Icon(Icons.play_circle_fill, size: 36),
         title: const Text('Weiterlernen',
             style: TextStyle(fontWeight: FontWeight.w700)),
         subtitle: Text(

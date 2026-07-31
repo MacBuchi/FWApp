@@ -104,6 +104,69 @@ abstract class _$ThemeModeNotifier extends $AsyncNotifier<ThemeMode> {
   }
 }
 
+/// Farbthema (Issue #58). Die gewählte ID wird gespeichert, nicht die Farbe —
+/// so wandert eine später nachgebesserte Palette automatisch mit. Nur beim
+/// eigenen Thema liegt der ARGB-Wert selbst in den Preferences, weil er sonst
+/// nirgends steht.
+
+@ProviderFor(AppPaletteNotifier)
+final appPaletteProvider = AppPaletteNotifierProvider._();
+
+/// Farbthema (Issue #58). Die gewählte ID wird gespeichert, nicht die Farbe —
+/// so wandert eine später nachgebesserte Palette automatisch mit. Nur beim
+/// eigenen Thema liegt der ARGB-Wert selbst in den Preferences, weil er sonst
+/// nirgends steht.
+final class AppPaletteNotifierProvider
+    extends $AsyncNotifierProvider<AppPaletteNotifier, AppPalette> {
+  /// Farbthema (Issue #58). Die gewählte ID wird gespeichert, nicht die Farbe —
+  /// so wandert eine später nachgebesserte Palette automatisch mit. Nur beim
+  /// eigenen Thema liegt der ARGB-Wert selbst in den Preferences, weil er sonst
+  /// nirgends steht.
+  AppPaletteNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'appPaletteProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$appPaletteNotifierHash();
+
+  @$internal
+  @override
+  AppPaletteNotifier create() => AppPaletteNotifier();
+}
+
+String _$appPaletteNotifierHash() =>
+    r'e89efa116d2fe0c9f9fdf0a166a26c465e9565e7';
+
+/// Farbthema (Issue #58). Die gewählte ID wird gespeichert, nicht die Farbe —
+/// so wandert eine später nachgebesserte Palette automatisch mit. Nur beim
+/// eigenen Thema liegt der ARGB-Wert selbst in den Preferences, weil er sonst
+/// nirgends steht.
+
+abstract class _$AppPaletteNotifier extends $AsyncNotifier<AppPalette> {
+  FutureOr<AppPalette> build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<AsyncValue<AppPalette>, AppPalette>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<AppPalette>, AppPalette>,
+              AsyncValue<AppPalette>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
 @ProviderFor(SyncSettingsNotifier)
 final syncSettingsProvider = SyncSettingsNotifierProvider._();
 

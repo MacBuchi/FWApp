@@ -11,6 +11,18 @@ Anwenderin, nicht aus Sicht des Codes. Das Format orientiert sich an
 Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md § 5.
 
+## [1.5.1] – 2026-07-31
+
+### Geändert
+
+- **Bilder auswählen ist deutlich besser geworden.** Beim Fahrzeug- und
+  Gerätebild lässt sich jetzt wählen, ob man ein Foto aufnimmt oder eins aus
+  der Galerie holt. Danach öffnet sich ein Editor, in dem man den Ausschnitt
+  mit dem Finger ziehen und zoomen sowie das Bild drehen kann — mit großen
+  Schaltflächen, die sich auch mit Handschuh treffen lassen.
+- Bilder werden automatisch auf eine sinnvolle Größe gerechnet. Die vorher
+  vorgeschaltete Frage nach der Bildgröße entfällt damit.
+
 ## [1.5.0] – 2026-07-31
 
 ### Neu
@@ -163,6 +175,7 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 - Erste Ausgabe: Fahrzeuge, Geräteräume, Beladepläne, Lernspiele und
   Serverabgleich.
 
+[1.5.1]: https://github.com/MacBuchi/FWApp/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/MacBuchi/FWApp/compare/v1.4.9...v1.5.0
 [1.4.9]: https://github.com/MacBuchi/FWApp/compare/v1.4.8...v1.4.9
 [1.4.8]: https://github.com/MacBuchi/FWApp/compare/v1.4.7...v1.4.8

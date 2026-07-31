@@ -2,7 +2,7 @@ name: fwapp
 description: Feuerwehr-Lernapp – Fahrzeuge, Geräte, Beladepläne und Trainings-Spielmodi.
 publish_to: 'none'
 
-version: 1.5.0+18
+version: 1.5.1+19
 
 environment:
   sdk: ^3.7.0
@@ -71,6 +71,7 @@ dependencies:
   package_info_plus: ^9.0.1
   url_launcher: ^6.3.1
   csv: ^8.0.0
+  crop_your_image: ^2.0.0
 
 dev_dependencies:
   flutter_test:

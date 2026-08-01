@@ -12,6 +12,7 @@ import 'package:fwapp/core/sync/image_precache.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/sync/sync_service.dart';
 import 'package:fwapp/features/settings/presentation/providers/settings_providers.dart';
+import 'package:fwapp/features/settings/presentation/widgets/abteilung_picker.dart';
 import 'package:fwapp/features/settings/presentation/widgets/palette_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'
     show AuthException, UserAttributes;
@@ -352,6 +353,9 @@ class _ConnectionSection extends ConsumerWidget {
             child: const Text('Abmelden'),
           ),
         ),
+        // Abteilungswahl (Issue #57 Phase 2) — erscheint nur, wenn der
+        // Server Abteilungen kennt.
+        const AbteilungTile(),
         if (mustChange)
           ListTile(
             leading: const Icon(Icons.lock_reset, color: Colors.red),

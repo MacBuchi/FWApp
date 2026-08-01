@@ -48,7 +48,7 @@ final class AppDatabaseProvider
   }
 }
 
-String _$appDatabaseHash() => r'aafeeb8fd3422c50dbec8e7fecbd988a1c395e71';
+String _$appDatabaseHash() => r'463606ff7e3773e593ab5dbc2d8b4b9904eeb092';
 
 @ProviderFor(vehicleDao)
 final vehicleDaoProvider = VehicleDaoProvider._();

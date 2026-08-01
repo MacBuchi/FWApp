@@ -13,6 +13,7 @@ import 'package:fwapp/core/crash/crash_store.dart';
 import 'package:fwapp/core/database/database_providers.dart';
 import 'package:fwapp/core/database/library_seeder.dart';
 import 'package:fwapp/core/router/app_router.dart';
+import 'package:fwapp/core/sync/abteilung_providers.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/sync/image_precache.dart';
 import 'package:fwapp/core/theme/app_palette.dart';
@@ -105,9 +106,22 @@ Future<void> main() async {
         error: e, stackTrace: s);
   }
 
+  // Gemerkte Abteilungswahl (Issue #57 Phase 2) — muss VOR dem ersten
+  // Datenbankzugriff feststehen, weil sie die Datei bestimmt. Nur relevant,
+  // wenn der Sync aktiv ist; im Lokalmodus gilt immer die eigene Datei.
+  String? selectedAbteilung;
+  if (supabaseReady) {
+    final prefs = await SharedPreferences.getInstance();
+    selectedAbteilung = prefs.getString(kSelectedAbteilungPref);
+  }
+
   runApp(
     ProviderScope(
-      overrides: [supabaseReadyProvider.overrideWithValue(supabaseReady)],
+      overrides: [
+        supabaseReadyProvider.overrideWithValue(supabaseReady),
+        selectedAbteilungIdProvider
+            .overrideWith((ref) => selectedAbteilung),
+      ],
       child: const FWApp(),
     ),
   );

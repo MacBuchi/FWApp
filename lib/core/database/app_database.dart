@@ -666,5 +666,8 @@ class AppDatabase extends _$AppDatabase {
         },
       );
 
-  static AppDatabase create() => AppDatabase(openConnection());
+  /// [abteilungId] wählt die Datenbank-Datei der Abteilung (Issue #57
+  /// Phase 2); null = eigene Abteilung in der angestammten Datei.
+  static AppDatabase create({String? abteilungId}) =>
+      AppDatabase(openConnection(abteilungId: abteilungId));
 }

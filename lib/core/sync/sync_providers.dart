@@ -7,6 +7,7 @@ import 'dart:async' show TimeoutException;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/database/database_providers.dart';
+import 'package:fwapp/core/sync/abteilung_providers.dart';
 import 'package:fwapp/core/sync/image_sync_service.dart';
 import 'package:fwapp/core/sync/sync_service.dart';
 import 'package:fwapp/core/utils/image_utils.dart'
@@ -49,6 +50,13 @@ final currentUserRoleProvider = FutureProvider<String?>((ref) async {
 ///   members (and signed-out users on a connected install) are read-only.
 final canEditProvider = Provider<bool>((ref) {
   if (!ref.watch(supabaseReadyProvider)) return true;
+  // Schwester-Sicht (Issue #57 Phase 2) ist grundsätzlich nur lesend —
+  // laut Issue hat dort auch der Gerätewart exakt die Mitglieder-Rechte.
+  final selected = ref.watch(selectedAbteilungIdProvider);
+  if (selected != null) {
+    final own = ref.watch(myAbteilungIdProvider).value;
+    if (selected != own) return false;
+  }
   final role = ref.watch(currentUserRoleProvider).value;
   return role == 'admin' || role == 'geraetewart';
 });
@@ -86,7 +94,13 @@ final imageSyncServiceProvider = Provider<ImageSyncService?>((ref) {
 final syncServiceProvider = Provider<SyncService?>((ref) {
   final client = ref.watch(supabaseClientProvider);
   if (client == null) return null;
-  final service = SyncService(ref.watch(appDatabaseProvider), client);
+  // Abteilungswahl (Issue #57 Phase 2): Datenbank UND Sync hängen an der
+  // Auswahl — der Provider baut sich bei einem Wechsel komplett neu auf.
+  final service = SyncService(
+    ref.watch(appDatabaseProvider),
+    client,
+    abteilungOverride: ref.watch(selectedAbteilungIdProvider),
+  );
   service.startDirtyTracking();
   ref.onDispose(service.dispose);
   return service;

@@ -1,13 +1,18 @@
 /// database_providers.dart – Riverpod provider for the AppDatabase singleton.
 library;
 import 'package:fwapp/core/database/app_database.dart';
+import 'package:fwapp/core/sync/abteilung_providers.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'database_providers.g.dart';
 
 @Riverpod(keepAlive: true)
 AppDatabase appDatabase(Ref ref) {
-  final db = AppDatabase.create();
+  // Jede Abteilung hat ihre eigene Datei (Issue #57 Phase 2): Beim Wechsel
+  // baut sich der Provider neu auf, alle DAO-Provider und Streams folgen
+  // automatisch. `null` = eigene Abteilung in der angestammten Datei.
+  final abteilungId = ref.watch(selectedAbteilungIdProvider);
+  final db = AppDatabase.create(abteilungId: abteilungId);
   ref.onDispose(db.close);
   return db;
 }

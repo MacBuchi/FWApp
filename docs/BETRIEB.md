@@ -174,6 +174,11 @@ Issue #57.
   [SERVER-SETUP.md](SERVER-SETUP.md) dokumentiert.
 - Nach Server-Neustart kommt der Stack selbstständig hoch; prüfen mit
   `docker compose ps` in der VM.
+- Der Server kann seit dem 2026-08-01 E-Mails senden (Absender
+  `noreply-fwapp@mcbuchi.de` über Brevo). Kontrolle:
+  `journalctl -u fwapp-mailbridge` auf der VM; Key-Tausch = Datei
+  `~/brevo-api-key.txt` ersetzen, kein Neustart nötig. Details in
+  [SERVER-SETUP.md](SERVER-SETUP.md) (Abschnitt Mail-Brücke).
 
 ---
 

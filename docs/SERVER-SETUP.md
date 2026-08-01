@@ -410,6 +410,48 @@ ssh fwapp@<vm> 'chmod +x bin/fwapp_autodeploy.sh \
 # eingespielt (source='seed') — der Server läuft ja auf dem Stand von main.
 ```
 
+### Mail-Brücke: SMTP → Brevo-HTTP-API (Issue #57 Phase 4, seit 2026-08-01)
+
+Die VM hat kein IPv4 und `smtp-relay.brevo.com` kein IPv6 — klassisches SMTP
+nach draußen ist unmöglich. `api.brevo.com` hat dagegen IPv6, aber
+Docker-**Bridge**-Netze auf der VM haben keinen IPv6-Ausgang (gemessen:
+Bridge-Netz 000, Host-Netz 401). Deshalb läuft
+[tool/vm/fwapp_mailbridge.py](../tool/vm/fwapp_mailbridge.py) als
+systemd-Dienst **direkt auf dem Host**: GoTrue spricht lokal SMTP, die Brücke
+übersetzt zur Brevo-HTTP-API.
+
+- **Bind-Adresse `172.18.0.1:2500`** — das Gateway des
+  `supabase_default`-Netzes. Container erreichen es über ihre Default-Route,
+  das LAN hat keine Route dorthin (kein offenes Relay im Heimnetz).
+- **API-Key** liegt nur auf der VM: `~/brevo-api-key.txt` (chmod 600). Er wird
+  pro Versand frisch gelesen — **Key-Tausch = Datei ersetzen, kein Neustart.**
+  Achtung Brevo-Falle: Der Key muss mit `xkeysib-` beginnen (HTTP-API); der
+  SMTP-Schlüssel (`xsmtpsib-`) wird mit 401 abgelehnt.
+- **Absender**: `noreply-fwapp@mcbuchi.de` — die Domain ist in Brevo
+  authentifiziert (SPF/DKIM), damit ist jede Adresse darunter erlaubt.
+- In `~/supabase/.env`: `SMTP_HOST=172.18.0.1`, `SMTP_PORT=2500`,
+  `SMTP_USER=`/`SMTP_PASS=` **leer** (Brücke verlangt kein AUTH),
+  `SMTP_ADMIN_EMAIL=noreply-fwapp@mcbuchi.de`, `SMTP_SENDER_NAME=FWApp`.
+  Danach `docker compose up -d auth`.
+
+Installation/Neuaufbau:
+
+```bash
+ssh fwapp@<vm> 'sudo apt-get install -y python3.11-venv \
+  && python3 -m venv ~/mailbridge/venv \
+  && ~/mailbridge/venv/bin/pip install aiosmtpd'
+scp tool/vm/fwapp_mailbridge.py fwapp@<vm>:bin/
+scp tool/vm/fwapp-mailbridge.service fwapp@<vm>:/tmp/
+ssh fwapp@<vm> 'sudo mv /tmp/fwapp-mailbridge.service /etc/systemd/system/ \
+  && sudo systemctl daemon-reload \
+  && sudo systemctl enable --now fwapp-mailbridge.service'
+# Log: journalctl -u fwapp-mailbridge  („Angenommen: … Brevo-Message-Id …")
+```
+
+Ende-zu-Ende getestet am 2026-08-01: Direkt-SMTP an die Brücke **und** eine
+echte GoTrue-Invite-Mail kamen beim Empfänger an; Fehlversand meldet die
+Brücke als SMTP 451 an GoTrue zurück (kein stilles Schlucken).
+
 ### Feedback-Tabelle & Issue-Bot (seit 2026-07-19)
 
 Die App schreibt In-App-Feedback (Feature/Bug) in die Tabelle `feedback`

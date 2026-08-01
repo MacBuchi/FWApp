@@ -12,6 +12,20 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.9.1] – 2026-08-01
+
+### Geändert
+
+- **Die Zwei-Faktor-Anmeldung bleibt freiwillig — auch für Admins.** Die
+  mit v1.9.0 angekündigte Pflicht ab dem 1. September ist gestrichen; die
+  Einrichtung wird Admin-Konten weiterhin empfohlen. Wer einen zweiten
+  Faktor eingerichtet hat, meldet sich damit unverändert auch an.
+
+### Behoben
+
+- Die Kachel *Einstellungen → Zwei-Faktor-Anmeldung* führt jetzt wirklich
+  zur Einrichtung — vorher sprang die App zurück auf die Startseite.
+
 ## [1.9.0] – 2026-08-01
 
 ### Neu

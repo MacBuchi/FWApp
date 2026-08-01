@@ -62,6 +62,12 @@ const _publicPaths = {'/login', '/server-settings'};
 /// Seiten, die es nur mit Serververbindung gibt.
 const _authPaths = {'/login', '/change-password', '/zwei-faktor'};
 
+/// Davon für Angemeldete erledigt und deshalb zurück auf die Startseite.
+/// `/zwei-faktor` fehlt hier BEWUSST: Die Einrichtung ist freiwillig und
+/// wird aus den Einstellungen geöffnet — ein Redirect machte die Kachel
+/// zur Sackgasse (Klick sprang auf die Startseite, Feld-Befund v1.9.0).
+const _doneWhenLoggedIn = {'/login', '/change-password'};
+
 /// Pure Guard-Logik, getrennt vom Router für direkte Testbarkeit.
 /// Liefert das Redirect-Ziel oder null (= Navigation erlaubt).
 String? guardRedirect({
@@ -73,7 +79,6 @@ String? guardRedirect({
   required bool mustChangePassword,
   required bool recoveryPending,
   required bool mfaPending,
-  required bool mussZweiFaktor,
 }) {
   // Anmeldezwang VOR den Rollen-Guards: Ohne Sitzung ist canEdit false,
   // /import liefe sonst erst auf '/' und von dort auf '/login' — zwei
@@ -99,12 +104,7 @@ String? guardRedirect({
     if (mustChangePassword) {
       return path == '/change-password' ? null : '/change-password';
     }
-    // Nach Ablauf der Übergangsfrist führt für Admins ohne zweiten Faktor
-    // der Weg nur noch über die Einrichtung. Vorher weist die App nur hin.
-    if (mussZweiFaktor) {
-      return path == '/zwei-faktor' ? null : '/zwei-faktor';
-    }
-    if (_authPaths.contains(path)) return '/';
+    if (_doneWhenLoggedIn.contains(path)) return '/';
   } else if (_authPaths.contains(path)) {
     // Lokalmodus: Es gibt kein Konto, in das man sich setzen könnte. Die
     // App bleibt ohne Server voll benutzbar; /server-settings führt zurück.
@@ -135,9 +135,6 @@ final routerProvider = Provider<GoRouter>((ref) {
   // Anmelde-Screen stehen: Das Flag fällt, aber niemand wertet neu aus.
   ref.listen(recoveryPendingProvider, (_, _) => refresh.value++);
   ref.listen(mfaOffenProvider, (_, _) => refresh.value++);
-  // Die Faktorenliste kommt asynchron; ohne Anstoß bliebe ein Admin nach
-  // dem Einrichten auf der Einrichtungsseite stehen.
-  ref.listen(mfaFaktorenProvider, (_, _) => refresh.value++);
 
   // An-/Abmelden stößt den Redirect an. Bewusst der rohe gotrue-Strom und
   // nicht sessionStreamProvider: Der filtert per distinct auf die Nutzer-ID
@@ -172,11 +169,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       mustChangePassword: ref.read(mustChangePasswordProvider).value ?? false,
       recoveryPending: ref.read(recoveryPendingProvider),
       mfaPending: ref.read(mfaOffenProvider),
-      mussZweiFaktor: mussZweiFaktorEinrichten(
-        rolle: ref.read(currentUserRoleProvider).value,
-        hatFaktor: ref.read(hatZweitenFaktorProvider),
-        jetzt: DateTime.now().toUtc(),
-      ),
     ),
     routes: _routes,
   );

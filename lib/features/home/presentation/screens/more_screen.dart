@@ -20,6 +20,9 @@ class MoreScreen extends ConsumerWidget {
     // Lokalmodus gibt es keine zentralen Konten).
     final showUserManagement = ref.watch(isAdminProvider) &&
         ref.watch(supabaseReadyProvider);
+    // Abteilung & Gesamtwehr (#57 Phase 3): auch der Gerätewart kommt hier
+    // rein — er darf einen Anschluss beantragen, nur nicht entscheiden.
+    final showGesamtwehr = canEdit && ref.watch(supabaseReadyProvider);
     final syncMeta = ref.watch(syncMetaStreamProvider).value;
     final dirty = syncMeta?.localDirty ?? false;
 
@@ -114,6 +117,17 @@ class MoreScreen extends ConsumerWidget {
                           'Konten anlegen, Passwörter zurücksetzen (Admin)'),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => context.push('/user-management'),
+                    ),
+                  ],
+                  if (showGesamtwehr) ...[
+                    const Divider(indent: 16, endIndent: 16),
+                    ListTile(
+                      leading: const Icon(Icons.account_tree),
+                      title: const Text('Abteilung & Gesamtwehr'),
+                      subtitle: const Text(
+                          'Abteilungen anlegen und verbinden (#57)'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => context.push('/gesamtwehr'),
                     ),
                   ],
                   if (dirty) ...[

@@ -1,0 +1,459 @@
+/// gesamtwehr_screen.dart – Abteilung & Gesamtwehr (Issue #57 Phase 3).
+///
+/// Ein Screen für beide Seiten desselben Vorgangs: Die anfragende Abteilung
+/// sieht hier ihren Antrag, die aufnehmende Gesamtwehr ihre Entscheidung.
+/// Welche Hälfte erscheint, hängt allein daran, ob die eigene Abteilung schon
+/// zu einer Gesamtwehr gehört — deshalb keine zwei Screens.
+library;
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fwapp/core/sync/gesamtwehr_providers.dart';
+import 'package:fwapp/core/sync/sync_providers.dart';
+
+class GesamtwehrScreen extends ConsumerWidget {
+  const GesamtwehrScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final organisation = ref.watch(meineOrganisationProvider);
+    final isAdmin = ref.watch(isAdminProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Abteilung & Gesamtwehr'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Neu laden',
+            onPressed: () {
+              ref.invalidate(meineOrganisationProvider);
+              ref.invalidate(offeneAnfragenProvider);
+              ref.invalidate(eigenerAntragProvider);
+            },
+          ),
+        ],
+      ),
+      body: organisation.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => _Hinweis(
+          icon: Icons.cloud_off,
+          text: 'Die Abteilung konnte nicht geladen werden:\n'
+              '${gesamtwehrFehlerText(e)}',
+        ),
+        data: (org) {
+          if (org == null) {
+            return const _Hinweis(
+              icon: Icons.link_off,
+              text: 'Dieser Server kennt noch keine Abteilungen. '
+                  'Die Gesamtwehr gibt es erst ab Serverstand 1.5.5.',
+            );
+          }
+          return ListView(
+            padding: const EdgeInsets.all(12),
+            children: [
+              _AbteilungsKarte(org: org),
+              if (!org.verbunden) _OhneKlammer(org: org, isAdmin: isAdmin),
+              if (org.verbunden && isAdmin) ...[
+                _WeitereAbteilung(org: org),
+                const _OffeneAnfragen(),
+              ],
+              const SizedBox(height: 8),
+              const _Erklaerung(),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _AbteilungsKarte extends StatelessWidget {
+  final MeineOrganisation org;
+  const _AbteilungsKarte({required this.org});
+
+  @override
+  Widget build(BuildContext context) {
+    final farben = Theme.of(context).colorScheme;
+    return Card(
+      child: Column(
+        children: [
+          ListTile(
+            leading: const Icon(Icons.fire_truck),
+            title: Text(org.abteilungName),
+            subtitle: Text(org.freigegeben
+                ? 'Deine Abteilung'
+                : 'Deine Abteilung — noch nicht freigegeben'),
+            trailing: org.freigegeben
+                ? null
+                : Chip(
+                    label: const Text('wartet'),
+                    backgroundColor: farben.tertiaryContainer,
+                  ),
+          ),
+          const Divider(indent: 16, endIndent: 16),
+          ListTile(
+            leading: const Icon(Icons.account_tree),
+            title: Text(org.gesamtwehrName ?? 'Keiner Gesamtwehr angeschlossen'),
+            subtitle: Text(org.verbunden
+                ? 'Gesamtwehr — ihre Abteilungen sehen einander lesend'
+                : 'Die Abteilung arbeitet eigenständig'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Die Seite ohne Klammer: gründen oder beitreten — oder warten.
+class _OhneKlammer extends ConsumerWidget {
+  final MeineOrganisation org;
+  final bool isAdmin;
+  const _OhneKlammer({required this.org, required this.isAdmin});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final antrag = ref.watch(eigenerAntragProvider).value;
+
+    if (antrag != null && antrag.laeuft) {
+      return Card(
+        child: ListTile(
+          leading: const Icon(Icons.hourglass_top),
+          title: const Text('Antrag läuft'),
+          subtitle: const Text(
+              'Die Gesamtwehr muss den Anschluss noch bestätigen. '
+              'Bis dahin arbeitet die Abteilung normal weiter.'),
+        ),
+      );
+    }
+
+    return Card(
+      child: Column(
+        children: [
+          if (antrag != null && antrag.status == 'rejected')
+            ListTile(
+              leading: Icon(Icons.info_outline,
+                  color: Theme.of(context).colorScheme.error),
+              title: const Text('Der letzte Antrag wurde abgelehnt'),
+              subtitle: Text(antrag.antwort ?? 'Ohne Begründung.'),
+            ),
+          if (isAdmin) ...[
+            ListTile(
+              leading: const Icon(Icons.add_home_work),
+              title: const Text('Gesamtwehr gründen'),
+              subtitle: const Text(
+                  'Die Klammer über mehrere Abteilungen — deine wird das '
+                  'erste Mitglied'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => _gruenden(context, ref),
+            ),
+            const Divider(indent: 16, endIndent: 16),
+          ],
+          ListTile(
+            leading: const Icon(Icons.group_add),
+            title: const Text('Anschluss beantragen'),
+            subtitle: const Text(
+                'An eine bestehende Gesamtwehr — deren Admin entscheidet'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => _beantragen(context, ref),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _gruenden(BuildContext context, WidgetRef ref) async {
+    final name = await _frageName(
+      context,
+      titel: 'Gesamtwehr gründen',
+      feld: 'Name der Gesamtwehr',
+      beispiel: 'z. B. Gesamtfeuerwehr Musterstadt',
+    );
+    if (name == null || !context.mounted) return;
+    await _fuehreAus(context, ref, 'Gesamtwehr „$name" gegründet.',
+        (dienst) => dienst.gruendeGesamtwehr(name));
+  }
+
+  Future<void> _beantragen(BuildContext context, WidgetRef ref) async {
+    final wehren = await ref.read(gesamtwehrenProvider.future);
+    if (!context.mounted) return;
+    if (wehren.isEmpty) {
+      _melde(context, 'Auf diesem Server gibt es noch keine Gesamtwehr.');
+      return;
+    }
+    final wahl = await showDialog<({String id, String nachricht})>(
+      context: context,
+      builder: (_) => _AntragDialog(wehren: wehren),
+    );
+    if (wahl == null || !context.mounted) return;
+    await _fuehreAus(context, ref, 'Antrag gestellt.',
+        (dienst) => dienst.beantrageVerbindung(wahl.id,
+            nachricht: wahl.nachricht));
+  }
+}
+
+class _WeitereAbteilung extends ConsumerWidget {
+  final MeineOrganisation org;
+  const _WeitereAbteilung({required this.org});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) => Card(
+        child: ListTile(
+          leading: const Icon(Icons.add_business),
+          title: const Text('Weitere Abteilung anlegen'),
+          subtitle: Text('In „${org.gesamtwehrName ?? 'deiner Gesamtwehr'}" — '
+              'sofort einsatzbereit, du bürgst als Admin dafür'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () async {
+            final name = await _frageName(
+              context,
+              titel: 'Abteilung anlegen',
+              feld: 'Name der Abteilung',
+              beispiel: 'z. B. Abteilung Nord',
+            );
+            if (name == null || !context.mounted) return;
+            await _fuehreAus(context, ref, 'Abteilung „$name" angelegt.',
+                (dienst) => dienst.legeAbteilungAn(name));
+          },
+        ),
+      );
+}
+
+class _OffeneAnfragen extends ConsumerWidget {
+  const _OffeneAnfragen();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final anfragen = ref.watch(offeneAnfragenProvider).value ?? const [];
+    if (anfragen.isEmpty) return const SizedBox.shrink();
+
+    return Card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
+            child: Text('Offene Anfragen',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+          for (final a in anfragen)
+            ListTile(
+              leading: const Icon(Icons.mark_email_unread),
+              title: Text(a.abteilungName),
+              subtitle: Text(a.nachricht ?? 'Möchte sich anschließen.'),
+              isThreeLine: a.nachricht != null,
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    tooltip: 'Ablehnen',
+                    onPressed: () => _entscheiden(context, ref, a, false),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.check),
+                    tooltip: 'Freigeben',
+                    onPressed: () => _entscheiden(context, ref, a, true),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _entscheiden(BuildContext context, WidgetRef ref,
+      VerbindungsAnfrage a, bool freigeben) async {
+    final bestaetigt = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(freigeben ? 'Anschluss freigeben?' : 'Antrag ablehnen?'),
+        content: Text(freigeben
+            ? '„${a.abteilungName}" wird Teil deiner Gesamtwehr. Beide '
+                'Abteilungen können danach den Bestand der jeweils anderen '
+                'lesen — bearbeiten weiterhin nur die eigene.'
+            : '„${a.abteilungName}" bleibt eigenständig. Ein neuer Antrag '
+                'ist jederzeit möglich.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Abbrechen'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(freigeben ? 'Freigeben' : 'Ablehnen'),
+          ),
+        ],
+      ),
+    );
+    if (bestaetigt != true || !context.mounted) return;
+    await _fuehreAus(
+      context,
+      ref,
+      freigeben
+          ? '„${a.abteilungName}" ist jetzt Teil der Gesamtwehr.'
+          : 'Antrag abgelehnt.',
+      (dienst) => dienst.entscheide(a.id, freigeben: freigeben),
+    );
+  }
+}
+
+class _AntragDialog extends StatefulWidget {
+  final List<GesamtwehrInfo> wehren;
+  const _AntragDialog({required this.wehren});
+
+  @override
+  State<_AntragDialog> createState() => _AntragDialogState();
+}
+
+class _AntragDialogState extends State<_AntragDialog> {
+  late String _gewaehlt = widget.wehren.first.id;
+  final _nachricht = TextEditingController();
+
+  @override
+  void dispose() {
+    _nachricht.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+        title: const Text('Anschluss beantragen'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            DropdownButtonFormField<String>(
+              initialValue: _gewaehlt,
+              decoration: const InputDecoration(labelText: 'Gesamtwehr'),
+              items: [
+                for (final w in widget.wehren)
+                  DropdownMenuItem(value: w.id, child: Text(w.name)),
+              ],
+              onChanged: (v) => setState(() => _gewaehlt = v ?? _gewaehlt),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _nachricht,
+              decoration: const InputDecoration(
+                labelText: 'Nachricht (optional)',
+                hintText: 'Wer ihr seid, wer angefragt hat',
+              ),
+              maxLines: 2,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Abbrechen'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(
+                context, (id: _gewaehlt, nachricht: _nachricht.text)),
+            child: const Text('Antrag stellen'),
+          ),
+        ],
+      );
+}
+
+class _Erklaerung extends StatelessWidget {
+  const _Erklaerung();
+
+  @override
+  Widget build(BuildContext context) => Card(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        child: const Padding(
+          padding: EdgeInsets.all(16),
+          child: Text(
+            'Jede Abteilung führt ihren eigenen Bestand und veröffentlicht ihn '
+            'selbst. Die Gesamtwehr verbindet mehrere Abteilungen: Sie sehen '
+            'den Bestand der anderen, ändern können sie ihn nicht. Nur der '
+            'Admin der Gesamtwehr darf überall bearbeiten.',
+          ),
+        ),
+      );
+}
+
+class _Hinweis extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  const _Hinweis({required this.icon, required this.text});
+
+  @override
+  Widget build(BuildContext context) => Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 48),
+              const SizedBox(height: 12),
+              Text(text, textAlign: TextAlign.center),
+            ],
+          ),
+        ),
+      );
+}
+
+// ── Gemeinsame Helfer ─────────────────────────────────────────────────────
+
+Future<String?> _frageName(
+  BuildContext context, {
+  required String titel,
+  required String feld,
+  required String beispiel,
+}) async {
+  final steuerung = TextEditingController();
+  final name = await showDialog<String>(
+    context: context,
+    builder: (_) => AlertDialog(
+      title: Text(titel),
+      content: TextField(
+        controller: steuerung,
+        autofocus: true,
+        decoration: InputDecoration(labelText: feld, hintText: beispiel),
+        onSubmitted: (v) => Navigator.pop(context, v),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Abbrechen'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, steuerung.text),
+          child: const Text('Anlegen'),
+        ),
+      ],
+    ),
+  );
+  steuerung.dispose();
+  final sauber = name?.trim();
+  return (sauber == null || sauber.isEmpty) ? null : sauber;
+}
+
+/// Führt einen Vorgang aus und meldet das Ergebnis — Erfolg wie Fehler landen
+/// beide in derselben Snackbar, damit kein Vorgang stumm bleibt.
+Future<void> _fuehreAus(
+  BuildContext context,
+  WidgetRef ref,
+  String erfolg,
+  Future<void> Function(GesamtwehrService) vorgang,
+) async {
+  final dienst = ref.read(gesamtwehrServiceProvider);
+  if (dienst == null) {
+    _melde(context, 'Kein Server verbunden.');
+    return;
+  }
+  try {
+    await vorgang(dienst);
+    if (context.mounted) _melde(context, erfolg);
+  } catch (e) {
+    if (context.mounted) _melde(context, gesamtwehrFehlerText(e));
+  }
+}
+
+void _melde(BuildContext context, String text) {
+  ScaffoldMessenger.of(context)
+      .showSnackBar(SnackBar(content: Text(text)));
+}

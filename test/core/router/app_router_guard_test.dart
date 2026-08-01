@@ -33,6 +33,7 @@ void main() {
       expect(asMember('/inventory'), '/');
       expect(asMember('/inventory/run/3'), '/');
       expect(asMember('/user-management'), '/');
+      expect(asMember('/gesamtwehr'), '/');
     });
 
     test('Lese-Routen bleiben erreichbar', () {
@@ -69,6 +70,22 @@ void main() {
               isAdmin: true,
               supabaseReady: false),
           '/');
+    });
+
+    test('Abteilung & Gesamtwehr: Gerätewart ja, Mitglied nein (#57 Phase 3)',
+        () {
+      // Bewusst canEdit statt isAdmin — den Anschluss beantragt auch der
+      // Gerätewart. Über die Freigabe entscheidet der Server, nicht der Guard.
+      expect(asEditor('/gesamtwehr'), isNull);
+      expect(asAdmin('/gesamtwehr'), isNull);
+      expect(
+          guardRedirect(
+              path: '/gesamtwehr',
+              canEdit: true,
+              isAdmin: true,
+              supabaseReady: false),
+          '/',
+          reason: 'ohne Server gibt es keine Abteilungen');
     });
   });
 }

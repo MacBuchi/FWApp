@@ -47,7 +47,7 @@
     }
   ],
   "functions": {
-    "admin-users/index.ts": "68c8cd0dbd7af1080df5336a3dbd7159da56bc65a10353db00cc09251de1b144",
+    "admin-users/index.ts": "b97473f631981b6281e4904bce83aede2b833b873d29d2eb6b453c20dac2263c",
     "main/index.ts": "e35427a3f30635ba6db7742870e377dfb978786a07f99efb1644b1714be614c5"
   }
 }

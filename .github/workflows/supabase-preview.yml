@@ -67,6 +67,12 @@ jobs:
       - name: Start stack at BASE migration state
         if: steps.classify.outputs.count != '0'
         run: |
+          # `git checkout <commit> -- <dir>` does NOT delete files absent from
+          # that commit — the PR's new migrations would survive, `supabase
+          # start` would apply them, and the upgrade step below would apply
+          # them a SECOND time ("already exists"). Wipe the directory first so
+          # the stack really boots at the base state. First hit: PR #77.
+          rm -rf supabase/migrations
           git checkout "${{ steps.classify.outputs.base }}" -- supabase/migrations
           supabase start
 
@@ -85,6 +91,9 @@ jobs:
       - name: Apply ONLY the new migrations (the production upgrade path)
         if: steps.classify.outputs.count != '0'
         run: |
+          # Symmetric wipe: harmless today (immutability forbids deletions on
+          # the PR side), but keeps both restores honest.
+          rm -rf supabase/migrations
           git checkout HEAD -- supabase/migrations
           while IFS= read -r f; do
             echo "==> $f"

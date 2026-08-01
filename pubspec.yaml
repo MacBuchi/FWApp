@@ -2,7 +2,7 @@ name: fwapp
 description: Feuerwehr-Lernapp – Fahrzeuge, Geräte, Beladepläne und Trainings-Spielmodi.
 publish_to: 'none'
 
-version: 1.8.0+30
+version: 1.9.0+31
 
 environment:
   sdk: ^3.7.0
@@ -72,6 +72,11 @@ dependencies:
   url_launcher: ^6.3.1
   csv: ^8.0.0
 dev_dependencies:
+  # Nur für den TOTP-E2E-Test: Er erzeugt die Sechsstelligen selbst
+  # (HMAC-SHA1 nach RFC 6238), um die Zwei-Faktor-Anmeldung gegen den
+  # echten Stack durchzuspielen. In der App wird nichts davon benutzt —
+  # die Codes kommen dort aus der Authenticator-App des Nutzers.
+  crypto: ^3.0.6
   flutter_test:
     sdk: flutter
   # Geräte-Tests ("Test-API" statt Screenshot-Steuerung):

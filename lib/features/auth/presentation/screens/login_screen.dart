@@ -22,11 +22,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fwapp/core/logging/app_logger.dart';
 import 'package:fwapp/core/sync/auth_utils.dart';
+import 'package:fwapp/core/sync/mfa_providers.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/widgets/password_field.dart';
 import 'package:fwapp/features/settings/presentation/widgets/sync_config_section.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'
-    show AuthException, OtpType, UserAttributes;
+    show AuthException, FactorStatus, OtpType, UserAttributes;
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -36,7 +37,8 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 /// anmelden → Adresse (Passwort vergessen) → Code einlösen.
-enum _Modus { anmelden, adresse, code }
+/// Quer dazu: zweiterFaktor, wenn das Konto TOTP eingerichtet hat.
+enum _Modus { anmelden, adresse, code, zweiterFaktor }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _user = TextEditingController();
@@ -45,6 +47,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _code = TextEditingController();
   final _neu1 = TextEditingController();
   final _neu2 = TextEditingController();
+  final _totp = TextEditingController();
   var _modus = _Modus.anmelden;
   bool _busy = false;
   String? _error;
@@ -61,6 +64,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     _code.dispose();
     _neu1.dispose();
     _neu2.dispose();
+    _totp.dispose();
     super.dispose();
   }
 
@@ -86,6 +90,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       );
       // Signal an den Passwortmanager, die Zugangsdaten zu sichern.
       TextInput.finishAutofillContext();
+      // Zweiter Faktor eingerichtet? Dann steht die Sitzung erst auf aal1.
+      // Das Flag hält den Router still, bis der Code stimmt — sonst wäre
+      // der zweite Faktor eine Zierde.
+      if (brauchtZweitenFaktor(client)) {
+        ref.read(mfaOffenProvider.notifier).state = true;
+        if (!mounted) return;
+        setState(() {
+          _modus = _Modus.zweiterFaktor;
+          _hinweis = 'Bitte den Code aus deiner Authenticator-App eingeben.';
+        });
+        return;
+      }
       // Bewusst KEIN context.go(): Das Auth-Ereignis stößt den Router an,
       // guardRedirect bringt den Nutzer auf '/' oder '/change-password'. Ein
       // zweiter Weg wäre ein Rennen gegen den Redirect — und dieser Screen
@@ -203,10 +219,54 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  /// Löst den zweiten Faktor ein und hebt die Sitzung auf aal2.
+  Future<void> _zweitenFaktorPruefen() async {
+    final client = ref.read(supabaseClientProvider);
+    if (client == null) return;
+    final faktoren = await ref.read(mfaFaktorenProvider.future);
+    final faktor = faktoren.where((f) => f.status == FactorStatus.verified);
+    if (faktor.isEmpty) {
+      // Kann passieren, wenn ein Admin den Faktor gerade zurückgesetzt hat.
+      ref.read(mfaOffenProvider.notifier).state = false;
+      return;
+    }
+    setState(() {
+      _busy = true;
+      _error = null;
+      _hinweis = null;
+    });
+    try {
+      await client.auth.mfa.challengeAndVerify(
+        factorId: faktor.first.id,
+        code: _totp.text.trim(),
+      );
+      // Erst jetzt weiterschalten: Flag fällt, der Router wertet neu aus.
+      ref.read(mfaOffenProvider.notifier).state = false;
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      setState(() => _error = 'Der Code stimmt nicht oder ist abgelaufen. '
+          'Die App zeigt alle 30 Sekunden einen neuen. (${e.message})');
+    } catch (e, s) {
+      appLog.w('Zweiter Faktor fehlgeschlagen', error: e, stackTrace: s);
+      if (!mounted) return;
+      setState(() => _error = 'Der Server ist nicht erreichbar.');
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  /// Bricht die halbe Anmeldung ab und räumt die aal1-Sitzung weg.
+  Future<void> _abbrechen() async {
+    await ref.read(supabaseClientProvider)?.auth.signOut();
+    ref.read(mfaOffenProvider.notifier).state = false;
+    if (mounted) _wechsle(_Modus.anmelden);
+  }
+
   Future<void> _absenden() => switch (_modus) {
         _Modus.anmelden => _signIn(),
         _Modus.adresse => _codeAnfordern(),
         _Modus.code => _codeEinloesen(),
+        _Modus.zweiterFaktor => _zweitenFaktorPruefen(),
       };
 
   void _wechsle(_Modus ziel) => setState(() {
@@ -252,6 +312,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               textInputAction: TextInputAction.done,
               autofillHints: const [AutofillHints.email],
               onSubmitted: (_) => _busy ? null : _codeAnfordern(),
+            ),
+          ],
+        _Modus.zweiterFaktor => [
+            TextField(
+              controller: _totp,
+              decoration: const InputDecoration(
+                labelText: 'Code aus der Authenticator-App',
+                helperText: 'Sechs Ziffern, wechselt alle 30 Sekunden',
+              ),
+              keyboardType: TextInputType.number,
+              autocorrect: false,
+              autofocus: true,
+              textInputAction: TextInputAction.done,
+              autofillHints: const [AutofillHints.oneTimeCode],
+              onSubmitted: (_) => _busy ? null : _zweitenFaktorPruefen(),
             ),
           ],
         _Modus.code => [
@@ -307,6 +382,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             TextButton(
               onPressed: _busy ? null : () => _wechsle(_Modus.anmelden),
               child: const Text('Zurück zur Anmeldung'),
+            ),
+          ],
+        _Modus.zweiterFaktor => [
+            TextButton(
+              onPressed: _busy ? null : _abbrechen,
+              child: const Text('Abbrechen'),
+            ),
+            const Text(
+              'Kein Zugriff auf die Authenticator-App? Ein Admin kann den '
+              'zweiten Faktor in der Nutzerverwaltung zurücksetzen.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
           ],
         _Modus.code => [
@@ -400,6 +487,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 _Modus.anmelden => 'Anmelden',
                                 _Modus.adresse => 'Code anfordern',
                                 _Modus.code => 'Passwort setzen',
+                                _Modus.zweiterFaktor => 'Bestätigen',
                               }),
                       ),
                       ..._nebenwege(),

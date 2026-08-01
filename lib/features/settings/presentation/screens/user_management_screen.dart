@@ -290,6 +290,8 @@ class _UserTile extends ConsumerWidget {
           if (echteMail)
             const PopupMenuItem(
                 value: 'zugangsmail', child: Text('Passwort-Mail senden')),
+          const PopupMenuItem(
+              value: 'mfa', child: Text('Zwei-Faktor zurücksetzen')),
           // Nur zeigen, wenn es überhaupt etwas zu wählen gibt: eine
           // einzelne Abteilung ist keine Wahl, und auf Legacy-Servern
           // ist die Liste leer.
@@ -396,6 +398,24 @@ class _UserTile extends ConsumerWidget {
                 ?.auth
                 .resetPasswordForEmail(user.email);
           });
+        }
+      case 'mfa':
+        final ok = await _confirm(
+            context,
+            'Zwei-Faktor zurücksetzen?',
+            'Für „${user.username}“ wird der zweite Faktor entfernt. Die '
+                'Person meldet sich danach nur noch mit dem Passwort an und '
+                'kann ihn neu einrichten. Nur machen, wenn du sicher bist, '
+                'wen du vor dir hast — das ist der Weg für ein verlorenes '
+                'Telefon.');
+        if (ok && context.mounted) {
+          await _run(
+              context,
+              ref,
+              () => invokeAdminUsers(ref.read(supabaseClientProvider), {
+                    'action': 'clear_mfa',
+                    'user_id': user.id,
+                  }));
         }
       case 'role':
         var role = user.role;

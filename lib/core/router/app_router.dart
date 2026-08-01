@@ -8,10 +8,12 @@ import 'dart:async' show unawaited;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/logging/app_logger.dart';
+import 'package:fwapp/core/sync/mfa_providers.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fwapp/features/auth/presentation/screens/change_password_screen.dart';
 import 'package:fwapp/features/auth/presentation/screens/login_screen.dart';
+import 'package:fwapp/features/auth/presentation/screens/zwei_faktor_screen.dart';
 import 'package:fwapp/features/settings/presentation/screens/server_settings_screen.dart';
 import 'package:fwapp/features/home/presentation/screens/home_screen.dart';
 import 'package:fwapp/features/home/presentation/screens/more_screen.dart';
@@ -58,7 +60,7 @@ final _editRoutePattern = RegExp(r'^(/vehicles/(new(/template)?|[^/]+/(edit|comp
 const _publicPaths = {'/login', '/server-settings'};
 
 /// Seiten, die es nur mit Serververbindung gibt.
-const _authPaths = {'/login', '/change-password'};
+const _authPaths = {'/login', '/change-password', '/zwei-faktor'};
 
 /// Pure Guard-Logik, getrennt vom Router für direkte Testbarkeit.
 /// Liefert das Redirect-Ziel oder null (= Navigation erlaubt).
@@ -70,6 +72,8 @@ String? guardRedirect({
   required bool loggedIn,
   required bool mustChangePassword,
   required bool recoveryPending,
+  required bool mfaPending,
+  required bool mussZweiFaktor,
 }) {
   // Anmeldezwang VOR den Rollen-Guards: Ohne Sitzung ist canEdit false,
   // /import liefe sonst erst auf '/' und von dort auf '/login' — zwei
@@ -84,12 +88,21 @@ String? guardRedirect({
     // niemanden in die App springen lassen — sonst wäre jemand angemeldet,
     // ohne sein Passwort zu kennen, und der Vorgang bliebe unvollendet.
     if (recoveryPending) return path == '/login' ? null : '/login';
+    // Angemeldet, aber der zweite Faktor fehlt noch: Die Sitzung steht auf
+    // aal1. Ohne diese Regel wäre TOTP eine Zierde — wer die Code-Eingabe
+    // wegtippt, wäre trotzdem in der App.
+    if (mfaPending) return path == '/login' ? null : '/login';
     // Initialpasswort vom Zugangszettel: nicht umgehbar. Als Route statt
     // als Dialog, weil ein Dialog nach dem Login auf einem schon
     // abgebauten Kontext landen würde — der Redirect räumt den
     // Login-Screen im selben Moment ab.
     if (mustChangePassword) {
       return path == '/change-password' ? null : '/change-password';
+    }
+    // Nach Ablauf der Übergangsfrist führt für Admins ohne zweiten Faktor
+    // der Weg nur noch über die Einrichtung. Vorher weist die App nur hin.
+    if (mussZweiFaktor) {
+      return path == '/zwei-faktor' ? null : '/zwei-faktor';
     }
     if (_authPaths.contains(path)) return '/';
   } else if (_authPaths.contains(path)) {
@@ -121,6 +134,10 @@ final routerProvider = Provider<GoRouter>((ref) {
   // Ohne diesen Anstoß bliebe der Nutzer nach dem Zurücksetzen auf dem
   // Anmelde-Screen stehen: Das Flag fällt, aber niemand wertet neu aus.
   ref.listen(recoveryPendingProvider, (_, _) => refresh.value++);
+  ref.listen(mfaOffenProvider, (_, _) => refresh.value++);
+  // Die Faktorenliste kommt asynchron; ohne Anstoß bliebe ein Admin nach
+  // dem Einrichten auf der Einrichtungsseite stehen.
+  ref.listen(mfaFaktorenProvider, (_, _) => refresh.value++);
 
   // An-/Abmelden stößt den Redirect an. Bewusst der rohe gotrue-Strom und
   // nicht sessionStreamProvider: Der filtert per distinct auf die Nutzer-ID
@@ -154,6 +171,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Ladezustand im Router wäre, der jeden Kaltstart verzögert.
       mustChangePassword: ref.read(mustChangePasswordProvider).value ?? false,
       recoveryPending: ref.read(recoveryPendingProvider),
+      mfaPending: ref.read(mfaOffenProvider),
+      mussZweiFaktor: mussZweiFaktorEinrichten(
+        rolle: ref.read(currentUserRoleProvider).value,
+        hatFaktor: ref.read(hatZweitenFaktorProvider),
+        jetzt: DateTime.now().toUtc(),
+      ),
     ),
     routes: _routes,
   );
@@ -168,6 +191,10 @@ final _routes = [
     GoRoute(
       path: '/change-password',
       builder: (_, _) => const ChangePasswordScreen(),
+    ),
+    GoRoute(
+      path: '/zwei-faktor',
+      builder: (_, _) => const ZweiFaktorScreen(),
     ),
     GoRoute(
       path: '/server-settings',

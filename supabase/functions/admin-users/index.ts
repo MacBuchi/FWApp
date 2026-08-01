@@ -16,6 +16,7 @@
 //   reset   {user_id, password}     → setzt Initialpasswort + Pflichtwechsel
 //   set_role{user_id, role}
 //   set_email {user_id, email}    → echte Adresse; sie WIRD die Anmeldung
+//   clear_mfa {user_id}           → zweiten Faktor zurücksetzen (Telefon weg)
 //   set_abteilung {user_id, abteilung_id}
 //   disable {user_id} / enable {user_id}
 //   delete  {user_id}
@@ -63,6 +64,34 @@ async function serviceFetch(path: string, init: RequestInit = {}) {
       ...(init.headers ?? {}),
     },
   });
+}
+
+/// Welche Anmeldestufe hat der Aufrufer erreicht?
+///
+/// Der `aal`-Anspruch steht im JWT. Wir lesen ihn OHNE Signaturprüfung —
+/// zulässig, weil callerInfo() das Token unmittelbar davor gegen PostgREST
+/// verifiziert hat; ein gefälschtes Token käme dort nicht durch.
+function aalOf(req: Request): string {
+  const auth = req.headers.get("Authorization") ?? "";
+  const teile = auth.replace("Bearer ", "").split(".");
+  if (teile.length !== 3) return "aal1";
+  try {
+    const payload = JSON.parse(
+      atob(teile[1].replace(/-/g, "+").replace(/_/g, "/")),
+    );
+    return String(payload.aal ?? "aal1");
+  } catch {
+    return "aal1";
+  }
+}
+
+/// Hat dieses Konto einen bestätigten zweiten Faktor?
+async function hatFaktor(userId: string): Promise<boolean> {
+  const resp = await serviceFetch(`/auth/v1/admin/users/${userId}/factors`);
+  if (!resp.ok) return false;
+  const factors = await resp.json();
+  return Array.isArray(factors) &&
+    factors.some((f: { status?: string }) => f.status === "verified");
 }
 
 /// Wer ruft an? Rolle über PostgREST mit dem Nutzer-JWT (RLS: eigene Zeile).
@@ -177,6 +206,9 @@ async function listUsers(): Promise<unknown[]> {
       banned: bannedUntil != null && new Date(bannedUntil) > new Date(),
       last_sign_in_at: u.last_sign_in_at ?? null,
       abteilung_id: p?.abteilung_id ?? null,
+      // Ob ein zweiter Faktor aktiv ist, holt die Liste NICHT einzeln pro
+      // Konto — das wären N zusätzliche Rundwege. Die Verwaltung fragt
+      // stattdessen beim Zurücksetzen nach.
     };
   });
 }
@@ -189,6 +221,15 @@ Deno.serve(async (req: Request) => {
   if (caller === null) return json({ error: "Nicht angemeldet" }, 401);
   if (caller.role !== "admin") {
     return json({ error: "Nur der Admin darf die Nutzerverwaltung nutzen" }, 403);
+  }
+  // Zweiter Faktor eingerichtet? Dann gilt er auch hier. Bewusst NUR dann:
+  // Eine harte aal2-Pflicht würde jeden Admin aussperren, der noch nicht
+  // eingerichtet hat — und die Nutzerverwaltung ist genau der Ort, an dem
+  // man sich dabei gegenseitig hilft. Die Frist erzwingt die App.
+  if (await hatFaktor(caller.id) && aalOf(req) !== "aal2") {
+    return json({
+      error: "Bitte zuerst mit dem zweiten Faktor anmelden",
+    }, 403);
   }
 
   let body: Record<string, unknown>;
@@ -321,6 +362,35 @@ Deno.serve(async (req: Request) => {
           return json({ error: `Adresse setzen: ${msg}` }, 400);
         }
         return json({ ok: true, email: neu });
+      }
+
+      case "clear_mfa": {
+        // Telefon verloren, App gelöscht, Gerät getauscht: Ohne diesen Weg
+        // wäre ein Konto mit zweitem Faktor unrettbar. Bewusst NICHT für
+        // das eigene Konto — wer selbst nicht mehr hineinkommt, kann diese
+        // Funktion ohnehin nicht aufrufen; der Ausweg für den letzten Admin
+        // steht in docs/SERVER-SETUP.md.
+        if (!userId) return json({ error: "user_id fehlt" }, 400);
+        if (self) {
+          return json({
+            error: "Eigenen Faktor nicht zurücksetzbar — das geht unter "
+              "Zwei-Faktor-Anmeldung selbst",
+          }, 400);
+        }
+        const liste = await serviceFetch(
+          `/auth/v1/admin/users/${userId}/factors`,
+        );
+        if (!liste.ok) return json({ error: `Faktoren: ${liste.status}` }, 400);
+        const factors = await liste.json();
+        let entfernt = 0;
+        for (const f of (Array.isArray(factors) ? factors : [])) {
+          const weg = await serviceFetch(
+            `/auth/v1/admin/users/${userId}/factors/${f.id}`,
+            { method: "DELETE" },
+          );
+          if (weg.ok) entfernt++;
+        }
+        return json({ ok: true, entfernt });
       }
 
       case "set_abteilung": {

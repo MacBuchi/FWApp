@@ -5,6 +5,7 @@ library;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/core/router/app_router.dart';
+import 'package:fwapp/core/sync/mfa_providers.dart';
 
 void main() {
   test('routerProvider baut den Router mit allen Routen und Guards', () {
@@ -23,7 +24,9 @@ void main() {
       supabaseReady: true,
       loggedIn: true,
       mustChangePassword: false,
-      recoveryPending: false);
+      recoveryPending: false,
+      mfaPending: false,
+      mussZweiFaktor: false);
   String? asEditor(String path) => guardRedirect(
       path: path,
       canEdit: true,
@@ -31,7 +34,9 @@ void main() {
       supabaseReady: true,
       loggedIn: true,
       mustChangePassword: false,
-      recoveryPending: false);
+      recoveryPending: false,
+      mfaPending: false,
+      mussZweiFaktor: false);
   String? asAdmin(String path) => guardRedirect(
       path: path,
       canEdit: true,
@@ -39,7 +44,9 @@ void main() {
       supabaseReady: true,
       loggedIn: true,
       mustChangePassword: false,
-      recoveryPending: false);
+      recoveryPending: false,
+      mfaPending: false,
+      mussZweiFaktor: false);
   /// Nicht angemeldet auf einer verbundenen Installation.
   String? ausgeloggt(String path) => guardRedirect(
       path: path,
@@ -48,7 +55,9 @@ void main() {
       supabaseReady: true,
       loggedIn: false,
       mustChangePassword: false,
-      recoveryPending: false);
+      recoveryPending: false,
+      mfaPending: false,
+      mussZweiFaktor: false);
   /// Reiner Lokalmodus (kein Server konfiguriert).
   String? lokal(String path) => guardRedirect(
       path: path,
@@ -57,7 +66,9 @@ void main() {
       supabaseReady: false,
       loggedIn: false,
       mustChangePassword: false,
-      recoveryPending: false);
+      recoveryPending: false,
+      mfaPending: false,
+      mussZweiFaktor: false);
   /// Angemeldet, aber noch mit dem Initialpasswort vom Zugangszettel.
   String? mitInitialpasswort(String path) => guardRedirect(
       path: path,
@@ -66,7 +77,9 @@ void main() {
       supabaseReady: true,
       loggedIn: true,
       mustChangePassword: true,
-      recoveryPending: false);
+      recoveryPending: false,
+      mfaPending: false,
+      mussZweiFaktor: false);
 
   group('guardRedirect – Anmeldezwang (#57 Phase 4)', () {
     test('ohne Sitzung führt jeder Weg auf die Anmeldung', () {
@@ -130,7 +143,9 @@ void main() {
         supabaseReady: true,
         loggedIn: true,
         mustChangePassword: false,
-        recoveryPending: true);
+        recoveryPending: true,
+        mfaPending: false,
+        mussZweiFaktor: false);
 
     test('die halbe Sitzung springt nicht in die App', () {
       // Ohne diese Regel wäre jemand angemeldet, ohne sein Passwort zu
@@ -155,12 +170,117 @@ void main() {
               supabaseReady: true,
               loggedIn: true,
               mustChangePassword: true,
-              recoveryPending: true),
+              recoveryPending: true,
+        mfaPending: false,
+        mussZweiFaktor: false),
           isNull);
     });
 
     test('nach dem Zurücksetzen führt der Weg wieder in die App', () {
       expect(asAdmin('/login'), '/');
+    });
+  });
+
+  group('guardRedirect – zweiter Faktor (#57 Phase 4, Etappe 3)', () {
+    /// Passwort stimmt, Code fehlt noch: Die Sitzung steht auf aal1.
+    String? codeFehlt(String path) => guardRedirect(
+        path: path,
+        canEdit: true,
+        isAdmin: true,
+        supabaseReady: true,
+        loggedIn: true,
+        mustChangePassword: false,
+        recoveryPending: false,
+        mfaPending: true,
+        mussZweiFaktor: false);
+
+    /// Admin nach Ablauf der Frist, noch ohne eingerichteten Faktor.
+    String? ohneFaktor(String path) => guardRedirect(
+        path: path,
+        canEdit: true,
+        isAdmin: true,
+        supabaseReady: true,
+        loggedIn: true,
+        mustChangePassword: false,
+        recoveryPending: false,
+        mfaPending: false,
+        mussZweiFaktor: true);
+
+    test('ohne Code kommt niemand in die App', () {
+      // Ohne diese Regel wäre der zweite Faktor eine Zierde: Wer die
+      // Code-Eingabe wegtippt, wäre trotzdem drin.
+      expect(codeFehlt('/'), '/login');
+      expect(codeFehlt('/user-management'), '/login');
+      expect(codeFehlt('/settings'), '/login');
+    });
+
+    test('die Code-Eingabe selbst bleibt stehen', () {
+      expect(codeFehlt('/login'), isNull);
+    });
+
+    test('nach Fristablauf führt der Weg über die Einrichtung', () {
+      expect(ohneFaktor('/'), '/zwei-faktor');
+      expect(ohneFaktor('/user-management'), '/zwei-faktor');
+      expect(ohneFaktor('/zwei-faktor'), isNull);
+    });
+
+    test('mit Faktor ist die Einrichtung keine Sackgasse', () {
+      expect(asAdmin('/zwei-faktor'), '/');
+    });
+
+    test('der fehlende Code schlägt die Einrichtungspflicht', () {
+      // Sonst schöbe die Pflicht den Nutzer aus der Code-Eingabe heraus,
+      // bevor die Sitzung überhaupt vollständig ist.
+      expect(
+          guardRedirect(
+              path: '/login',
+              canEdit: true,
+              isAdmin: true,
+              supabaseReady: true,
+              loggedIn: true,
+              mustChangePassword: false,
+              recoveryPending: false,
+              mfaPending: true,
+              mussZweiFaktor: true),
+          isNull);
+    });
+  });
+
+  group('mussZweiFaktorEinrichten', () {
+    final vorher = kZweiFaktorPflichtAb.subtract(const Duration(days: 1));
+    final nachher = kZweiFaktorPflichtAb.add(const Duration(days: 1));
+
+    test('vor der Frist zwingt nichts', () {
+      expect(
+          mussZweiFaktorEinrichten(
+              rolle: 'admin', hatFaktor: false, jetzt: vorher),
+          isFalse);
+    });
+
+    test('nach der Frist trifft es Admins ohne Faktor', () {
+      expect(
+          mussZweiFaktorEinrichten(
+              rolle: 'admin', hatFaktor: false, jetzt: nachher),
+          isTrue);
+    });
+
+    test('wer eingerichtet hat, wird nicht behelligt', () {
+      expect(
+          mussZweiFaktorEinrichten(
+              rolle: 'admin', hatFaktor: true, jetzt: nachher),
+          isFalse);
+    });
+
+    test('Gerätewarte und Mitglieder bleiben außen vor', () {
+      // Bewusst nur Admins: Ein Mitglied meldet sich mit einem Zettel an
+      // und hat nichts zu verlieren, was nicht im Gerätehaus aushängt.
+      for (final rolle in ['geraetewart', 'member', null]) {
+        expect(
+            mussZweiFaktorEinrichten(
+                rolle: rolle, hatFaktor: false, jetzt: nachher),
+            isFalse,
+            reason: '$rolle');
+      }
     });
   });
 
@@ -191,7 +311,9 @@ void main() {
               supabaseReady: true,
               loggedIn: false,
               mustChangePassword: true,
-      recoveryPending: false),
+      recoveryPending: false,
+      mfaPending: false,
+      mussZweiFaktor: false),
           '/login');
     });
   });
@@ -213,6 +335,8 @@ void main() {
           loggedIn: loggedIn,
           mustChangePassword: mustChange,
           recoveryPending: false,
+          mfaPending: false,
+          mussZweiFaktor: false,
         );
         if (ziel == null) return pfad;
         pfad = ziel;
@@ -291,7 +415,9 @@ void main() {
               supabaseReady: false,
               loggedIn: true,
               mustChangePassword: false,
-      recoveryPending: false),
+      recoveryPending: false,
+      mfaPending: false,
+      mussZweiFaktor: false),
           '/');
     });
 
@@ -309,7 +435,9 @@ void main() {
               supabaseReady: false,
               loggedIn: true,
               mustChangePassword: false,
-      recoveryPending: false),
+      recoveryPending: false,
+      mfaPending: false,
+      mussZweiFaktor: false),
           '/',
           reason: 'ohne Server gibt es keine Abteilungen');
     });

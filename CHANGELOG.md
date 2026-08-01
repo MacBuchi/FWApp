@@ -12,6 +12,26 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.9.0] – 2026-08-01
+
+### Neu
+
+- **Zwei-Faktor-Anmeldung.** Unter *Einstellungen → Zwei-Faktor-Anmeldung*
+  lässt sich das Konto zusätzlich mit einer Authenticator-App absichern:
+  Beim Anmelden fragt die App dann nach einem sechsstelligen Code, der alle
+  30 Sekunden wechselt. Ein abgeschautes Passwort allein reicht damit nicht
+  mehr.
+- **Für Admin-Konten wird das ab dem 1. September Pflicht.** Bis dahin ist
+  es eine Empfehlung; danach führt der Weg beim Anmelden über die
+  Einrichtung. Gerätewarte und Mitglieder sind nicht betroffen.
+- Einrichten ohne QR-Code-Scannerei: Ein Knopf öffnet die Authenticator-App
+  direkt, und wer sie auf einem anderen Gerät hat, tippt den Schlüssel ab —
+  er steht in gut lesbaren Viererblöcken da und lässt sich kopieren.
+- **Telefon verloren?** Ein Admin setzt den zweiten Faktor in der
+  Nutzerverwaltung zurück (Kontomenü → „Zwei-Faktor zurücksetzen"); danach
+  meldet sich die Person wieder allein mit dem Passwort an und richtet ihn
+  neu ein.
+
 ## [1.8.0] – 2026-08-01
 
 ### Neu

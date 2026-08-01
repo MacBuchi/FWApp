@@ -12,6 +12,24 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.6.0] – 2026-08-01
+
+### Neu
+
+- **Gesamtwehr und Verbindungen** (dritter Schritt zu #57): Unter **Mehr →
+  Abteilung & Gesamtwehr** siehst du, zu welcher Abteilung du gehörst und ob
+  sie einer Gesamtwehr angeschlossen ist. Ein Admin kann die Gesamtwehr
+  **gründen** und **weitere Abteilungen anlegen** — beides direkt in der App,
+  ohne dass jemand am Server arbeiten muss.
+- **Anschluss beantragen und freigeben:** Eine eigenständige Abteilung kann
+  um Anschluss an eine bestehende Gesamtwehr bitten; entscheiden tut das der
+  Admin dieser Gesamtwehr. Wer fragt, gibt sich nicht selbst frei. Nach der
+  Freigabe sehen die verbundenen Abteilungen den Bestand der jeweils anderen
+  — **lesend**, bearbeiten darf weiterhin jede nur ihren eigenen.
+- Eine neu angeschlossene Abteilung ist mit der Freigabe zugleich
+  **freigeschaltet** und darf veröffentlichen. Bis dahin arbeitet sie ganz
+  normal lokal weiter; nur das Veröffentlichen wartet.
+
 ## [1.5.6] – 2026-08-01
 
 ### Neu

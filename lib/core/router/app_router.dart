@@ -34,6 +34,7 @@ import 'package:fwapp/features/inventory/presentation/screens/inventory_screen.d
 import 'package:fwapp/features/inventory/presentation/screens/inventory_report_screen.dart';
 import 'package:fwapp/features/settings/presentation/screens/settings_screen.dart';
 import 'package:fwapp/features/settings/presentation/screens/changelog_screen.dart';
+import 'package:fwapp/features/settings/presentation/screens/gesamtwehr_screen.dart';
 import 'package:fwapp/features/settings/presentation/screens/user_management_screen.dart';
 
 /// Routen, die Bearbeitungsrechte voraussetzen (Spiegel der UI-Gates:
@@ -55,6 +56,10 @@ String? guardRedirect({
   if (_editRoutePattern.hasMatch(path) && !canEdit) return '/';
   // Nutzerverwaltung braucht wie die Mehr-Kachel Admin UND Serververbindung.
   if (path == '/user-management' && !(isAdmin && supabaseReady)) return '/';
+  // Abteilung & Gesamtwehr (#57 Phase 3): Server UND Schreibrecht. Bewusst
+  // canEdit statt isAdmin — den Anschluss beantragt auch der Gerätewart, nur
+  // entscheiden darf er nicht (das prüft der Server).
+  if (path == '/gesamtwehr' && !(canEdit && supabaseReady)) return '/';
   return null;
 }
 
@@ -184,6 +189,10 @@ final _routes = [
         GoRoute(
           path: '/user-management',
           builder: (_, _) => const UserManagementScreen(),
+        ),
+        GoRoute(
+          path: '/gesamtwehr',
+          builder: (_, _) => const GesamtwehrScreen(),
         ),
         GoRoute(
           path: '/operation',

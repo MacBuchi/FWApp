@@ -221,7 +221,11 @@ M1 Qualität ──► M2 Fotos ──► M3 Inventur ──► M4 Einsatz ─�
 ## Bewusst NICHT im Plan
 
 - 3D-Fahrzeugmodelle (Entscheidung: 2D-Schnittdarstellung)
-- Multi-Tenant / mehrere Abteilungen in einer Instanz (Ausweg `department_id` existiert im Design)
+- ~~Multi-Tenant / mehrere Abteilungen in einer Instanz~~ — **überholt seit
+  Issue #57** (v1.5.5 bis v1.6.0): Abteilungen sind eigene Datenbestände mit
+  eigenem Versionszähler, die Gesamtwehr klammert sie, Anlegen und Verbinden
+  passiert in der App. Der damals gemutmaßte Ausweg `department_id` wurde
+  nicht gebaut; es wurde `abteilung_id` mit serverseitigem Stempel.
 - Mitglieder-Schreibrechte / Konfliktauflösung (Single-Writer bleibt)
 - Einsatzdokumentation im rechtlichen Sinn (nur lokales Entnahme-Log)
 - KI-gestützter PDF-Import (erst wenn reale unstrukturierte Listen den Wizard überfordern)

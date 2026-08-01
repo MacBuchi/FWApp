@@ -81,6 +81,46 @@ Prüfhistorie oder Instanzen – die hängen an den physischen Geräten.
 - Das frühere Sammelkonto `member@fw.local` ist gesperrt — alte
   Zugangszettel damit sind ungültig.
 
+### Abteilung & Gesamtwehr (seit v1.6.0)
+
+**Mehr → Abteilung & Gesamtwehr.** Hier steht, zu welcher Abteilung das
+eigene Konto gehört und ob sie einer Gesamtwehr angeschlossen ist.
+
+Die Gesamtwehr ist die Klammer über mehreren Abteilungen. Verbundene
+Abteilungen sehen den Bestand der jeweils anderen — **lesend**, zum Lernen
+und Nachschlagen. Bearbeiten und Veröffentlichen darf jede nur bei sich;
+einzige Ausnahme ist der Admin der Gesamtwehr, der überall arbeiten darf.
+
+Eine zweite Abteilung einrichten (als Admin):
+
+1. **Gesamtwehr gründen** — Name eingeben, fertig. Die eigene Abteilung
+   wird automatisch das erste Mitglied. Das geht nur einmal: Wer schon zu
+   einer Gesamtwehr gehört, kann keine zweite gründen.
+2. **Weitere Abteilung anlegen** — Name eingeben. Sie gehört sofort zur
+   eigenen Gesamtwehr und darf sofort veröffentlichen; der anlegende Admin
+   bürgt dafür.
+3. Für die neue Abteilung in der **Nutzerverwaltung** einen Gerätewart
+   anlegen. (Das Zuordnen eines Kontos zu einer anderen Abteilung ist noch
+   Server-Arbeit — siehe „Bekannte Lücken" unten.)
+
+Anschluss einer bestehenden, eigenständigen Abteilung:
+
+- Deren Gerätewart oder Admin wählt **Anschluss beantragen** und die
+  Ziel-Gesamtwehr aus.
+- Der **Admin der Gesamtwehr** sieht den Antrag unter „Offene Anfragen" und
+  gibt ihn frei oder lehnt ab. **Wer fragt, gibt sich nicht selbst frei** —
+  das lässt der Server nicht zu.
+- Mit der Freigabe ist eine noch nicht freigegebene Abteilung zugleich
+  **freigeschaltet** und darf veröffentlichen. Vorher arbeitet sie ganz
+  normal lokal weiter; nur das Veröffentlichen wartet.
+
+**Bekannte Lücken (Stand v1.6.0):** Ein Konto einer anderen Abteilung
+zuordnen geht noch nicht in der App (`profiles.abteilung_id` per psql). Eine
+Abteilung, die gar keiner Gesamtwehr beitreten will, kann niemand in der App
+freigeben — das bleibt Sache des Betreibers. Branding der Gesamtwehr
+(eigener Header, Bild) und eigene Konten mit Mail-Bestätigung/2FA sind die
+nächsten Schritte von Issue #57.
+
 ### Prüftermine pflegen (Gerätewart)
 
 - Gerät öffnen → Instanz anlegen (Seriennummer etc.) → Prüfung mit Intervall

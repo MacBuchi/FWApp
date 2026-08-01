@@ -77,6 +77,24 @@ Future<void> main() async {
     await memberClient.dispose();
   });
 
+  /// Service-Role-Zugriff für Prüfungen und Aufbauten, die die App per RLS
+  /// nicht darf — bewusst getrennt vom Weg, den der Test beweisen soll.
+  Future<T> asService<T>(Future<T> Function(SupabaseClient) body) async {
+    final service = SupabaseClient(_url, _serviceRoleKey);
+    try {
+      return await body(service);
+    } finally {
+      await service.dispose();
+    }
+  }
+
+  Future<String> mirrorAbteilungId() => asService((s) async =>
+      (await s
+          .from('abteilungen')
+          .select('id')
+          .eq('legacy_mirror', true)
+          .single())['id'] as String);
+
   test('admin publishes, member pulls the identical dataset', () async {
     // Sync to the current central version, then reset to an empty baseline so
     // reruns against the same local stack stay deterministic.
@@ -318,23 +336,6 @@ Future<void> main() async {
   });
 
   group('Abteilungen (Issue #57 Phase 1)', () {
-    /// Service-Role-Zugriff für Prüfungen, die die App per RLS nicht darf.
-    Future<T> asService<T>(Future<T> Function(SupabaseClient) body) async {
-      final service = SupabaseClient(_url, _serviceRoleKey);
-      try {
-        return await body(service);
-      } finally {
-        await service.dispose();
-      }
-    }
-
-    Future<String> mirrorAbteilungId() => asService((s) async =>
-        (await s
-            .from('abteilungen')
-            .select('id')
-            .eq('legacy_mirror', true)
-            .single())['id'] as String);
-
     test('publish stempelt jede Zeile mit der Abteilung des Veröffentlichers',
         () async {
       // Der Client schickt seine Drift-Zeilen OHNE abteilung_id — die Spalte
@@ -467,6 +468,249 @@ Future<void> main() async {
           await s.from('gesamtwehren').delete().eq('id', ids.gw);
         });
       }
+    });
+  });
+
+  group('Gesamtwehr & Verbindungen (Issue #57 Phase 3)', () {
+    late String mirror;
+    late SupabaseClient gwClient;
+
+    setUp(() async {
+      mirror = await mirrorAbteilungId();
+      gwClient = SupabaseClient(_url, _anonKey);
+      await gwClient.auth.signInWithPassword(
+          email: 'geraetewart@fw.local', password: 'test1234');
+    });
+
+    // Jeder Test hinterlässt eine leere Bühne: die Phase-1-Gruppe und die
+    // Wiederholung desselben Tests laufen gegen dieselbe lokale Instanz.
+    tearDown(() async {
+      await gwClient.dispose();
+      await asService((s) async {
+        await s.from('gesamtwehr_anfragen').delete().neq('status', 'nie');
+        await s.from('abteilungen').delete().eq('legacy_mirror', false);
+        await s
+            .from('abteilungen')
+            .update({'gesamtwehr_id': null}).eq('id', mirror);
+        await s.from('gesamtwehren').delete().neq('name', 'nie');
+        // Profile, deren Abteilung gerade gelöscht wurde (on delete set
+        // null), gehören zurück in die Bestands-Abteilung.
+        await s
+            .from('profiles')
+            .update({'abteilung_id': mirror}).filter('abteilung_id', 'is', null);
+      });
+    });
+
+    Future<String> gruendeGesamtwehr([String name = 'Gesamtwehr Musterstadt']) =>
+        adminClient.rpc('create_gesamtwehr', params: {'name': name})
+            .then((v) => v as String);
+
+    test('Admin gründet die Gesamtwehr und nimmt seine Abteilung mit',
+        () async {
+      final id = await gruendeGesamtwehr();
+
+      final gw = await asService((s) async => await s
+          .from('gesamtwehren')
+          .select('name, slug, created_by')
+          .eq('id', id)
+          .single());
+      // Der Slug entsteht serverseitig — der Client soll ihn nicht erfinden.
+      expect(gw['slug'], 'gesamtwehr-musterstadt');
+      expect(gw['created_by'], isNotNull);
+
+      final meine = await asService((s) async => await s
+          .from('abteilungen')
+          .select('gesamtwehr_id')
+          .eq('id', mirror)
+          .single());
+      expect(meine['gesamtwehr_id'], id);
+
+      // Ein zweites Mal gründen hieße, die eigene Abteilung aus der ersten
+      // Klammer zu reißen — das muss abprallen.
+      await expectLater(
+        gruendeGesamtwehr('Noch eine'),
+        throwsA(isA<PostgrestException>().having(
+            (e) => e.message, 'message', contains('already belongs'))),
+      );
+    });
+
+    test('Gerätewart darf keine Gesamtwehr gründen', () async {
+      await expectLater(
+        gwClient.rpc('create_gesamtwehr', params: {'name': 'Heimlich'}),
+        throwsA(isA<PostgrestException>().having(
+            (e) => e.message, 'message', contains('permission denied'))),
+      );
+    });
+
+    test('Abteilung anlegen braucht die Klammer und ist danach sofort aktiv',
+        () async {
+      // Ohne Gesamtwehr gäbe es niemanden, der die neue Abteilung sähe —
+      // deshalb verweigert der Server, statt eine Waise anzulegen.
+      await expectLater(
+        adminClient.rpc('create_abteilung', params: {'name': 'Abteilung Nord'}),
+        throwsA(isA<PostgrestException>().having(
+            (e) => e.message, 'message', contains('gesamtwehr required'))),
+      );
+
+      final gwId = await gruendeGesamtwehr();
+      final neue = await adminClient
+          .rpc('create_abteilung', params: {'name': 'Abteilung Nord'}) as String;
+
+      final row = await asService((s) async => await s
+          .from('abteilungen')
+          .select('name, slug, status, gesamtwehr_id, version')
+          .eq('id', neue)
+          .single());
+      expect(row['status'], 'active', reason: 'der anlegende Admin bürgt');
+      expect(row['gesamtwehr_id'], gwId);
+      expect(row['slug'], 'abteilung-nord');
+      expect((row['version'] as num).toInt(), 0);
+
+      // Und sie ist sofort Schwester: RLS zeigt sie dem Admin.
+      final sichtbar = await adminClient.from('abteilungen').select('id');
+      expect(sichtbar.map((r) => r['id']), containsAll([mirror, neue]));
+    });
+
+    test('Namen ohne slugfähige Zeichen kollidieren nicht', () async {
+      await gruendeGesamtwehr();
+      final a =
+          await adminClient.rpc('create_abteilung', params: {'name': '???'});
+      final b =
+          await adminClient.rpc('create_abteilung', params: {'name': '!!!'});
+      final slugs = await asService((s) async => await s
+          .from('abteilungen')
+          .select('slug')
+          .inFilter('id', [a as String, b as String]));
+      expect(slugs.map((r) => r['slug']).toSet().length, 2,
+          reason: 'zwei Abteilungen, zwei Slugs — der Unique-Index hält');
+    });
+
+    group('Anschluss-Anfrage', () {
+      late String gwId;
+      late String fremde;
+
+      setUp(() async {
+        gwId = await gruendeGesamtwehr();
+        // Abteilung C steht noch allein da und wartet auf Freigabe; der
+        // Gerätewart gehört zu ihr, nicht mehr zur Bestands-Abteilung.
+        fremde = await asService((s) async {
+          final c = await s
+              .from('abteilungen')
+              .insert({
+                'name': 'Abteilung Süd',
+                'slug': 'abteilung-sued',
+                'status': 'pending',
+              })
+              .select('id')
+              .single();
+          await s
+              .from('profiles')
+              .update({'abteilung_id': c['id']}).eq(
+                  'id', gwClient.auth.currentUser!.id);
+          return c['id'] as String;
+        });
+      });
+
+      test('Anfrage, Freigabe, und die Freigabe hebt zugleich pending auf',
+          () async {
+        await gwClient.rpc('request_gesamtwehr_verbindung',
+            params: {'ziel': gwId, 'nachricht': 'Wir würden gern dazu.'});
+
+        // Vor der Freigabe darf der Admin die fremde Abteilung NICHT lesen —
+        // genau deshalb braucht die Freigabe-Liste eine eigene RPC.
+        final direkt =
+            await adminClient.from('abteilungen').select('id').eq('id', fremde);
+        expect(direkt, isEmpty);
+
+        final offen = await adminClient.rpc('offene_verbindungsanfragen')
+            as List<dynamic>;
+        expect(offen, hasLength(1));
+        expect(offen.first['abteilung_name'], 'Abteilung Süd');
+        expect(offen.first['nachricht'], 'Wir würden gern dazu.');
+
+        await adminClient.rpc('decide_gesamtwehr_verbindung', params: {
+          'anfrage': offen.first['id'],
+          'freigeben': true,
+        });
+
+        final danach = await asService((s) async => await s
+            .from('abteilungen')
+            .select('gesamtwehr_id, status')
+            .eq('id', fremde)
+            .single());
+        expect(danach['gesamtwehr_id'], gwId);
+        expect(danach['status'], 'active',
+            reason: 'die Aufnahme IST die Freigabe');
+
+        // Und die Liste ist leer, die Anfrage nicht zweimal entscheidbar.
+        expect(await adminClient.rpc('offene_verbindungsanfragen'), isEmpty);
+        await expectLater(
+          adminClient.rpc('decide_gesamtwehr_verbindung',
+              params: {'anfrage': offen.first['id'], 'freigeben': true}),
+          throwsA(isA<PostgrestException>().having(
+              (e) => e.message, 'message', contains('already decided'))),
+        );
+      });
+
+      test('Ablehnen verbindet nicht und lässt die Abteilung pending',
+          () async {
+        await gwClient
+            .rpc('request_gesamtwehr_verbindung', params: {'ziel': gwId});
+        final offen = await adminClient.rpc('offene_verbindungsanfragen')
+            as List<dynamic>;
+
+        await adminClient.rpc('decide_gesamtwehr_verbindung', params: {
+          'anfrage': offen.first['id'],
+          'freigeben': false,
+          'nachricht': 'Bitte erst im Kommandantenkreis besprechen.',
+        });
+
+        final danach = await asService((s) async => await s
+            .from('abteilungen')
+            .select('gesamtwehr_id, status')
+            .eq('id', fremde)
+            .single());
+        expect(danach['gesamtwehr_id'], isNull);
+        expect(danach['status'], 'pending');
+      });
+
+      test('Der Antragsteller kann sich nicht selbst freigeben', () async {
+        // Der Kern der ganzen Freigabe: Wer fragt, entscheidet nicht.
+        await gwClient
+            .rpc('request_gesamtwehr_verbindung', params: {'ziel': gwId});
+        final anfrage = await asService((s) async => await s
+            .from('gesamtwehr_anfragen')
+            .select('id')
+            .eq('abteilung_id', fremde)
+            .single());
+
+        await expectLater(
+          gwClient.rpc('decide_gesamtwehr_verbindung',
+              params: {'anfrage': anfrage['id'], 'freigeben': true}),
+          throwsA(isA<PostgrestException>().having(
+              (e) => e.message, 'message', contains('permission denied'))),
+        );
+      });
+
+      test('Zwei offene Anfragen derselben Abteilung gibt es nicht', () async {
+        await gwClient
+            .rpc('request_gesamtwehr_verbindung', params: {'ziel': gwId});
+        await expectLater(
+          gwClient.rpc('request_gesamtwehr_verbindung', params: {'ziel': gwId}),
+          throwsA(isA<PostgrestException>().having(
+              (e) => e.message, 'message', contains('already pending'))),
+        );
+      });
+
+      test('Die anfragende Abteilung sieht ihren eigenen Antrag', () async {
+        await gwClient.rpc('request_gesamtwehr_verbindung',
+            params: {'ziel': gwId, 'nachricht': 'Bitte um Anschluss.'});
+        final eigene = await gwClient
+            .from('gesamtwehr_anfragen')
+            .select('status, nachricht');
+        expect(eigene, hasLength(1));
+        expect(eigene.first['status'], 'pending');
+      });
     });
   });
 }

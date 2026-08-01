@@ -316,4 +316,81 @@ Future<void> main() async {
       expect(local.map((v) => v.name), contains('LF 8 Aussperrtest'));
     });
   });
+
+  group('Abteilungen (Issue #57 Phase 1)', () {
+    /// Service-Role-Zugriff für Prüfungen, die die App per RLS nicht darf.
+    Future<T> asService<T>(Future<T> Function(SupabaseClient) body) async {
+      final service = SupabaseClient(_url, _serviceRoleKey);
+      try {
+        return await body(service);
+      } finally {
+        await service.dispose();
+      }
+    }
+
+    Future<String> mirrorAbteilungId() => asService((s) async =>
+        (await s
+            .from('abteilungen')
+            .select('id')
+            .eq('legacy_mirror', true)
+            .single())['id'] as String);
+
+    test('publish stempelt jede Zeile mit der Abteilung des Veröffentlichers',
+        () async {
+      // Der Client schickt seine Drift-Zeilen OHNE abteilung_id — die Spalte
+      // existiert lokal gar nicht. Wenn sie serverseitig fehlt, ist die
+      // Mandanten-Trennung ein leeres Versprechen.
+      await adminSync.pullIfNewer(force: true);
+      await adminDb.vehicleDao.insertVehicle(
+          VehiclesCompanion.insert(name: 'TLF Stempeltest', type: 'TLF'));
+      await adminSync.publish();
+
+      final abteilung = await mirrorAbteilungId();
+      final rows = await asService((s) => s
+          .from('vehicles')
+          .select('name, abteilung_id')
+          .eq('name', 'TLF Stempeltest'));
+      expect(rows, isNotEmpty);
+      expect(rows.first['abteilung_id'], abteilung);
+    });
+
+    test('Legacy-Spiegel: dataset_meta.version folgt der Spiegel-Abteilung',
+        () async {
+      // Alt-Clients lesen weiter dataset_meta.select().single(). Bis die
+      // Mindestversion angehoben ist, muss der Zähler dort mitlaufen —
+      // sonst übersehen sie neue Stände.
+      await adminSync.pullIfNewer(force: true);
+      final published = await adminSync.publish();
+
+      final meta = await asService((s) async =>
+          await s.from('dataset_meta').select('version').single());
+      expect((meta['version'] as num).toInt(), published);
+    });
+
+    test('pending-Abteilung darf nicht veröffentlichen (Freigabe-Hebel)',
+        () async {
+      // Entscheidung C: Selbstregistrierte Abteilungen starten als pending.
+      // Local-first heißt: lokal darf alles — nur das Veröffentlichen wartet
+      // auf die Freigabe. Genau diese Sperre wird hier scharf geprüft.
+      final abteilung = await mirrorAbteilungId();
+      Future<void> setStatus(String status) => asService((s) async =>
+          await s.from('abteilungen').update({'status': status}).eq(
+              'id', abteilung));
+
+      await adminSync.pullIfNewer(force: true);
+      await setStatus('pending');
+      try {
+        await expectLater(
+          adminSync.publish(),
+          throwsA(isA<PostgrestException>().having(
+              (e) => e.message, 'message', contains('not approved'))),
+        );
+      } finally {
+        await setStatus('active');
+      }
+
+      // Nach der Freigabe klappt derselbe Publish sofort.
+      expect(await adminSync.publish(), greaterThan(0));
+    });
+  });
 }

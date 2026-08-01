@@ -12,6 +12,17 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.5.5] – 2026-08-01
+
+### Unter der Haube
+
+- **Vorbereitung für Abteilungen** (erster Schritt zu #57): Der Server kennt
+  jetzt Abteilungen als eigene Datenbestände, und die App synchronisiert
+  gezielt den Bestand ihrer Abteilung. Sichtbar ändert sich noch nichts —
+  es existiert weiterhin genau eine Abteilung, und die App arbeitet mit
+  älteren Servern unverändert zusammen. Die Abteilungswahl und die
+  Gesamtwehr folgen in den nächsten Versionen.
+
 ## [1.5.4] – 2026-08-01
 
 ### Neu
@@ -247,6 +258,7 @@ Abschnitt „Workflow".
 - Erste Ausgabe: Fahrzeuge, Geräteräume, Beladepläne, Lernspiele und
   Serverabgleich.
 
+[1.5.5]: https://github.com/MacBuchi/FWApp/compare/v1.5.4...v1.5.5
 [1.5.4]: https://github.com/MacBuchi/FWApp/compare/v1.5.3...v1.5.4
 [1.5.3]: https://github.com/MacBuchi/FWApp/compare/v1.5.2...v1.5.3
 [1.5.2]: https://github.com/MacBuchi/FWApp/compare/v1.5.1...v1.5.2

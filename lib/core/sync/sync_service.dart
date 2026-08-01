@@ -51,8 +51,39 @@ class SyncService {
   bool _suppressDirty = false;
   StreamSubscription<Set<TableUpdate>>? _dirtySub;
 
+  /// Eigene Abteilung (Issue #57 Phase 1), einmal je Sitzung aufgelöst.
+  String? _abteilungId;
+
+  /// Server ohne Mandanten-Migration: `profiles.abteilung_id` existiert noch
+  /// nicht. Dann laufen Pull/Publish auf dem alten Ein-Bestand-Pfad weiter —
+  /// die App darf dem Server-Rollout vorauseilen, nicht umgekehrt.
+  bool _legacyServer = false;
+
   SyncService(this.db, this.client, {String? appVersion})
       : appVersion = appVersion ?? currentAppVersion;
+
+  /// Liefert die Abteilung des angemeldeten Nutzers, oder `null` im
+  /// Legacy-Betrieb. RLS begrenzt `profiles` auf die eigene Zeile.
+  Future<String?> _resolveAbteilung() async {
+    if (_legacyServer) return null;
+    if (_abteilungId != null) return _abteilungId;
+    try {
+      final row = await client
+          .from('profiles')
+          .select('abteilung_id')
+          .maybeSingle();
+      _abteilungId = row?['abteilung_id'] as String?;
+      if (_abteilungId == null) {
+        // Spalte da, aber leer (Abteilung gelöscht): wie Legacy behandeln,
+        // der Server weist Publish dann über die Rollenprüfung ab.
+        _legacyServer = true;
+      }
+    } on PostgrestException catch (e) {
+      appLog.i('Server ohne Abteilungs-Schema (${e.code}) — Legacy-Sync.');
+      _legacyServer = true;
+    }
+    return _abteilungId;
+  }
 
   // ── SyncMeta helpers ──
 
@@ -108,15 +139,26 @@ class SyncService {
   /// (always when [force]). Returns the new version, or null if unchanged.
   Future<int?> pullIfNewer({bool force = false}) async {
     final meta = await getMeta();
-    final remote =
-        await client.from('dataset_meta').select('version').single();
+    final abteilung = await _resolveAbteilung();
+    // Versionszähler: je Abteilung (neu) oder dataset_meta (Legacy-Server).
+    final remote = abteilung != null
+        ? await client
+            .from('abteilungen')
+            .select('version')
+            .eq('id', abteilung)
+            .single()
+        : await client.from('dataset_meta').select('version').single();
     final remoteVersion = (remote['version'] as num).toInt();
     if (!force && remoteVersion <= meta.lastPulledVersion) return null;
 
+    // Explizit auf die eigene Abteilung filtern, nicht nur auf RLS bauen:
+    // Die Quer-Sicht auf Schwester-Abteilungen (Entscheidung A) macht mehr
+    // Zeilen lesbar, als in DIESEN lokalen Bestand gehören.
     final data = <String, List<Map<String, dynamic>>>{};
     for (final table in kSyncedTables) {
-      data[table] =
-          List<Map<String, dynamic>>.from(await client.from(table).select());
+      var query = client.from(table).select();
+      if (abteilung != null) query = query.eq('abteilung_id', abteilung);
+      data[table] = List<Map<String, dynamic>>.from(await query);
     }
 
     _suppressDirty = true;
@@ -289,10 +331,14 @@ class SyncService {
   /// gesperrt; die App bleibt lokal vollständig nutzbar.**
   Future<int> publish() async {
     final meta = await getMeta();
+    final abteilung = await _resolveAbteilung();
     final payload = await _buildPayload();
     final Object? result;
     try {
+      // Mit Abteilung: mandantenscharfe v2-Signatur. Ohne (Legacy-Server):
+      // die alte Signatur, die serverseitig als Weiche erhalten bleibt.
       result = await client.rpc('publish_snapshot', params: {
+        if (abteilung != null) 'abteilung': abteilung,
         'expected_version': meta.lastPulledVersion,
         'payload': payload,
         'client_version': appVersion,

@@ -1,0 +1,14 @@
+# fwapp-autodeploy.service – ein Lauf des Auto-Deploys (Issue #74, Route A).
+# Installation: siehe docs/SERVER-SETUP.md (Abschnitt Auto-Deploy).
+[Unit]
+Description=FWApp: Migrationen/Functions von main einspielen (Route A)
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=fwapp
+ExecStart=/home/fwapp/bin/fwapp_autodeploy.sh
+# Das Skript loggt selbst nach ~/autodeploy.log; journald bekommt es auch.
+StandardOutput=journal
+StandardError=journal

@@ -367,9 +367,47 @@ docker compose down && docker compose up -d
 
 # Updates (Images aktualisieren)
 docker compose pull && docker compose up -d
+```
 
-# Schema-Änderungen: neue Migration per psql einspielen, danach
-docker exec supabase-db psql -U supabase_admin -d postgres -c "NOTIFY pgrst, 'reload schema';"
+### Auto-Deploy: Migrationen & Functions von main (Issue #74, Route A)
+
+Seit dem 2026-08-01 spielt die VM Schema-Änderungen **selbst** ein — von
+Hand ist nur noch der Notfall. Ein systemd-Timer (`fwapp-autodeploy.timer`,
+alle 10 Minuten) startet [tool/vm/fwapp_autodeploy.sh](../tool/vm/fwapp_autodeploy.sh):
+
+1. holt [deploy/manifest.json](../deploy/manifest.json) über
+   `raw.githubusercontent.com` (der einzige GitHub-Weg dieser IPv6-only-VM;
+   raw kennt kein Verzeichnis-Listing, **deshalb** gibt es das Manifest —
+   ein CI-Guard hält es aktuell),
+2. vergleicht mit der Buchführung `deploy.applied_migrations` **in der
+   Datenbank** (rollt bei einem Restore mit zurück),
+3. für Neues: frischer `pg_dump` (= Rückfallpunkt), **Generalprobe in einer
+   Wegwerf-DB gegen genau diesen Dump**, erst bei Erfolg Einspielen auf
+   `postgres` + `NOTIFY pgrst`,
+4. gleicht die Edge-Function-Dateien per SHA-256 ab und startet bei
+   Änderungen den functions-Container neu (Sicherung als `.bak-autodeploy`).
+
+Der Freigabe-Moment ist der **Merge auf main durch einen Menschen** — der
+Timer ist Zustellung, keine Entscheidung.
+
+**Wenn etwas schiefgeht:** Der erste Fehler erzeugt `~/autodeploy.blocked`
+(mit Begründung) und alle weiteren Läufe tun nichts mehr — lieber stehen
+bleiben, als dieselbe kaputte Migration alle 10 Minuten gegen die Produktion
+zu werfen. Klären, beheben (Migration ist append-only: Korrektur = neue
+Migration), dann `rm ~/autodeploy.blocked`. Log: `~/autodeploy.log` und
+`journalctl -u fwapp-autodeploy`.
+
+Installation/Neuaufbau:
+
+```bash
+scp tool/vm/fwapp_autodeploy.sh fwapp@<vm>:bin/
+scp tool/vm/fwapp-autodeploy.{service,timer} fwapp@<vm>:/tmp/
+ssh fwapp@<vm> 'chmod +x bin/fwapp_autodeploy.sh \
+  && sudo mv /tmp/fwapp-autodeploy.* /etc/systemd/system/ \
+  && sudo systemctl daemon-reload \
+  && sudo systemctl enable --now fwapp-autodeploy.timer'
+# Erster Lauf sät das Ledger: alle Manifest-Migrationen gelten als
+# eingespielt (source='seed') — der Server läuft ja auf dem Stand von main.
 ```
 
 ### Feedback-Tabelle & Issue-Bot (seit 2026-07-19)

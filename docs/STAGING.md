@@ -75,6 +75,17 @@ Migrationen Gate + Abteilungen gegen den Nacht-Dump `fwapp_pg_*.dump` —
 beide liefen sauber durch, Backfill im Zeilenstand bestätigt. Das
 Dump-Namensmuster `*.dump` passt.
 
+⚠️ **Vor der Probe frisch dumpen, nicht den neuesten nehmen:** Der neueste
+Dump im Ordner kann von VOR der letzten Migration stammen (passiert am
+2026-08-01: Rückfallpunkt-Dump vom Morgen, Gesamtwehr-Migration fand
+`gesamtwehren` nicht). Ein frischer `pg_dump` ist zugleich Rückfallpunkt
+und korrekte Probe-Basis.
+
+**Seit Route A (#74) läuft Ebene 2 automatisch:** `tool/vm/fwapp_autodeploy.sh`
+zieht vor jedem Einspielen einen frischen Dump und fährt die Generalprobe
+selbst — das Skript hier bleibt für Hand-Proben einzelner Migrationen und
+für die Staging-VM (Ebene 3).
+
 ## Ebene 3 · Staging-VM 105 aus dem vzdump
 
 Der wöchentliche vzdump von VM 104 wird zu einer **byte-identischen

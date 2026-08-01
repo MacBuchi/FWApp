@@ -1,0 +1,45 @@
+{
+  "comment": "Generiert von tool/generate_deploy_manifest.py — nicht von Hand pflegen. Gelesen von tool/vm/fwapp_autodeploy.sh über raw.githubusercontent.com (Issue #74, Route A).",
+  "migrations": [
+    {
+      "name": "20260713000000_init_sync_schema.sql",
+      "sha256": "3fb09c49029fa73b8a48a3411d1fcfe619fa0bfcda6e3df0a140e4a7a35b4049"
+    },
+    {
+      "name": "20260715000000_equipment_images_storage.sql",
+      "sha256": "3f39156ae3cbdb7aa945d70f08a6d88e00b725469ed2b2ed55d2899b81540679"
+    },
+    {
+      "name": "20260717000000_role_geraetewart.sql",
+      "sha256": "b46395e5a16a50d72e173f720d774f0ef77f43ec3166a39a7c08eab88be5dfba"
+    },
+    {
+      "name": "20260718000000_username_login_admin.sql",
+      "sha256": "70c31673011004a0c9be443bb27f2c7422eea5f84030f7b45e64c1c94e3faca8"
+    },
+    {
+      "name": "20260719000000_feedback.sql",
+      "sha256": "f5ee2fcc7e1a40d53e36c7085668f44f017cbd621113b819a9cc43bb13d27ac1"
+    },
+    {
+      "name": "20260731000000_minimum_supported_version.sql",
+      "sha256": "78afde2960536b0952eb16b2d7b71c93916b9d872c3b815eb17cc55b0c8afa1d"
+    },
+    {
+      "name": "20260801000000_abteilungen_mandanten.sql",
+      "sha256": "f2ce4a53856b794a48e2432e5d07fc14ca34a05742758f21a6df38e7616b808d"
+    },
+    {
+      "name": "20260801120000_gesamtwehr_verbindungen.sql",
+      "sha256": "d94f9e63ab5d583210d6f4194df61caa338b76efcf1e7c16866f2edb61734996"
+    },
+    {
+      "name": "20260801160000_deploy_ledger.sql",
+      "sha256": "b7e69a66160bc345f7d51e8d8b147ad686b277b0ce473f166efc04cab3bd9584"
+    }
+  ],
+  "functions": {
+    "admin-users/index.ts": "39ae19ad99b4307d3cca5b989ff343a0b87fa124ad443c37cb1f5cb66b7aaaf6",
+    "main/index.ts": "e35427a3f30635ba6db7742870e377dfb978786a07f99efb1644b1714be614c5"
+  }
+}

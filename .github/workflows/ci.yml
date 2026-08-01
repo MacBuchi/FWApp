@@ -115,6 +115,12 @@ jobs:
             exit 1
           }
 
+      # The VM's autodeploy (issue #74) reads deploy/manifest.json via
+      # raw.githubusercontent.com — a stale manifest means new migrations
+      # silently never reach production.
+      - name: Verify deploy manifest is up to date
+        run: python3 tool/generate_deploy_manifest.py --check
+
       - name: Analyze
         run: flutter analyze
 

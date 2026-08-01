@@ -65,6 +65,17 @@ class AbteilungInfo {
   });
 }
 
+/// Anzeigename einer Abteilungs-Id. Unbekannte Ids gehören zu einer fremden
+/// Gesamtwehr, die RLS uns nicht zeigt — das wird benannt statt verschwiegen,
+/// sonst sähe ein solches Konto aus wie eines ohne Abteilung.
+String abteilungsName(String? id, List<AbteilungInfo> bekannte) {
+  if (id == null) return 'ohne Abteilung';
+  for (final a in bekannte) {
+    if (a.id == id) return a.name;
+  }
+  return 'andere Gesamtwehr';
+}
+
 /// Alle Abteilungen, die RLS den Angemeldeten lesen lässt (eigene +
 /// Schwestern der Gesamtwehr). Leer im Lokalmodus und auf Legacy-Servern —
 /// die Auswahl-UI verschwindet dann von selbst.

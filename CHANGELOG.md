@@ -12,6 +12,19 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.6.3] – 2026-08-01
+
+### Neu
+
+- **Die Abteilung gehört jetzt zur Nutzerverwaltung.** In der Kontoliste
+  steht bei jedem Konto, zu welcher Abteilung es gehört. Über das Menü der
+  Kontozeile lässt sich das ändern, und beim Anlegen eines Kontos gibt es
+  ein Feld dafür — vorbelegt mit der eigenen Abteilung. Damit ist der
+  letzte Handgriff aus dem Abteilungs-Aufbau in der App angekommen; vorher
+  musste dafür jemand an den Server.
+- Wählbar sind ausschließlich Abteilungen der **eigenen Gesamtwehr**. Der
+  Server prüft das noch einmal selbst und lehnt alles andere ab.
+
 ## [1.6.2] – 2026-08-01
 
 ### Behoben

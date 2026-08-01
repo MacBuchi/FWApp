@@ -149,10 +149,16 @@ Enthalten: `ANON_KEY` (öffentlicher Client-Key für die App), `SERVICE_ROLE_KEY
 Die Nutzerverwaltung der App läuft über die Edge Function
 [supabase/functions/admin-users/index.ts](../supabase/functions/admin-users/index.ts)
 (`POST /functions/v1/admin-users`, Aktionen `list/create/reset/set_role/`
-`disable/enable/delete`). Sie prüft das mitgeschickte Nutzer-JWT gegen
-PostgREST (nur `role = 'admin'` darf) und nutzt für die eigentlichen
-Operationen den `SUPABASE_SERVICE_ROLE_KEY` aus der Container-Umgebung —
-der mächtige Key verlässt den Server nie.
+`set_abteilung/disable/enable/delete`). Sie prüft das mitgeschickte
+Nutzer-JWT gegen PostgREST (nur `role = 'admin'` darf) und nutzt für die
+eigentlichen Operationen den `SUPABASE_SERVICE_ROLE_KEY` aus der
+Container-Umgebung — der mächtige Key verlässt den Server nie.
+
+⚠️ **Mandanten-Schutz beim Zuordnen (seit #57 Phase 3):** `set_abteilung`
+und `create` akzeptieren nur Abteilungen aus der **eigenen Gesamtwehr** des
+Aufrufers. Das muss die Function selbst prüfen — sie arbeitet mit dem
+Service-Role-Key, der RLS vollständig umgeht; die Policies auf
+`abteilungen` greifen hier also nicht.
 
 Deploy in der VM (edge-functions-Container läuft im Standard-Stack mit):
 

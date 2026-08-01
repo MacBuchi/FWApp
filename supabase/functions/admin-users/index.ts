@@ -10,13 +10,22 @@
 //
 // POST-Body: { "action": "...", ...parameter }
 //   list                            → [{id, username, email, role, banned,
-//                                       must_change_password, last_sign_in_at}]
-//   create  {username, role, password}
+//                                       must_change_password, last_sign_in_at,
+//                                       abteilung_id}]
+//   create  {username, role, password, abteilung_id?}
 //   reset   {user_id, password}     → setzt Initialpasswort + Pflichtwechsel
 //   set_role{user_id, role}
+//   set_abteilung {user_id, abteilung_id}
 //   disable {user_id} / enable {user_id}
 //   delete  {user_id}
-// Selbst-Schutz: eigene Rolle/Sperre/Löschung sind verboten.
+// Selbst-Schutz: eigene Rolle/Abteilung/Sperre/Löschung sind verboten.
+//
+// Mandanten-Schutz (Issue #57 Phase 3): Eine Abteilung darf nur zugewiesen
+// werden, wenn sie zur Gesamtwehr des Aufrufers gehört — sonst könnte ein
+// Admin Konten in eine fremde Gesamtwehr schieben und ihnen damit Lesezugriff
+// auf fremde Bestände verschaffen. Die RLS auf `abteilungen` allein reicht
+// dafür NICHT: Diese Function arbeitet mit dem Service-Role-Key, der RLS
+// vollständig umgeht.
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -79,23 +88,72 @@ async function setProfile(
   if (!resp.ok) throw new Error(`Profil-Update fehlgeschlagen: ${resp.status}`);
 }
 
+/// Heimat-Abteilung eines Kontos (null, wenn keine zugeordnet ist).
+async function abteilungOf(userId: string): Promise<string | null> {
+  const resp = await serviceFetch(
+    `/rest/v1/profiles?select=abteilung_id&id=eq.${userId}`,
+  );
+  if (!resp.ok) return null;
+  const rows = await resp.json();
+  return Array.isArray(rows) && rows.length === 1
+    ? (rows[0].abteilung_id as string | null)
+    : null;
+}
+
+/// Darf `callerId` Konten in die Abteilung `target` legen? Erlaubt ist die
+/// eigene Abteilung und jede Schwester derselben Gesamtwehr — genau der
+/// Bereich, in dem der Admin laut `can_publish_abteilung` ohnehin arbeitet.
+/// Eine Abteilung ohne Gesamtwehr steht für sich allein: dort darf nur, wer
+/// selbst darin ist.
+async function darfZuordnen(
+  callerId: string,
+  target: string,
+): Promise<boolean> {
+  const meine = await abteilungOf(callerId);
+  if (meine === null) return false;
+  if (meine === target) return true;
+
+  const resp = await serviceFetch(
+    `/rest/v1/abteilungen?select=id,gesamtwehr_id&id=in.(${meine},${target})`,
+  );
+  if (!resp.ok) return false;
+  const rows = await resp.json() as { id: string; gesamtwehr_id: string | null }[];
+  const eigene = rows.find((r) => r.id === meine);
+  const ziel = rows.find((r) => r.id === target);
+  // Zielabteilung muss existieren UND dieselbe (nicht-leere) Klammer haben.
+  if (!eigene || !ziel) return false;
+  return eigene.gesamtwehr_id !== null &&
+    eigene.gesamtwehr_id === ziel.gesamtwehr_id;
+}
+
 async function listUsers(): Promise<unknown[]> {
   const [authResp, profResp] = await Promise.all([
     serviceFetch("/auth/v1/admin/users?per_page=200"),
-    serviceFetch("/rest/v1/profiles?select=id,role,must_change_password"),
+    serviceFetch(
+      "/rest/v1/profiles?select=id,role,must_change_password,abteilung_id",
+    ),
   ]);
   if (!authResp.ok) throw new Error(`Auth-Liste: ${authResp.status}`);
   if (!profResp.ok) throw new Error(`Profil-Liste: ${profResp.status}`);
   const users = (await authResp.json()).users ?? [];
   const profiles = new Map(
     (await profResp.json()).map((
-      p: { id: string; role: string; must_change_password: boolean },
+      p: {
+        id: string;
+        role: string;
+        must_change_password: boolean;
+        abteilung_id: string | null;
+      },
     ) => [p.id, p]),
   );
   return users.map((u: Record<string, unknown>) => {
     const email = (u.email as string) ?? "";
     const p = profiles.get(u.id as string) as
-      | { role: string; must_change_password: boolean }
+      | {
+        role: string;
+        must_change_password: boolean;
+        abteilung_id: string | null;
+      }
       | undefined;
     const bannedUntil = u.banned_until as string | undefined;
     return {
@@ -108,6 +166,7 @@ async function listUsers(): Promise<unknown[]> {
       must_change_password: p?.must_change_password ?? false,
       banned: bannedUntil != null && new Date(bannedUntil) > new Date(),
       last_sign_in_at: u.last_sign_in_at ?? null,
+      abteilung_id: p?.abteilung_id ?? null,
     };
   });
 }
@@ -151,6 +210,23 @@ Deno.serve(async (req: Request) => {
         if (password.length < 8) {
           return json({ error: "Passwort braucht mindestens 8 Zeichen" }, 400);
         }
+        // Abteilung VOR dem Anlegen klären: Eine Absage danach würde ein
+        // Auth-Konto ohne Profil-Zuordnung zurücklassen.
+        // Ohne Angabe landet das Konto in der Abteilung des Anlegenden —
+        // nicht in der Bestands-Abteilung, in die der DB-Trigger es sonst
+        // legt. Wer aus Grombach heraus anlegt, meint Grombach.
+        const gewuenschte = body.abteilung_id == null
+          ? null
+          : String(body.abteilung_id);
+        if (
+          gewuenschte !== null && !(await darfZuordnen(caller.id, gewuenschte))
+        ) {
+          return json({
+            error: "Diese Abteilung gehört nicht zu deiner Gesamtwehr",
+          }, 403);
+        }
+        const abteilung = gewuenschte ?? await abteilungOf(caller.id);
+
         const resp = await serviceFetch("/auth/v1/admin/users", {
           method: "POST",
           body: JSON.stringify({
@@ -164,7 +240,11 @@ Deno.serve(async (req: Request) => {
           const msg = created.msg ?? created.message ?? resp.status;
           return json({ error: `Anlegen fehlgeschlagen: ${msg}` }, 400);
         }
-        await setProfile(created.id, { role, must_change_password: true });
+        await setProfile(created.id, {
+          role,
+          must_change_password: true,
+          ...(abteilung !== null ? { abteilung_id: abteilung } : {}),
+        });
         return json({ ok: true, id: created.id, username });
       }
 
@@ -189,6 +269,22 @@ Deno.serve(async (req: Request) => {
         const role = String(body.role ?? "");
         if (!ROLES.includes(role)) return json({ error: "Ungültige Rolle" }, 400);
         await setProfile(userId, { role });
+        return json({ ok: true });
+      }
+
+      case "set_abteilung": {
+        if (!userId) return json({ error: "user_id fehlt" }, 400);
+        // Wie bei set_role: Wer sich selbst verschiebt, verliert womöglich
+        // den Zugriff auf den Bestand, den er gerade verwaltet.
+        if (self) return json({ error: "Eigene Abteilung nicht änderbar" }, 400);
+        const target = String(body.abteilung_id ?? "");
+        if (!target) return json({ error: "abteilung_id fehlt" }, 400);
+        if (!(await darfZuordnen(caller.id, target))) {
+          return json({
+            error: "Diese Abteilung gehört nicht zu deiner Gesamtwehr",
+          }, 403);
+        }
+        await setProfile(userId, { abteilung_id: target });
         return json({ ok: true });
       }
 

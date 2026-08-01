@@ -100,8 +100,9 @@ Eine zweite Abteilung einrichten (als Admin):
    eigenen Gesamtwehr und darf sofort veröffentlichen; der anlegende Admin
    bürgt dafür.
 3. Für die neue Abteilung in der **Nutzerverwaltung** einen Gerätewart
-   anlegen. (Das Zuordnen eines Kontos zu einer anderen Abteilung ist noch
-   Server-Arbeit — siehe „Bekannte Lücken" unten.)
+   anlegen — im Anlege-Dialog steht jetzt ein Feld **Abteilung**. Bestehende
+   Konten lassen sich über das Menü der Kontozeile → **Abteilung ändern**
+   umhängen. Wählbar sind nur Abteilungen der eigenen Gesamtwehr.
 
 Anschluss einer bestehenden, eigenständigen Abteilung:
 
@@ -114,12 +115,18 @@ Anschluss einer bestehenden, eigenständigen Abteilung:
   **freigeschaltet** und darf veröffentlichen. Vorher arbeitet sie ganz
   normal lokal weiter; nur das Veröffentlichen wartet.
 
-**Bekannte Lücken (Stand v1.6.0):** Ein Konto einer anderen Abteilung
-zuordnen geht noch nicht in der App (`profiles.abteilung_id` per psql). Eine
-Abteilung, die gar keiner Gesamtwehr beitreten will, kann niemand in der App
-freigeben — das bleibt Sache des Betreibers. Branding der Gesamtwehr
-(eigener Header, Bild) und eigene Konten mit Mail-Bestätigung/2FA sind die
-nächsten Schritte von Issue #57.
+**Wenn ein Konto die Abteilung wechselt:** Das Gerät merkt das nicht von
+allein. Die App holt neue Stände nur, wenn der Server **neuer** ist als der
+lokale Stand — eine frische Abteilung steht aber bei Version 0. Wer schon
+mit dem Konto gearbeitet hat, löst deshalb einmal Einstellungen → Sync →
+**Pull** aus; das erzwingt den Abgleich und räumt den alten Bestand weg.
+Konten, die noch nie auf einem Gerät angemeldet waren, brauchen nichts.
+
+**Bekannte Lücken (Stand v1.6.3):** Eine Abteilung, die gar keiner
+Gesamtwehr beitreten will, kann niemand in der App freigeben — das bleibt
+Sache des Betreibers. Branding der Gesamtwehr (eigener Header, Bild) und
+eigene Konten mit Mail-Bestätigung/2FA sind die nächsten Schritte von
+Issue #57.
 
 ### Prüftermine pflegen (Gerätewart)
 

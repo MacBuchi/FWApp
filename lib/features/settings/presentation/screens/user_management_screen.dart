@@ -1,12 +1,14 @@
 /// user_management_screen.dart – Admin-Nutzerverwaltung (M7 Etappe 3):
 /// Konten anlegen (Nutzername + Initialpasswort), Passwort zurücksetzen,
-/// Rolle ändern, sperren/entsperren, löschen. Nur für Admins erreichbar
-/// (Tile im Mehr-Tab ist isAdmin-gated; die Edge Function prüft serverseitig
-/// nochmal).
+/// Rolle und Abteilung ändern, sperren/entsperren, löschen. Nur für Admins
+/// erreichbar (Tile im Mehr-Tab ist isAdmin-gated; die Edge Function prüft
+/// serverseitig nochmal — auch, dass die Ziel-Abteilung zur eigenen
+/// Gesamtwehr gehört).
 library;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fwapp/core/sync/abteilung_providers.dart';
 import 'package:fwapp/core/sync/auth_utils.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/features/settings/presentation/providers/user_admin_providers.dart';
@@ -70,6 +72,12 @@ class UserManagementScreen extends ConsumerWidget {
         TextEditingController(text: generateInitialPassword());
     var role = 'member';
     String? error;
+    // Ohne Auswahl legt der Server das Konto in die Abteilung des
+    // Anlegenden — deshalb ist `null` hier ein gültiger Zustand und nicht
+    // „vergessen".
+    final abteilungen = ref.read(abteilungenProvider).value ?? const [];
+    final eigene = ref.read(myAbteilungIdProvider).value;
+    String? abteilung = abteilungen.any((a) => a.id == eigene) ? eigene : null;
 
     final ok = await showDialog<bool>(
       context: context,
@@ -106,6 +114,18 @@ class UserManagementScreen extends ConsumerWidget {
                 ],
                 onChanged: (v) => setState(() => role = v ?? 'member'),
               ),
+              if (abteilungen.length > 1) ...[
+                const SizedBox(height: 8),
+                DropdownButtonFormField<String>(
+                  initialValue: abteilung,
+                  decoration: const InputDecoration(labelText: 'Abteilung'),
+                  items: [
+                    for (final a in abteilungen)
+                      DropdownMenuItem(value: a.id, child: Text(a.name)),
+                  ],
+                  onChanged: (v) => setState(() => abteilung = v ?? abteilung),
+                ),
+              ],
               const SizedBox(height: 8),
               TextField(
                 controller: passwordCtrl,
@@ -163,6 +183,7 @@ class UserManagementScreen extends ConsumerWidget {
         'username': username,
         'role': role,
         'password': passwordCtrl.text,
+        if (abteilung != null) 'abteilung_id': abteilung,
       });
       if (context.mounted) {
         await _showCredentials(context, username, passwordCtrl.text);
@@ -220,8 +241,10 @@ class _UserTile extends ConsumerWidget {
       'geraetewart' => 'Gerätewart',
       _ => 'Mitglied',
     };
+    final abteilungen = ref.watch(abteilungenProvider).value ?? const [];
     final details = <String>[
       roleLabel,
+      if (abteilungen.isNotEmpty) abteilungsName(user.abteilungId, abteilungen),
       if (user.banned) 'GESPERRT',
       if (user.mustChangePassword) 'Initialpasswort aktiv',
       if (user.lastSignInAt != null)
@@ -247,11 +270,17 @@ class _UserTile extends ConsumerWidget {
               : null),
       subtitle: Text(details.join(' · ')),
       trailing: PopupMenuButton<String>(
-        onSelected: (action) => _onAction(context, ref, action),
+        onSelected: (action) => _onAction(context, ref, action, abteilungen),
         itemBuilder: (_) => [
           const PopupMenuItem(
               value: 'reset', child: Text('Passwort zurücksetzen')),
           const PopupMenuItem(value: 'role', child: Text('Rolle ändern')),
+          // Nur zeigen, wenn es überhaupt etwas zu wählen gibt: eine
+          // einzelne Abteilung ist keine Wahl, und auf Legacy-Servern
+          // ist die Liste leer.
+          if (abteilungen.length > 1)
+            const PopupMenuItem(
+                value: 'abteilung', child: Text('Abteilung ändern')),
           PopupMenuItem(
               value: user.banned ? 'enable' : 'disable',
               child: Text(user.banned ? 'Entsperren' : 'Sperren')),
@@ -261,8 +290,8 @@ class _UserTile extends ConsumerWidget {
     );
   }
 
-  Future<void> _onAction(
-      BuildContext context, WidgetRef ref, String action) async {
+  Future<void> _onAction(BuildContext context, WidgetRef ref, String action,
+      List<AbteilungInfo> abteilungen) async {
     switch (action) {
       case 'reset':
         final password = generateInitialPassword();
@@ -320,6 +349,58 @@ class _UserTile extends ConsumerWidget {
               ref,
               () => invokeAdminUsers(ref.read(supabaseClientProvider),
                   {'action': 'set_role', 'user_id': user.id, 'role': role}));
+        }
+      case 'abteilung':
+        // Vorauswahl: die aktuelle Abteilung, sonst die erste wählbare —
+        // ein Dropdown ohne gültigen Wert wirft zur Laufzeit.
+        var ziel = abteilungen.any((a) => a.id == user.abteilungId)
+            ? user.abteilungId!
+            : abteilungen.first.id;
+        final ok = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text('Abteilung von „${user.username}“'),
+            content: StatefulBuilder(
+              builder: (ctx, setState) => Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DropdownButtonFormField<String>(
+                    initialValue: ziel,
+                    items: [
+                      for (final a in abteilungen)
+                        DropdownMenuItem(value: a.id, child: Text(a.name)),
+                    ],
+                    onChanged: (v) => setState(() => ziel = v ?? ziel),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Das Konto arbeitet danach im Bestand der neuen '
+                    'Abteilung. Ein bereits eingerichtetes Gerät holt sich '
+                    'den neuen Stand erst beim nächsten Pull.',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text('Abbrechen')),
+              FilledButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child: const Text('Speichern')),
+            ],
+          ),
+        );
+        if (ok == true && context.mounted) {
+          await _run(
+              context,
+              ref,
+              () => invokeAdminUsers(ref.read(supabaseClientProvider), {
+                    'action': 'set_abteilung',
+                    'user_id': user.id,
+                    'abteilung_id': ziel,
+                  }));
         }
       case 'disable':
       case 'enable':

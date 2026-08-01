@@ -35,8 +35,18 @@ und lässt die E2E-Suite (`test/integration/sync_e2e_test.dart`) dagegen
 laufen. Das ist unser Gegenstück zu den Preview-Branches: Jede
 Schema-Änderung wird schon im PR gegen einen echten Supabase-Stack geprüft.
 
-Was diese Ebene *nicht* sieht: den echten Datenbestand (Backfills!), die
-Produktions-`.env`, Kong-/nginx-/Tunnel-Konfiguration.
+Dazu kommt seit 2026-08-01 der Workflow **Supabase Preview**
+(`.github/workflows/supabase-preview.yml`): Bei jedem PR, der
+`supabase/migrations/` anfasst, bootet er den Stack auf dem
+Migrationsstand des **Basis-Branches**, zieht **nur die neuen** Migrationen
+inkrementell darüber — exakt der Upgrade-Pfad, den später die Produktion
+nimmt — und postet den Schema-Diff als PR-Kommentar. Außerdem erzwingt er
+Migrations-Unveränderlichkeit: Wer eine bestehende Migrationsdatei ändert,
+löscht oder umbenennt, bekommt einen roten Check (sie könnte in der
+Produktion schon eingespielt sein).
+
+Was diese Ebene *nicht* sieht: den echten Datenbestand (Backfills gegen
+reale Daten!), die Produktions-`.env`, Kong-/nginx-/Tunnel-Konfiguration.
 
 ## Ebene 2 · Probelauf-DB auf der VM (`tool/migration_rehearsal.sh`)
 

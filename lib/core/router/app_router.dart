@@ -3,10 +3,16 @@
 /// Edit-/Admin-Routen sind zusätzlich zur ausgeblendeten UI per [guardRedirect]
 /// geschützt, damit auch Deep-Links (Web!) die Rollenregeln respektieren.
 library;
+import 'dart:async' show unawaited;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fwapp/core/logging/app_logger.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:go_router/go_router.dart';
+import 'package:fwapp/features/auth/presentation/screens/change_password_screen.dart';
+import 'package:fwapp/features/auth/presentation/screens/login_screen.dart';
+import 'package:fwapp/features/settings/presentation/screens/server_settings_screen.dart';
 import 'package:fwapp/features/home/presentation/screens/home_screen.dart';
 import 'package:fwapp/features/home/presentation/screens/more_screen.dart';
 import 'package:fwapp/features/vehicle/presentation/screens/vehicle_list_screen.dart';
@@ -45,6 +51,15 @@ final _editRoutePattern = RegExp(r'^(/vehicles/(new(/template)?|[^/]+/(edit|comp
     r'|/inspections'
     r'|/inventory(/.*)?)$');
 
+/// Ohne Anmeldung erreichbar: die Anmeldung selbst und der Notausgang, über
+/// den man Server-URL und Schlüssel korrigiert. Ohne diese Hintertür säße
+/// jemand mit falscher Serveradresse in einer App fest, in die er sich nicht
+/// anmelden kann und deren Adresse er nicht mehr ändern darf.
+const _publicPaths = {'/login', '/server-settings'};
+
+/// Seiten, die es nur mit Serververbindung gibt.
+const _authPaths = {'/login', '/change-password'};
+
 /// Pure Guard-Logik, getrennt vom Router für direkte Testbarkeit.
 /// Liefert das Redirect-Ziel oder null (= Navigation erlaubt).
 String? guardRedirect({
@@ -52,7 +67,31 @@ String? guardRedirect({
   required bool canEdit,
   required bool isAdmin,
   required bool supabaseReady,
+  required bool loggedIn,
+  required bool mustChangePassword,
 }) {
+  // Anmeldezwang VOR den Rollen-Guards: Ohne Sitzung ist canEdit false,
+  // /import liefe sonst erst auf '/' und von dort auf '/login' — zwei
+  // Sprünge, bei denen die eigentliche Aussage („melde dich an") verloren
+  // geht.
+  if (supabaseReady) {
+    if (!loggedIn) {
+      return _publicPaths.contains(path) ? null : '/login';
+    }
+    // Initialpasswort vom Zugangszettel: nicht umgehbar. Als Route statt
+    // als Dialog, weil ein Dialog nach dem Login auf einem schon
+    // abgebauten Kontext landen würde — der Redirect räumt den
+    // Login-Screen im selben Moment ab.
+    if (mustChangePassword) {
+      return path == '/change-password' ? null : '/change-password';
+    }
+    if (_authPaths.contains(path)) return '/';
+  } else if (_authPaths.contains(path)) {
+    // Lokalmodus: Es gibt kein Konto, in das man sich setzen könnte. Die
+    // App bleibt ohne Server voll benutzbar; /server-settings führt zurück.
+    return '/';
+  }
+
   if (_editRoutePattern.hasMatch(path) && !canEdit) return '/';
   // Nutzerverwaltung braucht wie die Mehr-Kachel Admin UND Serververbindung.
   if (path == '/user-management' && !(isAdmin && supabaseReady)) return '/';
@@ -70,6 +109,25 @@ final routerProvider = Provider<GoRouter>((ref) {
   ref.onDispose(refresh.dispose);
   ref.listen(canEditProvider, (_, _) => refresh.value++);
   ref.listen(isAdminProvider, (_, _) => refresh.value++);
+  // Der Pflichtwechsel kommt ebenfalls asynchron vom Server; ohne diesen
+  // Anstoß bliebe jemand mit Initialpasswort auf der Startseite stehen.
+  ref.listen(mustChangePasswordProvider, (_, _) => refresh.value++);
+
+  // An-/Abmelden stößt den Redirect an. Bewusst der rohe gotrue-Strom und
+  // nicht sessionStreamProvider: Der filtert per distinct auf die Nutzer-ID
+  // und startet als AsyncLoading — beides ist für einen Guard falsch.
+  final sub = ref.read(supabaseClientProvider)?.auth.onAuthStateChange.listen(
+    (_) => refresh.value++,
+    // Pflicht, kein Beiwerk: gotrue meldet einen fehlgeschlagenen
+    // Token-Refresh (offline!) als Stream-FEHLER. Ohne Handler wird daraus
+    // eine unbehandelte Ausnahme, und PlatformDispatcher.onError in
+    // main.dart schriebe bei jedem Start ohne Netz einen Absturzbericht.
+    onError: (Object e, StackTrace s) => appLog.w(
+        'Auth-Ereignisstrom meldet einen Fehler (offline?)',
+        error: e,
+        stackTrace: s),
+  );
+  ref.onDispose(() => unawaited(sub?.cancel()));
 
   return GoRouter(
     initialLocation: '/',
@@ -79,12 +137,32 @@ final routerProvider = Provider<GoRouter>((ref) {
       canEdit: ref.read(canEditProvider),
       isAdmin: ref.read(isAdminProvider),
       supabaseReady: ref.read(supabaseReadyProvider),
+      loggedIn: ref.read(signedInReaderProvider)(),
+      // Beim allerersten Redirect steht der Wert noch nicht fest (der
+      // Provider lädt); dann gilt „kein Zwang" und der ref.listen oben
+      // holt es nach. Sichtbare Folge: ein Sekundenbruchteil Startseite,
+      // bevor der Wechsel greift — hingenommen, weil die Alternative ein
+      // Ladezustand im Router wäre, der jeden Kaltstart verzögert.
+      mustChangePassword: ref.read(mustChangePasswordProvider).value ?? false,
     ),
     routes: _routes,
   );
 });
 
 final _routes = [
+    // Bewusst AUSSERHALB der ShellRoute: Das sind Vollbild-Übernahmen ohne
+    // Navigationsleiste — und außerhalb der Shell gibt es den
+    // verschachtelten Navigator gar nicht, an dem v1.6.0 im Feld
+    // gescheitert ist (Dialog poppte den Screen dahinter weg, #79).
+    GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
+    GoRoute(
+      path: '/change-password',
+      builder: (_, _) => const ChangePasswordScreen(),
+    ),
+    GoRoute(
+      path: '/server-settings',
+      builder: (_, _) => const ServerSettingsScreen(),
+    ),
     ShellRoute(
       builder: (context, state, child) =>
           _AppShell(location: state.uri.path, child: child),

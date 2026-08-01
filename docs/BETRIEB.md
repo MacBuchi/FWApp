@@ -20,13 +20,15 @@ Datenschutz. Technisches Server-Setup: [SERVER-SETUP.md](SERVER-SETUP.md).
 >    installieren. Beim ersten Mal fragt Android nach der Erlaubnis,
 >    Apps aus dieser Quelle zu installieren – zulassen.
 > 2. **Sync aktivieren:** App öffnen → **Mehr → Einstellungen → Sync**
->    einschalten. Server ist bereits voreingestellt.
-> 3. **Einloggen** mit deinem **persönlichen Nutzernamen** und dem
+>    einschalten. Server ist bereits voreingestellt. Danach die App einmal
+>    schließen und neu öffnen.
+> 3. **Anmelden** mit deinem **persönlichen Nutzernamen** und dem
 >    Initialpasswort von deinem Zugangszettel (gibt es beim
->    Gerätewart/Admin — eine Registrierung gibt es nicht). Beim ersten
->    Login fragt die App einmalig nach einem **eigenen neuen Passwort**.
+>    Gerätewart/Admin — eine Registrierung gibt es nicht). Seit v1.7.0
+>    begrüßt dich die App direkt mit dem Anmeldebildschirm. Beim ersten
+>    Anmelden verlangt sie einmalig ein **eigenes neues Passwort**.
 >    Ob die Verbindung steht, zeigt der grüne Haken „Server erreichbar“
->    direkt über dem Login.
+>    über den Eingabefeldern.
 > 4. Die App lädt den aktuellen Datenbestand und alle Gerätefotos –
 >    danach funktioniert **alles auch offline** (Einsatz, Funkloch, Keller).
 > 5. Aktualisieren der Daten funktioniert **überall, wo Internet ist**
@@ -72,8 +74,9 @@ Prüfhistorie oder Instanzen – die hängen an den physischen Geräten.
   (z. B. `max.m`), Rolle (Mitglied / Gerätewart / Admin) und generiertem
   **Initialpasswort**. Die Zugangsdaten werden genau **einmal** angezeigt —
   direkt auf den Zugangszettel übertragen.
-- Beim ersten Login muss die Person das Initialpasswort durch ein eigenes
-  ersetzen (die App erzwingt das); der Zettel ist danach wertlos.
+- Beim ersten Anmelden muss die Person das Initialpasswort durch ein eigenes
+  ersetzen (die App erzwingt das mit einer eigenen Seite, die sich nicht
+  wegtippen lässt); der Zettel ist danach wertlos.
 - **Passwort vergessen?** Konto in der Liste → „Passwort zurücksetzen“ →
   neues Initialpasswort aushändigen (derselbe Pflichtwechsel greift wieder).
 - **Austritt/Gerätewechsel:** Konto **sperren** (umkehrbar) statt löschen;
@@ -258,7 +261,8 @@ Es musste zu keinem Zeitpunkt etwas gelöscht werden.
 | Symptom | Ursache / Lösung |
 | --- | --- |
 | „Server nicht erreichbar“ | Internetverbindung des Geräts prüfen (Flugmodus? Gast-WLAN ohne Internet?). Status live prüfen: Einstellungen → Cloud-Synchronisation → Kachel „Server erreichbar“ (tippen = neu prüfen). Bleibt es rot: Server/Tunnel prüfen ([SERVER-SETUP.md](SERVER-SETUP.md)). Lernen geht immer offline weiter. |
-| Login schlägt fehl | Nutzername + Passwort vom Zugangszettel exakt übernehmen (Groß-/Kleinschreibung des Passworts!). Konto evtl. gesperrt oder noch nicht angelegt → Admin fragt in der Nutzerverwaltung nach. |
+| Login schlägt fehl | Nutzername + Passwort vom Zugangszettel exakt übernehmen (Groß-/Kleinschreibung des Passworts!) — das Auge im Passwortfeld zeigt das Getippte. Konto evtl. gesperrt oder noch nicht angelegt → Admin fragt in der Nutzerverwaltung nach. |
+| App zeigt nur die Anmeldung, Server antwortet nicht | Seit v1.7.0 führt vom Anmeldebildschirm ein Knopf zu **Servereinstellungen** — dort Adresse prüfen. Hilft das nicht, dort die Cloud-Synchronisation abschalten und die App neu starten: Sie läuft dann wieder ohne Anmeldung im Lokalmodus. |
 | Passwort vergessen | Admin: Mehr → Nutzerverwaltung → Konto → „Passwort zurücksetzen“ → neues Initialpasswort aushändigen. |
 | Veröffentlichen: Versionskonflikt | Anderer Admin war schneller → Pull, prüfen, erneut veröffentlichen (siehe oben). |
 | Fotos fehlen auf einem Mitglieder-Gerät | Einstellungen → „Gerätefotos offline“ prüfen, ggf. erneut anstoßen; einmal WLAN mit Serverzugang nötig. |

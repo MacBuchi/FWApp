@@ -242,8 +242,13 @@ class _UserTile extends ConsumerWidget {
       _ => 'Mitglied',
     };
     final abteilungen = ref.watch(abteilungenProvider).value ?? const [];
+    // Die Zettel-Form <name>@fw.local ist keine Information — sie steht
+    // schon als Nutzername im Titel. Sichtbar wird die Adresse erst, wenn
+    // sie eine echte ist (dann ist sie auch die Anmeldung).
+    final echteMail = hatEchteMail(user.email);
     final details = <String>[
       roleLabel,
+      if (echteMail) user.email,
       if (abteilungen.isNotEmpty) abteilungsName(user.abteilungId, abteilungen),
       if (user.banned) 'GESPERRT',
       if (user.mustChangePassword) 'Initialpasswort aktiv',
@@ -275,6 +280,16 @@ class _UserTile extends ConsumerWidget {
           const PopupMenuItem(
               value: 'reset', child: Text('Passwort zurücksetzen')),
           const PopupMenuItem(value: 'role', child: Text('Rolle ändern')),
+          PopupMenuItem(
+              value: 'email',
+              child: Text(echteMail
+                  ? 'E-Mail-Adresse ändern'
+                  : 'E-Mail-Adresse hinterlegen')),
+          // Nur sinnvoll mit echter Adresse: GoTrue verschickt ausschließlich
+          // an die Adresse des Kontos, @fw.local kann niemand empfangen.
+          if (echteMail)
+            const PopupMenuItem(
+                value: 'zugangsmail', child: Text('Passwort-Mail senden')),
           // Nur zeigen, wenn es überhaupt etwas zu wählen gibt: eine
           // einzelne Abteilung ist keine Wahl, und auf Legacy-Servern
           // ist die Liste leer.
@@ -310,6 +325,76 @@ class _UserTile extends ConsumerWidget {
             if (context.mounted) {
               await _showCredentials(context, user.username, password);
             }
+          });
+        }
+      case 'email':
+        // Der Warnsatz ist der wichtigste Teil des Dialogs: Ab dem Speichern
+        // meldet sich die Person mit der Adresse an, der Zettel-Name gilt
+        // nicht mehr. Wer das nicht weiß, sperrt jemanden versehentlich aus.
+        final ctrl = TextEditingController(
+            text: hatEchteMail(user.email) ? user.email : '');
+        final ok = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text('E-Mail für „${user.username}“'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: ctrl,
+                  decoration: const InputDecoration(
+                    labelText: 'E-Mail-Adresse',
+                    helperText: 'Für „Passwort vergessen“ — nur nötig für '
+                        'Admins und Gerätewarte',
+                  ),
+                  keyboardType: TextInputType.emailAddress,
+                  autocorrect: false,
+                  autofocus: true,
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Achtung: Diese Person meldet sich danach mit der '
+                  'E-Mail-Adresse an, nicht mehr mit dem Nutzernamen. Bitte '
+                  'Bescheid geben.',
+                  style: TextStyle(fontSize: 12, color: Colors.orange),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text('Abbrechen')),
+              FilledButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child: const Text('Speichern')),
+            ],
+          ),
+        );
+        if (ok == true && context.mounted) {
+          await _run(
+              context,
+              ref,
+              () => invokeAdminUsers(ref.read(supabaseClientProvider), {
+                    'action': 'set_email',
+                    'user_id': user.id,
+                    'email': ctrl.text.trim(),
+                  }));
+        }
+      case 'zugangsmail':
+        final ok = await _confirm(
+            context,
+            'Passwort-Mail senden?',
+            '„${user.username}“ bekommt an ${user.email} einen Code, mit dem '
+                'die Person sich selbst ein Passwort setzen kann. Kommt die '
+                'Mail nicht an, stimmt die Adresse nicht.');
+        if (ok && context.mounted) {
+          await _run(context, ref, () async {
+            // Öffentlicher Endpunkt, kein Admin-Aufruf: Genau denselben Weg
+            // geht „Passwort vergessen" im Anmeldebildschirm.
+            await ref
+                .read(supabaseClientProvider)
+                ?.auth
+                .resetPasswordForEmail(user.email);
           });
         }
       case 'role':

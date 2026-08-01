@@ -12,6 +12,29 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.8.0] – 2026-08-01
+
+### Neu
+
+- **Passwort vergessen — ohne den Umweg über den Gerätewart.** Auf dem
+  Anmeldebildschirm führt „Passwort vergessen?" zu einer E-Mail mit einem
+  sechsstelligen Code. Den tippt man in der App ein und vergibt direkt sein
+  neues Passwort. Der Code funktioniert auch dann, wenn die Mail am PC
+  gelesen und die App am Handy bedient wird — genau daran scheitern die
+  üblichen Links.
+- Das geht für Konten mit **hinterlegter E-Mail-Adresse**, also für Admins
+  und Gerätewarte. Wer sich mit einem Zugangszettel anmeldet, wendet sich
+  weiterhin an den Gerätewart — dort ändert sich nichts.
+- **E-Mail-Adressen in der Nutzerverwaltung.** Über das Menü einer
+  Kontozeile lässt sich eine Adresse hinterlegen oder ändern, und es gibt
+  einen Knopf „Passwort-Mail senden". Damit richtet man jemanden ein, ohne
+  je ein Passwort auszusprechen: Adresse eintragen, Mail schicken, die
+  Person setzt sich selbst eines.
+- **Achtung dabei:** Wer eine E-Mail-Adresse bekommt, meldet sich ab dann
+  mit dieser Adresse an — nicht mehr mit dem Nutzernamen. Die App weist im
+  Dialog darauf hin. Der Nutzername bleibt als Anzeigename in der Liste
+  stehen.
+
 ## [1.7.0] – 2026-08-01
 
 ### Geändert

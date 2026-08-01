@@ -40,10 +40,14 @@
     {
       "name": "20260801170000_autodeploy_probe.sql",
       "sha256": "b95344815a27049fc0590e43b6bd8b42630e748baec7967f02d227dab5195867"
+    },
+    {
+      "name": "20260801190000_profiles_username.sql",
+      "sha256": "33aa10bb9bab9cabee01e5985a1fb1ccbfb3edd9f3e8e651e0579cb21a439b0d"
     }
   ],
   "functions": {
-    "admin-users/index.ts": "39ae19ad99b4307d3cca5b989ff343a0b87fa124ad443c37cb1f5cb66b7aaaf6",
+    "admin-users/index.ts": "bc95e6ba28df3d751e13364ca111c63b8d4ad1c141690495bd00395870d9ead3",
     "main/index.ts": "e35427a3f30635ba6db7742870e377dfb978786a07f99efb1644b1714be614c5"
   }
 }

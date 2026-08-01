@@ -77,8 +77,19 @@ Prüfhistorie oder Instanzen – die hängen an den physischen Geräten.
 - Beim ersten Anmelden muss die Person das Initialpasswort durch ein eigenes
   ersetzen (die App erzwingt das mit einer eigenen Seite, die sich nicht
   wegtippen lässt); der Zettel ist danach wertlos.
-- **Passwort vergessen?** Konto in der Liste → „Passwort zurücksetzen“ →
-  neues Initialpasswort aushändigen (derselbe Pflichtwechsel greift wieder).
+- **Passwort vergessen?** Zwei Wege, je nach Konto:
+  - *Mit hinterlegter E-Mail-Adresse* (Admins, Gerätewarte): Die Person hilft
+    sich selbst — „Passwort vergessen?“ auf dem Anmeldebildschirm, Code aus
+    der Mail eintippen, neues Passwort setzen. Alternativ schickt der Admin
+    die Mail über das Kontomenü („Passwort-Mail senden“).
+  - *Mit Zugangszettel*: Konto in der Liste → „Passwort zurücksetzen“ → neues
+    Initialpasswort aushändigen (derselbe Pflichtwechsel greift wieder).
+- **E-Mail-Adresse hinterlegen** (seit v1.8.0): Kontomenü →
+  „E-Mail-Adresse hinterlegen“. Sinnvoll für alle, die verwalten oder
+  bearbeiten. ⚠️ **Die Person meldet sich danach mit der Adresse an, nicht
+  mehr mit dem Nutzernamen** — vorher Bescheid geben. Der Nutzername bleibt
+  als Anzeigename in der Liste. Ob die Adresse stimmt, zeigt sich sofort:
+  „Passwort-Mail senden“ drücken und fragen, ob sie ankam.
 - **Austritt/Gerätewechsel:** Konto **sperren** (umkehrbar) statt löschen;
   Löschen nur für endgültige Aufräumarbeiten.
 - Das frühere Sammelkonto `member@fw.local` ist gesperrt — alte
@@ -263,7 +274,8 @@ Es musste zu keinem Zeitpunkt etwas gelöscht werden.
 | „Server nicht erreichbar“ | Internetverbindung des Geräts prüfen (Flugmodus? Gast-WLAN ohne Internet?). Status live prüfen: Einstellungen → Cloud-Synchronisation → Kachel „Server erreichbar“ (tippen = neu prüfen). Bleibt es rot: Server/Tunnel prüfen ([SERVER-SETUP.md](SERVER-SETUP.md)). Lernen geht immer offline weiter. |
 | Login schlägt fehl | Nutzername + Passwort vom Zugangszettel exakt übernehmen (Groß-/Kleinschreibung des Passworts!) — das Auge im Passwortfeld zeigt das Getippte. Konto evtl. gesperrt oder noch nicht angelegt → Admin fragt in der Nutzerverwaltung nach. |
 | App zeigt nur die Anmeldung, Server antwortet nicht | Seit v1.7.0 führt vom Anmeldebildschirm ein Knopf zu **Servereinstellungen** — dort Adresse prüfen. Hilft das nicht, dort die Cloud-Synchronisation abschalten und die App neu starten: Sie läuft dann wieder ohne Anmeldung im Lokalmodus. |
-| Passwort vergessen | Admin: Mehr → Nutzerverwaltung → Konto → „Passwort zurücksetzen“ → neues Initialpasswort aushändigen. |
+| Passwort vergessen | Mit hinterlegter E-Mail: „Passwort vergessen?“ auf dem Anmeldebildschirm, Code aus der Mail eintippen (seit v1.8.0). Sonst Admin: Mehr → Nutzerverwaltung → Konto → „Passwort zurücksetzen“ → neues Initialpasswort aushändigen. |
+| Code-Mail kommt nicht an | Hat das Konto überhaupt eine Adresse? In der Nutzerverwaltung steht sie in der Kontozeile; ohne Adresse gibt es keinen Weg über Mail. Sonst Spam-Ordner prüfen und Adresse im Kontomenü korrigieren. Serverseitig: `journalctl -u fwapp-mailbridge` auf der VM zeigt jeden Versand. |
 | Veröffentlichen: Versionskonflikt | Anderer Admin war schneller → Pull, prüfen, erneut veröffentlichen (siehe oben). |
 | Fotos fehlen auf einem Mitglieder-Gerät | Einstellungen → „Gerätefotos offline“ prüfen, ggf. erneut anstoßen; einmal WLAN mit Serverzugang nötig. |
 | App-Update lässt sich nicht installieren | Altbestand mit anders signierter Version (z. B. Entwickler-Build) → einmalig deinstallieren, Release-APK installieren. Danach nie wieder nötig. |

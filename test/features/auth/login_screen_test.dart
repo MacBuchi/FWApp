@@ -112,4 +112,60 @@ void main() {
     expect(passwort.autofillHints, contains(AutofillHints.password));
     await endTestApp(tester);
   });
+
+  group('Passwort vergessen (Etappe 2)', () {
+    Future<void> zumAdressmodus(WidgetTester tester) async {
+      await pumpLogin(tester, client: toterClient());
+      await tester.ensureVisible(find.text('Passwort vergessen?'));
+      await tester.tap(find.text('Passwort vergessen?'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('der Weg dorthin fragt nur nach der Adresse', (tester) async {
+      await zumAdressmodus(tester);
+
+      expect(find.widgetWithText(TextField, 'E-Mail-Adresse'), findsOneWidget);
+      // Gegenprobe im Test selbst: Die Anmeldefelder sind weg, nicht nur
+      // überdeckt — sonst könnte man versehentlich ins Leere tippen.
+      expect(find.widgetWithText(TextField, 'Nutzername'), findsNothing);
+      expect(find.widgetWithText(FilledButton, 'Code anfordern'),
+          findsOneWidget);
+      await endTestApp(tester);
+    });
+
+    testWidgets('sagt ehrlich, für wen das funktioniert', (tester) async {
+      await zumAdressmodus(tester);
+      // Ein Zettel-Konto hat keine erreichbare Adresse; das muss dastehen,
+      // sonst wartet jemand auf eine Mail, die nie kommt.
+      expect(find.textContaining('Admins und Gerätewarte'), findsOneWidget);
+      await endTestApp(tester);
+    });
+
+    testWidgets('unvollständige Adresse wird abgefangen', (tester) async {
+      await zumAdressmodus(tester);
+      await tester.enterText(
+          find.widgetWithText(TextField, 'E-Mail-Adresse'), 'nurname');
+      await tester.ensureVisible(
+          find.widgetWithText(FilledButton, 'Code anfordern'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Code anfordern'));
+      await tester.pump();
+
+      expect(find.textContaining('vollständige E-Mail-Adresse'), findsOneWidget);
+      // Und der Modus bleibt stehen — kein Sprung in die Code-Eingabe.
+      expect(find.widgetWithText(TextField, 'Code aus der E-Mail'),
+          findsNothing);
+      await endTestApp(tester);
+    });
+
+    testWidgets('zurück zur Anmeldung führt wirklich zurück', (tester) async {
+      await zumAdressmodus(tester);
+      await tester.ensureVisible(find.text('Zurück zur Anmeldung'));
+      await tester.tap(find.text('Zurück zur Anmeldung'));
+      await tester.pumpAndSettle();
+
+      expect(find.widgetWithText(TextField, 'Nutzername'), findsOneWidget);
+      expect(find.widgetWithText(TextField, 'E-Mail-Adresse'), findsNothing);
+      await endTestApp(tester);
+    });
+  });
 }

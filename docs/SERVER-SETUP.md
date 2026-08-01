@@ -247,6 +247,34 @@ Beide zeigen auf **nginx**, der als kleines Gateway arbeitet: `/auth/`,
 TLS terminiert an der Cloudflare-Edge; der Tunnel selbst baut ausschließlich
 ausgehende Verbindungen auf (keine Portfreigabe, Heim-IP unsichtbar).
 
+### Wenn die öffentliche Domain wechselt
+
+Die API-URL steckt zur **Build-Zeit** im APK (`--dart-define`). Ein Gerät im
+Feld erfährt nie, dass es eine neue Domain gibt — es fragt bis zum nächsten
+Update die alte. Deshalb gilt beim Domainwechsel:
+
+1. **Neue Hostnames zusätzlich anlegen**, die alten unverändert lassen (vier
+   Routen auf dasselbe `localhost:8080` sind der Normalzustand, kein Fehler).
+2. Auf der VM `SITE_URL` und `API_EXTERNAL_URL` auf die neue Domain setzen,
+   die alte aber in `ADDITIONAL_REDIRECT_URLS` **behalten**.
+3. `config/fwapp.local.json`, das Repo-Secret `FWAPP_SUPABASE_URL` und
+   `feedback.yml` nachziehen; wirksam wird das erst im nächsten Release.
+4. Alte Hostnames erst abschalten, wenn das Mindestversions-Gate
+   (→ [BETRIEB.md](BETRIEB.md)) über dem ersten Release mit der neuen URL
+   steht — dann kann kein Gerät mehr auf der alten Domain hängen.
+
+Neue Cloudflare-Zone: Universal SSL wird erst **nach** der Zonen-Aktivierung
+ausgestellt (Validierungs-TXT legt Cloudflare selbst an) und kann eine Weile
+dauern. Prüfen, ohne auf DNS-Caches hereinzufallen:
+
+```bash
+echo | openssl s_client -connect <edge-ip>:443 -servername app.<domain> \
+  2>/dev/null | openssl x509 -noout -subject
+```
+
+Solange kein Zertifikat da ist, antwortet Port 80 bereits korrekt — daran
+erkennt man, dass Tunnel und Ingress stehen und wirklich nur TLS fehlt.
+
 Bausteine in der VM:
 
 - Container `fwapp-tunnel` (`cloudflare/cloudflared`, `--network host`,

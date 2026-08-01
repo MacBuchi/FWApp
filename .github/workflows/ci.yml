@@ -124,6 +124,18 @@ jobs:
       - name: Analyze
         run: flutter analyze
 
+      # Edge Functions ship via the VM's autodeploy on merge (issue #74) and
+      # have no compile step of their own — a syntax error surfaces only as a
+      # function that never boots, so every invocation hangs until the gateway
+      # times out (happened live: v1.9.0 broke the user management screen
+      # with a missing '+' between two string literals).
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Check Edge Functions
+        run: deno check supabase/functions/*/index.ts
+
       # Local Supabase stack so the sync E2E test runs (it self-skips
       # without one, which would drop coverage below the gate).
       - uses: supabase/setup-cli@v3

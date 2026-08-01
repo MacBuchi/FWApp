@@ -48,6 +48,49 @@ void main() {
     });
   });
 
+  group('authErrorText', () {
+    test('erkennt falsche Zugangsdaten über den Code', () {
+      expect(authErrorText('Invalid login credentials',
+              code: 'invalid_credentials'),
+          contains('Zugangszettel'));
+    });
+
+    test('erkennt sie auch ohne Code (ältere Server)', () {
+      expect(authErrorText('Invalid login credentials'),
+          contains('Zugangszettel'));
+    });
+
+    test('übersetzt Sperre und Ratenbegrenzung', () {
+      expect(authErrorText('x', code: 'user_banned'), contains('gesperrt'));
+      expect(authErrorText('x', code: 'over_request_rate_limit'),
+          contains('Zu viele Versuche'));
+    });
+
+    test('reicht Unbekanntes wörtlich durch', () {
+      expect(authErrorText('Datenbank brennt'), 'Datenbank brennt');
+    });
+  });
+
+  group('validateNewPassword', () {
+    test('verlangt 8 Zeichen', () {
+      expect(validateNewPassword('kurz12', 'kurz12'), contains('8 Zeichen'));
+    });
+
+    test('verlangt Übereinstimmung', () {
+      expect(validateNewPassword('geheim123', 'geheim124'),
+          contains('nicht überein'));
+    });
+
+    test('lässt ein gültiges Passwort durch', () {
+      expect(validateNewPassword('geheim123', 'geheim123'), isNull);
+    });
+
+    test('meldet die Länge vor der Ungleichheit', () {
+      // Sonst schickt man jemanden zweimal hintereinander zurück.
+      expect(validateNewPassword('kurz', 'anders'), contains('8 Zeichen'));
+    });
+  });
+
   group('generateInitialPassword', () {
     test('Länge und Alphabet ohne verwechselbare Zeichen', () {
       for (var i = 0; i < 50; i++) {

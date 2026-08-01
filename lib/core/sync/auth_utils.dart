@@ -25,6 +25,42 @@ final _usernameRe = RegExp(r'^[a-z0-9](?:[a-z0-9._-]{1,30})[a-z0-9]$');
 bool isValidUsername(String username) =>
     _usernameRe.hasMatch(username.trim().toLowerCase());
 
+/// Übersetzt einen gotrue-Fehler in einen Satz, der im Gerätehaus
+/// weiterhilft. Bevorzugt den stabilen `code`; die Prüfung der Meldung bleibt
+/// als Rückfallebene für ältere Server, die noch keinen Code mitschicken.
+///
+/// Unbekanntes wird unverändert durchgereicht statt zu „Fehler" verwischt —
+/// eine Meldung, die niemand kennt, ist immer noch besser als gar keine.
+String authErrorText(String message, {String? code}) {
+  final m = message.toLowerCase();
+  if (code == 'invalid_credentials' || m.contains('credentials')) {
+    return 'Nutzername oder Passwort ist falsch. Bitte die Daten vom '
+        'Zugangszettel übernehmen.';
+  }
+  if (code == 'email_not_confirmed' || m.contains('not confirmed')) {
+    return 'Dieses Konto ist noch nicht bestätigt.';
+  }
+  if (code == 'over_request_rate_limit' || m.contains('rate limit')) {
+    return 'Zu viele Versuche. Bitte einen Moment warten.';
+  }
+  if (code == 'user_banned' || m.contains('banned')) {
+    return 'Dieses Konto ist gesperrt. Bitte beim Gerätewart melden.';
+  }
+  return message;
+}
+
+/// Prüft ein neu gewähltes Passwort. Gibt `null` zurück, wenn es passt,
+/// sonst den Hinweistext.
+///
+/// Die Wiederholung ist Absicht: Ein Tippfehler im verdeckten Feld fällt
+/// sonst erst beim nächsten Anmelden auf — und dann ist das alte Passwort
+/// schon weg.
+String? validateNewPassword(String password, String repeat) {
+  if (password.length < 8) return 'Mindestens 8 Zeichen erforderlich.';
+  if (password != repeat) return 'Die Passwörter stimmen nicht überein.';
+  return null;
+}
+
 /// Erzeugt ein gut abtippbares Initialpasswort (10 Zeichen, ohne
 /// verwechselbare Zeichen wie 0/O/1/l). Kryptographisch zufällig.
 String generateInitialPassword({int length = 10}) {

@@ -31,6 +31,25 @@ final sessionStreamProvider = StreamProvider<Session?>((ref) {
       .distinct((a, b) => a?.user.id == b?.user.id);
 });
 
+/// Synchroner Blick auf die Sitzung — bewusst ein Callback und kein
+/// `Provider<bool>`.
+///
+/// Ein gecachter bool würde nach dem Anmelden veralten: `currentSession` ist
+/// keine Riverpod-Abhängigkeit, es gäbe also nichts, was ihn ungültig macht.
+/// Der Router-Guard liest deshalb bei jedem Redirect frisch. Als Callback
+/// bleibt er zugleich in Widget-Tests überschreibbar, ohne einen echten
+/// SupabaseClient bauen zu müssen.
+///
+/// Warum nicht [sessionStreamProvider]? Der startet als `AsyncLoading` — jeder
+/// Kaltstart eines angemeldeten Nutzers flöge damit erst auf die Anmeldung.
+/// `Supabase.initialize` stellt die gespeicherte Sitzung dagegen VOR `runApp`
+/// wieder her (ohne Ablaufprüfung), sodass dieser Blick ab dem ersten Frame
+/// stimmt — und offline stehen bleibt, statt auszusperren.
+final signedInReaderProvider = Provider<bool Function()>((ref) {
+  final client = ref.watch(supabaseClientProvider);
+  return () => client?.auth.currentSession != null;
+});
+
 /// Role of the signed-in user ('admin' | 'member'), null when signed out.
 final currentUserRoleProvider = FutureProvider<String?>((ref) async {
   final client = ref.watch(supabaseClientProvider);

@@ -14,12 +14,180 @@ void main() {
     expect(router.configuration.routes, isNotEmpty);
   });
 
+  // Die Rollen-Fälle laufen alle als angemeldet ohne Pflichtwechsel — sonst
+  // schlüge der Anmeldezwang zu, bevor die Rollenregel überhaupt greift.
   String? asMember(String path) => guardRedirect(
-      path: path, canEdit: false, isAdmin: false, supabaseReady: true);
+      path: path,
+      canEdit: false,
+      isAdmin: false,
+      supabaseReady: true,
+      loggedIn: true,
+      mustChangePassword: false);
   String? asEditor(String path) => guardRedirect(
-      path: path, canEdit: true, isAdmin: false, supabaseReady: true);
+      path: path,
+      canEdit: true,
+      isAdmin: false,
+      supabaseReady: true,
+      loggedIn: true,
+      mustChangePassword: false);
   String? asAdmin(String path) => guardRedirect(
-      path: path, canEdit: true, isAdmin: true, supabaseReady: true);
+      path: path,
+      canEdit: true,
+      isAdmin: true,
+      supabaseReady: true,
+      loggedIn: true,
+      mustChangePassword: false);
+  /// Nicht angemeldet auf einer verbundenen Installation.
+  String? ausgeloggt(String path) => guardRedirect(
+      path: path,
+      canEdit: false,
+      isAdmin: false,
+      supabaseReady: true,
+      loggedIn: false,
+      mustChangePassword: false);
+  /// Reiner Lokalmodus (kein Server konfiguriert).
+  String? lokal(String path) => guardRedirect(
+      path: path,
+      canEdit: true,
+      isAdmin: true,
+      supabaseReady: false,
+      loggedIn: false,
+      mustChangePassword: false);
+  /// Angemeldet, aber noch mit dem Initialpasswort vom Zugangszettel.
+  String? mitInitialpasswort(String path) => guardRedirect(
+      path: path,
+      canEdit: true,
+      isAdmin: true,
+      supabaseReady: true,
+      loggedIn: true,
+      mustChangePassword: true);
+
+  group('guardRedirect – Anmeldezwang (#57 Phase 4)', () {
+    test('ohne Sitzung führt jeder Weg auf die Anmeldung', () {
+      for (final pfad in [
+        '/',
+        '/vehicles',
+        '/vehicles/7',
+        '/game/flashcards',
+        '/more',
+        '/settings',
+        '/changelog',
+        '/image-library',
+        '/user-management',
+        '/gesamtwehr',
+      ]) {
+        expect(ausgeloggt(pfad), '/login', reason: pfad);
+      }
+    });
+
+    test('Edit-Routen landen auf der Anmeldung, nicht auf der Startseite', () {
+      // Sichert die Regelreihenfolge: Ohne Sitzung ist canEdit false, die
+      // Rollenregel würde sonst auf '/' schicken und die eigentliche
+      // Aussage („melde dich an") ginge unterwegs verloren.
+      expect(ausgeloggt('/import'), '/login');
+      expect(ausgeloggt('/vehicles/new'), '/login');
+      expect(ausgeloggt('/inventory/run/3'), '/login');
+    });
+
+    test('Anmeldung und Notausgang bleiben offen', () {
+      expect(ausgeloggt('/login'), isNull);
+      expect(ausgeloggt('/server-settings'), isNull,
+          reason: 'sonst säße man mit falscher Serveradresse fest');
+    });
+
+    test('Angemeldete werden von der Anmeldung weggeschickt', () {
+      expect(asMember('/login'), '/');
+      expect(asMember('/change-password'), '/');
+    });
+
+    test('Lokalmodus bleibt ohne Anmeldung voll nutzbar', () {
+      expect(lokal('/'), isNull);
+      expect(lokal('/vehicles'), isNull);
+      expect(lokal('/import'), isNull);
+      expect(lokal('/settings'), isNull);
+      expect(lokal('/server-settings'), isNull);
+    });
+
+    test('Lokalmodus kennt keine Anmeldung', () {
+      expect(lokal('/login'), '/');
+      expect(lokal('/change-password'), '/');
+    });
+  });
+
+  group('guardRedirect – Pflichtwechsel des Initialpassworts', () {
+    test('führt von überall auf den Wechsel', () {
+      expect(mitInitialpasswort('/'), '/change-password');
+      expect(mitInitialpasswort('/settings'), '/change-password');
+      expect(mitInitialpasswort('/import'), '/change-password');
+      expect(mitInitialpasswort('/login'), '/change-password');
+    });
+
+    test('der Wechsel selbst ist erreichbar', () {
+      expect(mitInitialpasswort('/change-password'), isNull);
+    });
+
+    test('ohne Flag ist der Wechsel keine Sackgasse', () {
+      expect(asMember('/change-password'), '/');
+    });
+
+    test('Abmelden schlägt den Pflichtwechsel', () {
+      // Der einzige Ausweg aus dem Wechsel-Screen ist „Abmelden" — danach
+      // muss die Anmeldung gewinnen, nicht wieder der Wechsel.
+      expect(
+          guardRedirect(
+              path: '/',
+              canEdit: false,
+              isAdmin: false,
+              supabaseReady: true,
+              loggedIn: false,
+              mustChangePassword: true),
+          '/login');
+    });
+  });
+
+  group('guardRedirect – keine Redirect-Schleifen', () {
+    // Eine Schleife wäre auf dem Gerät ein Weißbild (go_router bricht nach
+    // 5 Sprüngen ab) — kein anderer Test fängt das.
+    String? folge(String start,
+        {required bool ready,
+        required bool loggedIn,
+        required bool mustChange}) {
+      var pfad = start;
+      for (var i = 0; i < 5; i++) {
+        final ziel = guardRedirect(
+          path: pfad,
+          canEdit: loggedIn,
+          isAdmin: loggedIn,
+          supabaseReady: ready,
+          loggedIn: loggedIn,
+          mustChangePassword: mustChange,
+        );
+        if (ziel == null) return pfad;
+        pfad = ziel;
+      }
+      return null; // kam nie zur Ruhe
+    }
+
+    test('jede Kombination kommt binnen weniger Sprünge zur Ruhe', () {
+      for (final start in ['/', '/import', '/login', '/server-settings']) {
+        for (final ready in [true, false]) {
+          for (final loggedIn in [true, false]) {
+            for (final mustChange in [true, false]) {
+              expect(
+                  folge(start,
+                      ready: ready,
+                      loggedIn: loggedIn,
+                      mustChange: mustChange),
+                  isNotNull,
+                  reason: 'Schleife ab $start '
+                      '(ready=$ready, loggedIn=$loggedIn, '
+                      'mustChange=$mustChange)');
+            }
+          }
+        }
+      }
+    });
+  });
 
   group('guardRedirect – Mitglieder (read-only)', () {
     test('Edit-Routen werden auf Start umgeleitet', () {
@@ -68,7 +236,9 @@ void main() {
               path: '/user-management',
               canEdit: true,
               isAdmin: true,
-              supabaseReady: false),
+              supabaseReady: false,
+              loggedIn: true,
+              mustChangePassword: false),
           '/');
     });
 
@@ -83,7 +253,9 @@ void main() {
               path: '/gesamtwehr',
               canEdit: true,
               isAdmin: true,
-              supabaseReady: false),
+              supabaseReady: false,
+              loggedIn: true,
+              mustChangePassword: false),
           '/',
           reason: 'ohne Server gibt es keine Abteilungen');
     });

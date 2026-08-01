@@ -97,11 +97,11 @@ void main() {
         ],
       );
 
-  /// Scrollt zum Verbinden-Bereich. Nötig, seit die Darstellungs-Sektion um
-  /// die Farbthema-Auswahl gewachsen ist (#58): Was im 600-px-Testfenster
-  /// unter der Kante liegt, baut die ListView gar nicht erst.
+  /// Scrollt zum Serverstatus. Nötig, seit die Darstellungs-Sektion um die
+  /// Farbthema-Auswahl gewachsen ist (#58): Was im 600-px-Testfenster unter
+  /// der Kante liegt, baut die ListView gar nicht erst.
   Future<void> scrollToConnect(WidgetTester tester) => tester.scrollUntilVisible(
-        find.text('Mit Abteilung verbinden'),
+        find.text('Server erreichbar'),
         200,
         scrollable: find.byType(Scrollable).first,
       );
@@ -115,7 +115,6 @@ void main() {
     await scrollToConnect(tester);
 
     expect(find.text('Server erreichbar'), findsOneWidget);
-    expect(find.text('Mit Abteilung verbinden'), findsOneWidget);
   });
 
   testWidgets('Server nicht erreichbar: roter Status mit Netzwerk-Hinweis',
@@ -128,31 +127,4 @@ void main() {
     expect(find.textContaining('Internetverbindung'), findsOneWidget);
   });
 
-  testWidgets('Login-Dialog erklärt die fehlende Registrierung',
-      (tester) async {
-    SharedPreferences.setMockInitialValues({'sync_enabled': true});
-    await tester.pumpWidget(readyApp(db, healthy: true));
-    await tester.pumpAndSettle();
-
-    await scrollToConnect(tester);
-    await tester.tap(find.text('Mit Abteilung verbinden'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Anmelden'), findsWidgets);
-    expect(find.textContaining('Keine Registrierung nötig'), findsOneWidget);
-  });
-
-  testWidgets('Login-Dialog fragt nach dem Nutzernamen (M7 Etappe 3)',
-      (tester) async {
-    SharedPreferences.setMockInitialValues({'sync_enabled': true});
-    await tester.pumpWidget(readyApp(db, healthy: true));
-    await tester.pumpAndSettle();
-
-    await scrollToConnect(tester);
-    await tester.tap(find.text('Mit Abteilung verbinden'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Nutzername'), findsOneWidget);
-    expect(find.text('E-Mail'), findsNothing);
-  });
 }

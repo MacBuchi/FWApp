@@ -7,6 +7,7 @@ import 'package:riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/database/database_providers.dart';
+import 'package:fwapp/core/router/app_router.dart';
 
 Widget buildTestApp({
   required AppDatabase db,
@@ -19,6 +20,24 @@ Widget buildTestApp({
         ...overrides,
       ],
       child: MaterialApp(home: home),
+    );
+
+/// Wie [buildTestApp], aber mit dem ECHTEN Router — für Tests, die den
+/// Redirect selbst beweisen sollen und nicht nur einen einzelnen Screen.
+/// Ohne das liefe der Anmeldezwang in keinem Widget-Test mit.
+Widget buildRoutedTestApp({
+  required AppDatabase db,
+  List<Override> overrides = const [],
+}) =>
+    ProviderScope(
+      overrides: [
+        appDatabaseProvider.overrideWithValue(db),
+        ...overrides,
+      ],
+      child: Consumer(
+        builder: (_, ref, _) =>
+            MaterialApp.router(routerConfig: ref.watch(routerProvider)),
+      ),
     );
 
 /// The ProviderContainer of a pumped test app (to drive notifiers directly

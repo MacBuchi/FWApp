@@ -12,6 +12,35 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.7.0] – 2026-08-01
+
+### Geändert
+
+- **Die App beginnt jetzt mit der Anmeldung.** Wer mit der Abteilung
+  verbunden ist, landet beim Start auf einem eigenen Anmeldebildschirm
+  statt in der App. Bisher kam man auch ohne Anmeldung überall hin — nur
+  eben ohne Daten, weil ohne Anmeldung nichts vom Server geladen wird. Das
+  sah aus wie eine leere App und war in Wahrheit eine unangemeldete.
+- **Wichtig für den Umstieg:** Wer die Cloud-Synchronisation eingeschaltet,
+  sich aber noch nie angemeldet hat, braucht ab jetzt seinen Zugangszettel.
+  Frisch installierte Geräte sind nicht betroffen — sie starten ohne
+  Synchronisation und bleiben ohne Anmeldung nutzbar.
+- Der **Passwortwechsel beim ersten Anmelden** ist kein Dialog mehr,
+  sondern eine eigene Seite. Er lässt sich nicht mehr wegtippen; der
+  einzige andere Weg ist Abmelden.
+
+### Neu
+
+- **Auge im Passwortfeld:** Das getippte Passwort lässt sich sichtbar
+  machen — die zuverlässigere Kontrolle als blindes Tippen.
+- **Servereinstellungen ohne Anmeldung erreichbar.** Vom Anmeldebildschirm
+  führt ein Knopf zu Adresse und Schlüssel des Servers. Ohne diesen Weg
+  säße man mit einer falschen Serveradresse fest: anmelden ginge nicht,
+  und die Einstellungen lägen hinter der Anmeldung.
+- Der Anmeldebildschirm zeigt **vor** dem Versuch, ob der Server überhaupt
+  antwortet — ein Netzproblem sieht damit nicht mehr aus wie ein falsches
+  Passwort.
+
 ## [1.6.3] – 2026-08-01
 
 ### Neu

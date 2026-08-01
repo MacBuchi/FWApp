@@ -26,7 +26,7 @@ dependencies:
   # weg, `schema` kommt dazu. Folge waere kein Analyse-Fehler, sondern ein
   # Compile-Fehler beim Laden von test/core/database/migration_test.dart.
   # Beide zusammen anheben, sobald die Codegen-Kette auf analyzer 13 kann.
-  drift: 2.34.0
+  drift: 2.34.3
   # sqlite3 3.x liefert die nativen SQLite-Libs selbst ueber Build-Hooks.
   # sqlite3_flutter_libs ist damit hinfaellig (0.6.0+eol ist eine leere
   # Huelle) und wurde bewusst entfernt, nicht hochgezogen.
@@ -42,7 +42,7 @@ dependencies:
   json_annotation: ^4.9.0
 
   # File handling / images
-  file_picker: ^11.0.3
+  file_picker: ^12.0.0-beta.7
   image_picker: ^1.1.2
   cached_network_image: ^3.4.1
   flutter_cache_manager: ^3.4.1
@@ -68,7 +68,7 @@ dependencies:
   # Bleibt auf 9.x: 10.x verlangt win32 ^6, file_picker liefert win32 ^6 erst
   # ab der 12.0.0-Beta. Windows ist kein Target, der Konflikt ist also rein
   # rechnerisch — trotzdem bleiben wir lieber auf zwei stabilen Versionen.
-  package_info_plus: ^9.0.1
+  package_info_plus: ^10.2.1
   url_launcher: ^6.3.1
   csv: ^8.0.0
 dev_dependencies:

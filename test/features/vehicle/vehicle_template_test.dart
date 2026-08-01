@@ -13,6 +13,10 @@ import 'package:fwapp/features/vehicle/data/vehicle_template_service.dart';
 import '../../helpers/test_database.dart';
 
 void main() {
+  // Für rootBundle: Der Vorlagen-Service legt fehlende Katalog-Geräte aus
+  // dem gebündelten standard_catalog.json nach (Issue #86).
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('parseVehicleTemplate', () {
     test('liest Vorlage mit Beladung vollständig', () {
       final t = parseVehicleTemplate(jsonEncode({
@@ -322,6 +326,42 @@ void main() {
       // Bewusst statt einer Datenbankspalte: überall sichtbar, wo das Fach
       // auftaucht, und weg, sobald der Gerätewart verteilt hat.
       expect(kUnassignedCompartmentLabel.toLowerCase(), contains('ungeprüft'));
+    });
+
+    test('legt Positionen aus dem gebündelten Katalog nach (Issue #86)',
+        () async {
+      // Ausgangslage wie im Feld: Das Gerät hat den zentralen Datenbestand
+      // gezogen, der Pull hat den lokalen Bestand ersetzt und der Seeder
+      // darf nie wieder laufen — der Katalog fehlt KOMPLETT. Vorher entstand
+      // hier ein Fahrzeug ganz ohne Geräte, obwohl „mit Normbeladung"
+      // gewählt war.
+      expect(await db.equipmentDao.getByLibraryId('std_b_druckschlauch_20m'),
+          isNull,
+          reason: 'Vorbedingung: Katalog ist nicht geseedet');
+
+      final result = await service.apply(
+        template(items: const [
+          TemplateItem(equipmentId: 'std_b_druckschlauch_20m', quantity: 14),
+        ]),
+        name: 'X',
+        withLoading: true,
+      );
+
+      expect(result.itemCount, 1);
+      expect(result.missingEquipment, isEmpty);
+
+      final nachgelegt =
+          await db.equipmentDao.getByLibraryId('std_b_druckschlauch_20m');
+      expect(nachgelegt, isNotNull, reason: 'aus dem Katalog nachgelegt');
+      expect(nachgelegt!.isCustom, isFalse);
+
+      final comps = await db.compartmentDao.getByVehicle(result.vehicleId);
+      final unassigned =
+          comps.firstWhere((c) => c.label == kUnassignedCompartmentLabel);
+      final assignments =
+          await db.assignmentDao.getByCompartment(unassigned.id);
+      expect(assignments.single.equipmentId, nachgelegt.id);
+      expect(assignments.single.quantity, 14);
     });
 
     test('meldet Geräte, die nicht im Katalog stehen', () async {

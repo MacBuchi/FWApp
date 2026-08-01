@@ -9,6 +9,7 @@ library;
 
 import 'package:drift/drift.dart';
 import 'package:fwapp/core/database/app_database.dart';
+import 'package:fwapp/core/database/standard_catalog.dart';
 import 'package:fwapp/core/logging/app_logger.dart';
 import 'package:fwapp/features/vehicle/data/vehicle_template.dart';
 
@@ -38,7 +39,10 @@ class TemplateApplyResult {
 class VehicleTemplateService {
   final AppDatabase db;
 
-  VehicleTemplateService(this.db);
+  /// Lädt den gebündelten Standard-Katalog; im Test ersetzbar.
+  final Future<StandardCatalog> Function() catalogLoader;
+
+  VehicleTemplateService(this.db, {this.catalogLoader = StandardCatalog.load});
 
   /// Legt Fahrzeug, Geräteräume und — wenn [withLoading] — die Beladung an.
   ///
@@ -54,6 +58,11 @@ class VehicleTemplateService {
     String? imagePath,
     required bool withLoading,
   }) async {
+    // Katalog VOR der Transaktion laden: rootBundle ist ein async-Spalt,
+    // der nicht in eine DB-Transaktion gehört.
+    final katalog = withLoading && template.hasLoading
+        ? await catalogLoader()
+        : const StandardCatalog.empty();
     return db.transaction(() async {
       final vehicleId = await db.vehicleDao.insertVehicle(
         VehiclesCompanion.insert(
@@ -94,15 +103,23 @@ class VehicleTemplateService {
       final missing = <String>[];
       var placed = 0;
       for (final item in template.loading!.items) {
-        final equipment = await db.equipmentDao.getByLibraryId(item.equipmentId);
-        if (equipment == null) {
+        final existing =
+            await db.equipmentDao.getByLibraryId(item.equipmentId);
+        // Nachlegen aus dem gebündelten Katalog: Auf Geräten, die schon
+        // einmal zentral gezogen haben, überspringt der Seeder den Katalog
+        // dauerhaft (der Pull ersetzt den lokalen Bestand). Ohne diesen
+        // Rückgriff entstand ein Fahrzeug ohne ein einziges Gerät — still,
+        // denn das Log liest im Gerätehaus niemand (Issue #86).
+        final equipmentId = existing?.id ??
+            await katalog.createEquipment(db, item.equipmentId);
+        if (equipmentId == null) {
           missing.add(item.equipmentId);
           continue;
         }
         await db.assignmentDao.insertAssignment(
           EquipmentAssignmentsCompanion.insert(
             compartmentId: unassignedId,
-            equipmentId: equipment.id,
+            equipmentId: equipmentId,
             quantity: Value(item.quantity),
           ),
         );
@@ -110,8 +127,9 @@ class VehicleTemplateService {
       }
 
       if (missing.isNotEmpty) {
-        appLog.w('Vorlage ${template.id}: ${missing.length} Geräte nicht im '
-            'Katalog gefunden — Bibliothek geseedet?');
+        appLog.w('Vorlage ${template.id}: ${missing.length} Positionen weder '
+            'lokal noch im gebündelten Katalog — Vorlage und Katalog '
+            'auseinandergelaufen?');
       }
 
       return TemplateApplyResult(

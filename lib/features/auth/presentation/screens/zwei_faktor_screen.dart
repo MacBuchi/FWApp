@@ -136,17 +136,10 @@ class _ZweiFaktorScreenState extends ConsumerState<ZweiFaktorScreen> {
     final theme = Theme.of(context);
     final faktoren = ref.watch(mfaFaktorenProvider).value ?? const [];
     final aktiv = faktoren.where((f) => f.status == FactorStatus.verified);
-    final rolle = ref.watch(currentUserRoleProvider).value;
-    final pflicht = mussZweiFaktorEinrichten(
-        rolle: rolle, hatFaktor: aktiv.isNotEmpty, jetzt: DateTime.now().toUtc());
+    final istAdmin = ref.watch(currentUserRoleProvider).value == 'admin';
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Zwei-Faktor-Anmeldung'),
-        // Wer hier landen MUSS, hat keinen Zurück-Weg — der Guard schickt
-        // ihn ohnehin wieder her.
-        automaticallyImplyLeading: !pflicht,
-      ),
+      appBar: AppBar(title: const Text('Zwei-Faktor-Anmeldung')),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -180,14 +173,22 @@ class _ZweiFaktorScreenState extends ConsumerState<ZweiFaktorScreen> {
                       ),
                     ] else if (_secret == null) ...[
                       Text(
-                        pflicht
-                            ? 'Für Admin-Konten ist die Zwei-Faktor-Anmeldung '
-                                'jetzt Pflicht.'
-                            : 'Zusätzlich zum Passwort fragt die App dann '
-                                'einen Zahlencode ab, den nur dein Telefon '
-                                'erzeugt.',
+                        'Zusätzlich zum Passwort fragt die App dann '
+                        'einen Zahlencode ab, den nur dein Telefon '
+                        'erzeugt.',
                         style: theme.textTheme.bodyMedium,
                       ),
+                      if (istAdmin) ...[
+                        const SizedBox(height: 8),
+                        // Empfehlung statt Pflicht (Entscheidung 2026-08-01):
+                        // Der Satz begründet, statt zu drohen.
+                        Text(
+                          'Für Admin-Konten empfohlen — sie können Konten '
+                          'anlegen und den Datenbestand der ganzen Wehr '
+                          'überschreiben.',
+                          style: theme.textTheme.bodyMedium,
+                        ),
+                      ],
                       const SizedBox(height: 8),
                       const Text(
                         'Du brauchst eine Authenticator-App — zum Beispiel '

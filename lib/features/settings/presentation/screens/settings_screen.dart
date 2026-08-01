@@ -226,8 +226,8 @@ class _ConnectionSection extends ConsumerWidget {
         // Abteilungswahl (Issue #57 Phase 2) — erscheint nur, wenn der
         // Server Abteilungen kennt.
         const AbteilungTile(),
-        // Zwei-Faktor-Anmeldung: vor Ablauf der Frist der freiwillige Weg,
-        // danach führt der Guard ohnehin hierher.
+        // Zwei-Faktor-Anmeldung: freiwillig, für Admins empfohlen
+        // (Entscheidung 2026-08-01 — keine Pflicht).
         ListTile(
           leading: Icon(
             ref.watch(hatZweitenFaktorProvider)
@@ -238,7 +238,7 @@ class _ConnectionSection extends ConsumerWidget {
           title: const Text('Zwei-Faktor-Anmeldung'),
           subtitle: Text(ref.watch(hatZweitenFaktorProvider)
               ? 'Aktiv — beim Anmelden wird ein Code abgefragt'
-              : 'Zusätzlicher Schutz für dein Konto (für Admins Pflicht)'),
+              : 'Zusätzlicher Schutz für dein Konto (für Admins empfohlen)'),
           trailing: const Icon(Icons.chevron_right),
           onTap: () => context.push('/zwei-faktor'),
         ),

@@ -154,6 +154,38 @@ Prüfhistorie oder Instanzen – die hängen an den physischen Geräten.
 - Klappt der Direkt-Download nicht, bietet der Dialog den Browser-Download
   an. Die **Web-App** aktualisiert sich beim nächsten Öffnen von selbst
   und zeigt daher keinen Banner.
+- Kleine Eigenheit beim allerersten Update: Wer für die einmalige
+  Erlaubnis in die Android-Einstellungen springt, kehrt danach in die App
+  zurück, aber der Installer erscheint nicht von allein — einfach noch
+  einmal „Jetzt aktualisieren" tippen, der zweite Anlauf läuft ohne Umweg
+  durch. (Beobachtet beim verifizierten Testlauf, s. u.)
+
+### Mindestversion scharf schalten (Checkliste)
+
+Das Mindestversions-Gate (seit v1.5.2) weist zu alte Apps **nur beim
+Veröffentlichen** ab — Lesen und der lokale Betrieb laufen immer weiter.
+Trotzdem gilt vor jedem Setzen von `minimum_supported_version` diese
+Reihenfolge, damit niemand in einer Sackgasse landet:
+
+1. **Ziel-Release ist draußen** und wurde auf mindestens einem echten
+   Gerät **über den In-App-Update-Weg** installiert — also über genau den
+   Weg, den alle Betroffenen nehmen müssen.
+2. **Minimum nie über das neueste Release setzen.** Empfehlung: eine
+   Version unter dem aktuellsten Release lassen (Puffer für Geräte, die
+   das Banner noch nicht gesehen haben).
+3. Setzen per `psql` auf der VM (Prod-Schreibvorgang — bis zur
+   Automatisierung aus #74 einzeln abgesprochen):
+   `update public.dataset_meta set minimum_supported_version = 'X.Y.Z';`
+   Kein `NOTIFY` nötig — die Funktion liest den Wert bei jedem Aufruf.
+4. **Rückweg:** Wert auf `NULL` setzen = Gate aus (fail-open, sofort).
+
+**Verifiziert am 2026-08-01** (Emulator, echte Release-APKs, kompletter
+Kreis v1.5.3 → v1.5.6): Die Gate-Ablehnung ist eine **Snackbar** — kein
+Vollbild, nichts wird überdeckt, die App bleibt voll bedienbar und das
+Update-Banner erreichbar. OTA-Download, Android-Installer und Neustart
+liefen durch; Sitzung, Datenbestand und Lernstand blieben erhalten, und
+derselbe vorher abgewiesene Publish ging nach dem Update sofort durch.
+Es musste zu keinem Zeitpunkt etwas gelöscht werden.
 
 ---
 

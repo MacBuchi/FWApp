@@ -265,9 +265,10 @@ class _OffeneAnfragen extends ConsumerWidget {
 
   Future<void> _entscheiden(BuildContext context, WidgetRef ref,
       VerbindungsAnfrage a, bool freigeben) async {
+    // Pop über den Dialog-Kontext, siehe _frageName.
     final bestaetigt = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (ctx) => AlertDialog(
         title: Text(freigeben ? 'Anschluss freigeben?' : 'Antrag ablehnen?'),
         content: Text(freigeben
             ? '„${a.abteilungName}" wird Teil deiner Gesamtwehr. Beide '
@@ -277,11 +278,11 @@ class _OffeneAnfragen extends ConsumerWidget {
                 'ist jederzeit möglich.'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => Navigator.pop(ctx, false),
             child: const Text('Abbrechen'),
           ),
           FilledButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(ctx, true),
             child: Text(freigeben ? 'Freigeben' : 'Ablehnen'),
           ),
         ],
@@ -404,32 +405,62 @@ Future<String?> _frageName(
   required String feld,
   required String beispiel,
 }) async {
-  final steuerung = TextEditingController();
   final name = await showDialog<String>(
     context: context,
-    builder: (_) => AlertDialog(
-      title: Text(titel),
-      content: TextField(
-        controller: steuerung,
-        autofocus: true,
-        decoration: InputDecoration(labelText: feld, hintText: beispiel),
-        onSubmitted: (v) => Navigator.pop(context, v),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Abbrechen'),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.pop(context, steuerung.text),
-          child: const Text('Anlegen'),
-        ),
-      ],
-    ),
+    builder: (_) => _NameDialog(titel: titel, feld: feld, beispiel: beispiel),
   );
-  steuerung.dispose();
   final sauber = name?.trim();
   return (sauber == null || sauber.isEmpty) ? null : sauber;
+}
+
+/// Eigener StatefulWidget-Dialog aus zwei im Feld gelernten Gründen
+/// (v1.6.0): Der Pop muss über den Dialog-eigenen Kontext laufen — der
+/// Screen hängt im verschachtelten Navigator der Shell-Route, der Dialog im
+/// Root-Navigator; über den Screen-Kontext trifft der Pop den falschen
+/// Navigator und „Anlegen" tut sichtbar nichts. Und der Controller darf
+/// erst im State-dispose sterben, nicht direkt nach showDialog — die
+/// Ausblend-Animation rendert das Textfeld noch.
+class _NameDialog extends StatefulWidget {
+  final String titel;
+  final String feld;
+  final String beispiel;
+  const _NameDialog(
+      {required this.titel, required this.feld, required this.beispiel});
+
+  @override
+  State<_NameDialog> createState() => _NameDialogState();
+}
+
+class _NameDialogState extends State<_NameDialog> {
+  final _steuerung = TextEditingController();
+
+  @override
+  void dispose() {
+    _steuerung.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+        title: Text(widget.titel),
+        content: TextField(
+          controller: _steuerung,
+          autofocus: true,
+          decoration: InputDecoration(
+              labelText: widget.feld, hintText: widget.beispiel),
+          onSubmitted: (v) => Navigator.pop(context, v),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Abbrechen'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, _steuerung.text),
+            child: const Text('Anlegen'),
+          ),
+        ],
+      );
 }
 
 /// Führt einen Vorgang aus und meldet das Ergebnis — Erfolg wie Fehler landen

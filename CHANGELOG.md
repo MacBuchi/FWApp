@@ -12,6 +12,18 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.6.1] – 2026-08-01
+
+### Behoben
+
+- **„Gesamtwehr gründen" und „Abteilung anlegen" taten nichts:** Der
+  Anlegen-Knopf im Namens-Dialog schloss den Dialog über die falsche
+  Navigationsebene — sichtbar passierte gar nichts. Betroffen war auch das
+  Bestätigen und Ablehnen von Anschluss-Anfragen. Alle drei Dialoge
+  funktionieren jetzt; ein automatischer Test bildet die echte
+  Navigationsstruktur der App nach, damit genau das nicht wieder
+  unbemerkt durchrutscht.
+
 ## [1.6.0] – 2026-08-01
 
 ### Neu

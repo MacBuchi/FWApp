@@ -6,23 +6,16 @@
 /// wiederverwendetes Passwort reicht dafür heute aus — der zweite Faktor
 /// macht daraus einen Diebstahl, der auch das Telefon braucht.
 ///
-/// Der Zwang gilt für Admins, nicht für alle: Mitglieder melden sich mit
-/// einem Zettel an und haben nichts zu verlieren, was nicht ohnehin im
-/// Gerätehaus aushängt.
+/// Der zweite Faktor ist freiwillig, für Admins empfohlen (Entscheidung
+/// Marcus 2026-08-01 — die ursprünglich geplante Pflicht ab September ist
+/// gestrichen). Wer einen Faktor eingerichtet HAT, muss ihn beim Anmelden
+/// aber auch benutzen — sonst wäre er eine Zierde.
 library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
-/// Ab wann Admins ohne zweiten Faktor nicht mehr weiterarbeiten können.
-///
-/// Die Frist ist kein Selbstzweck: Wer die App am Einsatzabend öffnet, soll
-/// nicht zwischen Tür und Angel eine Authenticator-App einrichten müssen.
-/// Vorher weist die App darauf hin, danach führt der Weg über die
-/// Einrichtung. Zum Verschieben genügt es, dieses Datum zu ändern.
-final kZweiFaktorPflichtAb = DateTime.utc(2026, 9, 1);
 
 /// Hat dieses Konto einen bestätigten zweiten Faktor?
 ///
@@ -71,16 +64,6 @@ bool brauchtZweitenFaktor(SupabaseClient client) {
   return stufen.nextLevel == AuthenticatorAssuranceLevels.aal2 &&
       stufen.currentLevel != AuthenticatorAssuranceLevels.aal2;
 }
-
-/// Muss dieses Konto den zweiten Faktor JETZT einrichten?
-///
-/// Reine Funktion, damit die Frist ohne laufende App prüfbar ist.
-bool mussZweiFaktorEinrichten({
-  required String? rolle,
-  required bool hatFaktor,
-  required DateTime jetzt,
-}) =>
-    rolle == 'admin' && !hatFaktor && !jetzt.isBefore(kZweiFaktorPflichtAb);
 
 /// Zerlegt den TOTP-Schlüssel in Blöcke zu vier Zeichen.
 ///

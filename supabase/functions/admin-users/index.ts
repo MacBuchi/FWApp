@@ -373,7 +373,7 @@ Deno.serve(async (req: Request) => {
         if (!userId) return json({ error: "user_id fehlt" }, 400);
         if (self) {
           return json({
-            error: "Eigenen Faktor nicht zurücksetzbar — das geht unter "
+            error: "Eigenen Faktor nicht zurücksetzbar — das geht unter " +
               "Zwei-Faktor-Anmeldung selbst",
           }, 400);
         }

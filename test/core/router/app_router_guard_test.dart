@@ -5,7 +5,6 @@ library;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/core/router/app_router.dart';
-import 'package:fwapp/core/sync/mfa_providers.dart';
 
 void main() {
   test('routerProvider baut den Router mit allen Routen und Guards', () {
@@ -25,8 +24,7 @@ void main() {
       loggedIn: true,
       mustChangePassword: false,
       recoveryPending: false,
-      mfaPending: false,
-      mussZweiFaktor: false);
+      mfaPending: false);
   String? asEditor(String path) => guardRedirect(
       path: path,
       canEdit: true,
@@ -35,8 +33,7 @@ void main() {
       loggedIn: true,
       mustChangePassword: false,
       recoveryPending: false,
-      mfaPending: false,
-      mussZweiFaktor: false);
+      mfaPending: false);
   String? asAdmin(String path) => guardRedirect(
       path: path,
       canEdit: true,
@@ -45,8 +42,7 @@ void main() {
       loggedIn: true,
       mustChangePassword: false,
       recoveryPending: false,
-      mfaPending: false,
-      mussZweiFaktor: false);
+      mfaPending: false);
   /// Nicht angemeldet auf einer verbundenen Installation.
   String? ausgeloggt(String path) => guardRedirect(
       path: path,
@@ -56,8 +52,7 @@ void main() {
       loggedIn: false,
       mustChangePassword: false,
       recoveryPending: false,
-      mfaPending: false,
-      mussZweiFaktor: false);
+      mfaPending: false);
   /// Reiner Lokalmodus (kein Server konfiguriert).
   String? lokal(String path) => guardRedirect(
       path: path,
@@ -67,8 +62,7 @@ void main() {
       loggedIn: false,
       mustChangePassword: false,
       recoveryPending: false,
-      mfaPending: false,
-      mussZweiFaktor: false);
+      mfaPending: false);
   /// Angemeldet, aber noch mit dem Initialpasswort vom Zugangszettel.
   String? mitInitialpasswort(String path) => guardRedirect(
       path: path,
@@ -78,8 +72,7 @@ void main() {
       loggedIn: true,
       mustChangePassword: true,
       recoveryPending: false,
-      mfaPending: false,
-      mussZweiFaktor: false);
+      mfaPending: false);
 
   group('guardRedirect – Anmeldezwang (#57 Phase 4)', () {
     test('ohne Sitzung führt jeder Weg auf die Anmeldung', () {
@@ -144,8 +137,7 @@ void main() {
         loggedIn: true,
         mustChangePassword: false,
         recoveryPending: true,
-        mfaPending: false,
-        mussZweiFaktor: false);
+        mfaPending: false);
 
     test('die halbe Sitzung springt nicht in die App', () {
       // Ohne diese Regel wäre jemand angemeldet, ohne sein Passwort zu
@@ -171,8 +163,7 @@ void main() {
               loggedIn: true,
               mustChangePassword: true,
               recoveryPending: true,
-        mfaPending: false,
-        mussZweiFaktor: false),
+              mfaPending: false),
           isNull);
     });
 
@@ -191,20 +182,7 @@ void main() {
         loggedIn: true,
         mustChangePassword: false,
         recoveryPending: false,
-        mfaPending: true,
-        mussZweiFaktor: false);
-
-    /// Admin nach Ablauf der Frist, noch ohne eingerichteten Faktor.
-    String? ohneFaktor(String path) => guardRedirect(
-        path: path,
-        canEdit: true,
-        isAdmin: true,
-        supabaseReady: true,
-        loggedIn: true,
-        mustChangePassword: false,
-        recoveryPending: false,
-        mfaPending: false,
-        mussZweiFaktor: true);
+        mfaPending: true);
 
     test('ohne Code kommt niemand in die App', () {
       // Ohne diese Regel wäre der zweite Faktor eine Zierde: Wer die
@@ -218,69 +196,21 @@ void main() {
       expect(codeFehlt('/login'), isNull);
     });
 
-    test('nach Fristablauf führt der Weg über die Einrichtung', () {
-      expect(ohneFaktor('/'), '/zwei-faktor');
-      expect(ohneFaktor('/user-management'), '/zwei-faktor');
-      expect(ohneFaktor('/zwei-faktor'), isNull);
+    test('die Einrichtung ist aus den Einstellungen erreichbar', () {
+      // Feld-Befund v1.9.0: Der pauschale „angemeldet → weg von den
+      // Auth-Seiten"-Redirect machte die Einstellungs-Kachel zur Sackgasse,
+      // jeder Klick sprang auf die Startseite. Die Einrichtung ist
+      // freiwillig (Entscheidung 2026-08-01, keine Admin-Pflicht mehr)
+      // und muss deshalb für JEDEN Angemeldeten stehen bleiben.
+      expect(asAdmin('/zwei-faktor'), isNull);
+      expect(asEditor('/zwei-faktor'), isNull);
+      expect(asMember('/zwei-faktor'), isNull);
     });
 
-    test('mit Faktor ist die Einrichtung keine Sackgasse', () {
-      expect(asAdmin('/zwei-faktor'), '/');
-    });
-
-    test('der fehlende Code schlägt die Einrichtungspflicht', () {
-      // Sonst schöbe die Pflicht den Nutzer aus der Code-Eingabe heraus,
-      // bevor die Sitzung überhaupt vollständig ist.
-      expect(
-          guardRedirect(
-              path: '/login',
-              canEdit: true,
-              isAdmin: true,
-              supabaseReady: true,
-              loggedIn: true,
-              mustChangePassword: false,
-              recoveryPending: false,
-              mfaPending: true,
-              mussZweiFaktor: true),
-          isNull);
-    });
-  });
-
-  group('mussZweiFaktorEinrichten', () {
-    final vorher = kZweiFaktorPflichtAb.subtract(const Duration(days: 1));
-    final nachher = kZweiFaktorPflichtAb.add(const Duration(days: 1));
-
-    test('vor der Frist zwingt nichts', () {
-      expect(
-          mussZweiFaktorEinrichten(
-              rolle: 'admin', hatFaktor: false, jetzt: vorher),
-          isFalse);
-    });
-
-    test('nach der Frist trifft es Admins ohne Faktor', () {
-      expect(
-          mussZweiFaktorEinrichten(
-              rolle: 'admin', hatFaktor: false, jetzt: nachher),
-          isTrue);
-    });
-
-    test('wer eingerichtet hat, wird nicht behelligt', () {
-      expect(
-          mussZweiFaktorEinrichten(
-              rolle: 'admin', hatFaktor: true, jetzt: nachher),
-          isFalse);
-    });
-
-    test('Gerätewarte und Mitglieder bleiben außen vor', () {
-      // Bewusst nur Admins: Ein Mitglied meldet sich mit einem Zettel an
-      // und hat nichts zu verlieren, was nicht im Gerätehaus aushängt.
-      for (final rolle in ['geraetewart', 'member', null]) {
-        expect(
-            mussZweiFaktorEinrichten(
-                rolle: rolle, hatFaktor: false, jetzt: nachher),
-            isFalse,
-            reason: '$rolle');
-      }
+    test('ohne Anmeldung oder ohne Server gibt es keine Einrichtung', () {
+      expect(ausgeloggt('/zwei-faktor'), '/login');
+      expect(lokal('/zwei-faktor'), '/',
+          reason: 'im Lokalmodus gibt es kein Konto, das man schützen könnte');
     });
   });
 
@@ -312,8 +242,7 @@ void main() {
               loggedIn: false,
               mustChangePassword: true,
       recoveryPending: false,
-      mfaPending: false,
-      mussZweiFaktor: false),
+      mfaPending: false),
           '/login');
     });
   });
@@ -336,7 +265,6 @@ void main() {
           mustChangePassword: mustChange,
           recoveryPending: false,
           mfaPending: false,
-          mussZweiFaktor: false,
         );
         if (ziel == null) return pfad;
         pfad = ziel;
@@ -416,8 +344,7 @@ void main() {
               loggedIn: true,
               mustChangePassword: false,
       recoveryPending: false,
-      mfaPending: false,
-      mussZweiFaktor: false),
+      mfaPending: false),
           '/');
     });
 
@@ -436,8 +363,7 @@ void main() {
               loggedIn: true,
               mustChangePassword: false,
       recoveryPending: false,
-      mfaPending: false,
-      mussZweiFaktor: false),
+      mfaPending: false),
           '/',
           reason: 'ohne Server gibt es keine Abteilungen');
     });

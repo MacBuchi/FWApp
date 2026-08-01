@@ -179,6 +179,17 @@ Reihenfolge, damit niemand in einer Sackgasse landet:
    Kein `NOTIFY` nötig — die Funktion liest den Wert bei jedem Aufruf.
 4. **Rückweg:** Wert auf `NULL` setzen = Gate aus (fail-open, sofort).
 
+> **Aktueller Stand:** Das Gate ist seit dem 2026-08-01 auf **1.5.5**
+> scharf geschaltet (Freigabe Marcus, nachdem das In-App-Update auf einem
+> echten Gerät durchlief). Aktuellstes Release ist 1.5.6 — der Puffer aus
+> Punkt 2 ist damit eingehalten. Geprüft direkt nach dem Setzen: 1.5.3 und
+> 1.5.4 werden abgewiesen, ab 1.5.5 darf veröffentlicht werden.
+
+Beim Setzen per SSH gilt eine Stolperfalle: Kommt das Skript über
+`ssh … 'bash -s' < skript.sh` herein, verschluckt ein `docker exec -i psql -c …`
+den **Rest des Skripts** als eigenen stdin — die Folgebefehle laufen dann
+stillschweigend nie. SQL deshalb immer per Heredoc übergeben.
+
 **Verifiziert am 2026-08-01** (Emulator, echte Release-APKs, kompletter
 Kreis v1.5.3 → v1.5.6): Die Gate-Ablehnung ist eine **Snackbar** — kein
 Vollbild, nichts wird überdeckt, die App bleibt voll bedienbar und das

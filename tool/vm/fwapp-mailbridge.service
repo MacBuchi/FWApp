@@ -1,0 +1,18 @@
+# fwapp-mailbridge.service – SMTP→Brevo-HTTP-Brücke (Issue #57 Etappe 1).
+# Läuft auf dem Host, weil nur der Host IPv6-Ausgang hat (Docker-Bridge-Netze
+# nicht). Installation: siehe docs/SERVER-SETUP.md.
+[Unit]
+Description=FWApp mail bridge (local SMTP to Brevo HTTP API)
+# Die Bind-Adresse 172.18.0.1 existiert erst, wenn Docker das
+# supabase_default-Netz angelegt hat.
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+User=fwapp
+ExecStart=/home/fwapp/mailbridge/venv/bin/python3 /home/fwapp/bin/fwapp_mailbridge.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

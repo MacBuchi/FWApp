@@ -220,8 +220,9 @@ Reihenfolge, damit niemand in einer Sackgasse landet:
 2. **Minimum nie über das neueste Release setzen.** Empfehlung: eine
    Version unter dem aktuellsten Release lassen (Puffer für Geräte, die
    das Banner noch nicht gesehen haben).
-3. Setzen per `psql` auf der VM (Prod-Schreibvorgang — bis zur
-   Automatisierung aus #74 einzeln abgesprochen):
+3. Setzen per `psql` auf der VM (bewusst KEIN Teil des Auto-Deploys aus
+   #74 — das Gate ist Betriebszustand, keine Schema-Änderung, und bleibt
+   eine bewusste Einzelentscheidung):
    `update public.dataset_meta set minimum_supported_version = 'X.Y.Z';`
    Kein `NOTIFY` nötig — die Funktion liest den Wert bei jedem Aufruf.
 4. **Rückweg:** Wert auf `NULL` setzen = Gate aus (fail-open, sofort).

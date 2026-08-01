@@ -1,0 +1,15 @@
+# fwapp-autodeploy.timer – alle 10 Minuten nachsehen (Issue #74, Route A).
+#
+# 10 Minuten, weil raw.githubusercontent.com einige Minuten cached: kürzer
+# brächte nur Läufe, die den alten Stand sehen. Der Freigabe-Moment bleibt
+# der Merge — dieser Timer ist Zustellung, keine Entscheidung.
+[Unit]
+Description=FWApp Auto-Deploy alle 10 Minuten
+
+[Timer]
+OnBootSec=3min
+OnUnitActiveSec=10min
+RandomizedDelaySec=60
+
+[Install]
+WantedBy=timers.target

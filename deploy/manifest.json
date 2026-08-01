@@ -36,6 +36,10 @@
     {
       "name": "20260801160000_deploy_ledger.sql",
       "sha256": "b7e69a66160bc345f7d51e8d8b147ad686b277b0ce473f166efc04cab3bd9584"
+    },
+    {
+      "name": "20260801170000_autodeploy_probe.sql",
+      "sha256": "b95344815a27049fc0590e43b6bd8b42630e748baec7967f02d227dab5195867"
     }
   ],
   "functions": {

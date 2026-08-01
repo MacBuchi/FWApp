@@ -12,6 +12,17 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.6.2] – 2026-08-01
+
+### Behoben
+
+- **Lange Absturzberichte ließen sich nicht melden.** Der Server nimmt
+  Meldungen bis 2000 Zeichen an; Absturzberichte mit Protokoll-Anhang sind
+  länger, und das Senden scheiterte mit dem irreführenden Hinweis auf die
+  Internetverbindung. Die App kürzt jetzt vor dem Senden sichtbar auf das
+  Limit — der wichtige Anfang (Fehler und Absturzstelle) bleibt immer
+  erhalten.
+
 ## [1.6.1] – 2026-08-01
 
 ### Behoben

@@ -5,15 +5,36 @@
 /// Vorgang angeboten bekommt, der für ihn ohnehin abprallen würde.
 library;
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/sync/gesamtwehr_providers.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/features/settings/presentation/screens/gesamtwehr_screen.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
+import 'package:supabase_flutter/supabase_flutter.dart'
+    show AuthClientOptions, PostgrestException, SupabaseClient;
 
 import '../../helpers/test_database.dart';
 import '../../helpers/widget_harness.dart';
+
+/// Fängt die schreibenden Aufrufe ab, statt einen echten Server zu brauchen.
+class _FakeGesamtwehrService extends GesamtwehrService {
+  final List<String> gegruendet = [];
+  _FakeGesamtwehrService(Ref ref)
+      // autoRefreshToken aus, sonst hinterlässt der Client einen Timer,
+      // der den Teardown-Invariant des Test-Frameworks reißt.
+      : super(
+          SupabaseClient('http://localhost:1', 'test',
+              authOptions: const AuthClientOptions(autoRefreshToken: false)),
+          ref,
+        );
+
+  @override
+  Future<String> gruendeGesamtwehr(String name) async {
+    gegruendet.add(name);
+    return 'gw-neu';
+  }
+}
 
 const _allein = MeineOrganisation(
   abteilungId: 'A',
@@ -173,6 +194,53 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('kennt noch keine Abteilungen'), findsOneWidget);
+  });
+
+  testWidgets(
+      'Gründen-Dialog funktioniert auch im verschachtelten Navigator '
+      '(Regression: v1.6.0 im Feld)', (tester) async {
+    // Der Screen liegt in der App unter der Shell-Route in einem EIGENEN
+    // Navigator, der Dialog aber im Root-Navigator. Ein Pop über den
+    // Screen-Kontext trifft dann den falschen Navigator und "Anlegen" tut
+    // sichtbar nichts. Ein flacher MaterialApp(home:)-Harness kann das
+    // nicht zeigen — deshalb hier explizit verschachtelt.
+    late _FakeGesamtwehrService dienst;
+    await tester.pumpWidget(buildTestApp(
+      db: db,
+      home: Navigator(
+        onGenerateRoute: (_) => MaterialPageRoute(
+            builder: (_) => const GesamtwehrScreen()),
+      ),
+      overrides: [
+        meineOrganisationProvider.overrideWith((ref) async => _allein),
+        offeneAnfragenProvider.overrideWith((ref) async => const []),
+        eigenerAntragProvider.overrideWith((ref) async => null),
+        gesamtwehrenProvider.overrideWith((ref) async => const []),
+        isAdminProvider.overrideWithValue(true),
+        supabaseClientProvider.overrideWithValue(null),
+        gesamtwehrServiceProvider
+            .overrideWith((ref) => dienst = _FakeGesamtwehrService(ref)),
+      ],
+    ));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Gesamtwehr gründen'));
+    await tester.pumpAndSettle();
+    expect(find.text('Name der Gesamtwehr'), findsOneWidget);
+
+    await tester.enterText(
+        find.byType(TextField), 'Gesamtfeuerwehr Musterstadt');
+    await tester.tap(find.text('Anlegen'));
+    await tester.pumpAndSettle();
+
+    // Der Dialog ist zu, der Vorgang lief, die Snackbar bestätigt.
+    expect(find.text('Name der Gesamtwehr'), findsNothing,
+        reason: 'der Dialog muss sich über den RICHTIGEN Navigator schließen');
+    expect(dienst.gegruendet, ['Gesamtfeuerwehr Musterstadt']);
+    expect(find.textContaining('gegründet'), findsOneWidget);
+
+    // Snackbar-Timer ablaufen lassen, sonst reißt der Teardown-Invariant.
+    await tester.pump(const Duration(seconds: 5));
   });
 
   group('Fehlertexte', () {

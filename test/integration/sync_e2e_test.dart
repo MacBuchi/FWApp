@@ -392,5 +392,81 @@ Future<void> main() async {
       // Nach der Freigabe klappt derselbe Publish sofort.
       expect(await adminSync.publish(), greaterThan(0));
     });
+
+    test('Schwester-Sicht: lesen ja, veröffentlichen nein (Phase 2)',
+        () async {
+      // Aufbau über den Service-Role-Weg: eine Gesamtwehr, die die
+      // Bestands-Abteilung und eine neue Schwester B verbindet.
+      final mirror = await mirrorAbteilungId();
+      final ids = await asService((s) async {
+        final gw = await s
+            .from('gesamtwehren')
+            .insert({'name': 'GW Test', 'slug': 'gw-test'})
+            .select('id')
+            .single();
+        final b = await s
+            .from('abteilungen')
+            .insert({
+              'name': 'Abteilung B',
+              'slug': 'abteilung-b',
+              'status': 'active',
+              'gesamtwehr_id': gw['id'],
+            })
+            .select('id')
+            .single();
+        await s
+            .from('abteilungen')
+            .update({'gesamtwehr_id': gw['id']}).eq('id', mirror);
+        return (gw: gw['id'] as String, b: b['id'] as String);
+      });
+
+      try {
+        // RLS zeigt dem Admin jetzt beide Abteilungen (Entscheidung A).
+        final visible = await adminClient
+            .from('abteilungen')
+            .select('id')
+            .order('name');
+        expect(visible.map((r) => r['id']),
+            containsAll([mirror, ids.b]));
+
+        // Pull der Schwester-Sicht: eigener SyncService mit Override und
+        // eigener (leerer) lokaler DB — wie die App nach dem Umschalten.
+        final sisterDb = createTestDatabase();
+        addTearDown(sisterDb.close);
+        final sisterSync =
+            SyncService(sisterDb, adminClient, abteilungOverride: ids.b);
+        await sisterSync.pullIfNewer(force: true);
+        // B ist leer — und vor allem: NICHT der Bestand der eigenen
+        // Abteilung. Ein Leck würde hier Fahrzeuge zeigen.
+        expect(await sisterDb.vehicleDao.getAll(), isEmpty);
+
+        // Veröffentlichen in die Schwester lehnt der Server ab, auch für
+        // den Admin ohne Gesamtwehr-Admin-Rolle... admin IST admin der
+        // Gesamtwehr (gleiche gesamtwehr_id) — der darf laut Issue sogar
+        // schreiben. Deshalb prüft der Sperr-Test mit dem GERÄTEWART.
+        final gwDb = createTestDatabase();
+        addTearDown(gwDb.close);
+        final gwClient = SupabaseClient(_url, _anonKey);
+        addTearDown(gwClient.dispose);
+        await gwClient.auth.signInWithPassword(
+            email: 'geraetewart@fw.local', password: 'test1234');
+        final gwSister =
+            SyncService(gwDb, gwClient, abteilungOverride: ids.b);
+        await gwSister.pullIfNewer(force: true);
+        await expectLater(
+          gwSister.publish(),
+          throwsA(isA<PostgrestException>().having(
+              (e) => e.message, 'message', contains('permission denied'))),
+        );
+      } finally {
+        await asService((s) async {
+          await s
+              .from('abteilungen')
+              .update({'gesamtwehr_id': null}).eq('id', mirror);
+          await s.from('abteilungen').delete().eq('id', ids.b);
+          await s.from('gesamtwehren').delete().eq('id', ids.gw);
+        });
+      }
+    });
   });
 }

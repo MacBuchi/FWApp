@@ -51,6 +51,12 @@ class SyncService {
   bool _suppressDirty = false;
   StreamSubscription<Set<TableUpdate>>? _dirtySub;
 
+  /// Angezeigte Abteilung (Issue #57 Phase 2): eine Schwester-Abteilung,
+  /// deren Bestand gelesen wird. `null` = die eigene (Normalfall).
+  /// Veröffentlichen in eine Schwester lehnt der Server über
+  /// `can_publish_abteilung` ab — hier gibt es bewusst keine zweite Logik.
+  final String? abteilungOverride;
+
   /// Eigene Abteilung (Issue #57 Phase 1), einmal je Sitzung aufgelöst.
   String? _abteilungId;
 
@@ -59,8 +65,13 @@ class SyncService {
   /// die App darf dem Server-Rollout vorauseilen, nicht umgekehrt.
   bool _legacyServer = false;
 
-  SyncService(this.db, this.client, {String? appVersion})
+  SyncService(this.db, this.client, {String? appVersion, this.abteilungOverride})
       : appVersion = appVersion ?? currentAppVersion;
+
+  /// Abteilung, auf der Pull und Publish arbeiten: die ausgewählte, sonst
+  /// die eigene (mit Legacy-Fallback).
+  Future<String?> _effectiveAbteilung() async =>
+      abteilungOverride ?? await _resolveAbteilung();
 
   /// Liefert die Abteilung des angemeldeten Nutzers, oder `null` im
   /// Legacy-Betrieb. RLS begrenzt `profiles` auf die eigene Zeile.
@@ -139,7 +150,7 @@ class SyncService {
   /// (always when [force]). Returns the new version, or null if unchanged.
   Future<int?> pullIfNewer({bool force = false}) async {
     final meta = await getMeta();
-    final abteilung = await _resolveAbteilung();
+    final abteilung = await _effectiveAbteilung();
     // Versionszähler: je Abteilung (neu) oder dataset_meta (Legacy-Server).
     final remote = abteilung != null
         ? await client
@@ -331,7 +342,7 @@ class SyncService {
   /// gesperrt; die App bleibt lokal vollständig nutzbar.**
   Future<int> publish() async {
     final meta = await getMeta();
-    final abteilung = await _resolveAbteilung();
+    final abteilung = await _effectiveAbteilung();
     final payload = await _buildPayload();
     final Object? result;
     try {

@@ -70,10 +70,10 @@ vorhanden), Wegwerf-Name mit Zeitstempel, `drop database … with (force)` im
 `trap` — auch bei Abbruch bleibt nichts liegen. Die Produktions-DB
 `postgres` wird nie berührt.
 
-⚠️ **Status: noch nicht auf der VM verifiziert.** Beim ersten Lauf prüfen,
-ob das Dump-Namensmuster (`*.dump`) stimmt — sonst `DUMP=/pfad` setzen und
-das Muster hier korrigieren. Der erste echte Anwendungsfall sind die zwei
-offenen Migrationen (Gate + Abteilungen).
+✅ **Auf der VM verifiziert (2026-08-01):** Erster Probelauf mit den zwei
+Migrationen Gate + Abteilungen gegen den Nacht-Dump `fwapp_pg_*.dump` —
+beide liefen sauber durch, Backfill im Zeilenstand bestätigt. Das
+Dump-Namensmuster `*.dump` passt.
 
 ## Ebene 3 · Staging-VM 105 aus dem vzdump
 

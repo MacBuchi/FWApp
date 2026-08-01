@@ -1,0 +1,159 @@
+# supabase-preview.yml – Migration preview on PRs (the self-hosted answer to
+# Supabase's paid "preview branches", see docs/STAGING.md tier 1).
+#
+# What it adds over ci.yml: ci.yml boots the stack FROM SCRATCH with all
+# migrations — that never exercises the path production actually takes.
+# This workflow boots the stack at the BASE branch's migration state, applies
+# only the PR's new migrations incrementally (exactly what later runs on the
+# VM via docker exec psql), and posts the resulting schema diff as a sticky
+# PR comment.
+#
+# It also enforces migration immutability: editing or deleting an existing
+# migration file fails the check — those may already be applied in
+# production; history only moves forward with a new file.
+
+name: Supabase Preview
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  preview:
+    name: Migration Preview
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Classify migration changes
+        id: classify
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git fetch -q origin "$BASE_REF"
+          base=$(git merge-base "origin/$BASE_REF" HEAD)
+          echo "base=$base" >> "$GITHUB_OUTPUT"
+
+          # Editing/deleting applied history is the one unforgivable move.
+          bad=$(git diff --name-only --diff-filter=MDR "$base"..HEAD -- 'supabase/migrations/*.sql')
+          if [ -n "$bad" ]; then
+            echo "::error::Existing migrations were modified or deleted — they may already be applied in production. Add a new migration instead:"
+            echo "$bad"
+            exit 1
+          fi
+
+          git diff --name-only --diff-filter=A "$base"..HEAD -- 'supabase/migrations/*.sql' \
+            | sort > /tmp/new_migrations.txt
+          echo "count=$(wc -l < /tmp/new_migrations.txt | tr -d ' ')" >> "$GITHUB_OUTPUT"
+          cat /tmp/new_migrations.txt
+
+      - uses: supabase/setup-cli@v3
+        if: steps.classify.outputs.count != '0'
+        with:
+          version: latest
+
+      - name: Start stack at BASE migration state
+        if: steps.classify.outputs.count != '0'
+        run: |
+          git checkout "${{ steps.classify.outputs.base }}" -- supabase/migrations
+          supabase start
+
+      # pg_dump runs INSIDE the db container: the runner's client may be
+      # older than the stack's Postgres and refuse the connection.
+      - name: Dump schema BEFORE
+        if: steps.classify.outputs.count != '0'
+        run: |
+          db=$(docker ps --format '{{.Names}}' | grep '^supabase_db_' | head -1)
+          echo "db=$db" >> "$GITHUB_ENV"
+          # \restrict/\unrestrict carry a random per-run token — pure diff noise.
+          docker exec "$db" pg_dump -U postgres -d postgres --schema-only \
+              --schema=public --no-owner --no-privileges \
+            | grep -v '^\\\\\(un\)\?restrict' > /tmp/schema_before.sql
+
+      - name: Apply ONLY the new migrations (the production upgrade path)
+        if: steps.classify.outputs.count != '0'
+        run: |
+          git checkout HEAD -- supabase/migrations
+          while IFS= read -r f; do
+            echo "==> $f"
+            # Prod applies as supabase_admin; the CLI stack's superuser is
+            # 'postgres' — equivalent privileges for DDL.
+            docker exec -i "$db" psql -U postgres -d postgres \
+              -v ON_ERROR_STOP=1 --quiet < "$f"
+          done < /tmp/new_migrations.txt
+
+      - name: Dump schema AFTER and diff
+        if: steps.classify.outputs.count != '0'
+        run: |
+          docker exec "$db" pg_dump -U postgres -d postgres --schema-only \
+              --schema=public --no-owner --no-privileges \
+            | grep -v '^\\\\\(un\)\?restrict' > /tmp/schema_after.sql
+          diff -u /tmp/schema_before.sql /tmp/schema_after.sql \
+            > /tmp/schema.diff || true
+          wc -l /tmp/schema.diff
+
+      - uses: actions/upload-artifact@v7
+        if: always() && steps.classify.outcome == 'success' && steps.classify.outputs.count != '0'
+        with:
+          name: schema-preview
+          path: /tmp/schema*.sql
+          retention-days: 14
+
+      - name: Sticky PR comment with the schema diff
+        if: always() && steps.classify.outcome == 'success' && steps.classify.outputs.count != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          marker='<!-- supabase-preview -->'
+          {
+            echo "$marker"
+            echo "## Supabase Migration Preview"
+            echo
+            if [ "$JOB_STATUS" = "success" ]; then
+              echo "✅ New migrations applied cleanly **on top of the base branch's schema** — the same upgrade path production will take."
+            else
+              echo "❌ Applying the new migrations onto the base schema **failed** — check the job log. This is exactly the failure the preview exists to catch before the VM does."
+            fi
+            echo
+            echo "**New migrations (in apply order):**"
+            sed 's/^/- `/; s/$/`/' /tmp/new_migrations.txt
+            echo
+            if [ -s /tmp/schema.diff ]; then
+              lines=$(wc -l < /tmp/schema.diff)
+              echo "<details><summary>Schema diff (public schema, $lines lines)</summary>"
+              echo
+              echo '```diff'
+              head -400 /tmp/schema.diff
+              [ "$lines" -gt 400 ] && echo "… truncated — full diff in the schema-preview artifact."
+              echo '```'
+              echo "</details>"
+            elif [ "$JOB_STATUS" = "success" ]; then
+              echo "_No schema changes in the public schema (grants/RLS-only changes do not show in this diff)._"
+            fi
+            echo
+            echo "_Before merging to production: rehearse against real data — \`tool/migration_rehearsal.sh\`, see docs/STAGING.md._"
+          } > /tmp/comment.md
+
+          existing=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+            --paginate --jq ".[] | select(.body | startswith(\"$marker\")) | .id" | head -1)
+          if [ -n "$existing" ]; then
+            gh api -X PATCH "repos/${GITHUB_REPOSITORY}/issues/comments/$existing" \
+              -F body=@/tmp/comment.md > /dev/null
+          else
+            gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+              -F body=@/tmp/comment.md > /dev/null
+          fi

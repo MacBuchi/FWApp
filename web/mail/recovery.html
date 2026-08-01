@@ -1,0 +1,46 @@
+<!--
+  recovery.html – Vorlage für die Passwort-vergessen-Mail (Issue #57 Phase 4).
+
+  Sie zeigt {{ .Token }} — den sechsstelligen Code — und BEWUSST KEINEN Link.
+  Grund: Im Standardverfahren legt der Server einen Prüfwert im Speicher des
+  Geräts ab, das die Mail angefordert hat. Wer in der App auf dem Handy
+  anfordert und die Mail am PC öffnet, hat diesen Wert dort nicht — der Link
+  stirbt still mit einer Meldung, die niemand versteht. Ein Code funktioniert
+  überall, egal wo die Mail gelesen wird.
+
+  Ausgeliefert wird die Datei mit dem Web-Build (web/ landet in build/web).
+  GoTrue holt sie über GOTRUE_MAILER_TEMPLATES_RECOVERY vom nginx-Container
+  im selben Docker-Netz — kein Weg über das Internet nötig.
+-->
+<div style="font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; max-width: 480px; color: #1c1b1f; line-height: 1.5;">
+  <h2 style="color: #9b1c1c; font-size: 20px; margin: 0 0 16px;">
+    Passwort zurücksetzen
+  </h2>
+
+  <p style="margin: 0 0 16px;">
+    Für dein FWApp-Konto wurde ein neues Passwort angefordert. Gib diesen
+    Code in der App ein:
+  </p>
+
+  <p style="font-size: 32px; font-weight: 700; letter-spacing: 6px;
+            background: #f5eaea; color: #9b1c1c; padding: 16px;
+            text-align: center; border-radius: 8px; margin: 0 0 16px;">
+    {{ .Token }}
+  </p>
+
+  <p style="margin: 0 0 16px;">
+    Der Code gilt eine Stunde. Danach einfach einen neuen anfordern.
+  </p>
+
+  <p style="margin: 0 0 16px; color: #49454f; font-size: 14px;">
+    Du hast das nicht angefordert? Dann ist nichts passiert — ohne den Code
+    ändert sich an deinem Konto nichts. Diese Mail kannst du löschen.
+  </p>
+
+  <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 24px 0;">
+
+  <p style="color: #79747e; font-size: 12px; margin: 0;">
+    FWApp — die Lern-App deiner Feuerwehr. Diese Nachricht wurde automatisch
+    verschickt, eine Antwort darauf liest niemand.
+  </p>
+</div>

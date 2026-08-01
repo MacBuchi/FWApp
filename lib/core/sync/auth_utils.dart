@@ -25,6 +25,16 @@ final _usernameRe = RegExp(r'^[a-z0-9](?:[a-z0-9._-]{1,30})[a-z0-9]$');
 bool isValidUsername(String username) =>
     _usernameRe.hasMatch(username.trim().toLowerCase());
 
+/// Ist das eine echte, zustellbare Adresse — oder die interne Zettel-Form?
+///
+/// `<name>@fw.local` existiert nur, weil GoTrue eine E-Mail als Kennung
+/// verlangt; dorthin kann niemand etwas schicken. An dieser Unterscheidung
+/// hängt, ob „Passwort vergessen“ für ein Konto überhaupt in Frage kommt.
+bool hatEchteMail(String email) {
+  final e = email.trim().toLowerCase();
+  return e.contains('@') && !e.endsWith('@$kAccountDomain');
+}
+
 /// Übersetzt einen gotrue-Fehler in einen Satz, der im Gerätehaus
 /// weiterhilft. Bevorzugt den stabilen `code`; die Prüfung der Meldung bleibt
 /// als Rückfallebene für ältere Server, die noch keinen Code mitschicken.

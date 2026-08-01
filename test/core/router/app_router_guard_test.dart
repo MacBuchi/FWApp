@@ -22,21 +22,24 @@ void main() {
       isAdmin: false,
       supabaseReady: true,
       loggedIn: true,
-      mustChangePassword: false);
+      mustChangePassword: false,
+      recoveryPending: false);
   String? asEditor(String path) => guardRedirect(
       path: path,
       canEdit: true,
       isAdmin: false,
       supabaseReady: true,
       loggedIn: true,
-      mustChangePassword: false);
+      mustChangePassword: false,
+      recoveryPending: false);
   String? asAdmin(String path) => guardRedirect(
       path: path,
       canEdit: true,
       isAdmin: true,
       supabaseReady: true,
       loggedIn: true,
-      mustChangePassword: false);
+      mustChangePassword: false,
+      recoveryPending: false);
   /// Nicht angemeldet auf einer verbundenen Installation.
   String? ausgeloggt(String path) => guardRedirect(
       path: path,
@@ -44,7 +47,8 @@ void main() {
       isAdmin: false,
       supabaseReady: true,
       loggedIn: false,
-      mustChangePassword: false);
+      mustChangePassword: false,
+      recoveryPending: false);
   /// Reiner Lokalmodus (kein Server konfiguriert).
   String? lokal(String path) => guardRedirect(
       path: path,
@@ -52,7 +56,8 @@ void main() {
       isAdmin: true,
       supabaseReady: false,
       loggedIn: false,
-      mustChangePassword: false);
+      mustChangePassword: false,
+      recoveryPending: false);
   /// Angemeldet, aber noch mit dem Initialpasswort vom Zugangszettel.
   String? mitInitialpasswort(String path) => guardRedirect(
       path: path,
@@ -60,7 +65,8 @@ void main() {
       isAdmin: true,
       supabaseReady: true,
       loggedIn: true,
-      mustChangePassword: true);
+      mustChangePassword: true,
+      recoveryPending: false);
 
   group('guardRedirect – Anmeldezwang (#57 Phase 4)', () {
     test('ohne Sitzung führt jeder Weg auf die Anmeldung', () {
@@ -114,6 +120,50 @@ void main() {
     });
   });
 
+  group('guardRedirect – Passwort-Zurücksetzen (#57 Phase 4, Etappe 2)', () {
+    /// Die halbe Sitzung aus verifyOTP: angemeldet, aber das neue Passwort
+    /// steht noch nicht.
+    String? beimZuruecksetzen(String path) => guardRedirect(
+        path: path,
+        canEdit: true,
+        isAdmin: true,
+        supabaseReady: true,
+        loggedIn: true,
+        mustChangePassword: false,
+        recoveryPending: true);
+
+    test('die halbe Sitzung springt nicht in die App', () {
+      // Ohne diese Regel wäre jemand angemeldet, ohne sein Passwort zu
+      // kennen — und der Vorgang bliebe auf halbem Weg stehen.
+      expect(beimZuruecksetzen('/'), '/login');
+      expect(beimZuruecksetzen('/settings'), '/login');
+      expect(beimZuruecksetzen('/import'), '/login');
+    });
+
+    test('der Anmelde-Screen bleibt stehen, bis es vorbei ist', () {
+      expect(beimZuruecksetzen('/login'), isNull);
+    });
+
+    test('sie schlägt sogar den Pflichtwechsel', () {
+      // Sonst risse der Pflichtwechsel den Screen weg, während der Nutzer
+      // gerade dabei ist, sich genau so ein Passwort zu setzen.
+      expect(
+          guardRedirect(
+              path: '/login',
+              canEdit: true,
+              isAdmin: true,
+              supabaseReady: true,
+              loggedIn: true,
+              mustChangePassword: true,
+              recoveryPending: true),
+          isNull);
+    });
+
+    test('nach dem Zurücksetzen führt der Weg wieder in die App', () {
+      expect(asAdmin('/login'), '/');
+    });
+  });
+
   group('guardRedirect – Pflichtwechsel des Initialpassworts', () {
     test('führt von überall auf den Wechsel', () {
       expect(mitInitialpasswort('/'), '/change-password');
@@ -140,7 +190,8 @@ void main() {
               isAdmin: false,
               supabaseReady: true,
               loggedIn: false,
-              mustChangePassword: true),
+              mustChangePassword: true,
+      recoveryPending: false),
           '/login');
     });
   });
@@ -161,6 +212,7 @@ void main() {
           supabaseReady: ready,
           loggedIn: loggedIn,
           mustChangePassword: mustChange,
+          recoveryPending: false,
         );
         if (ziel == null) return pfad;
         pfad = ziel;
@@ -238,7 +290,8 @@ void main() {
               isAdmin: true,
               supabaseReady: false,
               loggedIn: true,
-              mustChangePassword: false),
+              mustChangePassword: false,
+      recoveryPending: false),
           '/');
     });
 
@@ -255,7 +308,8 @@ void main() {
               isAdmin: true,
               supabaseReady: false,
               loggedIn: true,
-              mustChangePassword: false),
+              mustChangePassword: false,
+      recoveryPending: false),
           '/',
           reason: 'ohne Server gibt es keine Abteilungen');
     });

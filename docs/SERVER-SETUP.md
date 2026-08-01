@@ -476,6 +476,26 @@ ssh fwapp@<vm> 'sudo mv /tmp/fwapp-mailbridge.service /etc/systemd/system/ \
 # Log: journalctl -u fwapp-mailbridge  („Angenommen: … Brevo-Message-Id …")
 ```
 
+**Deutsche Mailvorlage (seit v1.8.0):** Die Passwort-vergessen-Mail zeigt
+einen sechsstelligen Code und bewusst **keinen** Link — ein Link stirbt
+still, wenn die Mail auf einem anderen Gerät geöffnet wird als dem, das sie
+angefordert hat (die PKCE-Prüfsumme liegt nur dort). Vorlage:
+`web/mail/recovery.html`, wird mit dem Web-Build ausgeliefert. Auf dem
+Server im auth-Container gesetzt:
+
+```yaml
+GOTRUE_MAILER_TEMPLATES_RECOVERY: http://fwapp-web/mail/recovery.html
+GOTRUE_MAILER_SUBJECTS_RECOVERY: "FWApp: Passwort zurücksetzen"
+```
+
+Der Weg geht über den nginx-Container im selben Docker-Netz, braucht also
+kein Internet. **Reihenfolge beim Ausrollen:** erst `tool/deploy_web.sh`
+(sonst zeigt die URL ins Leere und GoTrue fällt auf die englische
+Standardvorlage zurück), dann die beiden Variablen setzen und
+`docker compose up -d auth`. Derselbe Text läuft im lokalen Teststack über
+`[auth.email.template.recovery]` in `supabase/config.toml` — der E2E-Test
+prüft damit genau das, was draußen verschickt wird.
+
 Ende-zu-Ende getestet am 2026-08-01: Direkt-SMTP an die Brücke **und** eine
 echte GoTrue-Invite-Mail kamen beim Empfänger an; Fehlversand meldet die
 Brücke als SMTP 451 an GoTrue zurück (kein stilles Schlucken).

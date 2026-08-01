@@ -5,6 +5,8 @@ library;
 import 'dart:async' show TimeoutException;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+// StateProvider lebt in Riverpod 3 im legacy-Namespace.
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/database/database_providers.dart';
 import 'package:fwapp/core/sync/abteilung_providers.dart';
@@ -49,6 +51,15 @@ final signedInReaderProvider = Provider<bool Function()>((ref) {
   final client = ref.watch(supabaseClientProvider);
   return () => client?.auth.currentSession != null;
 });
+
+/// Läuft gerade ein Passwort-Zurücksetzen (Issue #57 Phase 4, Etappe 2)?
+///
+/// `verifyOTP` erzeugt eine gültige Sitzung, BEVOR das neue Passwort gesetzt
+/// ist. Ohne dieses Flag würde der Router den Anmelde-Screen in genau diesem
+/// Moment abräumen — die Person wäre in der App, ohne ihr Passwort zu kennen,
+/// und der halbe Vorgang bliebe stehen. Solange es gesetzt ist, bleibt
+/// `/login` erlaubt; der Screen setzt es selbst zurück (auch im Fehlerfall).
+final recoveryPendingProvider = StateProvider<bool>((ref) => false);
 
 /// Role of the signed-in user ('admin' | 'member'), null when signed out.
 final currentUserRoleProvider = FutureProvider<String?>((ref) async {

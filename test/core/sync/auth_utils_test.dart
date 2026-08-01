@@ -48,6 +48,25 @@ void main() {
     });
   });
 
+  group('hatEchteMail', () {
+    test('die Zettel-Form zählt nicht als Adresse', () {
+      // Dorthin kann niemand etwas zustellen — daran hängt, ob „Passwort
+      // vergessen" für ein Konto überhaupt angeboten wird.
+      expect(hatEchteMail('wart.stadt@fw.local'), isFalse);
+      expect(hatEchteMail('  Admin@FW.local  '), isFalse);
+    });
+
+    test('echte Adressen zählen', () {
+      expect(hatEchteMail('marcus@example.org'), isTrue);
+      expect(hatEchteMail('a.b@mcbuchi.de'), isTrue);
+    });
+
+    test('Unfertiges zählt nicht', () {
+      expect(hatEchteMail(''), isFalse);
+      expect(hatEchteMail('nurname'), isFalse);
+    });
+  });
+
   group('authErrorText', () {
     test('erkennt falsche Zugangsdaten über den Code', () {
       expect(authErrorText('Invalid login credentials',

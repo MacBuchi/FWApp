@@ -69,6 +69,7 @@ String? guardRedirect({
   required bool supabaseReady,
   required bool loggedIn,
   required bool mustChangePassword,
+  required bool recoveryPending,
 }) {
   // Anmeldezwang VOR den Rollen-Guards: Ohne Sitzung ist canEdit false,
   // /import liefe sonst erst auf '/' und von dort auf '/login' — zwei
@@ -78,6 +79,11 @@ String? guardRedirect({
     if (!loggedIn) {
       return _publicPaths.contains(path) ? null : '/login';
     }
+    // Passwort-Zurücksetzen läuft: `verifyOTP` hat eine Sitzung erzeugt,
+    // aber das neue Passwort steht noch nicht. Diese halbe Sitzung darf
+    // niemanden in die App springen lassen — sonst wäre jemand angemeldet,
+    // ohne sein Passwort zu kennen, und der Vorgang bliebe unvollendet.
+    if (recoveryPending) return path == '/login' ? null : '/login';
     // Initialpasswort vom Zugangszettel: nicht umgehbar. Als Route statt
     // als Dialog, weil ein Dialog nach dem Login auf einem schon
     // abgebauten Kontext landen würde — der Redirect räumt den
@@ -112,6 +118,9 @@ final routerProvider = Provider<GoRouter>((ref) {
   // Der Pflichtwechsel kommt ebenfalls asynchron vom Server; ohne diesen
   // Anstoß bliebe jemand mit Initialpasswort auf der Startseite stehen.
   ref.listen(mustChangePasswordProvider, (_, _) => refresh.value++);
+  // Ohne diesen Anstoß bliebe der Nutzer nach dem Zurücksetzen auf dem
+  // Anmelde-Screen stehen: Das Flag fällt, aber niemand wertet neu aus.
+  ref.listen(recoveryPendingProvider, (_, _) => refresh.value++);
 
   // An-/Abmelden stößt den Redirect an. Bewusst der rohe gotrue-Strom und
   // nicht sessionStreamProvider: Der filtert per distinct auf die Nutzer-ID
@@ -144,6 +153,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       // bevor der Wechsel greift — hingenommen, weil die Alternative ein
       // Ladezustand im Router wäre, der jeden Kaltstart verzögert.
       mustChangePassword: ref.read(mustChangePasswordProvider).value ?? false,
+      recoveryPending: ref.read(recoveryPendingProvider),
     ),
     routes: _routes,
   );

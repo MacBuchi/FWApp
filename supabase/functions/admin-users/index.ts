@@ -15,6 +15,7 @@
 //   create  {username, role, password, abteilung_id?}
 //   reset   {user_id, password}     → setzt Initialpasswort + Pflichtwechsel
 //   set_role{user_id, role}
+//   set_email {user_id, email}    → echte Adresse; sie WIRD die Anmeldung
 //   set_abteilung {user_id, abteilung_id}
 //   disable {user_id} / enable {user_id}
 //   delete  {user_id}
@@ -39,6 +40,9 @@ const CORS: Record<string, string> = {
 };
 
 const USERNAME_RE = /^[a-z0-9](?:[a-z0-9._-]{1,30})[a-z0-9]$/;
+// Absichtlich grob: Die verbindliche Prüfung macht GoTrue beim Setzen. Hier
+// geht es nur darum, offensichtlichen Unsinn vor dem Rundweg abzufangen.
+const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/;
 const EMAIL_DOMAIN = "fw.local";
 const ROLES = ["admin", "geraetewart", "member"];
 
@@ -130,7 +134,7 @@ async function listUsers(): Promise<unknown[]> {
   const [authResp, profResp] = await Promise.all([
     serviceFetch("/auth/v1/admin/users?per_page=200"),
     serviceFetch(
-      "/rest/v1/profiles?select=id,role,must_change_password,abteilung_id",
+      "/rest/v1/profiles?select=id,role,must_change_password,abteilung_id,username",
     ),
   ]);
   if (!authResp.ok) throw new Error(`Auth-Liste: ${authResp.status}`);
@@ -143,6 +147,7 @@ async function listUsers(): Promise<unknown[]> {
         role: string;
         must_change_password: boolean;
         abteilung_id: string | null;
+        username: string | null;
       },
     ) => [p.id, p]),
   );
@@ -153,15 +158,20 @@ async function listUsers(): Promise<unknown[]> {
         role: string;
         must_change_password: boolean;
         abteilung_id: string | null;
+        username: string | null;
       }
       | undefined;
     const bannedUntil = u.banned_until as string | undefined;
     return {
       id: u.id,
       email,
-      username: email.endsWith(`@${EMAIL_DOMAIN}`)
-        ? email.slice(0, -EMAIL_DOMAIN.length - 1)
-        : email,
+      // Der Anzeigename steht seit Phase 4 im Profil, weil die Adresse auf
+      // eine echte E-Mail wechseln kann. Die Ableitung bleibt als
+      // Rückfallebene für Konten, die vor der Migration entstanden sind.
+      username: p?.username ??
+        (email.endsWith(`@${EMAIL_DOMAIN}`)
+          ? email.slice(0, -EMAIL_DOMAIN.length - 1)
+          : email),
       role: p?.role ?? "member",
       must_change_password: p?.must_change_password ?? false,
       banned: bannedUntil != null && new Date(bannedUntil) > new Date(),
@@ -242,6 +252,7 @@ Deno.serve(async (req: Request) => {
         }
         await setProfile(created.id, {
           role,
+          username,
           must_change_password: true,
           ...(abteilung !== null ? { abteilung_id: abteilung } : {}),
         });
@@ -270,6 +281,46 @@ Deno.serve(async (req: Request) => {
         if (!ROLES.includes(role)) return json({ error: "Ungültige Rolle" }, 400);
         await setProfile(userId, { role });
         return json({ ok: true });
+      }
+
+      case "set_email": {
+        // Echte Adresse für Admins und Gerätewarte (Issue #57 Phase 4):
+        // Erst damit kann jemand sein Passwort selbst zurücksetzen — GoTrue
+        // verschickt ausschließlich an die Adresse des Kontos.
+        //
+        // Folge, die der Aufrufer kennen muss: Die Adresse IST ab dann die
+        // Anmeldung. Der Zettel-Name bleibt als Anzeigename im Profil
+        // stehen, taugt aber nicht mehr zum Anmelden. Die App warnt davor.
+        //
+        // Bewusst auch für das eigene Konto erlaubt — anders als Rolle oder
+        // Sperre ist das kein Weg, sich selbst auszusperren: Wer die Adresse
+        // einträgt, kennt sie.
+        if (!userId) return json({ error: "user_id fehlt" }, 400);
+        const neu = String(body.email ?? "").trim().toLowerCase();
+        if (!EMAIL_RE.test(neu)) {
+          return json({ error: "Keine gültige E-Mail-Adresse" }, 400);
+        }
+        if (neu.endsWith(`@${EMAIL_DOMAIN}`)) {
+          return json({
+            error:
+              `@${EMAIL_DOMAIN} ist die interne Zettel-Form — dorthin kann ` +
+              `keine Mail zugestellt werden. Bitte eine echte Adresse.`,
+          }, 400);
+        }
+        const resp = await serviceFetch(`/auth/v1/admin/users/${userId}`, {
+          method: "PUT",
+          // email_confirm: Der Admin trägt die Adresse bewusst ein; ein
+          // Bestätigungsumweg würde das Konto bis zum Klick unbrauchbar
+          // machen. Ob die Adresse wirklich erreichbar ist, zeigt die erste
+          // Zugangsmail — die verschickt die App direkt danach.
+          body: JSON.stringify({ email: neu, email_confirm: true }),
+        });
+        if (!resp.ok) {
+          const fehler = await resp.json().catch(() => ({}));
+          const msg = fehler.msg ?? fehler.message ?? resp.status;
+          return json({ error: `Adresse setzen: ${msg}` }, 400);
+        }
+        return json({ ok: true, email: neu });
       }
 
       case "set_abteilung": {

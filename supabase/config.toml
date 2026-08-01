@@ -243,6 +243,14 @@ otp_expiry = 3600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
+# Passwort-vergessen-Mail (Issue #57 Phase 4, Etappe 2). Dieselbe Vorlage
+# fährt die Produktion über GOTRUE_MAILER_TEMPLATES_RECOVERY — sonst prüfte
+# der E2E-Test etwas anderes, als draußen läuft. Sie zeigt den Code und
+# bewusst KEINEN Link (Begründung im Kopf der Datei).
+[auth.email.template.recovery]
+subject = "FWApp: Passwort zurücksetzen"
+content_path = "./web/mail/recovery.html"
+
 # Uncomment to customize email template
 # [auth.email.template.invite]
 # subject = "You have been invited"

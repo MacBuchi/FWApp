@@ -92,9 +92,11 @@ Prüfhistorie oder Instanzen – die hängen an den physischen Geräten.
   „Passwort-Mail senden“ drücken und fragen, ob sie ankam.
 - **Zwei-Faktor-Anmeldung** (seit v1.9.0): Einstellungen →
   „Zwei-Faktor-Anmeldung“ → Einrichtung starten → in der Authenticator-App
-  öffnen (oder Schlüssel abtippen) → ersten Code bestätigen. **Für
-  Admin-Konten ab dem 1. September 2026 Pflicht**; danach führt der Weg beim
-  Anmelden über die Einrichtung. Gerätewarte und Mitglieder sind frei.
+  öffnen (oder Schlüssel abtippen) → ersten Code bestätigen. **Freiwillig,
+  für Admin-Konten empfohlen** (seit v1.9.1 — die ursprünglich für den
+  1. September 2026 angekündigte Pflicht ist gestrichen). Wer einen Faktor
+  eingerichtet hat, meldet sich damit auch an — halbe Sicherheit gibt es
+  nicht.
 - **Telefon verloren / neues Handy?** Ein *anderer* Admin setzt den Faktor
   zurück: Kontomenü → „Zwei-Faktor zurücksetzen“. Danach reicht wieder das
   Passwort allein, und die Person richtet neu ein. Gibt es keinen zweiten

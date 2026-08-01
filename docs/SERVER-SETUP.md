@@ -105,6 +105,11 @@ Enthalten: `ANON_KEY` (öffentlicher Client-Key für die App), `SERVICE_ROLE_KEY
 
 ### Datenbank-Schema & Konten
 
+> ⚠️ **Seit 2026-08-01 gilt: Vor jedem Einspielen auf die Produktion erst der
+> Probelauf gegen den letzten Nacht-Dump** — `tool/migration_rehearsal.sh`,
+> beschrieben in [STAGING.md](STAGING.md) (Ebene 2; für große Schnitte die
+> Staging-VM, Ebene 3).
+
 - Migration [supabase/migrations/20260713000000_init_sync_schema.sql](../supabase/migrations/20260713000000_init_sync_schema.sql)
   ist eingespielt (Tabellen, RLS „authenticated read“, `publish_snapshot()`-RPC,
   Profil-Trigger). Einspielen erfolgt per `docker exec psql` als `supabase_admin`

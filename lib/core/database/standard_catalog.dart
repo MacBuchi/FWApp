@@ -20,15 +20,51 @@ import 'package:fwapp/core/utils/image_utils.dart';
 class StandardCatalog {
   final Map<String, Map<String, dynamic>> _byId;
 
-  const StandardCatalog._(this._byId);
+  StandardCatalog._(this._byId);
 
   /// Leerer Katalog — für Tests und als Rückfall, wenn das Asset fehlt.
-  const StandardCatalog.empty() : _byId = const {};
+  StandardCatalog.empty() : _byId = const {};
 
   /// Alle Katalog-IDs in Dateireihenfolge.
   Iterable<String> get ids => _byId.keys;
 
   bool contains(String libraryId) => _byId.containsKey(libraryId);
+
+  /// Katalog-ID zu einem frei getippten Gerätenamen — oder null.
+  ///
+  /// Bewusst nur exakte Treffer über Name, Kurzname und Aliasse (normalisiert
+  /// wie im Import-Matcher): Das Ergebnis wählt unbeaufsichtigt ein Symbolbild
+  /// aus, und ein falsches Bild wiegt schwerer als gar keins. Fuzzy-Raten
+  /// bleibt dem Import-Assistenten vorbehalten, wo ein Mensch bestätigt.
+  String? idFuerName(String name) => _nameIndex[_norm(name)];
+
+  late final Map<String, String> _nameIndex = (() {
+    final index = <String, String>{};
+    void merke(String? text, String id) {
+      final n = _norm(text ?? '');
+      if (n.isNotEmpty) index.putIfAbsent(n, () => id);
+    }
+
+    for (final entry in _byId.entries) {
+      merke(entry.value['name'] as String?, entry.key);
+      merke(entry.value['short_name'] as String?, entry.key);
+      for (final alias in (entry.value['aliases'] as List?) ?? const []) {
+        merke(alias as String?, entry.key);
+      }
+    }
+    return index;
+  })();
+
+  /// Spiegelt EquipmentMatcher.normalize — hierher kopiert statt importiert,
+  /// weil core/ nicht in features/ greifen darf.
+  static String _norm(String s) => s
+      .toLowerCase()
+      .replaceAll('ä', 'ae')
+      .replaceAll('ö', 'oe')
+      .replaceAll('ü', 'ue')
+      .replaceAll('ß', 'ss')
+      .replaceAll(RegExp(r'[^a-z0-9]+'), ' ')
+      .trim();
 
   /// Lädt den gebündelten Katalog. Ein fehlendes oder unlesbares Asset ist
   /// ein Build-Fehler und landet im Log — die Aufrufer bekommen trotzdem
@@ -45,7 +81,7 @@ class StandardCatalog {
     } catch (e, s) {
       appLog.w('Standard-Katalog nicht lesbar — Vorlagen und Seed bleiben '
           'ohne Normbeladung', error: e, stackTrace: s);
-      return const StandardCatalog.empty();
+      return StandardCatalog.empty();
     }
   }
 

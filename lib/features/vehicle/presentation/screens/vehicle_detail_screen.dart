@@ -409,22 +409,51 @@ class _AssignmentRow extends ConsumerWidget {
 }
 
 /// Einstieg „Gerät zuweisen" am Ende der Fach-Liste (nur mit Schreibrecht).
-class _AssignTile extends StatelessWidget {
+class _AssignTile extends ConsumerWidget {
   final Compartment compartment;
   const _AssignTile({required this.compartment});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return ListTile(
       dense: true,
       leading: const Icon(Icons.add_circle_outline),
       title: const Text('Gerät zuweisen'),
-      onTap: () => showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        showDragHandle: true,
-        builder: (_) => _EquipmentPickerSheet(compartment: compartment),
-      ),
+      onTap: () async {
+        // Der Picker liefert einen String zurück, wenn „neu anlegen" gewählt
+        // wurde (= vorbelegter Name, ggf. leer); bei Zuweisung oder Abbruch
+        // kommt null — zugewiesen hat der Picker dann schon selbst.
+        final neuName = await showModalBottomSheet<String>(
+          context: context,
+          isScrollControlled: true,
+          showDragHandle: true,
+          builder: (_) => _EquipmentPickerSheet(compartment: compartment),
+        );
+        if (neuName == null || !context.mounted) return;
+
+        // Anlegen im vollen Geräte-Formular (Foto, Funktionen, …) — die
+        // neue ID kommt als Pop-Ergebnis zurück und landet direkt im Fach.
+        // So bildet man ein Fahrzeug Raum für Raum ab, ohne den Umweg über
+        // den Geräte-Tab (Issue #86, Marcus' Aufnahme-Workflow).
+        final neuId = await context.push<int>(neuName.isEmpty
+            ? '/equipment/new'
+            : '/equipment/new?name=${Uri.encodeComponent(neuName)}');
+        if (neuId == null || !context.mounted) return;
+
+        await ref.read(assignmentRepositoryProvider).insert(EquipmentAssignment(
+              id: 0, // vergibt die Datenbank
+              compartmentId: compartment.id,
+              equipmentId: neuId,
+              quantity: 1,
+              updatedAt: DateTime.now(),
+            ));
+        ref.invalidate(assignmentsByVehicleProvider(compartment.vehicleId));
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content:
+                  Text('Gerät angelegt und in ${compartment.label} gelegt.')));
+        }
+      },
     );
   }
 }
@@ -442,7 +471,11 @@ class _EquipmentPickerSheet extends ConsumerStatefulWidget {
 }
 
 class _EquipmentPickerSheetState extends ConsumerState<_EquipmentPickerSheet> {
-  String _suche = '';
+  /// Wie getippt — so wandert der Text als Name ins Anlege-Formular.
+  String _eingabe = '';
+
+  /// Kleingeschrieben, nur zum Filtern.
+  String get _suche => _eingabe.toLowerCase();
 
   Future<void> _assign(int equipmentId, String name) async {
     await ref.read(assignmentRepositoryProvider).insert(EquipmentAssignment(
@@ -487,10 +520,21 @@ class _EquipmentPickerSheetState extends ConsumerState<_EquipmentPickerSheet> {
                         'Gerät für ${widget.compartment.label} suchen',
                     prefixIcon: const Icon(Icons.search),
                   ),
-                  onChanged: (v) =>
-                      setState(() => _suche = v.trim().toLowerCase()),
+                  onChanged: (v) => setState(() => _eingabe = v.trim()),
                 ),
               ),
+              // Fester Einstieg statt Treffer-abhängig: Auch wenn die Suche
+              // etwas findet, kann genau dieses Exemplar ein anderes sein.
+              ListTile(
+                leading: const Icon(Icons.add),
+                title: Text(_eingabe.isEmpty
+                    ? 'Neues Gerät anlegen'
+                    : '„$_eingabe“ neu anlegen'),
+                subtitle:
+                    const Text('Mit Foto und Details — landet in diesem Fach'),
+                onTap: () => Navigator.of(context).pop(_eingabe),
+              ),
+              const Divider(height: 1),
               Expanded(
                 child: alleAsync.when(
                   loading: () =>

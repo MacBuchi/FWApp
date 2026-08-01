@@ -62,7 +62,7 @@ class VehicleTemplateService {
     // der nicht in eine DB-Transaktion gehört.
     final katalog = withLoading && template.hasLoading
         ? await catalogLoader()
-        : const StandardCatalog.empty();
+        : StandardCatalog.empty();
     return db.transaction(() async {
       final vehicleId = await db.vehicleDao.insertVehicle(
         VehiclesCompanion.insert(

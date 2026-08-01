@@ -54,6 +54,30 @@ Veröffentlichen macht Änderungen für die Mitglieder sichtbar (kompletter
 Snapshot mit Versionszähler); die Geräte der Mitglieder holen sich den
 neuen Stand beim nächsten App-Start bzw. manuellem Pull.
 
+### Fahrzeug erfassen: Fach für Fach (seit v1.10.0)
+
+Der Weg für den Gerätehaus-Rundgang — Geräteraum öffnen, alles darin
+erfassen, weiter zum nächsten:
+
+1. **Fahrzeuge → Fahrzeug → Beladefach aufklappen** (oder im Schnittbild
+   auf ein Fach tippen) → **„Gerät zuweisen“**.
+2. **Schon erfasst?** Suchen und antippen — das Gerät liegt sofort im Fach.
+   Bereits zugewiesene Geräte sind ausgegraut.
+3. **Noch nicht erfasst?** Namen eintippen → **„… neu anlegen“**. Das
+   Geräte-Formular öffnet sich mit dem Namen schon eingetragen; nach dem
+   Speichern liegt das neue Gerät im offenen Fach.
+4. **Foto:** im Formular auf das Bild tippen → *Foto aufnehmen*. Passt der
+   Name zu einem Normgerät (auch über Zweitnamen wie „Pylone“ oder
+   „B-Schlauch“), steht bis dahin automatisch dessen Symbolbild da —
+   gekennzeichnet als „Symbolbild – kein verifiziertes Foto“. Ein eigenes
+   Foto ersetzt es und wird nie automatisch überschrieben.
+5. **Menge und Korrekturen:** über das ⋯-Menü an jeder Zeile („Menge
+   ändern“, „Aus dem Fach entfernen“).
+6. Am Ende **Veröffentlichen** nicht vergessen — sonst bleibt der Rundgang
+   auf dem eigenen Gerät.
+
+Für eine bestehende Liste in Excel/CSV ist der Import-Wizard schneller.
+
 ### Beladeliste importieren (Import-Wizard)
 
 1. **Mehr → Import** → Excel-/CSV-Datei wählen (Spalten: Fahrzeug, Fach,

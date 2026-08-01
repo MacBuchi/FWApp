@@ -22,6 +22,16 @@ Abschnitt „Workflow".
   das Menü an jedem Gerät lassen sich Menge ändern und die Zuweisung wieder
   entfernen. Bisher konnten Geräte nur per Import oder Vorlage in ein Fach
   gelangen.
+- **Neue Geräte entstehen direkt im Fach.** Ist das Gerät noch gar nicht
+  erfasst, führt „… neu anlegen" aus derselben Auswahl ins Geräte-Formular —
+  der eingetippte Suchbegriff steht schon als Name drin, und nach dem
+  Speichern liegt das Gerät im offenen Fach. So bildet man ein Fahrzeug
+  Raum für Raum ab, ohne zwischendurch in die Geräteverwaltung zu wechseln.
+- **Das Symbolbild kommt beim Tippen von allein.** Passt der eingegebene
+  Name zu einem Normgerät (auch über gängige Zweitnamen wie „Pylone" oder
+  „B-Schlauch"), setzt die App dessen Piktogramm automatisch — sichtbar
+  gekennzeichnet als *Symbolbild, kein verifiziertes Foto*. Ein eigenes
+  Foto ersetzt es jederzeit und wird nie überschrieben.
 
 ### Behoben
 

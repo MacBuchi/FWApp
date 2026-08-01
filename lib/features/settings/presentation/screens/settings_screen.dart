@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:fwapp/core/sync/image_precache.dart';
+import 'package:fwapp/core/sync/mfa_providers.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/sync/sync_service.dart';
 import 'package:fwapp/features/settings/presentation/providers/settings_providers.dart';
@@ -225,6 +226,22 @@ class _ConnectionSection extends ConsumerWidget {
         // Abteilungswahl (Issue #57 Phase 2) — erscheint nur, wenn der
         // Server Abteilungen kennt.
         const AbteilungTile(),
+        // Zwei-Faktor-Anmeldung: vor Ablauf der Frist der freiwillige Weg,
+        // danach führt der Guard ohnehin hierher.
+        ListTile(
+          leading: Icon(
+            ref.watch(hatZweitenFaktorProvider)
+                ? Icons.verified_user
+                : Icons.shield_outlined,
+            color: ref.watch(hatZweitenFaktorProvider) ? Colors.green : null,
+          ),
+          title: const Text('Zwei-Faktor-Anmeldung'),
+          subtitle: Text(ref.watch(hatZweitenFaktorProvider)
+              ? 'Aktiv — beim Anmelden wird ein Code abgefragt'
+              : 'Zusätzlicher Schutz für dein Konto (für Admins Pflicht)'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.push('/zwei-faktor'),
+        ),
         // Der Pflichtwechsel des Initialpassworts hat hier keine Kachel mehr:
         // Er ist seit dem Anmeldezwang eine eigene Route, auf die der Guard
         // zwingt — eine übersehbare Kachel wäre die schwächere Durchsetzung.

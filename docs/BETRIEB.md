@@ -90,6 +90,15 @@ Prüfhistorie oder Instanzen – die hängen an den physischen Geräten.
   mehr mit dem Nutzernamen** — vorher Bescheid geben. Der Nutzername bleibt
   als Anzeigename in der Liste. Ob die Adresse stimmt, zeigt sich sofort:
   „Passwort-Mail senden“ drücken und fragen, ob sie ankam.
+- **Zwei-Faktor-Anmeldung** (seit v1.9.0): Einstellungen →
+  „Zwei-Faktor-Anmeldung“ → Einrichtung starten → in der Authenticator-App
+  öffnen (oder Schlüssel abtippen) → ersten Code bestätigen. **Für
+  Admin-Konten ab dem 1. September 2026 Pflicht**; danach führt der Weg beim
+  Anmelden über die Einrichtung. Gerätewarte und Mitglieder sind frei.
+- **Telefon verloren / neues Handy?** Ein *anderer* Admin setzt den Faktor
+  zurück: Kontomenü → „Zwei-Faktor zurücksetzen“. Danach reicht wieder das
+  Passwort allein, und die Person richtet neu ein. Gibt es keinen zweiten
+  Admin, hilft nur der Weg über den Server ([SERVER-SETUP.md](SERVER-SETUP.md)).
 - **Austritt/Gerätewechsel:** Konto **sperren** (umkehrbar) statt löschen;
   Löschen nur für endgültige Aufräumarbeiten.
 - Das frühere Sammelkonto `member@fw.local` ist gesperrt — alte
@@ -274,6 +283,7 @@ Es musste zu keinem Zeitpunkt etwas gelöscht werden.
 | „Server nicht erreichbar“ | Internetverbindung des Geräts prüfen (Flugmodus? Gast-WLAN ohne Internet?). Status live prüfen: Einstellungen → Cloud-Synchronisation → Kachel „Server erreichbar“ (tippen = neu prüfen). Bleibt es rot: Server/Tunnel prüfen ([SERVER-SETUP.md](SERVER-SETUP.md)). Lernen geht immer offline weiter. |
 | Login schlägt fehl | Nutzername + Passwort vom Zugangszettel exakt übernehmen (Groß-/Kleinschreibung des Passworts!) — das Auge im Passwortfeld zeigt das Getippte. Konto evtl. gesperrt oder noch nicht angelegt → Admin fragt in der Nutzerverwaltung nach. |
 | App zeigt nur die Anmeldung, Server antwortet nicht | Seit v1.7.0 führt vom Anmeldebildschirm ein Knopf zu **Servereinstellungen** — dort Adresse prüfen. Hilft das nicht, dort die Cloud-Synchronisation abschalten und die App neu starten: Sie läuft dann wieder ohne Anmeldung im Lokalmodus. |
+| Code der Authenticator-App wird nicht akzeptiert | Fast immer die Uhr: TOTP-Codes hängen an der Uhrzeit. Auf beiden Geräten die automatische Zeitsynchronisation einschalten. Sonst: anderer Admin setzt den Faktor zurück. |
 | Passwort vergessen | Mit hinterlegter E-Mail: „Passwort vergessen?“ auf dem Anmeldebildschirm, Code aus der Mail eintippen (seit v1.8.0). Sonst Admin: Mehr → Nutzerverwaltung → Konto → „Passwort zurücksetzen“ → neues Initialpasswort aushändigen. |
 | Code-Mail kommt nicht an | Hat das Konto überhaupt eine Adresse? In der Nutzerverwaltung steht sie in der Kontozeile; ohne Adresse gibt es keinen Weg über Mail. Sonst Spam-Ordner prüfen und Adresse im Kontomenü korrigieren. Serverseitig: `journalctl -u fwapp-mailbridge` auf der VM zeigt jeden Versand. |
 | Veröffentlichen: Versionskonflikt | Anderer Admin war schneller → Pull, prüfen, erneut veröffentlichen (siehe oben). |

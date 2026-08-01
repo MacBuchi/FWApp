@@ -500,6 +500,44 @@ Ende-zu-Ende getestet am 2026-08-01: Direkt-SMTP an die Brücke **und** eine
 echte GoTrue-Invite-Mail kamen beim Empfänger an; Fehlversand meldet die
 Brücke als SMTP 451 an GoTrue zurück (kein stilles Schlucken).
 
+### Zwei-Faktor-Anmeldung (TOTP, seit v1.9.0)
+
+⚠️ **GoTrue hat TOTP standardmäßig ausgeschaltet.** Ohne die beiden Schalter
+antwortet der Server auf jeden Einrichtungsversuch mit „MFA enroll is
+disabled for TOTP" (422) — die App zeigt dann eine Fehlermeldung und sonst
+nichts. Im auth-Service setzen (`~/supabase/docker-compose.override.yml`):
+
+```yaml
+GOTRUE_MFA_TOTP_ENROLL_ENABLED: "true"
+GOTRUE_MFA_TOTP_VERIFY_ENABLED: "true"
+```
+
+Danach `docker compose up -d auth`. Derselbe Schalter steht im lokalen
+Teststack unter `[auth.mfa.totp]` in `supabase/config.toml`, damit der
+E2E-Test dieselbe Wahrheit prüft.
+
+**Notausgang, wenn der letzte Admin sein Telefon verliert.** Normalerweise
+setzt ein anderer Admin den Faktor in der Nutzerverwaltung zurück. Gibt es
+keinen zweiten, geht es direkt am Server — die Faktoren hängen an der
+Auth-API:
+
+```bash
+# ID des Kontos holen, dann alle Faktoren auflisten und löschen
+key=$(grep '^SERVICE_ROLE_KEY=' ~/supabase/.env | cut -d= -f2)
+kong=$(sudo docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' supabase-kong)
+curl -s "http://$kong:8000/auth/v1/admin/users/<user-id>/factors" \
+  -H "apikey: $key" -H "Authorization: Bearer $key"
+curl -s -X DELETE \
+  "http://$kong:8000/auth/v1/admin/users/<user-id>/factors/<factor-id>" \
+  -H "apikey: $key" -H "Authorization: Bearer $key"
+```
+
+Die Nutzerverwaltung selbst verlangt von jedem Admin, der einen Faktor
+eingerichtet hat, auch die Anmeldung damit (Stufe `aal2`) — bewusst nur
+dann: Eine harte Pflicht würde jeden aussperren, der noch nicht
+eingerichtet hat, und die Nutzerverwaltung ist genau der Ort, an dem man
+sich dabei gegenseitig hilft.
+
 ### Feedback-Tabelle & Issue-Bot (seit 2026-07-19)
 
 Die App schreibt In-App-Feedback (Feature/Bug) in die Tabelle `feedback`

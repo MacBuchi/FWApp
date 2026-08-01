@@ -19,6 +19,10 @@ class ManagedUser {
   final bool banned;
   final DateTime? lastSignInAt;
 
+  /// Heimat-Abteilung (Issue #57). `null` auf Servern ohne Mandanten-Schema
+  /// oder wenn die Abteilung gelöscht wurde (Profil überlebt das bewusst).
+  final String? abteilungId;
+
   const ManagedUser({
     required this.id,
     required this.username,
@@ -27,6 +31,7 @@ class ManagedUser {
     required this.mustChangePassword,
     required this.banned,
     required this.lastSignInAt,
+    this.abteilungId,
   });
 
   factory ManagedUser.fromJson(Map<String, dynamic> json) => ManagedUser(
@@ -39,6 +44,7 @@ class ManagedUser {
         lastSignInAt: json['last_sign_in_at'] == null
             ? null
             : DateTime.tryParse(json['last_sign_in_at'] as String),
+        abteilungId: json['abteilung_id'] as String?,
       );
 }
 

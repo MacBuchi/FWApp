@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
+import 'package:fwapp/core/widgets/abteilung_switcher.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_enums.dart';
 import 'package:fwapp/features/equipment/presentation/widgets/equipment_avatar.dart';
 import 'package:fwapp/features/equipment/presentation/providers/equipment_providers.dart';
@@ -51,6 +52,7 @@ class _EquipmentListScreenState extends ConsumerState<EquipmentListScreen> {
               tooltip: 'Gerät hinzufügen',
               onPressed: () => context.push('/equipment/new'),
             ),
+          const AbteilungAction(),
         ],
       ),
       body: Column(

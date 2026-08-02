@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
+import 'package:fwapp/core/widgets/abteilung_switcher.dart';
 import 'package:fwapp/features/home/presentation/widgets/home_banners.dart';
 
 class MoreScreen extends ConsumerWidget {
@@ -27,7 +28,10 @@ class MoreScreen extends ConsumerWidget {
     final dirty = syncMeta?.localDirty ?? false;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Mehr')),
+      appBar: AppBar(
+        title: const Text('Mehr'),
+        actions: const [AbteilungAction()],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(12),
         children: [

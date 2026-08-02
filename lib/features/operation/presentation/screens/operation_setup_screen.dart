@@ -4,6 +4,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:fwapp/core/widgets/abteilung_switcher.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_enums.dart';
 import 'package:fwapp/features/operation/presentation/providers/operation_providers.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';
@@ -25,7 +26,10 @@ class _OperationSetupScreenState extends ConsumerState<OperationSetupScreen> {
     final vehiclesAsync = ref.watch(vehicleListStreamProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Einsatz starten')),
+      appBar: AppBar(
+        title: const Text('Einsatz starten'),
+        actions: const [AbteilungAction()],
+      ),
       body: vehiclesAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Fehler: $e')),

@@ -2,6 +2,7 @@
 library;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:fwapp/core/widgets/abteilung_switcher.dart';
 
 class GameMenuScreen extends StatelessWidget {
   const GameMenuScreen({super.key});
@@ -9,7 +10,10 @@ class GameMenuScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Lernen')),
+      appBar: AppBar(
+        title: const Text('Lernen'),
+        actions: const [AbteilungAction()],
+      ),
       body: GridView.count(
         crossAxisCount: 2,
         padding: const EdgeInsets.all(16),

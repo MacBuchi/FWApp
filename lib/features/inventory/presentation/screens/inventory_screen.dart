@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/database/database_providers.dart';
+import 'package:fwapp/core/widgets/abteilung_switcher.dart';
 import 'package:fwapp/features/compartment/domain/entities/compartment.dart';
 import 'package:fwapp/features/compartment/presentation/providers/compartment_providers.dart';
 import 'package:fwapp/features/inventory/presentation/providers/inventory_providers.dart';
@@ -20,7 +21,10 @@ class InventorySetupScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final vehiclesAsync = ref.watch(vehicleListStreamProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Inventur')),
+      appBar: AppBar(
+        title: const Text('Inventur'),
+        actions: const [AbteilungAction()],
+      ),
       body: vehiclesAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Fehler: $e')),

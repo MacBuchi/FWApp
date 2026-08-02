@@ -17,6 +17,33 @@ import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/logging/app_logger.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
 
+/// Ein Katalog-Eintrag, so weit ihn die Oberfläche braucht.
+///
+/// Die SUCHE über den Katalog liegt bewusst woanders (`imageLibraryProvider`
+/// mit `searchImageLibrary`): Sie kennt zusätzlich die gebündelten Aliasse
+/// und sortiert nach Trefferqualität. Hier steht nur, was ein Eintrag an
+/// INHALT mitbringt — die Felder, die ein Gerät beim Anlegen aus dem Katalog
+/// erbt und die im Formular kein Eingabefeld haben.
+class KatalogEintrag {
+  final String id;
+  final String name;
+  final String? kurzname;
+  final String beschreibung;
+  final List<String> funktionen;
+  final List<String> typischeVerwendung;
+  final List<String> trainingsfragen;
+
+  const KatalogEintrag({
+    required this.id,
+    required this.name,
+    required this.kurzname,
+    required this.beschreibung,
+    required this.funktionen,
+    required this.typischeVerwendung,
+    required this.trainingsfragen,
+  });
+}
+
 class StandardCatalog {
   final Map<String, Map<String, dynamic>> _byId;
 
@@ -29,6 +56,24 @@ class StandardCatalog {
   Iterable<String> get ids => _byId.keys;
 
   bool contains(String libraryId) => _byId.containsKey(libraryId);
+
+  /// Der volle Inhalt eines Katalog-Eintrags — oder null, wenn die ID nicht
+  /// im Katalog steht (Katalog-Version älter als der Bestand).
+  KatalogEintrag? eintrag(String libraryId) {
+    final item = _byId[libraryId];
+    if (item == null) return null;
+    List<String> liste(String key) =>
+        ((item[key] as List?)?.map((e) => e.toString()).toList()) ?? const [];
+    return KatalogEintrag(
+      id: libraryId,
+      name: item['name'] as String,
+      kurzname: item['short_name'] as String?,
+      beschreibung: (item['description'] as String?) ?? '',
+      funktionen: liste('equipment_functions'),
+      typischeVerwendung: liste('typical_use'),
+      trainingsfragen: liste('training_questions'),
+    );
+  }
 
   /// Katalog-ID zu einem frei getippten Gerätenamen — oder null.
   ///

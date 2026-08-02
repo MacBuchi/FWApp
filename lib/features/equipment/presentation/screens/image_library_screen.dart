@@ -7,13 +7,43 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/features/equipment/presentation/providers/image_library_providers.dart';
 
 /// Öffnet die Bibliothek als Bildwähler; null bei Abbruch.
-Future<String?> pickFromImageLibrary(BuildContext context) =>
-    Navigator.of(context).push<String>(MaterialPageRoute(
-        builder: (_) => const ImageLibraryScreen(selectMode: true)));
+Future<String?> pickFromImageLibrary(BuildContext context) async =>
+    (await pickLibraryEntry(context))?.assetPath;
+
+/// Öffnet dieselbe Bibliothek, um ein KATALOG-GERÄT zu wählen (Issue #102).
+///
+/// Warum derselbe Bildschirm: Die Suche über Name, Kurzname und Aliasse mit
+/// Trefferrangfolge steht hier schon und ist genau die, die der Anlege-Weg
+/// braucht („erst suchen, dann anlegen", docs/NUTZERKONZEPT.md §4). Ein
+/// zweites Raster daneben wäre dieselbe Liste mit eigener Drift.
+Future<ImageLibraryEntry?> pickLibraryEntry(
+  BuildContext context, {
+  String? titel,
+  String? vorbelegteSuche,
+}) =>
+    Navigator.of(context).push<ImageLibraryEntry>(MaterialPageRoute(
+        builder: (_) => ImageLibraryScreen(
+              selectMode: true,
+              titel: titel,
+              vorbelegteSuche: vorbelegteSuche,
+            )));
 
 class ImageLibraryScreen extends ConsumerStatefulWidget {
   final bool selectMode;
-  const ImageLibraryScreen({super.key, this.selectMode = false});
+
+  /// Überschrift im Wählmodus; null = „Bild auswählen".
+  final String? titel;
+
+  /// Vorbelegter Suchbegriff — kommt aus dem Namensfeld des Formulars, damit
+  /// niemand denselben Begriff zweimal tippt.
+  final String? vorbelegteSuche;
+
+  const ImageLibraryScreen({
+    super.key,
+    this.selectMode = false,
+    this.titel,
+    this.vorbelegteSuche,
+  });
 
   @override
   ConsumerState<ImageLibraryScreen> createState() =>
@@ -22,6 +52,12 @@ class ImageLibraryScreen extends ConsumerStatefulWidget {
 
 class _ImageLibraryScreenState extends ConsumerState<ImageLibraryScreen> {
   final _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.text = widget.vorbelegteSuche ?? '';
+  }
 
   @override
   void dispose() {
@@ -35,7 +71,8 @@ class _ImageLibraryScreenState extends ConsumerState<ImageLibraryScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.selectMode ? 'Bild auswählen' : 'Bildbibliothek'),
+        title: Text(widget.titel ??
+            (widget.selectMode ? 'Bild auswählen' : 'Bildbibliothek')),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(64),
           child: Padding(
@@ -92,7 +129,7 @@ class _ImageLibraryScreenState extends ConsumerState<ImageLibraryScreen> {
               return InkWell(
                 borderRadius: BorderRadius.circular(14),
                 onTap: () => widget.selectMode
-                    ? Navigator.of(context).pop(entry.assetPath)
+                    ? Navigator.of(context).pop(entry)
                     : _showDetail(context, entry),
                 child: Column(
                   children: [

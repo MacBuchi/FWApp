@@ -5,6 +5,7 @@ library;
 import 'dart:convert';
 
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:fwapp/core/database/standard_catalog.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
 import 'package:fwapp/features/import/data/equipment_matcher.dart'
     show EquipmentMatcher;
@@ -33,6 +34,16 @@ class ImageLibraryEntry {
     required this.keywords,
   });
 }
+
+/// Der mitgelieferte Gerätekatalog als Provider.
+///
+/// Das Formular lud ihn bis Issue #102 roh im `initState`. Als Provider ist
+/// er einmal geladen statt pro Formular, und — der eigentliche Grund — im
+/// Prüfstand ersetzbar: `rootBundle` liefert in Widget-Tests nie (fake
+/// async, AGENTS.md § Stolperfallen), ein Test kann den Katalog aber
+/// außerhalb der simulierten Zeit laden und hier hineinreichen.
+@Riverpod(keepAlive: true)
+Future<StandardCatalog> standardCatalog(Ref ref) => StandardCatalog.load();
 
 /// Lädt die Bibliothek einmalig aus Katalog + aliases.json.
 @Riverpod(keepAlive: true)

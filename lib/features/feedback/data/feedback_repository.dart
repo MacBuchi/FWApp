@@ -4,7 +4,12 @@
 library;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-enum FeedbackType { feature, bug }
+/// `katalog` ist der Vorschlag für den GLOBALEN Gerätekatalog (Issue #103) —
+/// derselbe Weg wie Wunsch und Fehler, nur mit eigenem Label im Issue. Der
+/// Server prüft die drei Werte per Check-Constraint; ein vierter braucht
+/// deshalb IMMER eine Migration, sonst scheitert das Insert stumm mit
+/// „Senden fehlgeschlagen".
+enum FeedbackType { feature, bug, katalog }
 
 /// Server-Constraint der `feedback`-Tabelle:
 /// `check (char_length(message) between 3 and 2000)`.
@@ -22,6 +27,29 @@ String clampFeedbackMessage(String message) {
   if (sauber.length <= kFeedbackMaxLength) return sauber;
   const marker = '\n\n[… gekürzt — volle Länge überschritt das Server-Limit]';
   return sauber.substring(0, kFeedbackMaxLength - marker.length) + marker;
+}
+
+/// Der Text eines Katalog-Vorschlags (Issue #103).
+///
+/// ⚠️ **Die ERSTE ZEILE ist der Gerätename und nichts sonst** — der Bot
+/// baut daraus die Überschrift des Issues. Alles Weitere gehört darunter.
+///
+/// Bewusst OHNE Foto: Das Repo ist öffentlich, und der Betreiber sieht das
+/// Bild ohnehin in der App (lesende Quer-Sicht). Das Katalog-Piktogramm
+/// entsteht ohnehin im App-Stil (docs/NUTZERKONZEPT.md §5).
+String katalogVorschlagText({
+  required String name,
+  String? kurzname,
+  String beschreibung = '',
+  required String abteilung,
+}) {
+  final zeilen = <String>[
+    name.trim(),
+    if ((kurzname ?? '').trim().isNotEmpty) 'Kurzform: ${kurzname!.trim()}',
+    if (beschreibung.trim().isNotEmpty) 'Beschreibung: ${beschreibung.trim()}',
+    'Vorgeschlagen aus der Abteilung: $abteilung',
+  ];
+  return zeilen.join('\n');
 }
 
 /// Sendet eine Meldung im Namen des angemeldeten Nutzers.

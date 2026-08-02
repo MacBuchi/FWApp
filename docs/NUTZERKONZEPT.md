@@ -125,7 +125,12 @@ des Einsenders (braucht dessen GitHub-Konto, keinen Token).
   die Mail-Brücke); Rolle und Abteilung stecken in der Einladung, das
   Konto zählt erst nach Verifikation.
 - **Bootstrap des KreisDatenMeisters** beim Aufsetzen der Installation per
-  Setup-Skript auf dem Server — kein lokales Admin-Portal.
+  Setup-Skript auf dem Server — kein lokales Admin-Portal. Seine
+  Mail-Adresse (Ziel der Anfrage-Benachrichtigungen) steht in einer
+  Konfigurationsdatei **auf dem Server**; ins Repo gehört nur ein
+  Platzhalter (`*.example`), nie die echte Adresse — gleiches Muster wie
+  beim Brevo-Schlüssel der Mail-Brücke (pro Zugriff gelesen, Tausch ohne
+  Neustart).
 
 ## 7. Stufenplan
 

@@ -24,6 +24,36 @@ updates:
     # Dependabot-PRs fassen pubspec.yaml/lock an — das sind ausgelieferte
     # Pfade. Der Version Guard warnt dort also; der Bump gehört wie bei jeder
     # anderen ausgelieferten Änderung zum Merge dazu. Das ist gewollt.
+    #
+    # Diese drei kann Dependabot NICHT allein richtig anheben (belegt an PR
+    # #88, 2026-08-02 — alle drei Punkte lokal nachgestellt). Der Sammel-PR
+    # war dadurch als Ganzes unbrauchbar: Ein einziges nicht anhebbares Paket
+    # macht die Gruppe rot, die brauchbaren Updates darin kommen nicht durch.
+    ignore:
+      # Paar-Paket: drift und drift_dev müssen dieselbe Version haben.
+      # drift_dev hängt bei 2.34.0 (ab 2.34.4 analyzer ^13, den die
+      # Codegen-Kette nicht mitgeht), drift 2.34.1+ entfernt aber
+      # `GeneratedDatabase.allSchemaEntities` aus der drift3_preview-API, die
+      # drift_dev 2.34.0 benutzt. Folge ist kein Analyse-, sondern ein
+      # COMPILE-Fehler beim Laden von test/core/database/migration_test.dart.
+      # Dependabot hebt nur die Laufzeit an und kann das Paar nicht sehen.
+      # Beide zusammen von Hand, sobald die Kette auf analyzer 13 kann.
+      - dependency-name: "drift"
+      - dependency-name: "drift_dev"
+      # ⚠️ Dependabot schlägt hier VORABVERSIONEN vor: In #88 kam
+      # `^12.0.0-beta.7`, während pub.dev 11.0.3 als `latest` führt. Eine Beta
+      # gehört nicht in eine ausgelieferte App. Der 12er-Umstieg ist ohnehin
+      # Handarbeit — er ersetzt `withData`/`PlatformFile.bytes` durch
+      # `readAsBytes()` (3 Stellen im Import-Assistenten), und `readAsBytes()`
+      # gibt es in 11.x noch gar nicht, der Umbau ist also nicht vorziehbar.
+      - dependency-name: "file_picker"
+        update-types: ["version-update:semver-major"]
+      # Gekoppelt an file_picker: 10.x verlangt win32 ^6, das liefert
+      # file_picker erst ab der 12er-Beta. In #88 ging der Sprung nur
+      # deshalb „auf", weil die Beta mitkam. Zusammen mit file_picker 12
+      # stabil von Hand nachziehen.
+      - dependency-name: "package_info_plus"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "github-actions"
     directory: "/"

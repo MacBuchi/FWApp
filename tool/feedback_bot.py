@@ -16,6 +16,16 @@ import urllib.request
 from datetime import datetime, timezone
 
 
+# Meldungsart -> (Titel-Präfix, GitHub-Label). `katalog` ist der Vorschlag
+# für den mitgelieferten Gerätekatalog (Issue #103); das Label muss im Repo
+# existieren, sonst lehnt `gh issue create` den Aufruf ab.
+KINDS = {
+    "feature": ("Feature request: ", "enhancement"),
+    "bug": ("Bug report: ", "bug"),
+    "katalog": ("Katalog-Vorschlag: ", "katalog-vorschlag"),
+}
+
+
 def run(*cmd: str) -> str:
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
@@ -74,16 +84,25 @@ def main() -> None:
 
     for row in rows:
         username = row.get("user_name") or "unbekannt"
-        is_bug = row["type"] == "bug"
-        prefix = "Bug report: " if is_bug else "Feature request: "
-        label = "bug" if is_bug else "enhancement"
-        title = row["message"].strip().replace("\n", " ")
+        kind = row["type"]
+        prefix, label = KINDS.get(kind, KINDS["feature"])
+        # Beim Katalog-Vorschlag trägt die ERSTE ZEILE den Gerätenamen und
+        # sonst nichts (siehe katalogVorschlagText in der App) — daraus wird
+        # die Überschrift. Bei Wunsch und Fehler ist die ganze Meldung ein
+        # Fließtext, dort werden die Zeilenumbrüche flachgeklopft.
+        source = row["message"].strip()
+        title = (source.split("\n", 1)[0] if kind == "katalog"
+                 else source.replace("\n", " ")).strip()
         title = prefix + title[:60] + ("…" if len(title) > 60 else "")
         if issue_exists(title):
             print(f"Skip (issue already exists): {title}")
         else:
+            # Jede Zeile zitieren: Ein Katalog-Vorschlag ist mehrzeilig, und
+            # ein einzelnes ">" davor liest sich als eine Zeile plus Rest.
+            quoted = "\n".join(
+                f"> {line}" if line else ">" for line in source.splitlines())
             body = (
-                f"> {row['message']}\n\n"
+                f"{quoted}\n\n"
                 f"Eingereicht in der App von **{username}** "
                 f"am {row['created_at'][:10]}.\n\n"
                 f"_Automatisch erstellt vom Feedback-Bot._"

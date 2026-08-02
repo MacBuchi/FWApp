@@ -12,6 +12,24 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.15.0] – 2026-08-02
+
+### Neu
+
+- **Geräte lassen sich jetzt aus dem mitgelieferten Katalog anlegen.** Im
+  Geräteformular steht über dem Namensfeld „Aus dem Gerätekatalog wählen":
+  suchen wie in der Bildbibliothek — über Name, Kurzform und gebräuchliche
+  Bezeichnungen —, antippen, fertig. Das Gerät bringt dabei mit, was ihr
+  sonst gar nicht eintippen könntet: Kurzform, Symbolbild, typische
+  Verwendung und die Lernfragen. Bisher half der Katalog nur, wenn ihr den
+  Normnamen zufällig genau getroffen habt.
+- **Selbst angelegte Geräte könnt ihr für den Katalog vorschlagen.** Auf der
+  Geräteseite unter den drei Punkten oben rechts. Der Vorschlag geht an die
+  Entwicklung, damit der Typ in einer der nächsten Versionen für alle
+  mitgeliefert wird. Vor dem Absenden seht ihr wörtlich, was übermittelt
+  wird: Name, Kurzform, Beschreibung und eure Abteilung — **kein Foto**, und
+  der Text erscheint öffentlich.
+
 ## [1.14.0] – 2026-08-02
 
 ### Neu

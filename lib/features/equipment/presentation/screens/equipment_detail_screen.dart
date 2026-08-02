@@ -6,12 +6,14 @@ import 'package:go_router/go_router.dart';
 import 'package:fwapp/core/images/image_capture.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:fwapp/core/logging/app_logger.dart';
+import 'package:fwapp/core/sync/abteilung_providers.dart';
 import 'package:fwapp/core/sync/equipment_type_sync.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
 import 'package:fwapp/core/widgets/abteilung_switcher.dart';
 import 'package:fwapp/core/widgets/geteilter_bestand_hinweis.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_enums.dart';
+import 'package:fwapp/features/feedback/data/feedback_repository.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_item.dart';
 import 'package:fwapp/features/equipment/presentation/widgets/equipment_avatar.dart';
 import 'package:fwapp/features/equipment/presentation/providers/equipment_providers.dart';
@@ -52,8 +54,21 @@ class EquipmentDetailScreen extends ConsumerWidget {
                   // Wurzel-Navigator läge das Menü UNTER der
                   // NavigationBar (AGENTS.md § Stolperfallen).
                   useRootNavigator: true,
-                  itemBuilder: (_) => const [
-                    PopupMenuItem(
+                  itemBuilder: (_) => [
+                    // Vorschlagen kann man nur, was NICHT schon im Katalog
+                    // steht — und nur angemeldet, denn der Vorschlag läuft
+                    // über die Feedback-Tabelle (Issue #103).
+                    if (item.libraryEquipmentId == null &&
+                        ref.read(sessionStreamProvider).value != null)
+                      const PopupMenuItem(
+                        value: 'vorschlagen',
+                        child: ListTile(
+                          leading: Icon(Icons.outbox_outlined),
+                          title: Text('Für den Katalog vorschlagen'),
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                      ),
+                    const PopupMenuItem(
                       value: 'entfernen',
                       child: ListTile(
                         leading: Icon(Icons.delete_outline),
@@ -64,6 +79,7 @@ class EquipmentDetailScreen extends ConsumerWidget {
                   ],
                   onSelected: (v) {
                     if (v == 'entfernen') _entfernen(context, ref, item);
+                    if (v == 'vorschlagen') _vorschlagen(context, ref, item);
                   },
                 ),
               ],
@@ -309,6 +325,88 @@ class EquipmentDetailScreen extends ConsumerWidget {
         );
       },
     );
+  }
+
+  /// Einen selbst angelegten Gerätetyp für den globalen Katalog vorschlagen
+  /// (Issue #103, docs/NUTZERKONZEPT.md §5).
+  ///
+  /// Der Vorschlag reist auf dem bestehenden Feedback-Weg: Tabelle
+  /// `feedback` → Bot → öffentliches Issue mit eigenem Label. Deshalb steht
+  /// hier derselbe Öffentlichkeits-Hinweis wie im Feedback-Dialog — der Text
+  /// landet für jeden lesbar auf GitHub.
+  Future<void> _vorschlagen(
+      BuildContext context, WidgetRef ref, EquipmentItem item) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final abteilung = abteilungsName(
+      ref.read(selectedAbteilungIdProvider) ??
+          ref.read(myAbteilungIdProvider).value,
+      ref.read(abteilungenProvider).value ?? const [],
+    );
+    final text = katalogVorschlagText(
+      name: item.name,
+      kurzname: item.shortName,
+      beschreibung: item.description,
+      abteilung: abteilung,
+    );
+
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Für den Katalog vorschlagen?'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Das geht an die Entwicklung, damit der Typ in den '
+                  'mitgelieferten Gerätekatalog aufgenommen werden kann. '
+                  'Übermittelt wird genau das hier:'),
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Theme.of(ctx).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(text,
+                    style: const TextStyle(fontSize: 13, height: 1.4)),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Kein Foto — der Text erscheint öffentlich auf GitHub.',
+                style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(ctx).colorScheme.onSurfaceVariant),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Abbrechen')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Vorschlagen')),
+        ],
+      ),
+    );
+    if (ok != true) return;
+
+    try {
+      await submitFeedback(
+        ref.read(supabaseClientProvider),
+        type: FeedbackType.katalog,
+        message: text,
+      );
+      messenger.showSnackBar(const SnackBar(
+          content: Text('Vorschlag ist raus — danke! 📖')));
+    } catch (e) {
+      appLog.w('Katalog-Vorschlag fehlgeschlagen', error: e);
+      messenger.showSnackBar(const SnackBar(
+          content: Text('Senden fehlgeschlagen. Internetverbindung prüfen?')));
+    }
   }
 
   /// Gerät entfernen — löschen oder archivieren (Stufe ②, Issue #99).

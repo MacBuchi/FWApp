@@ -13,6 +13,26 @@ void main() {
   late StandardCatalog katalog;
   setUpAll(() async => katalog = await StandardCatalog.load());
 
+  group('eintrag() – der Inhalt hinter einer Katalog-ID (Issue #102)', () {
+    test('liefert auch, was das Formular gar nicht anzeigt', () {
+      final e = katalog.eintrag('std_leitkegel')!;
+      expect(e.name, 'Verkehrsleitkegel 500 mm');
+      expect(e.kurzname, 'Leitkegel');
+      expect(e.beschreibung, contains('Reflexstreifen'));
+      expect(e.funktionen, ['ABSPERREN']);
+      // Genau diese beiden Listen haben im Formular kein Eingabefeld —
+      // ohne sie käme ein aus dem Katalog angelegtes Gerät leer an.
+      expect(e.typischeVerwendung, hasLength(2));
+      expect(e.trainingsfragen, hasLength(2));
+    });
+
+    test('unbekannte ID liefert null statt zu werfen', () {
+      // Kommt vor, wenn der zentrale Bestand neuer ist als der mitgelieferte
+      // Katalog dieser App-Version.
+      expect(katalog.eintrag('std_gibt_es_nicht'), isNull);
+    });
+  });
+
   test('findet Katalog-Geräte über den exakten Namen', () {
     expect(katalog.idFuerName('Verkehrsleitkegel 500 mm'), 'std_leitkegel');
   });

@@ -56,6 +56,10 @@
     {
       "name": "20260802160000_geraetetypen_gesamtwehr.sql",
       "sha256": "849ec66bd9f3170e69d67bedc0831ba3d78ff7d2a367105394b37afb0a943ad2"
+    },
+    {
+      "name": "20260802180000_katalog_vorschlaege.sql",
+      "sha256": "c226e298a1984dab7ec85b505ac1da2b0c7abb9be6dce05fd52af99d4ffdc836"
     }
   ],
   "functions": {

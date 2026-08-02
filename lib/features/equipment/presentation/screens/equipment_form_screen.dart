@@ -13,6 +13,7 @@ import 'package:fwapp/core/widgets/geteilter_bestand_hinweis.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_enums.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_item.dart';
 import 'package:fwapp/features/equipment/presentation/providers/equipment_providers.dart';
+import 'package:fwapp/features/equipment/presentation/providers/image_library_providers.dart';
 import 'package:fwapp/features/equipment/presentation/screens/image_library_screen.dart';
 
 class EquipmentFormScreen extends ConsumerStatefulWidget {
@@ -69,7 +70,7 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
     } else {
       _nameCtrl.text = widget.initialName ?? '';
     }
-    StandardCatalog.load().then((k) {
+    ref.read(standardCatalogProvider.future).then((k) {
       if (!mounted) return;
       _katalog = k;
       _autoSymbolbild();
@@ -164,6 +165,57 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
     }
   }
 
+  /// Die Grundlage für ein neu angelegtes Gerät: eigenes, kein Katalog-Gerät.
+  EquipmentItem _leeresGeraet() => EquipmentItem(
+        id: 0,
+        name: '',
+        equipmentFunctions: const [],
+        deploymentScenarios: const [],
+        description: '',
+        libraryEquipmentId: null,
+        isCustom: true,
+        extraAttributes: const {},
+        updatedAt: DateTime.now(),
+      );
+
+  /// Ein Gerät AUS dem Katalog anlegen (Issue #102).
+  ///
+  /// Bis hierher kannte das Formular den Katalog nur passiv: Es wählte beim
+  /// Tippen das Piktogramm, wenn der Name exakt traf. Wer den Normnamen nicht
+  /// im Kopf hatte, bekam nichts. Jetzt lässt sich der Katalog durchsuchen,
+  /// und die Wahl bringt mit, was das Formular gar nicht anzeigen kann:
+  /// Kurzform, typische Verwendung, Trainingsfragen — und die Katalog-ID,
+  /// über die der Server Typen der Gesamtwehr zusammenführt.
+  Future<void> _ausKatalogWaehlen() async {
+    final eintrag = await pickLibraryEntry(
+      context,
+      titel: 'Aus dem Gerätekatalog',
+      vorbelegteSuche: _nameCtrl.text.trim(),
+    );
+    if (eintrag == null || !mounted) return;
+
+    final voll = _katalog?.eintrag(eintrag.id);
+    _nameCtrl.text = eintrag.name;
+    if (_descCtrl.text.trim().isEmpty && (voll?.beschreibung ?? '').isNotEmpty) {
+      _descCtrl.text = voll!.beschreibung;
+    }
+    setState(() {
+      _imagePath = eintrag.assetPath;
+      _functions
+        ..clear()
+        ..addAll(voll?.funktionen ?? eintrag.functions);
+      // Auf dem bisherigen Stand aufsetzen: Beim Bearbeiten bleibt die
+      // Zugehörigkeit zum geteilten Typ erhalten, nur die Herkunft wechselt.
+      _original = (_original ?? _leeresGeraet()).copyWith(
+        shortName: eintrag.shortName,
+        libraryEquipmentId: eintrag.id,
+        isCustom: false,
+        typicalUse: voll?.typischeVerwendung ?? const [],
+        trainingQuestions: voll?.trainingsfragen ?? const [],
+      );
+    });
+  }
+
   Future<void> _submit() async {
     if (_nameCtrl.text.trim().isEmpty) {
       setState(() => _error = 'Name ist ein Pflichtfeld.');
@@ -180,19 +232,7 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
           _urlCtrl.text.trim().isEmpty ? null : _urlCtrl.text.trim();
       // Beim Bearbeiten auf dem geladenen Stand aufsetzen, damit die Felder
       // ohne Eingabefeld erhalten bleiben (siehe [_original]).
-      final item = (_original ??
-              EquipmentItem(
-                id: 0,
-                name: '',
-                equipmentFunctions: const [],
-                deploymentScenarios: const [],
-                description: '',
-                libraryEquipmentId: null,
-                isCustom: true,
-                extraAttributes: const {},
-                updatedAt: DateTime.now(),
-              ))
-          .copyWith(
+      final item = (_original ?? _leeresGeraet()).copyWith(
         id: widget.editId ?? 0,
         name: _nameCtrl.text.trim(),
         equipmentFunctions: _functions.toList(),
@@ -305,6 +345,25 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
                 visualDensity: VisualDensity.compact,
               ),
             ),
+          const SizedBox(height: 12),
+          // „Erst suchen, dann anlegen" (docs/NUTZERKONZEPT.md §4) — deshalb
+          // steht der Katalog VOR dem Namensfeld, nicht als Nachbearbeitung.
+          OutlinedButton.icon(
+            onPressed: _ausKatalogWaehlen,
+            icon: const Icon(Icons.menu_book_outlined),
+            label: const Text('Aus dem Gerätekatalog wählen'),
+          ),
+          if (_original?.libraryEquipmentId != null) ...[
+            const SizedBox(height: 6),
+            Center(
+              child: Chip(
+                avatar: const Icon(Icons.verified_outlined, size: 16),
+                label: Text('Katalog-Gerät '
+                    '„${_katalog?.eintrag(_original!.libraryEquipmentId!)?.name ?? _original!.libraryEquipmentId!}"'),
+                visualDensity: VisualDensity.compact,
+              ),
+            ),
+          ],
           const SizedBox(height: 12),
           TextField(
             controller: _nameCtrl,

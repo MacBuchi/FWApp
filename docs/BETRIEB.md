@@ -92,20 +92,35 @@ Für eine bestehende Liste in Excel/CSV ist der Import-Wizard schneller.
 Wichtig: Ein Re-Import ersetzt Zuordnungen (Gerät↔Fach), aber niemals
 Prüfhistorie oder Instanzen – die hängen an den physischen Geräten.
 
-### Nutzerverwaltung (nur Admin)
+### Nutzerverwaltung (nur Kommandanten)
+
+Seit v1.11.0 heißen die Rollen wie im Feuerwehrwesen und gelten **je
+Abteilung** (Zielbild in [NUTZERKONZEPT.md](NUTZERKONZEPT.md)):
+**Truppmann/Truppführer** (liest), **Gerätewart** (bearbeitet),
+**Abteilungskommandant** (verwaltet seine Abteilung) — und darüber der
+**Feuerwehrkommandant**, der in allen Abteilungen seiner Gesamtwehr
+arbeitet, Abteilungen anlegt und Kommandanten ernennt. Dieselbe Person
+kann in mehreren Abteilungen (auch verschiedene) Rollen haben.
 
 - **Mehr → Nutzerverwaltung**: Konto anlegen mit **Nutzername**
-  (z. B. `max.m`), Rolle (Mitglied / Gerätewart / Admin) und generiertem
-  **Initialpasswort**. Die Zugangsdaten werden genau **einmal** angezeigt —
-  direkt auf den Zugangszettel übertragen.
+  (z. B. `max.m`), Rolle und generiertem **Initialpasswort**. Die
+  Zugangsdaten werden genau **einmal** angezeigt — direkt auf den
+  Zugangszettel übertragen.
+- **Rollen & Abteilungen** (Kontomenü): eine Zeile je Abteilung, dort die
+  Rolle wählen oder „– keine –" zum Beenden der Mitgliedschaft. Wer wo
+  vergeben darf, prüft der Server: Ein Abteilungskommandant vergibt in
+  seiner Abteilung bis Gerätewart, der Feuerwehrkommandant alles.
+- **Zum Feuerwehrkommandanten ernennen** (Kontomenü): nur für
+  Feuerwehrkommandanten sichtbar. Entlassen geht am selben Ort — das
+  eigene Kommando kann niemand selbst ablegen (Aussperr-Schutz).
 - Beim ersten Anmelden muss die Person das Initialpasswort durch ein eigenes
   ersetzen (die App erzwingt das mit einer eigenen Seite, die sich nicht
   wegtippen lässt); der Zettel ist danach wertlos.
 - **Passwort vergessen?** Zwei Wege, je nach Konto:
-  - *Mit hinterlegter E-Mail-Adresse* (Admins, Gerätewarte): Die Person hilft
-    sich selbst — „Passwort vergessen?“ auf dem Anmeldebildschirm, Code aus
-    der Mail eintippen, neues Passwort setzen. Alternativ schickt der Admin
-    die Mail über das Kontomenü („Passwort-Mail senden“).
+  - *Mit hinterlegter E-Mail-Adresse* (Kommandanten, Gerätewarte): Die Person
+    hilft sich selbst — „Passwort vergessen?“ auf dem Anmeldebildschirm, Code
+    aus der Mail eintippen, neues Passwort setzen. Alternativ schickt der
+    Verwalter die Mail über das Kontomenü („Passwort-Mail senden“).
   - *Mit Zugangszettel*: Konto in der Liste → „Passwort zurücksetzen“ → neues
     Initialpasswort aushändigen (derselbe Pflichtwechsel greift wieder).
 - **E-Mail-Adresse hinterlegen** (seit v1.8.0): Kontomenü →
@@ -117,14 +132,15 @@ Prüfhistorie oder Instanzen – die hängen an den physischen Geräten.
 - **Zwei-Faktor-Anmeldung** (seit v1.9.0): Einstellungen →
   „Zwei-Faktor-Anmeldung“ → Einrichtung starten → in der Authenticator-App
   öffnen (oder Schlüssel abtippen) → ersten Code bestätigen. **Freiwillig,
-  für Admin-Konten empfohlen** (seit v1.9.1 — die ursprünglich für den
+  für Kommandanten empfohlen** (seit v1.9.1 — die ursprünglich für den
   1. September 2026 angekündigte Pflicht ist gestrichen). Wer einen Faktor
   eingerichtet hat, meldet sich damit auch an — halbe Sicherheit gibt es
   nicht.
-- **Telefon verloren / neues Handy?** Ein *anderer* Admin setzt den Faktor
-  zurück: Kontomenü → „Zwei-Faktor zurücksetzen“. Danach reicht wieder das
-  Passwort allein, und die Person richtet neu ein. Gibt es keinen zweiten
-  Admin, hilft nur der Weg über den Server ([SERVER-SETUP.md](SERVER-SETUP.md)).
+- **Telefon verloren / neues Handy?** Ein *anderer* Kommandant setzt den
+  Faktor zurück: Kontomenü → „Zwei-Faktor zurücksetzen“. Danach reicht wieder
+  das Passwort allein, und die Person richtet neu ein. Gibt es keinen
+  zweiten, hilft nur der Weg über den Server
+  ([SERVER-SETUP.md](SERVER-SETUP.md)).
 - **Austritt/Gerätewechsel:** Konto **sperren** (umkehrbar) statt löschen;
   Löschen nur für endgültige Aufräumarbeiten.
 - Das frühere Sammelkonto `member@fw.local` ist gesperrt — alte
@@ -137,27 +153,33 @@ eigene Konto gehört und ob sie einer Gesamtwehr angeschlossen ist.
 
 Die Gesamtwehr ist die Klammer über mehreren Abteilungen. Verbundene
 Abteilungen sehen den Bestand der jeweils anderen — **lesend**, zum Lernen
-und Nachschlagen. Bearbeiten und Veröffentlichen darf jede nur bei sich;
-einzige Ausnahme ist der Admin der Gesamtwehr, der überall arbeiten darf.
+und Nachschlagen. Bearbeiten und Veröffentlichen darf, wer in der
+jeweiligen Abteilung eine Schreibrolle hat; der **Feuerwehrkommandant**
+darf überall in seiner Gesamtwehr arbeiten (seit v1.11.0 eine eigene,
+ausdrücklich vergebene Stellung — wer die Gesamtwehr gründet, ist ihr
+erster Kommandant).
 
-Eine zweite Abteilung einrichten (als Admin):
+Eine zweite Abteilung einrichten:
 
-1. **Gesamtwehr gründen** — Name eingeben, fertig. Die eigene Abteilung
-   wird automatisch das erste Mitglied. Das geht nur einmal: Wer schon zu
-   einer Gesamtwehr gehört, kann keine zweite gründen.
-2. **Weitere Abteilung anlegen** — Name eingeben. Sie gehört sofort zur
-   eigenen Gesamtwehr und darf sofort veröffentlichen; der anlegende Admin
-   bürgt dafür.
+1. **Gesamtwehr gründen** (als Abteilungskommandant) — Name eingeben,
+   fertig. Die eigene Abteilung wird automatisch das erste Mitglied, der
+   Gründer Feuerwehrkommandant. Das geht nur einmal: Wer schon zu einer
+   Gesamtwehr gehört, kann keine zweite gründen.
+2. **Weitere Abteilung anlegen** (als Feuerwehrkommandant) — Name eingeben.
+   Sie gehört sofort zur eigenen Gesamtwehr und darf sofort
+   veröffentlichen; der anlegende Kommandant bürgt dafür.
 3. Für die neue Abteilung in der **Nutzerverwaltung** einen Gerätewart
-   anlegen — im Anlege-Dialog steht jetzt ein Feld **Abteilung**. Bestehende
-   Konten lassen sich über das Menü der Kontozeile → **Abteilung ändern**
-   umhängen. Wählbar sind nur Abteilungen der eigenen Gesamtwehr.
+   anlegen — im Anlege-Dialog steht ein Feld **Abteilung**. Bestehende
+   Konten bekommen ihre Rollen über das Menü der Kontozeile →
+   **Rollen & Abteilungen**; so kann derselbe Gerätewart auch mehrere
+   Abteilungen betreuen. Wählbar sind nur Abteilungen der eigenen
+   Gesamtwehr.
 
 Anschluss einer bestehenden, eigenständigen Abteilung:
 
-- Deren Gerätewart oder Admin wählt **Anschluss beantragen** und die
+- Deren Gerätewart oder Kommandant wählt **Anschluss beantragen** und die
   Ziel-Gesamtwehr aus.
-- Der **Admin der Gesamtwehr** sieht den Antrag unter „Offene Anfragen" und
+- Der **Feuerwehrkommandant** sieht den Antrag unter „Offene Anfragen" und
   gibt ihn frei oder lehnt ab. **Wer fragt, gibt sich nicht selbst frei** —
   das lässt der Server nicht zu.
 - Mit der Freigabe ist eine noch nicht freigegebene Abteilung zugleich

@@ -11,6 +11,7 @@ import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/database/database_providers.dart';
 import 'package:fwapp/core/sync/abteilung_providers.dart';
 import 'package:fwapp/core/sync/image_sync_service.dart';
+import 'package:fwapp/core/sync/membership_providers.dart';
 import 'package:fwapp/core/sync/sync_service.dart';
 import 'package:fwapp/core/utils/image_utils.dart'
     show supabaseStorageBaseUrl, supabaseStorageHeaders;
@@ -61,7 +62,9 @@ final signedInReaderProvider = Provider<bool Function()>((ref) {
 /// `/login` erlaubt; der Screen setzt es selbst zurück (auch im Fehlerfall).
 final recoveryPendingProvider = StateProvider<bool>((ref) => false);
 
-/// Role of the signed-in user ('admin' | 'member'), null when signed out.
+/// Spiegel-Rolle aus profiles.role — seit Nutzerkonzept Stufe 1 nur noch
+/// die Rückfallebene für Alt-Server; die Wahrheit sind die Mitgliedschaften
+/// (membership_providers.dart). Null, wenn abgemeldet.
 final currentUserRoleProvider = FutureProvider<String?>((ref) async {
   final client = ref.watch(supabaseClientProvider);
   final session = ref.watch(sessionStreamProvider).value;
@@ -74,28 +77,66 @@ final currentUserRoleProvider = FutureProvider<String?>((ref) async {
   return row?['role'] as String?;
 });
 
-/// Gate for all editing UI (M7: Rollen admin | geraetewart | member).
-/// - Not connected to a department (pure local/demo mode): full control.
-/// - Connected: admin und geraetewart dürfen bearbeiten/veröffentlichen;
-///   members (and signed-out users on a connected install) are read-only.
+/// Gate for all editing UI — seit Nutzerkonzept Stufe 1 (Issue #98) gilt
+/// das Schreibrecht JE ABTEILUNG:
+/// - Lokalmodus (kein Server): volle Kontrolle.
+/// - Schreibrolle (admin/geraetewart) als Mitgliedschaft in der GERADE
+///   ANGEZEIGTEN Abteilung — oder Feuerwehrkommandant ihrer Gesamtwehr.
+/// - Alt-Server ohne Mitgliedschaften: alte Regel (Spiegel-Rolle,
+///   Schwester-Sicht immer nur lesend).
+/// Der Server prüft dasselbe in can_publish_abteilung — hier wird nur die
+/// UI ausgeblendet, nicht das Recht durchgesetzt.
 final canEditProvider = Provider<bool>((ref) {
   if (!ref.watch(supabaseReadyProvider)) return true;
-  // Schwester-Sicht (Issue #57 Phase 2) ist grundsätzlich nur lesend —
-  // laut Issue hat dort auch der Gerätewart exakt die Mitglieder-Rechte.
-  final selected = ref.watch(selectedAbteilungIdProvider);
-  if (selected != null) {
-    final own = ref.watch(myAbteilungIdProvider).value;
-    if (selected != own) return false;
+  final mitgliedschaften = ref.watch(meineMitgliedschaftenProvider).value;
+  if (mitgliedschaften == null) {
+    // Alt-Server oder noch am Laden: Regel von Issue #57 Phase 2.
+    final selected = ref.watch(selectedAbteilungIdProvider);
+    if (selected != null) {
+      final own = ref.watch(myAbteilungIdProvider).value;
+      if (selected != own) return false;
+    }
+    final role = ref.watch(currentUserRoleProvider).value;
+    return role == 'admin' || role == 'geraetewart';
   }
-  final role = ref.watch(currentUserRoleProvider).value;
-  return role == 'admin' || role == 'geraetewart';
+
+  final selected = ref.watch(selectedAbteilungIdProvider) ??
+      ref.watch(myAbteilungIdProvider).value;
+  if (selected == null) {
+    // Heimat (noch) unbekannt — direkt nach dem Anmelden, bevor das
+    // Profil da ist. Eine Schreibrolle irgendwo genügt hier: Die Sicht
+    // IST in dem Moment die Heimat.
+    return mitgliedschaften.values
+        .any((r) => r == 'admin' || r == 'geraetewart');
+  }
+  final rolle = mitgliedschaften[selected];
+  if (rolle == 'admin' || rolle == 'geraetewart') return true;
+
+  // Feuerwehrkommandant: schreibt in jeder Abteilung seiner Gesamtwehr.
+  final kommandiert = ref.watch(meineKommandoGesamtwehrenProvider).value;
+  if (kommandiert == null || kommandiert.isEmpty) return false;
+  final abteilungen = ref.watch(abteilungenProvider).value ?? const [];
+  for (final a in abteilungen) {
+    if (a.id == selected) {
+      return a.gesamtwehrId != null && kommandiert.contains(a.gesamtwehrId);
+    }
+  }
+  return false;
 });
 
-/// Strictly the admin role (Nutzerverwaltung/Reset, M7 Etappe 3).
+/// Verwalter-Blick (Nutzerverwaltung, Gesamtwehr-Screen, Branding):
+/// Feuerwehrkommandant oder Abteilungskommandant irgendeiner Abteilung.
 /// In pure local mode true, wie canEdit.
 final isAdminProvider = Provider<bool>((ref) {
   if (!ref.watch(supabaseReadyProvider)) return true;
-  return ref.watch(currentUserRoleProvider).value == 'admin';
+  final mitgliedschaften = ref.watch(meineMitgliedschaftenProvider).value;
+  if (mitgliedschaften == null) {
+    // Alt-Server: Spiegel-Rolle.
+    return ref.watch(currentUserRoleProvider).value == 'admin';
+  }
+  if (mitgliedschaften.values.contains('admin')) return true;
+  final kommandiert = ref.watch(meineKommandoGesamtwehrenProvider).value;
+  return kommandiert != null && kommandiert.isNotEmpty;
 });
 
 /// M7 Etappe 3: true, solange das vom Admin gesetzte Initialpasswort noch

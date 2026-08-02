@@ -65,9 +65,11 @@ können.
   Nur Admins bearbeiten und **veröffentlichen** komplette Snapshots
   (`publish_snapshot()`-RPC mit Versionszähler); alle Mitglieder **lesen**
   denselben Stand per Pull. Keine Konfliktauflösung nötig – gewollt.
-- **Rollen:** `admin` (bearbeiten, veröffentlichen, Nutzer verwalten),
-  `geraetewart` (bearbeiten und veröffentlichen) und `member` (lesen, lernen)
-  über Supabase Auth + RLS; Mitglieder sehen keine Bearbeitungs-UI.
+- **Rollen:** gelten je Abteilung als Mitgliedschaft (`admin` =
+  Abteilungskommandant, `geraetewart`, `member` = Truppführer/Truppmann)
+  über Supabase Auth + RLS; darüber der Feuerwehrkommandant je Gesamtwehr.
+  Lesende sehen keine Bearbeitungs-UI. Zielbild und Stufenplan:
+  [docs/NUTZERKONZEPT.md](docs/NUTZERKONZEPT.md).
 - **Gerätefotos:** privater Storage-Bucket; die DB speichert portable Marker
   (`supabase://…`), aufgelöst zur Laufzeit, angezeigt über
   `cached_network_image`, vorgeladen nach jedem Pull.

@@ -54,13 +54,17 @@ class AbteilungInfo {
   final String name;
   final String status;
 
-  /// Name der Gesamtwehr, wenn die Abteilung einer angehört.
+  /// Gesamtwehr, der die Abteilung angehört — die Id braucht der
+  /// Kommandanten-Abgleich in canEdit (Nutzerkonzept Stufe 1), der Name
+  /// die Anzeige.
+  final String? gesamtwehrId;
   final String? gesamtwehrName;
 
   const AbteilungInfo({
     required this.id,
     required this.name,
     required this.status,
+    this.gesamtwehrId,
     this.gesamtwehrName,
   });
 }
@@ -86,7 +90,7 @@ final abteilungenProvider = FutureProvider<List<AbteilungInfo>>((ref) async {
   try {
     final rows = await client
         .from('abteilungen')
-        .select('id, name, status, gesamtwehren(name)')
+        .select('id, name, status, gesamtwehr_id, gesamtwehren(name)')
         .order('name');
     return [
       for (final r in rows)
@@ -94,6 +98,7 @@ final abteilungenProvider = FutureProvider<List<AbteilungInfo>>((ref) async {
           id: r['id'] as String,
           name: r['name'] as String,
           status: r['status'] as String,
+          gesamtwehrId: r['gesamtwehr_id'] as String?,
           gesamtwehrName:
               (r['gesamtwehren'] as Map<String, dynamic>?)?['name'] as String?,
         ),

@@ -12,6 +12,30 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.11.0] – 2026-08-02
+
+### Neu
+
+- **Rollen heißen jetzt wie bei der Feuerwehr — und gelten je Abteilung.**
+  Aus Admin, Gerätewart und Mitglied werden Abteilungskommandant,
+  Gerätewart und Truppführer/Truppmann. Dieselbe Person kann in mehreren
+  Abteilungen (auch unterschiedliche) Rollen haben — etwa ein Gerätewart,
+  der zwei Abteilungen betreut. In der Nutzerverwaltung bündelt der neue
+  Dialog **„Rollen & Abteilungen"** alles an einem Ort.
+- **Der Feuerwehrkommandant ist eine eigene Stellung.** Wer die Gesamtwehr
+  gründet, ist ihr erster Kommandant; weitere lassen sich in der
+  Nutzerverwaltung ernennen (und entlassen). Der Kommandant arbeitet in
+  allen Abteilungen seiner Gesamtwehr, legt Abteilungen an und entscheidet
+  über Anschluss-Anfragen — ein Abteilungskommandant nur in seiner.
+- **Schreibrechte folgen der gewählten Abteilung.** Wer in der gerade
+  angezeigten Abteilung keine Schreibrolle hat, sieht sie lesend — auch
+  als Kommandant einer anderen Gesamtwehr. Die Einstellungen zeigen die
+  Rolle jetzt für die aktuelle Sicht an.
+
+Das ist Stufe 1 des Nutzerkonzepts (docs/NUTZERKONZEPT.md); ältere
+App-Versionen laufen unverändert weiter, bis die Mindestversion angehoben
+wird.
+
 ## [1.10.0] – 2026-08-02
 
 ### Neu

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
+import 'package:fwapp/features/assignment/domain/entities/equipment_assignment.dart';
 import 'package:fwapp/features/assignment/presentation/providers/assignment_providers.dart';
 import 'package:fwapp/features/compartment/domain/entities/compartment.dart';
 import 'package:fwapp/features/compartment/presentation/providers/compartment_providers.dart';
@@ -132,11 +133,8 @@ class VehicleDetailScreen extends ConsumerWidget {
                   }
                   return SliverList(
                     delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final c = compartments[index];
-                        return _CompartmentTile(
-                            compartmentId: c.id, label: c.label);
-                      },
+                      (context, index) =>
+                          _CompartmentTile(compartment: compartments[index]),
                       childCount: compartments.length,
                     ),
                   );
@@ -226,19 +224,21 @@ class _CompartmentSheet extends ConsumerWidget {
               error: (e, _) => Padding(
                   padding: const EdgeInsets.all(16),
                   child: Text('Fehler: $e')),
-              data: (assignments) => assignments.isEmpty
-                  ? const Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Text('Kein Gerät zugewiesen.',
-                          style: TextStyle(color: Colors.grey)))
-                  : ListView(
-                      shrinkWrap: true,
-                      children: assignments
-                          .map((a) => _AssignmentRow(
-                              equipmentId: a.equipmentId,
-                              quantity: a.quantity))
-                          .toList(),
-                    ),
+              data: (assignments) => ListView(
+                shrinkWrap: true,
+                children: [
+                  if (assignments.isEmpty)
+                    const Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Text('Kein Gerät zugewiesen.',
+                            style: TextStyle(color: Colors.grey))),
+                  for (final a in assignments)
+                    _AssignmentRow(
+                        assignment: a, vehicleId: compartment.vehicleId),
+                  if (ref.watch(canEditProvider))
+                    _AssignTile(compartment: compartment),
+                ],
+              ),
             ),
           ),
         ],
@@ -266,20 +266,18 @@ class _InfoRow extends StatelessWidget {
 }
 
 class _CompartmentTile extends ConsumerWidget {
-  final int compartmentId;
-  final String label;
-  const _CompartmentTile(
-      {required this.compartmentId, required this.label});
+  final Compartment compartment;
+  const _CompartmentTile({required this.compartment});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final assignmentsAsync =
-        ref.watch(assignmentListStreamProvider(compartmentId));
+        ref.watch(assignmentListStreamProvider(compartment.id));
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       child: ExpansionTile(
-        title: Text(label,
+        title: Text(compartment.label,
             style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: assignmentsAsync.when(
           loading: () => const Text('Lade...'),
@@ -294,22 +292,24 @@ class _CompartmentTile extends ConsumerWidget {
               padding: const EdgeInsets.all(8),
               child: Text('Fehler: $e'),
             ),
-            data: (assignments) {
-              if (assignments.isEmpty) {
-                return const Padding(
-                  padding: EdgeInsets.all(12),
-                  child: Text('Kein Gerät zugewiesen.',
-                      style: TextStyle(color: Colors.grey)),
-                );
-              }
-              return Column(
-                children: assignments
-                    .map((a) => _AssignmentRow(
-                        equipmentId: a.equipmentId,
-                        quantity: a.quantity))
-                    .toList(),
-              );
-            },
+            data: (assignments) => Column(
+              children: [
+                if (assignments.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.all(12),
+                    child: Text('Kein Gerät zugewiesen.',
+                        style: TextStyle(color: Colors.grey)),
+                  ),
+                for (final a in assignments)
+                  _AssignmentRow(
+                      assignment: a, vehicleId: compartment.vehicleId),
+                // Der bisher einzige Weg, ein Gerät in ein Fach zu bekommen,
+                // waren Import und Vorlage — von Hand ging es schlicht nicht
+                // (Issue #86). Deshalb hier, wo man das Fach vor sich hat.
+                if (ref.watch(canEditProvider))
+                  _AssignTile(compartment: compartment),
+              ],
+            ),
           ),
         ],
       ),
@@ -318,14 +318,15 @@ class _CompartmentTile extends ConsumerWidget {
 }
 
 class _AssignmentRow extends ConsumerWidget {
-  final int equipmentId;
-  final int quantity;
-  const _AssignmentRow(
-      {required this.equipmentId, required this.quantity});
+  final EquipmentAssignment assignment;
+  final int vehicleId;
+  const _AssignmentRow({required this.assignment, required this.vehicleId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final itemAsync = ref.watch(equipmentDetailProvider(equipmentId));
+    final itemAsync =
+        ref.watch(equipmentDetailProvider(assignment.equipmentId));
+    final canEdit = ref.watch(canEditProvider);
     return itemAsync.when(
       loading: () => const ListTile(title: Text('...')),
       error: (_, _) => const ListTile(title: Text('Fehler')),
@@ -337,11 +338,249 @@ class _AssignmentRow extends ConsumerWidget {
           size: 40,
         ),
         title: Text(item?.name ?? '?'),
-        trailing: Text('× $quantity',
-            style: const TextStyle(fontWeight: FontWeight.bold)),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('× ${assignment.quantity}',
+                style: const TextStyle(fontWeight: FontWeight.bold)),
+            if (canEdit)
+              PopupMenuButton<String>(
+                onSelected: (action) => switch (action) {
+                  'menge' => _changeQuantity(context, ref),
+                  _ => _remove(context, ref, item?.name),
+                },
+                itemBuilder: (_) => const [
+                  PopupMenuItem(value: 'menge', child: Text('Menge ändern')),
+                  PopupMenuItem(
+                      value: 'entfernen',
+                      child: Text('Aus dem Fach entfernen')),
+                ],
+              ),
+          ],
+        ),
         onTap: item != null
             ? () => context.push('/equipment/${item.id}')
             : null,
+      ),
+    );
+  }
+
+  Future<void> _changeQuantity(BuildContext context, WidgetRef ref) async {
+    final ctrl = TextEditingController(text: '${assignment.quantity}');
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Menge ändern'),
+        content: TextField(
+          controller: ctrl,
+          decoration: const InputDecoration(labelText: 'Anzahl im Fach'),
+          keyboardType: TextInputType.number,
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Abbrechen')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Speichern')),
+        ],
+      ),
+    );
+    final menge = int.tryParse(ctrl.text.trim());
+    if (ok != true || menge == null || menge < 1) return;
+    await ref
+        .read(assignmentRepositoryProvider)
+        .update(assignment.copyWith(quantity: menge));
+    ref.invalidate(assignmentsByVehicleProvider(vehicleId));
+  }
+
+  Future<void> _remove(
+      BuildContext context, WidgetRef ref, String? name) async {
+    // Bewusst ohne Rückfrage: Die Zuweisung ist mit zwei Tipps wieder da,
+    // das Gerät selbst bleibt in der Bibliothek erhalten.
+    await ref.read(assignmentRepositoryProvider).delete(assignment.id);
+    ref.invalidate(assignmentsByVehicleProvider(vehicleId));
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('„${name ?? 'Gerät'}“ aus dem Fach entfernt.')));
+    }
+  }
+}
+
+/// Einstieg „Gerät zuweisen" am Ende der Fach-Liste (nur mit Schreibrecht).
+class _AssignTile extends ConsumerWidget {
+  final Compartment compartment;
+  const _AssignTile({required this.compartment});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ListTile(
+      dense: true,
+      leading: const Icon(Icons.add_circle_outline),
+      title: const Text('Gerät zuweisen'),
+      onTap: () async {
+        // Der Picker liefert einen String zurück, wenn „neu anlegen" gewählt
+        // wurde (= vorbelegter Name, ggf. leer); bei Zuweisung oder Abbruch
+        // kommt null — zugewiesen hat der Picker dann schon selbst.
+        final neuName = await showModalBottomSheet<String>(
+          context: context,
+          isScrollControlled: true,
+          showDragHandle: true,
+          builder: (_) => _EquipmentPickerSheet(compartment: compartment),
+        );
+        if (neuName == null || !context.mounted) return;
+
+        // Anlegen im vollen Geräte-Formular (Foto, Funktionen, …) — die
+        // neue ID kommt als Pop-Ergebnis zurück und landet direkt im Fach.
+        // So bildet man ein Fahrzeug Raum für Raum ab, ohne den Umweg über
+        // den Geräte-Tab (Issue #86, Marcus' Aufnahme-Workflow).
+        final neuId = await context.push<int>(neuName.isEmpty
+            ? '/equipment/new'
+            : '/equipment/new?name=${Uri.encodeComponent(neuName)}');
+        if (neuId == null || !context.mounted) return;
+
+        await ref.read(assignmentRepositoryProvider).insert(EquipmentAssignment(
+              id: 0, // vergibt die Datenbank
+              compartmentId: compartment.id,
+              equipmentId: neuId,
+              quantity: 1,
+              updatedAt: DateTime.now(),
+            ));
+        ref.invalidate(assignmentsByVehicleProvider(compartment.vehicleId));
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content:
+                  Text('Gerät angelegt und in ${compartment.label} gelegt.')));
+        }
+      },
+    );
+  }
+}
+
+/// Durchsuchbare Geräteliste; bereits zugewiesene Geräte sind ausgegraut.
+/// Neue Geräte entstehen weiterhin unter „Mehr → Geräte" — hier wird nur
+/// zugeordnet, was es schon gibt (Bibliothek, Katalog oder eigene).
+class _EquipmentPickerSheet extends ConsumerStatefulWidget {
+  final Compartment compartment;
+  const _EquipmentPickerSheet({required this.compartment});
+
+  @override
+  ConsumerState<_EquipmentPickerSheet> createState() =>
+      _EquipmentPickerSheetState();
+}
+
+class _EquipmentPickerSheetState extends ConsumerState<_EquipmentPickerSheet> {
+  /// Wie getippt — so wandert der Text als Name ins Anlege-Formular.
+  String _eingabe = '';
+
+  /// Kleingeschrieben, nur zum Filtern.
+  String get _suche => _eingabe.toLowerCase();
+
+  Future<void> _assign(int equipmentId, String name) async {
+    await ref.read(assignmentRepositoryProvider).insert(EquipmentAssignment(
+          id: 0, // vergibt die Datenbank
+          compartmentId: widget.compartment.id,
+          equipmentId: equipmentId,
+          quantity: 1,
+          updatedAt: DateTime.now(),
+        ));
+    ref.invalidate(assignmentsByVehicleProvider(widget.compartment.vehicleId));
+    if (!mounted) return;
+    Navigator.of(context).pop();
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('„$name“ liegt jetzt in ${widget.compartment.label}.')));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final alleAsync = ref.watch(equipmentListStreamProvider);
+    final zugewiesen = (ref
+                .watch(assignmentListStreamProvider(widget.compartment.id))
+                .value ??
+            const [])
+        .map((a) => a.equipmentId)
+        .toSet();
+
+    return Padding(
+      // Tastatur schiebt die Liste hoch, statt das Suchfeld zu verdecken.
+      padding:
+          EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: SafeArea(
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height * 0.7,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                child: TextField(
+                  decoration: InputDecoration(
+                    labelText:
+                        'Gerät für ${widget.compartment.label} suchen',
+                    prefixIcon: const Icon(Icons.search),
+                  ),
+                  onChanged: (v) => setState(() => _eingabe = v.trim()),
+                ),
+              ),
+              // Fester Einstieg statt Treffer-abhängig: Auch wenn die Suche
+              // etwas findet, kann genau dieses Exemplar ein anderes sein.
+              ListTile(
+                leading: const Icon(Icons.add),
+                title: Text(_eingabe.isEmpty
+                    ? 'Neues Gerät anlegen'
+                    : '„$_eingabe“ neu anlegen'),
+                subtitle:
+                    const Text('Mit Foto und Details — landet in diesem Fach'),
+                onTap: () => Navigator.of(context).pop(_eingabe),
+              ),
+              const Divider(height: 1),
+              Expanded(
+                child: alleAsync.when(
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (e, _) => Center(child: Text('Fehler: $e')),
+                  data: (alle) {
+                    final treffer = alle
+                        .where((e) =>
+                            _suche.isEmpty ||
+                            e.name.toLowerCase().contains(_suche) ||
+                            (e.shortName ?? '')
+                                .toLowerCase()
+                                .contains(_suche))
+                        .toList();
+                    if (treffer.isEmpty) {
+                      return const Center(
+                          child: Text('Kein Gerät gefunden.',
+                              style: TextStyle(color: Colors.grey)));
+                    }
+                    return ListView.builder(
+                      itemCount: treffer.length,
+                      itemBuilder: (context, i) {
+                        final e = treffer[i];
+                        final schonDa = zugewiesen.contains(e.id);
+                        return ListTile(
+                          enabled: !schonDa,
+                          leading: EquipmentAvatar(
+                            imagePath: e.imagePath,
+                            functions: e.equipmentFunctions,
+                            size: 40,
+                          ),
+                          title: Text(e.name),
+                          subtitle: schonDa
+                              ? const Text(
+                                  'Bereits im Fach — Menge über das Menü')
+                              : null,
+                          onTap: () => _assign(e.id, e.name),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

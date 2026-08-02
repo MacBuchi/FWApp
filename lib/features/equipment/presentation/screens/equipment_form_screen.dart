@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart' show ImageSource;
+import 'package:fwapp/core/database/standard_catalog.dart';
 import 'package:fwapp/core/images/image_capture.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
@@ -14,7 +15,12 @@ import 'package:fwapp/features/equipment/presentation/screens/image_library_scre
 
 class EquipmentFormScreen extends ConsumerStatefulWidget {
   final int? editId;
-  const EquipmentFormScreen({super.key, this.editId});
+
+  /// Vorbelegter Name — kommt aus dem Fach-Picker („Gerät zuweisen" →
+  /// „neu anlegen"), damit der Suchbegriff nicht doppelt getippt wird.
+  final String? initialName;
+
+  const EquipmentFormScreen({super.key, this.editId, this.initialName});
 
   @override
   ConsumerState<EquipmentFormScreen> createState() =>
@@ -32,6 +38,9 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
   bool _isSubmitting = false;
   String? _error;
 
+  /// Katalog für das automatische Symbolbild — lädt einmal im Hintergrund.
+  StandardCatalog? _katalog;
+
   @override
   void initState() {
     super.initState();
@@ -44,7 +53,26 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
           _loadExisting(item);
         }
       });
+    } else {
+      _nameCtrl.text = widget.initialName ?? '';
     }
+    StandardCatalog.load().then((k) {
+      if (!mounted) return;
+      _katalog = k;
+      _autoSymbolbild();
+    });
+  }
+
+  /// Wählt beim Benennen automatisch das Symbolbild des passenden
+  /// Katalog-Geräts — der Gerätewart geht Raum für Raum durch und soll
+  /// nicht für jedes Normgerät die Bildbibliothek aufmachen müssen. Ein
+  /// echtes Foto wird NIE angefasst; ein automatisch gewähltes Symbolbild
+  /// verschwindet wieder, wenn der Name nicht mehr passt.
+  void _autoSymbolbild() {
+    if (_imagePath != null && !isPictogramPath(_imagePath)) return;
+    final id = _katalog?.idFuerName(_nameCtrl.text);
+    final neu = id == null ? null : pictogramPath(id);
+    if (neu != _imagePath) setState(() => _imagePath = neu);
   }
 
   @override
@@ -149,15 +177,18 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
         extraAttributes: {},
         updatedAt: DateTime.now(),
       );
+      int? newId;
       if (widget.editId == null) {
-        final newId = await repo.insert(item);
+        newId = await repo.insert(item);
         await _uploadImageIfPossible(newId);
       } else {
         await repo.update(item);
         await _uploadImageIfPossible(widget.editId!);
       }
       ref.invalidate(equipmentListProvider);
-      if (mounted) context.pop();
+      // Die neue ID ist das Pop-Ergebnis: Der Fach-Picker („neu anlegen")
+      // weist das frisch angelegte Gerät damit direkt dem offenen Fach zu.
+      if (mounted) context.pop(newId);
     } catch (e) {
       setState(() => _error = 'Fehler beim Speichern: $e');
     } finally {
@@ -233,6 +264,7 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
           TextField(
             controller: _nameCtrl,
             decoration: const InputDecoration(labelText: 'Name*'),
+            onChanged: (_) => _autoSymbolbild(),
           ),
           const SizedBox(height: 12),
           TextField(

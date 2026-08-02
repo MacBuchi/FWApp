@@ -44,10 +44,14 @@
     {
       "name": "20260801190000_profiles_username.sql",
       "sha256": "33aa10bb9bab9cabee01e5985a1fb1ccbfb3edd9f3e8e651e0579cb21a439b0d"
+    },
+    {
+      "name": "20260802130000_memberships_kommandanten.sql",
+      "sha256": "f00ebd9d1d3eb27a9d682e80f5626488801fecc824e76034192076442b23e0fe"
     }
   ],
   "functions": {
-    "admin-users/index.ts": "b97473f631981b6281e4904bce83aede2b833b873d29d2eb6b453c20dac2263c",
+    "admin-users/index.ts": "80392c1b6946a9bf4868c6e35ffd8be48cf20c1b6cd1c62466208816fbff1b72",
     "main/index.ts": "e35427a3f30635ba6db7742870e377dfb978786a07f99efb1644b1714be614c5"
   }
 }

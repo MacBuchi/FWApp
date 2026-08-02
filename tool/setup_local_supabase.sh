@@ -40,4 +40,12 @@ auth -X PATCH "$API/rest/v1/profiles?id=eq.$ADMIN_ID" \
 auth -X PATCH "$API/rest/v1/profiles?id=eq.$GW_ID" \
   -H "Content-Type: application/json" -d '{"role":"geraetewart"}' > /dev/null
 
+# Mitgliedschaften (Nutzerkonzept Stufe 1): Der DB-Trigger legt beim Anlegen
+# 'member' an; die Schreibrollen ziehen hier nach. profiles.role oben ist
+# seitdem nur noch der Alt-Client-Spiegel — beide müssen dasselbe sagen.
+auth -X PATCH "$API/rest/v1/memberships?user_id=eq.$ADMIN_ID" \
+  -H "Content-Type: application/json" -d '{"role":"admin"}' > /dev/null
+auth -X PATCH "$API/rest/v1/memberships?user_id=eq.$GW_ID" \
+  -H "Content-Type: application/json" -d '{"role":"geraetewart"}' > /dev/null
+
 echo "OK: admin@fw.local (admin), geraetewart@fw.local (geraetewart) und member@fw.local (member) eingerichtet."

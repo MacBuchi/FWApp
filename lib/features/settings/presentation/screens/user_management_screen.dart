@@ -1,15 +1,19 @@
-/// user_management_screen.dart – Admin-Nutzerverwaltung (M7 Etappe 3):
-/// Konten anlegen (Nutzername + Initialpasswort), Passwort zurücksetzen,
-/// Rolle und Abteilung ändern, sperren/entsperren, löschen. Nur für Admins
-/// erreichbar (Tile im Mehr-Tab ist isAdmin-gated; die Edge Function prüft
-/// serverseitig nochmal — auch, dass die Ziel-Abteilung zur eigenen
-/// Gesamtwehr gehört).
+/// user_management_screen.dart – Nutzerverwaltung (M7 Etappe 3; Rollen je
+/// Abteilung seit Nutzerkonzept Stufe 1, Issue #98): Konten anlegen
+/// (Nutzername + Initialpasswort), Passwort zurücksetzen, Mitgliedschaften
+/// (Rolle je Abteilung) pflegen, Feuerwehrkommandanten ernennen,
+/// sperren/entsperren, löschen. Nur für Verwalter erreichbar (Tile im
+/// Mehr-Tab ist isAdmin-gated); die Edge Function prüft die Hierarchie
+/// serverseitig nochmal — wer welche Rolle wo vergeben darf, entscheidet
+/// dort `darfVerwalten`.
 library;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/sync/abteilung_providers.dart';
 import 'package:fwapp/core/sync/auth_utils.dart';
+import 'package:fwapp/core/sync/membership_providers.dart';
+import 'package:fwapp/core/sync/rollen.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/features/settings/presentation/providers/user_admin_providers.dart';
 
@@ -103,14 +107,17 @@ class UserManagementScreen extends ConsumerWidget {
               DropdownButtonFormField<String>(
                 initialValue: role,
                 decoration: const InputDecoration(labelText: 'Rolle'),
+                // Anzeigenamen aus dem Nutzerkonzept; ein frisches
+                // Zettel-Konto ohne echte Mail ist ein Truppmann.
                 items: const [
                   DropdownMenuItem(
-                      value: 'member', child: Text('Mitglied (liest)')),
+                      value: 'member', child: Text('Truppmann (liest)')),
                   DropdownMenuItem(
                       value: 'geraetewart',
                       child: Text('Gerätewart (bearbeitet)')),
                   DropdownMenuItem(
-                      value: 'admin', child: Text('Admin (verwaltet)')),
+                      value: 'admin',
+                      child: Text('Abteilungskommandant (verwaltet)')),
                 ],
                 onChanged: (v) => setState(() => role = v ?? 'member'),
               ),
@@ -236,20 +243,34 @@ class _UserTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final roleLabel = switch (user.role) {
-      'admin' => 'Admin',
-      'geraetewart' => 'Gerätewart',
-      _ => 'Mitglied',
-    };
     final abteilungen = ref.watch(abteilungenProvider).value ?? const [];
+    final istKommandant = user.kommandantGesamtwehren.isNotEmpty;
     // Die Zettel-Form <name>@fw.local ist keine Information — sie steht
     // schon als Nutzername im Titel. Sichtbar wird die Adresse erst, wenn
     // sie eine echte ist (dann ist sie auch die Anmeldung).
     final echteMail = hatEchteMail(user.email);
+    // Eine Zeile je Wirkungskreis: „Gerätewart (Grombach)" — der
+    // Abteilungsname entfällt, solange es nur eine Abteilung gibt.
+    final rollen = <String>[
+      if (istKommandant) rolleAnzeigename(null, kommandant: true),
+      for (final e in user.memberships.entries)
+        abteilungen.length > 1
+            ? '${rolleAnzeigename(e.value, echteMail: echteMail)} '
+                '(${abteilungsName(e.key, abteilungen)})'
+            : rolleAnzeigename(e.value, echteMail: echteMail),
+    ];
     final details = <String>[
-      roleLabel,
+      if (rollen.isNotEmpty)
+        rollen.join(', ')
+      else ...[
+        // Ohne Mitgliedschaften (Alt-Server oder verwaistes Konto): die
+        // alte Darstellung — inklusive „ohne Abteilung"/„andere
+        // Gesamtwehr", denn ein kaputtes Konto soll auffallen.
+        rolleAnzeigename(user.role, echteMail: echteMail),
+        if (abteilungen.isNotEmpty)
+          abteilungsName(user.abteilungId, abteilungen),
+      ],
       if (echteMail) user.email,
-      if (abteilungen.isNotEmpty) abteilungsName(user.abteilungId, abteilungen),
       if (user.banned) 'GESPERRT',
       if (user.mustChangePassword) 'Initialpasswort aktiv',
       if (user.lastSignInAt != null)
@@ -258,15 +279,23 @@ class _UserTile extends ConsumerWidget {
         'noch nie angemeldet',
     ];
 
+    // Kommandant ernennen/entlassen: nur dort, wo der Angemeldete selbst
+    // Feuerwehrkommandant ist UND das Ziel eindeutig ist.
+    final meineKommandos =
+        ref.watch(meineKommandoGesamtwehrenProvider).value ?? const <String>{};
+    final kommandantZiel = _kommandantZiel(meineKommandos, abteilungen);
+
     return ListTile(
       leading: Icon(
         user.banned
             ? Icons.block
-            : switch (user.role) {
-                'admin' => Icons.admin_panel_settings,
-                'geraetewart' => Icons.build_circle,
-                _ => Icons.person,
-              },
+            : istKommandant
+                ? Icons.local_fire_department
+                : switch (user.role) {
+                    'admin' => Icons.admin_panel_settings,
+                    'geraetewart' => Icons.build_circle,
+                    _ => Icons.person,
+                  },
         color: user.banned ? Colors.red : null,
       ),
       title: Text(user.username,
@@ -279,7 +308,23 @@ class _UserTile extends ConsumerWidget {
         itemBuilder: (_) => [
           const PopupMenuItem(
               value: 'reset', child: Text('Passwort zurücksetzen')),
-          const PopupMenuItem(value: 'role', child: Text('Rolle ändern')),
+          // Mitgliedschafts-Server: Rollen je Abteilung in einem Dialog.
+          // Alt-Server: die beiden früheren Einzel-Dialoge.
+          if (user.hatMitgliedschaften)
+            const PopupMenuItem(
+                value: 'mitgliedschaften', child: Text('Rollen & Abteilungen'))
+          else ...[
+            const PopupMenuItem(value: 'role', child: Text('Rolle ändern')),
+            if (abteilungen.length > 1)
+              const PopupMenuItem(
+                  value: 'abteilung', child: Text('Abteilung ändern')),
+          ],
+          if (kommandantZiel != null)
+            PopupMenuItem(
+                value: 'kommandant',
+                child: Text(user.kommandantGesamtwehren.contains(kommandantZiel)
+                    ? 'Als Feuerwehrkommandant entlassen'
+                    : 'Zum Feuerwehrkommandanten ernennen')),
           PopupMenuItem(
               value: 'email',
               child: Text(echteMail
@@ -292,12 +337,6 @@ class _UserTile extends ConsumerWidget {
                 value: 'zugangsmail', child: Text('Passwort-Mail senden')),
           const PopupMenuItem(
               value: 'mfa', child: Text('Zwei-Faktor zurücksetzen')),
-          // Nur zeigen, wenn es überhaupt etwas zu wählen gibt: eine
-          // einzelne Abteilung ist keine Wahl, und auf Legacy-Servern
-          // ist die Liste leer.
-          if (abteilungen.length > 1)
-            const PopupMenuItem(
-                value: 'abteilung', child: Text('Abteilung ändern')),
           PopupMenuItem(
               value: user.banned ? 'enable' : 'disable',
               child: Text(user.banned ? 'Entsperren' : 'Sperren')),
@@ -307,9 +346,53 @@ class _UserTile extends ConsumerWidget {
     );
   }
 
+  /// Die Gesamtwehr, auf die sich Ernennen/Entlassen bezöge: ergibt sich
+  /// aus den Abteilungen des Kontos (plus bestehender Kommandos),
+  /// geschnitten mit den eigenen Kommandos — eindeutig oder gar nicht.
+  String? _kommandantZiel(
+      Set<String> meineKommandos, List<AbteilungInfo> abteilungen) {
+    final ziele = <String>{
+      for (final abteilungId in user.memberships.keys)
+        for (final a in abteilungen)
+          if (a.id == abteilungId && a.gesamtwehrId != null) a.gesamtwehrId!,
+      ...user.kommandantGesamtwehren,
+    }.where(meineKommandos.contains).toSet();
+    return ziele.length == 1 ? ziele.first : null;
+  }
+
   Future<void> _onAction(BuildContext context, WidgetRef ref, String action,
       List<AbteilungInfo> abteilungen) async {
     switch (action) {
+      case 'mitgliedschaften':
+        await _editMitgliedschaften(context, ref, abteilungen);
+      case 'kommandant':
+        final meine = ref.read(meineKommandoGesamtwehrenProvider).value ??
+            const <String>{};
+        final ziel = _kommandantZiel(meine, abteilungen);
+        if (ziel == null) return;
+        final ernennen = !user.kommandantGesamtwehren.contains(ziel);
+        final ok = await _confirm(
+            context,
+            ernennen
+                ? 'Zum Feuerwehrkommandanten ernennen?'
+                : 'Als Feuerwehrkommandant entlassen?',
+            ernennen
+                ? '„${user.username}“ darf danach in allen Abteilungen der '
+                    'Gesamtwehr schreiben, Abteilungen anlegen und '
+                    'Kommandanten ernennen oder entlassen.'
+                : '„${user.username}“ behält alle Mitgliedschaften, verliert '
+                    'aber die Gesamtwehr-Rechte.');
+        if (ok && context.mounted) {
+          await _run(
+              context,
+              ref,
+              () => invokeAdminUsers(ref.read(supabaseClientProvider), {
+                    'action': 'set_kommandant',
+                    'user_id': user.id,
+                    'gesamtwehr_id': ziel,
+                    'kommandant': ernennen,
+                  }));
+        }
       case 'reset':
         final password = generateInitialPassword();
         final ok = await _confirm(
@@ -428,12 +511,13 @@ class _UserTile extends ConsumerWidget {
                 initialValue: role,
                 items: const [
                   DropdownMenuItem(
-                      value: 'member', child: Text('Mitglied (liest)')),
+                      value: 'member', child: Text('Truppmann (liest)')),
                   DropdownMenuItem(
                       value: 'geraetewart',
                       child: Text('Gerätewart (bearbeitet)')),
                   DropdownMenuItem(
-                      value: 'admin', child: Text('Admin (verwaltet)')),
+                      value: 'admin',
+                      child: Text('Abteilungskommandant (verwaltet)')),
                 ],
                 onChanged: (v) => setState(() => role = v ?? role),
               ),
@@ -530,6 +614,92 @@ class _UserTile extends ConsumerWidget {
               () => invokeAdminUsers(ref.read(supabaseClientProvider), {'action': 'delete', 'user_id': user.id}));
         }
     }
+  }
+
+  /// Rollen je Abteilung in einem Dialog: eine Zeile pro Abteilung,
+  /// „– keine –" beendet die Mitgliedschaft dort. Gespeichert wird nur
+  /// der Unterschied zum Ist-Stand (ein Aufruf je Änderung; die Function
+  /// prüft jede einzeln gegen die Hierarchie).
+  Future<void> _editMitgliedschaften(BuildContext context, WidgetRef ref,
+      List<AbteilungInfo> abteilungen) async {
+    if (abteilungen.isEmpty) return;
+    final auswahl = <String, String?>{
+      for (final a in abteilungen) a.id: user.memberships[a.id],
+    };
+    final echteMail = hatEchteMail(user.email);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Rollen von „${user.username}“'),
+        content: StatefulBuilder(
+          builder: (ctx, setState) => SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final a in abteilungen) ...[
+                  DropdownButtonFormField<String?>(
+                    initialValue: auswahl[a.id],
+                    decoration: InputDecoration(labelText: a.name),
+                    items: [
+                      const DropdownMenuItem<String?>(
+                          value: null, child: Text('– keine –')),
+                      for (final rolle in const [
+                        'member',
+                        'geraetewart',
+                        'admin',
+                      ])
+                        DropdownMenuItem<String?>(
+                            value: rolle,
+                            child: Text(
+                                rolleAnzeigename(rolle, echteMail: echteMail))),
+                    ],
+                    onChanged: (v) => setState(() => auswahl[a.id] = v),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+                const Text(
+                  'Ohne Mitgliedschaft sieht das Konto den Bestand dieser '
+                  'Abteilung nur noch lesend über die Gesamtwehr — oder gar '
+                  'nicht mehr, wenn keine Mitgliedschaft übrig bleibt.',
+                  style: TextStyle(fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Abbrechen')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Speichern')),
+        ],
+      ),
+    );
+    if (ok != true || !context.mounted) return;
+
+    await _run(context, ref, () async {
+      for (final a in abteilungen) {
+        final vorher = user.memberships[a.id];
+        final nachher = auswahl[a.id];
+        if (vorher == nachher) continue;
+        if (nachher == null) {
+          await invokeAdminUsers(ref.read(supabaseClientProvider), {
+            'action': 'remove_membership',
+            'user_id': user.id,
+            'abteilung_id': a.id,
+          });
+        } else {
+          await invokeAdminUsers(ref.read(supabaseClientProvider), {
+            'action': 'set_membership',
+            'user_id': user.id,
+            'abteilung_id': a.id,
+            'role': nachher,
+          });
+        }
+      }
+    });
   }
 
   Future<bool> _confirm(BuildContext context, String title, String body) async {

@@ -498,6 +498,19 @@ Future<void> main() async {
         await s
             .from('profiles')
             .update({'abteilung_id': mirror}).filter('abteilung_id', 'is', null);
+        // Mitgliedschaften wiederherstellen (Nutzerkonzept Stufe 1): Das
+        // Löschen der Test-Abteilungen kaskadiert in memberships; die
+        // Spiegel-Spalten am Profil sagen, was jedes Konto hatte.
+        final profs = await s.from('profiles').select('id, role, abteilung_id');
+        await s.from('memberships').upsert([
+          for (final p in profs)
+            if (p['abteilung_id'] != null)
+              {
+                'user_id': p['id'],
+                'abteilung_id': p['abteilung_id'],
+                'role': p['role'],
+              },
+        ], onConflict: 'user_id,abteilung_id');
       });
     });
 
@@ -607,6 +620,13 @@ Future<void> main() async {
               .from('profiles')
               .update({'abteilung_id': c['id']}).eq(
                   'id', gwClient.auth.currentUser!.id);
+          // Seit Stufe 1 zählt die Mitgliedschaft, nicht die Profil-Spalte —
+          // der Umzug braucht beide (so macht es auch admin-users).
+          await s.from('memberships').upsert({
+            'user_id': gwClient.auth.currentUser!.id,
+            'abteilung_id': c['id'],
+            'role': 'geraetewart',
+          }, onConflict: 'user_id,abteilung_id');
           return c['id'] as String;
         });
       });
@@ -711,6 +731,129 @@ Future<void> main() async {
         expect(eigene, hasLength(1));
         expect(eigene.first['status'], 'pending');
       });
+    });
+  });
+
+  group('Mitgliedschaften & Kommandanten (Nutzerkonzept Stufe 1, #98)', () {
+    late String mirror;
+    late SupabaseClient gwClient;
+
+    setUp(() async {
+      mirror = await mirrorAbteilungId();
+      gwClient = SupabaseClient(_url, _anonKey);
+      await gwClient.auth.signInWithPassword(
+          email: 'geraetewart@fw.local', password: 'test1234');
+    });
+
+    // Bühne räumen wie in der Phase-3-Gruppe — inklusive der
+    // Mitgliedschaften, die die Lösch-Kaskade mitnimmt.
+    tearDown(() async {
+      await gwClient.dispose();
+      await asService((s) async {
+        await s.from('gesamtwehr_anfragen').delete().neq('status', 'nie');
+        await s.from('abteilungen').delete().eq('legacy_mirror', false);
+        await s
+            .from('abteilungen')
+            .update({'gesamtwehr_id': null}).eq('id', mirror);
+        await s.from('gesamtwehren').delete().neq('name', 'nie');
+        await s
+            .from('profiles')
+            .update({'abteilung_id': mirror}).filter('abteilung_id', 'is', null);
+        final profs = await s.from('profiles').select('id, role, abteilung_id');
+        await s.from('memberships').upsert([
+          for (final p in profs)
+            if (p['abteilung_id'] != null)
+              {
+                'user_id': p['id'],
+                'abteilung_id': p['abteilung_id'],
+                'role': p['role'],
+              },
+        ], onConflict: 'user_id,abteilung_id');
+      });
+    });
+
+    test('Backfill & RLS: jeder liest genau die eigenen Mitgliedschaften',
+        () async {
+      final eigene =
+          await adminClient.from('memberships').select('abteilung_id, role');
+      expect(eigene.map((r) => r['abteilung_id']), contains(mirror));
+      expect(eigene.map((r) => r['role']), contains('admin'));
+
+      // Fremde Zeilen bleiben unsichtbar — der Provider-Select in der App
+      // kommt deshalb ohne Filter aus.
+      final fremd = await adminClient
+          .from('memberships')
+          .select('user_id')
+          .neq('user_id', adminClient.auth.currentUser!.id);
+      expect(fremd, isEmpty);
+    });
+
+    test('der Gründer einer Gesamtwehr wird Feuerwehrkommandant', () async {
+      final gwId = await adminClient
+          .rpc('create_gesamtwehr', params: {'name': 'Stufe1 GW'}) as String;
+
+      final rows = await asService((s) async => await s
+          .from('gesamtwehr_kommandanten')
+          .select('user_id')
+          .eq('gesamtwehr_id', gwId));
+      expect(rows.map((r) => r['user_id']),
+          contains(adminClient.auth.currentUser!.id));
+
+      // Die eigene Stellung ist per RLS lesbar — genau der Weg, den der
+      // Client-Provider geht.
+      final eigene = await adminClient
+          .from('gesamtwehr_kommandanten')
+          .select('gesamtwehr_id');
+      expect(eigene.map((r) => r['gesamtwehr_id']), contains(gwId));
+    });
+
+    test('die Schreibrolle klebt an der Abteilung — der Kommandant darf '
+        'überall', () async {
+      await adminClient
+          .rpc('create_gesamtwehr', params: {'name': 'Stufe1 Schreib'});
+      final neue = await adminClient
+          .rpc('create_abteilung', params: {'name': 'Stufe1 Nord'}) as String;
+
+      // Gerätewart mit Mitgliedschaft NUR in der Bestands-Abteilung:
+      // Veröffentlichen in die Schwester prallt ab …
+      final gwDb = createTestDatabase();
+      addTearDown(gwDb.close);
+      final gwSister = SyncService(gwDb, gwClient, abteilungOverride: neue);
+      await gwSister.pullIfNewer(force: true);
+      await expectLater(
+        gwSister.publish(),
+        throwsA(isA<PostgrestException>().having(
+            (e) => e.message, 'message', contains('permission denied'))),
+      );
+
+      // … bis ihm dort eine Schreib-Mitgliedschaft gehört. Genau das ist
+      // Marcus' Fall „dieselbe Person ist Gerätewart in zwei Abteilungen".
+      await asService((s) async => await s.from('memberships').upsert({
+            'user_id': gwClient.auth.currentUser!.id,
+            'abteilung_id': neue,
+            'role': 'geraetewart',
+          }, onConflict: 'user_id,abteilung_id'));
+      expect(await gwSister.publish(), greaterThan(0));
+
+      // Der Feuerwehrkommandant braucht keine Mitgliedschaft — die
+      // Gesamtwehr-Stellung genügt.
+      final adminSisterDb = createTestDatabase();
+      addTearDown(adminSisterDb.close);
+      final adminSister =
+          SyncService(adminSisterDb, adminClient, abteilungOverride: neue);
+      await adminSister.pullIfNewer(force: true);
+      expect(await adminSister.publish(), greaterThan(0));
+    });
+
+    test('create_abteilung verlangt den Feuerwehrkommandanten', () async {
+      await adminClient
+          .rpc('create_gesamtwehr', params: {'name': 'Stufe1 Guard'});
+      // Der Gerätewart gehört zur Gesamtwehr, ist aber kein Kommandant.
+      await expectLater(
+        gwClient.rpc('create_abteilung', params: {'name': 'Heimlich Nord'}),
+        throwsA(isA<PostgrestException>().having(
+            (e) => e.message, 'message', contains('permission denied'))),
+      );
     });
   });
 }

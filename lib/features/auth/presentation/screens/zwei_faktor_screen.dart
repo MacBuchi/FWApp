@@ -136,7 +136,7 @@ class _ZweiFaktorScreenState extends ConsumerState<ZweiFaktorScreen> {
     final theme = Theme.of(context);
     final faktoren = ref.watch(mfaFaktorenProvider).value ?? const [];
     final aktiv = faktoren.where((f) => f.status == FactorStatus.verified);
-    final istAdmin = ref.watch(currentUserRoleProvider).value == 'admin';
+    final istAdmin = ref.watch(isAdminProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Zwei-Faktor-Anmeldung')),
@@ -167,7 +167,7 @@ class _ZweiFaktorScreenState extends ConsumerState<ZweiFaktorScreen> {
                       ),
                       const SizedBox(height: 8),
                       const Text(
-                        'Telefon verloren? Ein anderer Admin kann den Faktor '
+                        'Telefon verloren? Ein Kommandant kann den Faktor '
                         'in der Nutzerverwaltung zurücksetzen.',
                         style: TextStyle(fontSize: 12, color: Colors.grey),
                       ),
@@ -183,7 +183,7 @@ class _ZweiFaktorScreenState extends ConsumerState<ZweiFaktorScreen> {
                         // Empfehlung statt Pflicht (Entscheidung 2026-08-01):
                         // Der Satz begründet, statt zu drohen.
                         Text(
-                          'Für Admin-Konten empfohlen — sie können Konten '
+                          'Für Kommandanten empfohlen — sie können Konten '
                           'anlegen und den Datenbestand der ganzen Wehr '
                           'überschreiben.',
                           style: theme.textTheme.bodyMedium,

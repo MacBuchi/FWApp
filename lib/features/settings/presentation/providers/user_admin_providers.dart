@@ -23,6 +23,17 @@ class ManagedUser {
   /// oder wenn die Abteilung gelöscht wurde (Profil überlebt das bewusst).
   final String? abteilungId;
 
+  /// Rolle je Abteilung (Nutzerkonzept Stufe 1). Auf Alt-Servern aus
+  /// role/abteilungId synthetisiert, damit die UI nur eine Form kennt.
+  final Map<String, String> memberships;
+
+  /// Gesamtwehren, deren Feuerwehrkommandant dieses Konto ist.
+  final List<String> kommandantGesamtwehren;
+
+  /// Ob der Server Mitgliedschaften kennt — entscheidet, welche
+  /// Verwaltungs-Dialoge die UI anbietet.
+  final bool hatMitgliedschaften;
+
   const ManagedUser({
     required this.id,
     required this.username,
@@ -32,20 +43,39 @@ class ManagedUser {
     required this.banned,
     required this.lastSignInAt,
     this.abteilungId,
+    this.memberships = const {},
+    this.kommandantGesamtwehren = const [],
+    this.hatMitgliedschaften = false,
   });
 
-  factory ManagedUser.fromJson(Map<String, dynamic> json) => ManagedUser(
-        id: json['id'] as String,
-        username: json['username'] as String? ?? '',
-        email: json['email'] as String? ?? '',
-        role: json['role'] as String? ?? 'member',
-        mustChangePassword: json['must_change_password'] as bool? ?? false,
-        banned: json['banned'] as bool? ?? false,
-        lastSignInAt: json['last_sign_in_at'] == null
-            ? null
-            : DateTime.tryParse(json['last_sign_in_at'] as String),
-        abteilungId: json['abteilung_id'] as String?,
-      );
+  factory ManagedUser.fromJson(Map<String, dynamic> json) {
+    final role = json['role'] as String? ?? 'member';
+    final abteilungId = json['abteilung_id'] as String?;
+    final rawMemberships = json['memberships'] as List?;
+    return ManagedUser(
+      id: json['id'] as String,
+      username: json['username'] as String? ?? '',
+      email: json['email'] as String? ?? '',
+      role: role,
+      mustChangePassword: json['must_change_password'] as bool? ?? false,
+      banned: json['banned'] as bool? ?? false,
+      lastSignInAt: json['last_sign_in_at'] == null
+          ? null
+          : DateTime.tryParse(json['last_sign_in_at'] as String),
+      abteilungId: abteilungId,
+      memberships: rawMemberships != null
+          ? {
+              for (final m in rawMemberships)
+                (m as Map)['abteilung_id'] as String: m['role'] as String,
+            }
+          : {if (abteilungId != null) abteilungId: role},
+      kommandantGesamtwehren: [
+        for (final g in (json['kommandant_gesamtwehren'] as List? ?? const []))
+          g as String,
+      ],
+      hatMitgliedschaften: rawMemberships != null,
+    );
+  }
 }
 
 /// Führt eine Aktion der admin-users-Function aus und liefert deren

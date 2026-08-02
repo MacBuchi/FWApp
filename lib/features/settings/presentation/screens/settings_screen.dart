@@ -7,8 +7,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:fwapp/core/sync/abteilung_providers.dart';
+import 'package:fwapp/core/sync/auth_utils.dart';
 import 'package:fwapp/core/sync/image_precache.dart';
+import 'package:fwapp/core/sync/membership_providers.dart';
 import 'package:fwapp/core/sync/mfa_providers.dart';
+import 'package:fwapp/core/sync/rollen.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/sync/sync_service.dart';
 import 'package:fwapp/features/settings/presentation/providers/settings_providers.dart';
@@ -200,15 +204,31 @@ class _ConnectionSection extends ConsumerWidget {
       );
     }
 
-    final roleLabel = switch (role) {
-      'admin' => 'Rolle: Admin – volle Verwaltung, darf bearbeiten und '
-          'veröffentlichen',
-      'geraetewart' =>
-        'Rolle: Gerätewart – darf bearbeiten und veröffentlichen',
-      'member' => 'Rolle: Mitglied – nur Lesezugriff',
-      null => 'Rolle wird geladen...',
-      _ => 'Rolle: $role',
-    };
+    // Nutzerkonzept Stufe 1: angezeigt wird die Rolle in der GERADE
+    // gewählten Abteilung (Feuerwehrkommandant überstimmt); auf
+    // Alt-Servern bleibt die Spiegel-Rolle.
+    final mitgliedschaften = ref.watch(meineMitgliedschaftenProvider).value;
+    final kommandiert =
+        ref.watch(meineKommandoGesamtwehrenProvider).value ?? const <String>{};
+    final selected = ref.watch(selectedAbteilungIdProvider) ??
+        ref.watch(myAbteilungIdProvider).value;
+    final rolle =
+        mitgliedschaften == null ? role : mitgliedschaften[selected];
+    final String roleLabel;
+    if (rolle == null && kommandiert.isEmpty) {
+      roleLabel = role == null && mitgliedschaften == null
+          ? 'Rolle wird geladen...'
+          : 'Hier nur Lesezugriff (keine Mitgliedschaft in dieser Abteilung)';
+    } else {
+      final anzeige = rolleAnzeigename(
+        rolle,
+        kommandant: kommandiert.isNotEmpty,
+        echteMail: hatEchteMail(session.user.email ?? ''),
+      );
+      roleLabel = canEdit
+          ? 'Rolle: $anzeige – darf hier bearbeiten und veröffentlichen'
+          : 'Rolle: $anzeige – hier nur Lesezugriff';
+    }
 
     return Column(
       children: [

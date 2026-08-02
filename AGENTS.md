@@ -35,6 +35,14 @@ Widersprechen sich beide, gilt CONTRIBUTING.md für alles, was einen PR betrifft
 - **Single-Writer-Sync:** Editoren (Admin/Gerätewart) veröffentlichen komplette
   Snapshots mit Versionszähler, Mitglieder lesen. Keine CRDTs, keine
   Offline-Write-Queues, keine Konfliktauflösung.
+- **Die IDs im zentralen Bestand sind LOKALE Drift-IDs** — jede Abteilung
+  zählt bei 1 los. Schlüssel und Fremdschlüssel der gespiegelten Tabellen
+  führen deshalb `abteilung_id` als erste Spalte (`primary key
+  (abteilung_id, id)`). Wer eine gespiegelte Tabelle ergänzt, macht das
+  genauso: Ein Verweis ohne Abteilung ist mehrdeutig, und mit
+  `on delete cascade` löscht er fremde Daten. Nullbare Verweise brauchen
+  dabei spaltenweises `on delete set null (spalte)`, sonst nullt Postgres
+  auch `abteilung_id`.
 - **Sicherheit liegt in Supabase-RLS**, nie im Client. Router-Guards und
   ausgeblendete UI sind Komfort, nicht die Schutzschicht.
 - **Prüf- und Inventurdaten** hängen an physischen Geräteinstanzen

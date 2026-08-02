@@ -48,6 +48,10 @@
     {
       "name": "20260802130000_memberships_kommandanten.sql",
       "sha256": "f00ebd9d1d3eb27a9d682e80f5626488801fecc824e76034192076442b23e0fe"
+    },
+    {
+      "name": "20260802150000_mandantenscharfe_ids.sql",
+      "sha256": "4c975ee31d2c03f619480fd72feca8c68055510b2a21601872fb0a663199b524"
     }
   ],
   "functions": {

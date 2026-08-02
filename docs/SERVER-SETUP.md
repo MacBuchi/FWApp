@@ -397,7 +397,7 @@ docker compose down && docker compose up -d
 docker compose pull && docker compose up -d
 ```
 
-### Auto-Deploy: Migrationen & Functions von main (Issue #74, Route A)
+### Auto-Deploy: Migrationen, Functions & Web-App von main (Issue #74, Route A)
 
 Seit dem 2026-08-01 spielt die VM Schema-Änderungen **selbst** ein — von
 Hand ist nur noch der Notfall. Ein systemd-Timer (`fwapp-autodeploy.timer`,
@@ -413,7 +413,16 @@ alle 10 Minuten) startet [tool/vm/fwapp_autodeploy.sh](../tool/vm/fwapp_autodepl
    Wegwerf-DB gegen genau diesen Dump**, erst bei Erfolg Einspielen auf
    `postgres` + `NOTIFY pgrst`,
 4. gleicht die Edge-Function-Dateien per SHA-256 ab und startet bei
-   Änderungen den functions-Container neu (Sicherung als `.bak-autodeploy`).
+   Änderungen den functions-Container neu (Sicherung als `.bak-autodeploy`),
+5. gleicht die **Web-App** mit dem `web-dist`-Branch ab (den befüllt der
+   Release-Lauf mit einem Tarball des fertigen Prod-Builds — Release-Assets
+   wären von der IPv6-only-VM aus unerreichbar, `raw` ist der einzige Weg).
+   Bei neuer Version: SHA-256 prüfen, entpacktes `version.json` gegen die
+   `VERSION`-Datei halten (raw cached beide getrennt), dann per
+   `rsync --delete` **in** `~/fwapp-web/html/` rollen — kein
+   Verzeichnis-Tausch, der Bind-Mount des nginx-Containers hängt am Inode.
+   Sicherung eine Generation tief unter `html.vorher`.
+   `tool/deploy_web.sh` bleibt der Hand-Weg für Sonderfälle.
 
 Der Freigabe-Moment ist der **Merge auf main durch einen Menschen** — der
 Timer ist Zustellung, keine Entscheidung.

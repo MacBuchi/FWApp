@@ -149,6 +149,51 @@ jobs:
           name: android-apk
           path: fwapp-${{ needs.version.outputs.tag }}.apk
 
+  build-web:
+    name: Build & publish web bundle
+    needs: version
+    if: needs.version.outputs.release == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.44.8
+          cache: true
+
+      - run: flutter pub get
+
+      # Gleiche Vorbelegung wie das APK: Nach dem Ausrollen fehlt im
+      # Browser nur noch der Login.
+      - name: Build web (release, Server-Vorbelegung)
+        run: |
+          flutter build web --release \
+            --dart-define=FWAPP_SUPABASE_URL='${{ secrets.FWAPP_SUPABASE_URL }}' \
+            --dart-define=FWAPP_SUPABASE_ANON_KEY='${{ secrets.FWAPP_SUPABASE_ANON_KEY }}'
+
+      # Warum ein Branch statt eines Release-Assets: Die VM ist IPv6-only,
+      # und github.com/api.github.com/objects.githubusercontent.com sind
+      # IPv4-only (am 2026-08-02 von der VM aus gemessen: alle 000). Nur
+      # raw.githubusercontent.com ist erreichbar — und raw liefert genau
+      # Dateien aus Branches. Force-Push als Einzel-Commit hält den Branch
+      # klein; Historie hat das Bundle nicht nötig, die hat main.
+      - name: Publish to web-dist branch
+        run: |
+          tar -C build/web -czf "$RUNNER_TEMP/fwapp-web.tar.gz" .
+          git checkout --orphan web-dist
+          git rm -rf --quiet .
+          cp "$RUNNER_TEMP/fwapp-web.tar.gz" fwapp-web.tar.gz
+          sha256sum fwapp-web.tar.gz | cut -d' ' -f1 > fwapp-web.sha256
+          printf '%s\n' "${{ needs.version.outputs.tag }}" > VERSION
+          git add fwapp-web.tar.gz fwapp-web.sha256 VERSION
+          git -c user.name="github-actions[bot]" \
+              -c user.email="github-actions[bot]@users.noreply.github.com" \
+              commit -m "web bundle ${{ needs.version.outputs.tag }}"
+          git push --force origin web-dist
+
   release:
     name: Create GitHub Release
     needs: [version, build-android]

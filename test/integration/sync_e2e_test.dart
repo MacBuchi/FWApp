@@ -856,4 +856,155 @@ Future<void> main() async {
       );
     });
   });
+
+  /// Mandantenscharfe Identität im zentralen Bestand.
+  ///
+  /// Der Server trug die **lokalen** Drift-IDs als alleinigen
+  /// Primärschlüssel, und jede lokale Datenbank zählt bei 1 los. In jedem
+  /// Test davor ist die zweite Abteilung LEER — genau deshalb ist nie
+  /// aufgefallen, dass sie gar nicht veröffentlichen kann und dabei den
+  /// Nachbarn beschädigt. Beide Tests hier legen deshalb **feste, absichtlich
+  /// gleiche IDs** an; ohne sie liefe der Beweis ins Leere, weil SQLite nach
+  /// einem `delete` weiterzählt statt bei 1 neu zu beginnen.
+  group('Mandantenscharfe IDs', () {
+    late String mirror;
+    late String schwester;
+
+    setUp(() async {
+      mirror = await mirrorAbteilungId();
+      await adminClient.rpc('create_gesamtwehr', params: {'name': 'GW IDs'});
+      // Der Admin ist als Gründer Feuerwehrkommandant und darf damit in
+      // beiden Abteilungen veröffentlichen — Marcus' Lage.
+      schwester = await adminClient
+          .rpc('create_abteilung', params: {'name': 'Nord IDs'}) as String;
+    });
+
+    tearDown(() async {
+      await asService((s) async {
+        await s.from('abteilungen').delete().eq('legacy_mirror', false);
+        await s
+            .from('abteilungen')
+            .update({'gesamtwehr_id': null}).eq('id', mirror);
+        await s.from('gesamtwehren').delete().neq('name', 'nie');
+        await s
+            .from('profiles')
+            .update({'abteilung_id': mirror}).filter('abteilung_id', 'is', null);
+        final profs = await s.from('profiles').select('id, role, abteilung_id');
+        await s.from('memberships').upsert([
+          for (final p in profs)
+            if (p['abteilung_id'] != null)
+              {
+                'user_id': p['id'],
+                'abteilung_id': p['abteilung_id'],
+                'role': p['role'],
+              },
+        ], onConflict: 'user_id,abteilung_id');
+      });
+    });
+
+    /// Ein vollständiger Strang über alle sieben gespiegelten Tabellen — mit
+    /// FESTEN IDs, damit beide Abteilungen garantiert dieselben Zahlen
+    /// benutzen. Das ist der Kern des Beweises.
+    Future<void> bestandMitFestenIds(AppDatabase db, String marke) async {
+      await db.into(db.vehicles).insert(VehiclesCompanion.insert(
+          id: const Value(1), name: 'Fahrzeug $marke', type: 'LF'));
+      await db.into(db.compartments).insert(CompartmentsCompanion.insert(
+          id: const Value(1), vehicleId: 1, label: 'G1 $marke'));
+      await db.into(db.equipmentItems).insert(EquipmentItemsCompanion.insert(
+          id: const Value(1), name: 'Gerät $marke'));
+      await db.into(db.equipmentAssignments).insert(
+          EquipmentAssignmentsCompanion.insert(
+              id: const Value(1),
+              compartmentId: 1,
+              equipmentId: 1,
+              quantity: const Value(3)));
+      await db.into(db.equipmentInstances).insert(
+          EquipmentInstancesCompanion.insert(
+              id: const Value(1),
+              equipmentId: 1,
+              vehicleId: const Value(1),
+              identifier: Value('Nr 1 $marke')));
+      await db.into(db.inspectionSchedules).insert(
+          InspectionSchedulesCompanion.insert(
+              id: const Value(1),
+              instanceId: 1,
+              kind: 'recurring',
+              title: 'Prüfung $marke',
+              dueAt: DateTime(2027, 6, 1)));
+      await db.into(db.inspectionLog).insert(InspectionLogCompanion.insert(
+          id: const Value(1), scheduleId: 1, doneAt: DateTime(2026, 6, 1)));
+    }
+
+    /// Frische lokale Datenbank plus Sync auf [abteilung], auf deren
+    /// aktuellen Stand gezogen (sonst scheitert publish am Versionsvergleich).
+    Future<(AppDatabase, SyncService)> sicht(String abteilung) async {
+      final db = createTestDatabase();
+      addTearDown(db.close);
+      final sync = SyncService(db, adminClient, abteilungOverride: abteilung);
+      await sync.pullIfNewer(force: true);
+      return (db, sync);
+    }
+
+    test('zwei Abteilungen veröffentlichen dieselben IDs nebeneinander',
+        () async {
+      final (dbA, syncA) = await sicht(mirror);
+      // Leere Bühne: Der Bestand der Bestands-Abteilung stammt aus den
+      // Tests davor und würde die festen IDs blockieren.
+      await dbA.delete(dbA.vehicles).go();
+      await dbA.delete(dbA.equipmentItems).go();
+      await syncA.publish();
+      await bestandMitFestenIds(dbA, 'A');
+      await syncA.publish();
+
+      // Und jetzt dieselben Zahlen aus der Schwester-Abteilung. Vor der
+      // Migration endet genau hier ein Duplicate-Key-Fehler.
+      final (dbB, syncB) = await sicht(schwester);
+      await bestandMitFestenIds(dbB, 'B');
+      expect(await syncB.publish(), greaterThan(0));
+
+      // Jede Seite bekommt beim Pull ihren eigenen Bestand zurück, nicht den
+      // der anderen — die IDs sind identisch, die Abteilung entscheidet.
+      final (leseA, _) = await sicht(mirror);
+      final (leseB, _) = await sicht(schwester);
+      expect((await leseA.vehicleDao.getAll()).single.name, 'Fahrzeug A');
+      expect((await leseB.vehicleDao.getAll()).single.name, 'Fahrzeug B');
+      expect((await leseA.equipmentDao.getAll()).single.name, 'Gerät A');
+      expect((await leseB.equipmentDao.getAll()).single.name, 'Gerät B');
+    });
+
+    test('Veröffentlichen einer Abteilung lässt den Nachbarn unberührt',
+        () async {
+      // Der schwerere der beiden Fehler: Die Fremdschlüssel zeigten OHNE
+      // Abteilung auf equipment_items und standen auf `on delete cascade`.
+      // Das Aufräumen vor dem Einfügen riss deshalb die Zuordnungen JEDER
+      // Abteilung mit, die dieselbe Zahl benutzt.
+      final (dbA, syncA) = await sicht(mirror);
+      await dbA.delete(dbA.vehicles).go();
+      await dbA.delete(dbA.equipmentItems).go();
+      await syncA.publish();
+      await bestandMitFestenIds(dbA, 'A');
+      await syncA.publish();
+
+      final (dbB, syncB) = await sicht(schwester);
+      await bestandMitFestenIds(dbB, 'B');
+      await syncB.publish();
+      // ZWEITER Publish: Jetzt löscht der Server B's Zeilen wirklich, und
+      // genau dieses Löschen kaskadierte früher in A hinein.
+      await dbB.update(dbB.vehicles).write(
+          const VehiclesCompanion(name: Value('Fahrzeug B zwei')));
+      await syncB.publish();
+
+      final (leseA, _) = await sicht(mirror);
+      expect((await leseA.vehicleDao.getAll()).single.name, 'Fahrzeug A');
+      expect((await leseA.equipmentDao.getAll()).single.name, 'Gerät A');
+      expect(
+        (await leseA.assignmentDao.getByCompartment(1)).single.quantity,
+        3,
+        reason: 'Die Zuordnung von A darf B\'s Publish nicht zum Opfer fallen',
+      );
+      final faellig =
+          await leseA.inspectionDao.watchDueSoon(withinDays: 10000).first;
+      expect(faellig.single.schedule.title, 'Prüfung A');
+    });
+  });
 }

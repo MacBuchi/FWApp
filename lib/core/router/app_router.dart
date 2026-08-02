@@ -241,7 +241,9 @@ final _routes = [
           routes: [
             GoRoute(
               path: 'new',
-              builder: (_, _) => const EquipmentFormScreen(),
+              // ?name= belegt das Namensfeld vor (Fach-Picker „neu anlegen").
+              builder: (_, state) => EquipmentFormScreen(
+                  initialName: state.uri.queryParameters['name']),
             ),
             GoRoute(
               path: ':id',

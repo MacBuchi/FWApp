@@ -12,6 +12,36 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.10.0] – 2026-08-02
+
+### Neu
+
+- **Geräte lassen sich endlich von Hand in ein Fach legen.** Im Fahrzeug
+  öffnet jedes Beladefach jetzt „Gerät zuweisen": suchen, antippen, drin —
+  das funktioniert in der Fächerliste und in der Schnittdarstellung. Über
+  das Menü an jedem Gerät lassen sich Menge ändern und die Zuweisung wieder
+  entfernen. Bisher konnten Geräte nur per Import oder Vorlage in ein Fach
+  gelangen.
+- **Neue Geräte entstehen direkt im Fach.** Ist das Gerät noch gar nicht
+  erfasst, führt „… neu anlegen" aus derselben Auswahl ins Geräte-Formular —
+  der eingetippte Suchbegriff steht schon als Name drin, und nach dem
+  Speichern liegt das Gerät im offenen Fach. So bildet man ein Fahrzeug
+  Raum für Raum ab, ohne zwischendurch in die Geräteverwaltung zu wechseln.
+- **Das Symbolbild kommt beim Tippen von allein.** Passt der eingegebene
+  Name zu einem Normgerät (auch über gängige Zweitnamen wie „Pylone" oder
+  „B-Schlauch"), setzt die App dessen Piktogramm automatisch — sichtbar
+  gekennzeichnet als *Symbolbild, kein verifiziertes Foto*. Ein eigenes
+  Foto ersetzt es jederzeit und wird nie überschrieben.
+
+### Behoben
+
+- **„Mit Normbeladung" legt die Geräte jetzt auch wirklich an.** Auf
+  Geräten, die schon einmal den zentralen Datenbestand geladen hatten,
+  entstand aus einer Vorlage ein Fahrzeug ganz ohne Geräte — der
+  mitgelieferte Katalog fehlte dort still. Die Vorlage legt fehlende
+  Katalog-Geräte jetzt selbst nach, und falls doch einmal Positionen
+  übersprungen werden, sagt die App das offen dazu.
+
 ## [1.9.1] – 2026-08-01
 
 ### Geändert

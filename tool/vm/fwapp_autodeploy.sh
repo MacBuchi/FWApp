@@ -17,6 +17,12 @@
 ###      auf postgres einspielen + NOTIFY pgrst + Ledger fortschreiben.
 ###   3. Functions: SHA-256 der Manifest-Dateien gegen die ausgerollten
 ###      vergleichen; bei Abweichung sichern, ersetzen, Container neu starten.
+###   4. Web-App: VERSION auf dem web-dist-Branch (füllt der Release-Lauf)
+###      mit der ausgerollten version.json vergleichen; bei Abweichung das
+###      Bundle laden, SHA-256 prüfen und per rsync --delete IN das
+###      html-Verzeichnis rollen — bewusst kein Verzeichnis-Tausch: nginx
+###      hat den Pfad als Bind-Mount, ein mv bräche den Inode und der
+###      Container zeigte bis zum Neustart auf den alten Stand.
 ###
 ### Fehlerverhalten: Beim ersten Fehler entsteht ~/autodeploy.blocked mit
 ### Begründung; weitere Läufe tun NICHTS mehr, bis jemand die Datei löscht.
@@ -224,5 +230,62 @@ if [ "$geaendert" = "1" ] && [ "$DRY_RUN" != "1" ]; then
 elif [ "$geaendert" = "0" ]; then
   log "Functions: nichts zu tun."
 fi
+
+# ── 5) Web-App abgleichen (web-dist-Branch, füllt der Release-Lauf) ───────
+WEB_RAW=${WEB_RAW:-https://raw.githubusercontent.com/MacBuchi/FWApp/web-dist}
+WEB_DIR=${WEB_DIR:-$HOME/fwapp-web/html}
+
+webdeploy() {
+  local wanted deployed soll ist entpackt
+  wanted=$(curl -fsS --max-time 30 "$WEB_RAW/VERSION" 2>/dev/null | head -1) || true
+  if [ -z "${wanted:-}" ]; then
+    log "Web: kein web-dist-Branch erreichbar — nichts zu tun."
+    return 0
+  fi
+  deployed=$(sed -n 's/.*"version":"\([^"]*\)".*/\1/p' "$WEB_DIR/version.json" 2>/dev/null || true)
+  if [ "v$deployed" = "$wanted" ]; then
+    log "Web: $wanted bereits ausgerollt."
+    return 0
+  fi
+  soll=$(curl -fsS --max-time 30 "$WEB_RAW/fwapp-web.sha256" | head -1) || true
+  if [ -z "${soll:-}" ]; then
+    log "Web: Prüfsumme nicht abrufbar — nächster Lauf."
+    return 0
+  fi
+  if ! curl -fsS --max-time 180 "$WEB_RAW/fwapp-web.tar.gz" -o "$WORK/web.tar.gz"; then
+    log "Web: Bundle nicht abrufbar — nächster Lauf."
+    return 0
+  fi
+  ist=$(sha256sum "$WORK/web.tar.gz" | cut -d' ' -f1)
+  if [ "$ist" != "$soll" ]; then
+    log "Web: Hash-Abweichung (raw-Cache hinkt?) — nächster Lauf."
+    return 0
+  fi
+  mkdir -p "$WORK/web"
+  tar -xzf "$WORK/web.tar.gz" -C "$WORK/web" \
+    || { log "Web: Bundle nicht entpackbar — nächster Lauf."; return 0; }
+  # Zwei Ehrlichkeitsprüfungen vor dem Ausrollen: Das Bundle muss eine
+  # Flutter-Web-App sein, und sein version.json muss zur VERSION-Datei
+  # passen (raw cached beide getrennt — ein halb aktualisierter Stand
+  # wartet auf den nächsten Lauf statt gemischt live zu gehen).
+  entpackt=$(sed -n 's/.*"version":"\([^"]*\)".*/\1/p' "$WORK/web/version.json" 2>/dev/null || true)
+  if [ ! -f "$WORK/web/index.html" ] || [ "v$entpackt" != "$wanted" ]; then
+    log "Web: Bundle-Inhalt passt nicht zu VERSION ($wanted vs. v${entpackt:-?}) — nächster Lauf."
+    return 0
+  fi
+  if [ "$DRY_RUN" = "1" ]; then
+    log "DRY_RUN: würde Web-App ${deployed:-–} → $wanted ausrollen."
+    return 0
+  fi
+  # Sicherung eine Generation tief, dann IN das gemountete Verzeichnis
+  # syncen (kein mv — siehe Kopfkommentar).
+  rm -rf "$WEB_DIR.vorher"
+  [ -d "$WEB_DIR" ] && cp -a "$WEB_DIR" "$WEB_DIR.vorher"
+  mkdir -p "$WEB_DIR"
+  rsync -a --delete "$WORK/web/" "$WEB_DIR/" \
+    || blockiere "Web-Rollout nach $WEB_DIR fehlgeschlagen — Sicherung: $WEB_DIR.vorher"
+  log "Web: ${deployed:-–} → $wanted ausgerollt (Sicherung: $WEB_DIR.vorher)."
+}
+webdeploy
 
 log "Lauf beendet."

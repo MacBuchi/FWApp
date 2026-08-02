@@ -85,6 +85,8 @@ supabase_flutter. Plattformen: Android, iOS, macOS, Web.
 
 Das Datenmodell ist in [docs/data_model.drawio](docs/data_model.drawio)
 skizziert; Projektstand und Historie in [docs/ROADMAP.md](docs/ROADMAP.md).
+Das Zielbild für Rollen, Konten und die Gerätedatenbank steht in
+[docs/NUTZERKONZEPT.md](docs/NUTZERKONZEPT.md).
 
 ---
 

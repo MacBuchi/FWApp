@@ -87,12 +87,23 @@ class VehicleTemplateScreen extends ConsumerWidget {
       ref.invalidate(vehicleListProvider);
       if (!context.mounted) return;
 
-      final message = result.itemCount > 0
+      var message = result.itemCount > 0
           ? '${options.name} angelegt: ${result.compartmentCount} Geräteräume, '
               '${result.itemCount} Positionen im Sammelfach.'
           : '${options.name} angelegt: ${result.compartmentCount} Geräteräume.';
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(message)));
+      // Fehlende Positionen laut sagen: Wer „mit Normbeladung" wählt und
+      // still ein Drittel weniger bekommt, merkt es sonst erst am Fahrzeug
+      // (Issue #86 entstand genau so).
+      if (result.missingEquipment.isNotEmpty) {
+        message += ' ${result.missingEquipment.length} Positionen ohne '
+            'Katalogeintrag übersprungen.';
+      }
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(message),
+        duration: result.missingEquipment.isEmpty
+            ? const Duration(seconds: 4)
+            : const Duration(seconds: 8),
+      ));
       // Zurück zur Liste, nicht nur ein Schritt: Die Vorlagenauswahl hinter
       // sich zu lassen ist nach dem Anlegen die richtige Erwartung.
       context.go('/vehicles');

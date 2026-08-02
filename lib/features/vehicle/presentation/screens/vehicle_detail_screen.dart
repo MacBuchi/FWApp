@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
+import 'package:fwapp/core/widgets/abteilung_switcher.dart';
 import 'package:fwapp/features/assignment/domain/entities/equipment_assignment.dart';
 import 'package:fwapp/features/assignment/presentation/providers/assignment_providers.dart';
 import 'package:fwapp/features/compartment/domain/entities/compartment.dart';
@@ -52,6 +53,7 @@ class VehicleDetailScreen extends ConsumerWidget {
                       context.push('/vehicles/$vehicleId/compartments'),
                 ),
               ],
+              const AbteilungAction(),
             ],
           ),
           body: CustomScrollView(

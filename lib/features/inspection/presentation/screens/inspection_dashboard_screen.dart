@@ -4,6 +4,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
+import 'package:fwapp/core/widgets/abteilung_switcher.dart';
 import 'package:fwapp/features/inspection/domain/entities/due_inspection_entry.dart';
 import 'package:fwapp/features/inspection/domain/entities/inspection_schedule.dart';
 import 'package:fwapp/features/inspection/presentation/providers/inspection_providers.dart';
@@ -17,7 +18,10 @@ class InspectionDashboardScreen extends ConsumerWidget {
     final dueAsync = ref.watch(dueInspectionsStreamProvider());
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Prüftermine')),
+      appBar: AppBar(
+        title: const Text('Prüftermine'),
+        actions: const [AbteilungAction()],
+      ),
       body: dueAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Fehler: $e')),

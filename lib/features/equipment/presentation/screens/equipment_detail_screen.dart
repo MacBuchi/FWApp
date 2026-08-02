@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:fwapp/core/logging/app_logger.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
+import 'package:fwapp/core/widgets/abteilung_switcher.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_enums.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_item.dart';
 import 'package:fwapp/features/equipment/presentation/widgets/equipment_avatar.dart';
@@ -43,6 +44,7 @@ class EquipmentDetailScreen extends ConsumerWidget {
                   onPressed: () =>
                       context.push('/equipment/$equipmentId/edit'),
                 ),
+              const AbteilungAction(),
             ],
           ),
           body: ListView(

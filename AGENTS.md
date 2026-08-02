@@ -230,6 +230,15 @@ pauschales Formatieren in Feature-PRs.
   `tester.tap(find.text(...))` trifft dann die Leiste, und der Test wandert
   wortlos in einen anderen Tab. Symptom ist eine ganz andere fehlschlagende
   Sichtprüfung. Der hochkante Emulator verdeckt das komplett.
+- ⚠️ **Overlays aus der `ShellRoute` gehören auf den Wurzel-Navigator.**
+  Innerhalb der Shell ist der nächstgelegene `Navigator` der verschachtelte —
+  ein dort geöffneter Dialog oder `showModalBottomSheet` liegt damit **unter**
+  der `NavigationBar`, und deren Ziele bleiben anklickbar: Ein Tipp knapp
+  neben dem Overlay bricht es ab **und** wechselt den Tab. Bei Dialogen war
+  das #79 (v1.6.0, der Screen dahinter wurde weggepoppt), beim
+  Abteilungs-Sheet #96. Also `useRootNavigator: true` — und für die
+  Sichtprüfung die Verschachtelung im Prüfstand nachbauen, ein flacher
+  Navigator lässt den Fehler durch.
 - ⚠️ **`pumpAndSettle` reicht auf echten Geräten nicht:** Solange asynchrone
   Provider auf I/O warten, steht kein Frame an – `pumpAndSettle` kehrt zurück,
   während noch „Lade…" auf dem Schirm steht. Dafür gibt es `waitFor()`.

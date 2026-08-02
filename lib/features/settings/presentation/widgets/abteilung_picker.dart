@@ -1,18 +1,22 @@
-/// abteilung_picker.dart – Anzeige und Wechsel der Abteilung
+/// abteilung_picker.dart – Abteilungs-Kachel in den Einstellungen
 /// (Issue #57 Phase 2).
+///
+/// Seit Issue #96 steht der Wähler zusätzlich in der AppBar jeder Seite; die
+/// Kachel bleibt, weil sie mehr Platz für den Rechte-Hinweis hat und dort
+/// gesucht wird, wo alles andere zum Konto steht. Auswahl-Sheet und Wechsel
+/// liegen gemeinsam in `core/widgets/abteilung_switcher.dart` — zwei Wege in
+/// dieselbe Entscheidung, aber nur eine Umsetzung.
 ///
 /// Sichtbar nur, wenn der Server Abteilungen kennt und der Nutzer angemeldet
 /// ist; im Lokalmodus und auf Legacy-Servern liefert der Provider eine leere
 /// Liste und die Kachel verschwindet von selbst.
-///
-/// Die eigene Abteilung wird intern als `null` geführt (angestammte
-/// Datenbank-Datei, siehe abteilung_providers.dart) — der Picker übersetzt
-/// das an genau einer Stelle.
 library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/sync/abteilung_providers.dart';
+import 'package:fwapp/core/sync/membership_providers.dart';
+import 'package:fwapp/core/widgets/abteilung_switcher.dart';
 
 class AbteilungTile extends ConsumerWidget {
   const AbteilungTile({super.key});
@@ -24,104 +28,28 @@ class AbteilungTile extends ConsumerWidget {
 
     final own = ref.watch(myAbteilungIdProvider).value;
     final selectedId = ref.watch(selectedAbteilungIdProvider) ?? own;
-    final selected = abteilungen
-        .where((a) => a.id == selectedId)
-        .firstOrNull;
-    final isSister = selectedId != null && selectedId != own;
+    final selected = abteilungen.where((a) => a.id == selectedId).firstOrNull;
+    final istHeimat = selectedId != null && selectedId == own;
+
+    final rechte = selected == null
+        ? null
+        : abteilungsRechteText(
+            selected,
+            istHeimat: istHeimat,
+            mitgliedschaften: ref.watch(meineMitgliedschaftenProvider).value,
+            kommandierteGesamtwehren:
+                ref.watch(meineKommandoGesamtwehrenProvider).value,
+          );
+    final wechselbar = abteilungen.length > 1;
 
     return ListTile(
-      leading: Icon(isSister ? Icons.visibility : Icons.home_work),
-      title: Text(selected == null
-          ? 'Abteilung'
-          : selected.gesamtwehrName == null
-              ? selected.name
-              : '${selected.name} · ${selected.gesamtwehrName}'),
-      subtitle: Text(isSister
-          ? 'Schwester-Abteilung — nur lesen'
-          : abteilungen.length > 1
-              ? 'Deine Abteilung — zum Wechseln tippen'
-              : 'Deine Abteilung'),
-      trailing:
-          abteilungen.length > 1 ? const Icon(Icons.swap_horiz) : null,
-      onTap: abteilungen.length > 1
-          ? () => _showPicker(context, ref, own)
-          : null,
-    );
-  }
-
-  Future<void> _showPicker(
-    BuildContext context,
-    WidgetRef ref,
-    String? own,
-  ) async {
-    final target = await showModalBottomSheet<AbteilungInfo>(
-      context: context,
-      builder: (context) => _AbteilungSheet(own: own),
-    );
-    if (target == null || !context.mounted) return;
-
-    final messenger = ScaffoldMessenger.of(context);
-    // Eigene Abteilung = null: Sie behält die angestammte Datenbank-Datei.
-    await ref
-        .read(abteilungSwitcherProvider)
-        .switchTo(target.id == own ? null : target.id);
-    messenger.showSnackBar(SnackBar(
-      content: Text(target.id == own
-          ? 'Zurück in deiner Abteilung.'
-          : '${target.name}: nur lesen. Der Bestand wird geladen …'),
-    ));
-  }
-}
-
-class _AbteilungSheet extends ConsumerWidget {
-  const _AbteilungSheet({required this.own});
-
-  final String? own;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final abteilungen = ref.watch(abteilungenProvider).value ?? const [];
-    final selectedId = ref.watch(selectedAbteilungIdProvider) ?? own;
-    final theme = Theme.of(context);
-
-    return SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
-            child: Text('Abteilung wählen',
-                style: theme.textTheme.titleLarge),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-            child: Text(
-              'In Schwester-Abteilungen kannst du alles ansehen und damit '
-              'lernen — bearbeiten kann dort nur deren Gerätewart.',
-              style: theme.textTheme.bodySmall,
-            ),
-          ),
-          for (final a in abteilungen)
-            ListTile(
-              leading: Icon(
-                a.id == own ? Icons.home_work : Icons.visibility,
-                color: a.id == selectedId ? theme.colorScheme.primary : null,
-              ),
-              title: Text(a.gesamtwehrName == null
-                  ? a.name
-                  : '${a.name} · ${a.gesamtwehrName}'),
-              subtitle: Text(a.id == own
-                  ? 'Deine Abteilung'
-                  : 'Nur lesen'),
-              trailing: a.id == selectedId
-                  ? Icon(Icons.check, color: theme.colorScheme.primary)
-                  : null,
-              onTap: () => Navigator.pop(context, a),
-            ),
-          const SizedBox(height: 8),
-        ],
-      ),
+      leading: Icon(istHeimat ? Icons.home_work : Icons.visibility),
+      title: Text(selected == null ? 'Abteilung' : abteilungsTitel(selected)),
+      // Kein „zum Wechseln tippen" mehr: Das Wechsel-Symbol rechts sagt es
+      // kürzer, und der Platz gehört jetzt der Rechte-Aussage.
+      subtitle: Text(rechte ?? 'Abteilung wählen'),
+      trailing: wechselbar ? const Icon(Icons.swap_horiz) : null,
+      onTap: wechselbar ? () => showAbteilungPicker(context, ref) : null,
     );
   }
 }

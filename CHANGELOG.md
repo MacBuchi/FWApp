@@ -12,6 +12,29 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.12.0] – 2026-08-02
+
+### Neu
+
+- **Die gewählte Abteilung steht jetzt oben rechts in der Leiste** — auf der
+  Startseite, beim Lernen, bei Fahrzeugen und Geräten, unter „Mehr" und in
+  den Einstellungen. Sie nennt die Abteilung beim Namen, und ein Tipp darauf
+  öffnet die Auswahl: Kein Weg mehr über die Einstellungen, wenn du nur
+  kurz in die Nachbar-Abteilung schauen willst.
+- **Auf einen Blick, ob du daheim bist.** In deiner eigenen Abteilung bleibt
+  die Anzeige zurückhaltend; sobald du eine Schwester-Abteilung ansiehst,
+  ist sie farbig abgesetzt und trägt ein Auge statt des Hauses.
+
+### Geändert
+
+- **Die Abteilungswahl sagt jetzt, was du wo darfst.** Bisher stand an jeder
+  fremden Abteilung pauschal „nur lesen" — seit den Rollen je Abteilung
+  (1.11.0) stimmte das nicht mehr: Wer in einer zweiten Abteilung Gerätewart
+  ist oder die Gesamtwehr führt, darf dort sehr wohl arbeiten. Die Auswahl
+  nennt deshalb bei jeder Abteilung deine Rolle.
+- Die schon angezeigte Abteilung noch einmal auszuwählen lädt den Bestand
+  nicht mehr neu.
+
 ## [1.11.0] – 2026-08-02
 
 ### Neu

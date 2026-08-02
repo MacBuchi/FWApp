@@ -205,4 +205,61 @@ void main() {
       expect(rolleAnzeigename(null, kommandant: true), 'Feuerwehrkommandant');
     });
   });
+
+  group('schreibrolleInAbteilung', () {
+    // Spiegelt canEditProvider für eine FREI GEWÄHLTE Abteilung — die
+    // Abteilungswahl (Issue #96) zeigt die Rechte aller nebeneinander.
+    String? rolle(
+      String id, {
+      String? gesamtwehr,
+      Map<String, String>? mitgliedschaften,
+      Set<String>? kommandiert,
+    }) => schreibrolleInAbteilung(
+      abteilungId: id,
+      gesamtwehrId: gesamtwehr,
+      mitgliedschaften: mitgliedschaften,
+      kommandierteGesamtwehren: kommandiert,
+    );
+
+    test('Schreibrolle wird beim Namen genannt', () {
+      expect(
+        rolle('B', mitgliedschaften: {'B': 'geraetewart'}),
+        'Gerätewart',
+      );
+      expect(rolle('B', mitgliedschaften: {'B': 'admin'}), 'Abteilungskommandant');
+    });
+
+    test('member und Fremd-Abteilung ergeben Lesezugriff (null)', () {
+      expect(rolle('B', mitgliedschaften: {'B': 'member'}), isNull);
+      expect(rolle('B', mitgliedschaften: {'A': 'admin'}), isNull);
+    });
+
+    test('der Feuerwehrkommandant überstimmt die Mitgliedschaft', () {
+      expect(
+        rolle(
+          'B',
+          gesamtwehr: 'GW',
+          mitgliedschaften: {'B': 'member'},
+          kommandiert: {'GW'},
+        ),
+        'Feuerwehrkommandant',
+      );
+      // Fremde Gesamtwehr: die Stellung trägt nicht hinüber.
+      expect(
+        rolle(
+          'B',
+          gesamtwehr: 'GW',
+          mitgliedschaften: {'B': 'member'},
+          kommandiert: {'ANDERE'},
+        ),
+        isNull,
+      );
+    });
+
+    test('Alt-Server ohne Mitgliedschaften antwortet nicht (null)', () {
+      // Wichtig, weil der Aufrufer dann bei der alten Regel bleiben muss und
+      // nicht „nur lesen" für die eigene Abteilung behaupten darf.
+      expect(rolle('A', mitgliedschaften: null, kommandiert: {'GW'}), isNull);
+    });
+  });
 }

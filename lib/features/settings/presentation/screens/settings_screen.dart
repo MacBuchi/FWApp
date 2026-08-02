@@ -15,6 +15,7 @@ import 'package:fwapp/core/sync/mfa_providers.dart';
 import 'package:fwapp/core/sync/rollen.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/sync/sync_service.dart';
+import 'package:fwapp/core/widgets/abteilung_switcher.dart';
 import 'package:fwapp/features/settings/presentation/providers/settings_providers.dart';
 import 'package:fwapp/features/settings/presentation/widgets/abteilung_picker.dart';
 import 'package:fwapp/features/settings/presentation/widgets/palette_picker.dart';
@@ -28,7 +29,10 @@ class SettingsScreen extends ConsumerWidget {
     final themeModeAsync = ref.watch(themeModeProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Einstellungen')),
+      appBar: AppBar(
+        title: const Text('Einstellungen'),
+        actions: const [AbteilungAction()],
+      ),
       body: ListView(
         children: [
           // ─── Darstellung ─────────────────────────────────────

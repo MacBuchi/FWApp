@@ -16,9 +16,7 @@ class Vehicles extends Table with TableInfo {
     hasAutoIncrement: true,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
+    $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT',
   );
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
     'name',
@@ -26,6 +24,7 @@ class Vehicles extends Table with TableInfo {
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL',
   );
   late final GeneratedColumn<String> type = GeneratedColumn<String>(
     'type',
@@ -33,6 +32,7 @@ class Vehicles extends Table with TableInfo {
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL',
   );
   late final GeneratedColumn<String> licensePlate = GeneratedColumn<String>(
     'license_plate',
@@ -40,6 +40,7 @@ class Vehicles extends Table with TableInfo {
     true,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
+    $customConstraints: 'NULL',
   );
   late final GeneratedColumn<String> imagePath = GeneratedColumn<String>(
     'image_path',
@@ -47,23 +48,28 @@ class Vehicles extends Table with TableInfo {
     true,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
+    $customConstraints: 'NULL',
   );
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+  late final GeneratedColumn<int> createdAt = GeneratedColumn<int>(
     'created_at',
     aliasedName,
     false,
-    type: DriftSqlType.dateTime,
+    type: DriftSqlType.int,
     requiredDuringInsert: false,
+    $customConstraints:
+        'NOT NULL DEFAULT (CAST(strftime(\'%s\', CURRENT_TIMESTAMP) AS INTEGER))',
     defaultValue: const CustomExpression(
       'CAST(strftime(\'%s\', CURRENT_TIMESTAMP) AS INTEGER)',
     ),
   );
-  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+  late final GeneratedColumn<int> updatedAt = GeneratedColumn<int>(
     'updated_at',
     aliasedName,
     false,
-    type: DriftSqlType.dateTime,
+    type: DriftSqlType.int,
     requiredDuringInsert: false,
+    $customConstraints:
+        'NOT NULL DEFAULT (CAST(strftime(\'%s\', CURRENT_TIMESTAMP) AS INTEGER))',
     defaultValue: const CustomExpression(
       'CAST(strftime(\'%s\', CURRENT_TIMESTAMP) AS INTEGER)',
     ),
@@ -94,6 +100,9 @@ class Vehicles extends Table with TableInfo {
   Vehicles createAlias(String alias) {
     return Vehicles(attachedDatabase, alias);
   }
+
+  @override
+  bool get dontWriteConstraints => true;
 }
 
 class Compartments extends Table with TableInfo {
@@ -108,9 +117,7 @@ class Compartments extends Table with TableInfo {
     hasAutoIncrement: true,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
+    $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT',
   );
   late final GeneratedColumn<int> vehicleId = GeneratedColumn<int>(
     'vehicle_id',
@@ -118,9 +125,7 @@ class Compartments extends Table with TableInfo {
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES vehicles (id) ON DELETE CASCADE',
-    ),
+    $customConstraints: 'NOT NULL REFERENCES vehicles(id)ON DELETE CASCADE',
   );
   late final GeneratedColumn<String> label = GeneratedColumn<String>(
     'label',
@@ -128,6 +133,7 @@ class Compartments extends Table with TableInfo {
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL',
   );
   late final GeneratedColumn<int> position = GeneratedColumn<int>(
     'position',
@@ -135,6 +141,7 @@ class Compartments extends Table with TableInfo {
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
+    $customConstraints: 'NOT NULL DEFAULT 0',
     defaultValue: const CustomExpression('0'),
   );
   late final GeneratedColumn<int> gridRow = GeneratedColumn<int>(
@@ -143,6 +150,7 @@ class Compartments extends Table with TableInfo {
     true,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
+    $customConstraints: 'NULL',
   );
   late final GeneratedColumn<int> gridCol = GeneratedColumn<int>(
     'grid_col',
@@ -150,6 +158,7 @@ class Compartments extends Table with TableInfo {
     true,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
+    $customConstraints: 'NULL',
   );
   late final GeneratedColumn<int> gridColSpan = GeneratedColumn<int>(
     'grid_col_span',
@@ -157,14 +166,17 @@ class Compartments extends Table with TableInfo {
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
+    $customConstraints: 'NOT NULL DEFAULT 1',
     defaultValue: const CustomExpression('1'),
   );
-  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+  late final GeneratedColumn<int> updatedAt = GeneratedColumn<int>(
     'updated_at',
     aliasedName,
     false,
-    type: DriftSqlType.dateTime,
+    type: DriftSqlType.int,
     requiredDuringInsert: false,
+    $customConstraints:
+        'NOT NULL DEFAULT (CAST(strftime(\'%s\', CURRENT_TIMESTAMP) AS INTEGER))',
     defaultValue: const CustomExpression(
       'CAST(strftime(\'%s\', CURRENT_TIMESTAMP) AS INTEGER)',
     ),
@@ -196,6 +208,9 @@ class Compartments extends Table with TableInfo {
   Compartments createAlias(String alias) {
     return Compartments(attachedDatabase, alias);
   }
+
+  @override
+  bool get dontWriteConstraints => true;
 }
 
 class EquipmentItems extends Table with TableInfo {
@@ -210,9 +225,7 @@ class EquipmentItems extends Table with TableInfo {
     hasAutoIncrement: true,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
+    $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT',
   );
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
     'name',
@@ -220,6 +233,7 @@ class EquipmentItems extends Table with TableInfo {
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL',
   );
   late final GeneratedColumn<String> shortName = GeneratedColumn<String>(
     'short_name',
@@ -227,6 +241,7 @@ class EquipmentItems extends Table with TableInfo {
     true,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
+    $customConstraints: 'NULL',
   );
   late final GeneratedColumn<String> equipmentFunctionsJson =
       GeneratedColumn<String>(
@@ -235,6 +250,7 @@ class EquipmentItems extends Table with TableInfo {
         false,
         type: DriftSqlType.string,
         requiredDuringInsert: false,
+        $customConstraints: 'NOT NULL DEFAULT \'[]\'',
         defaultValue: const CustomExpression('\'[]\''),
       );
   late final GeneratedColumn<String> deploymentScenariosJson =
@@ -244,6 +260,7 @@ class EquipmentItems extends Table with TableInfo {
         false,
         type: DriftSqlType.string,
         requiredDuringInsert: false,
+        $customConstraints: 'NOT NULL DEFAULT \'[]\'',
         defaultValue: const CustomExpression('\'[]\''),
       );
   late final GeneratedColumn<String> description = GeneratedColumn<String>(
@@ -252,6 +269,7 @@ class EquipmentItems extends Table with TableInfo {
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
+    $customConstraints: 'NOT NULL DEFAULT \'\'',
     defaultValue: const CustomExpression('\'\''),
   );
   late final GeneratedColumn<String> imagePath = GeneratedColumn<String>(
@@ -260,6 +278,7 @@ class EquipmentItems extends Table with TableInfo {
     true,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
+    $customConstraints: 'NULL',
   );
   late final GeneratedColumn<String> trainingUrl = GeneratedColumn<String>(
     'training_url',
@@ -267,6 +286,7 @@ class EquipmentItems extends Table with TableInfo {
     true,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
+    $customConstraints: 'NULL',
   );
   late final GeneratedColumn<String> libraryEquipmentId =
       GeneratedColumn<String>(
@@ -275,16 +295,15 @@ class EquipmentItems extends Table with TableInfo {
         true,
         type: DriftSqlType.string,
         requiredDuringInsert: false,
+        $customConstraints: 'NULL',
       );
-  late final GeneratedColumn<bool> isCustom = GeneratedColumn<bool>(
+  late final GeneratedColumn<int> isCustom = GeneratedColumn<int>(
     'is_custom',
     aliasedName,
     false,
-    type: DriftSqlType.bool,
+    type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("is_custom" IN (0, 1))',
-    ),
+    $customConstraints: 'NOT NULL DEFAULT 0 CHECK (is_custom IN (0, 1))',
     defaultValue: const CustomExpression('0'),
   );
   late final GeneratedColumn<String> extraAttributesJson =
@@ -294,6 +313,7 @@ class EquipmentItems extends Table with TableInfo {
         false,
         type: DriftSqlType.string,
         requiredDuringInsert: false,
+        $customConstraints: 'NOT NULL DEFAULT \'{}\'',
         defaultValue: const CustomExpression('\'{}\''),
       );
   late final GeneratedColumn<String> trainingQuestionsJson =
@@ -303,6 +323,7 @@ class EquipmentItems extends Table with TableInfo {
         false,
         type: DriftSqlType.string,
         requiredDuringInsert: false,
+        $customConstraints: 'NOT NULL DEFAULT \'[]\'',
         defaultValue: const CustomExpression('\'[]\''),
       );
   late final GeneratedColumn<String> typicalUseJson = GeneratedColumn<String>(
@@ -311,17 +332,46 @@ class EquipmentItems extends Table with TableInfo {
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
+    $customConstraints: 'NOT NULL DEFAULT \'[]\'',
     defaultValue: const CustomExpression('\'[]\''),
   );
-  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+  late final GeneratedColumn<int> updatedAt = GeneratedColumn<int>(
     'updated_at',
     aliasedName,
     false,
-    type: DriftSqlType.dateTime,
+    type: DriftSqlType.int,
     requiredDuringInsert: false,
+    $customConstraints:
+        'NOT NULL DEFAULT (CAST(strftime(\'%s\', CURRENT_TIMESTAMP) AS INTEGER))',
     defaultValue: const CustomExpression(
       'CAST(strftime(\'%s\', CURRENT_TIMESTAMP) AS INTEGER)',
     ),
+  );
+  late final GeneratedColumn<String> remoteTypeId = GeneratedColumn<String>(
+    'remote_type_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    $customConstraints: 'NULL',
+  );
+  late final GeneratedColumn<String> remoteTypeUpdatedAt =
+      GeneratedColumn<String>(
+        'remote_type_updated_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        $customConstraints: 'NULL',
+      );
+  late final GeneratedColumn<int> typeDirty = GeneratedColumn<int>(
+    'type_dirty',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    $customConstraints: 'NOT NULL DEFAULT 0 CHECK (type_dirty IN (0, 1))',
+    defaultValue: const CustomExpression('0'),
   );
   @override
   List<GeneratedColumn> get $columns => [
@@ -339,6 +389,9 @@ class EquipmentItems extends Table with TableInfo {
     trainingQuestionsJson,
     typicalUseJson,
     updatedAt,
+    remoteTypeId,
+    remoteTypeUpdatedAt,
+    typeDirty,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -356,6 +409,9 @@ class EquipmentItems extends Table with TableInfo {
   EquipmentItems createAlias(String alias) {
     return EquipmentItems(attachedDatabase, alias);
   }
+
+  @override
+  bool get dontWriteConstraints => true;
 }
 
 class EquipmentAssignments extends Table with TableInfo {
@@ -370,9 +426,7 @@ class EquipmentAssignments extends Table with TableInfo {
     hasAutoIncrement: true,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
+    $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT',
   );
   late final GeneratedColumn<int> compartmentId = GeneratedColumn<int>(
     'compartment_id',
@@ -380,9 +434,7 @@ class EquipmentAssignments extends Table with TableInfo {
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES compartments (id) ON DELETE CASCADE',
-    ),
+    $customConstraints: 'NOT NULL REFERENCES compartments(id)ON DELETE CASCADE',
   );
   late final GeneratedColumn<int> equipmentId = GeneratedColumn<int>(
     'equipment_id',
@@ -390,9 +442,8 @@ class EquipmentAssignments extends Table with TableInfo {
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES equipment_items (id) ON DELETE CASCADE',
-    ),
+    $customConstraints:
+        'NOT NULL REFERENCES equipment_items(id)ON DELETE CASCADE',
   );
   late final GeneratedColumn<int> quantity = GeneratedColumn<int>(
     'quantity',
@@ -400,14 +451,17 @@ class EquipmentAssignments extends Table with TableInfo {
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
+    $customConstraints: 'NOT NULL DEFAULT 1',
     defaultValue: const CustomExpression('1'),
   );
-  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+  late final GeneratedColumn<int> updatedAt = GeneratedColumn<int>(
     'updated_at',
     aliasedName,
     false,
-    type: DriftSqlType.dateTime,
+    type: DriftSqlType.int,
     requiredDuringInsert: false,
+    $customConstraints:
+        'NOT NULL DEFAULT (CAST(strftime(\'%s\', CURRENT_TIMESTAMP) AS INTEGER))',
     defaultValue: const CustomExpression(
       'CAST(strftime(\'%s\', CURRENT_TIMESTAMP) AS INTEGER)',
     ),
@@ -436,6 +490,9 @@ class EquipmentAssignments extends Table with TableInfo {
   EquipmentAssignments createAlias(String alias) {
     return EquipmentAssignments(attachedDatabase, alias);
   }
+
+  @override
+  bool get dontWriteConstraints => true;
 }
 
 class QuizResults extends Table with TableInfo {
@@ -450,9 +507,7 @@ class QuizResults extends Table with TableInfo {
     hasAutoIncrement: true,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
+    $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT',
   );
   late final GeneratedColumn<String> quizType = GeneratedColumn<String>(
     'quiz_type',
@@ -460,6 +515,7 @@ class QuizResults extends Table with TableInfo {
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL',
   );
   late final GeneratedColumn<int> score = GeneratedColumn<int>(
     'score',
@@ -467,6 +523,7 @@ class QuizResults extends Table with TableInfo {
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL',
   );
   late final GeneratedColumn<int> total = GeneratedColumn<int>(
     'total',
@@ -474,6 +531,7 @@ class QuizResults extends Table with TableInfo {
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL',
   );
   late final GeneratedColumn<int> vehicleId = GeneratedColumn<int>(
     'vehicle_id',
@@ -481,16 +539,16 @@ class QuizResults extends Table with TableInfo {
     true,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES vehicles (id) ON DELETE SET NULL',
-    ),
+    $customConstraints: 'NULL REFERENCES vehicles(id)ON DELETE SET NULL',
   );
-  late final GeneratedColumn<DateTime> playedAt = GeneratedColumn<DateTime>(
+  late final GeneratedColumn<int> playedAt = GeneratedColumn<int>(
     'played_at',
     aliasedName,
     false,
-    type: DriftSqlType.dateTime,
+    type: DriftSqlType.int,
     requiredDuringInsert: false,
+    $customConstraints:
+        'NOT NULL DEFAULT (CAST(strftime(\'%s\', CURRENT_TIMESTAMP) AS INTEGER))',
     defaultValue: const CustomExpression(
       'CAST(strftime(\'%s\', CURRENT_TIMESTAMP) AS INTEGER)',
     ),
@@ -520,6 +578,9 @@ class QuizResults extends Table with TableInfo {
   QuizResults createAlias(String alias) {
     return QuizResults(attachedDatabase, alias);
   }
+
+  @override
+  bool get dontWriteConstraints => true;
 }
 
 class EquipmentInstances extends Table with TableInfo {
@@ -534,9 +595,7 @@ class EquipmentInstances extends Table with TableInfo {
     hasAutoIncrement: true,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
+    $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT',
   );
   late final GeneratedColumn<int> equipmentId = GeneratedColumn<int>(
     'equipment_id',
@@ -544,9 +603,8 @@ class EquipmentInstances extends Table with TableInfo {
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES equipment_items (id) ON DELETE CASCADE',
-    ),
+    $customConstraints:
+        'NOT NULL REFERENCES equipment_items(id)ON DELETE CASCADE',
   );
   late final GeneratedColumn<int> vehicleId = GeneratedColumn<int>(
     'vehicle_id',
@@ -554,9 +612,7 @@ class EquipmentInstances extends Table with TableInfo {
     true,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES vehicles (id) ON DELETE SET NULL',
-    ),
+    $customConstraints: 'NULL REFERENCES vehicles(id)ON DELETE SET NULL',
   );
   late final GeneratedColumn<int> compartmentId = GeneratedColumn<int>(
     'compartment_id',
@@ -564,9 +620,7 @@ class EquipmentInstances extends Table with TableInfo {
     true,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES compartments (id) ON DELETE SET NULL',
-    ),
+    $customConstraints: 'NULL REFERENCES compartments(id)ON DELETE SET NULL',
   );
   late final GeneratedColumn<String> identifier = GeneratedColumn<String>(
     'identifier',
@@ -574,6 +628,7 @@ class EquipmentInstances extends Table with TableInfo {
     true,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
+    $customConstraints: 'NULL',
   );
   late final GeneratedColumn<String> notes = GeneratedColumn<String>(
     'notes',
@@ -581,25 +636,26 @@ class EquipmentInstances extends Table with TableInfo {
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
+    $customConstraints: 'NOT NULL DEFAULT \'\'',
     defaultValue: const CustomExpression('\'\''),
   );
-  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+  late final GeneratedColumn<int> isActive = GeneratedColumn<int>(
     'is_active',
     aliasedName,
     false,
-    type: DriftSqlType.bool,
+    type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("is_active" IN (0, 1))',
-    ),
+    $customConstraints: 'NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1))',
     defaultValue: const CustomExpression('1'),
   );
-  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+  late final GeneratedColumn<int> updatedAt = GeneratedColumn<int>(
     'updated_at',
     aliasedName,
     false,
-    type: DriftSqlType.dateTime,
+    type: DriftSqlType.int,
     requiredDuringInsert: false,
+    $customConstraints:
+        'NOT NULL DEFAULT (CAST(strftime(\'%s\', CURRENT_TIMESTAMP) AS INTEGER))',
     defaultValue: const CustomExpression(
       'CAST(strftime(\'%s\', CURRENT_TIMESTAMP) AS INTEGER)',
     ),
@@ -631,6 +687,9 @@ class EquipmentInstances extends Table with TableInfo {
   EquipmentInstances createAlias(String alias) {
     return EquipmentInstances(attachedDatabase, alias);
   }
+
+  @override
+  bool get dontWriteConstraints => true;
 }
 
 class InspectionSchedules extends Table with TableInfo {
@@ -645,9 +704,7 @@ class InspectionSchedules extends Table with TableInfo {
     hasAutoIncrement: true,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
+    $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT',
   );
   late final GeneratedColumn<int> instanceId = GeneratedColumn<int>(
     'instance_id',
@@ -655,9 +712,8 @@ class InspectionSchedules extends Table with TableInfo {
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES equipment_instances (id) ON DELETE CASCADE',
-    ),
+    $customConstraints:
+        'NOT NULL REFERENCES equipment_instances(id)ON DELETE CASCADE',
   );
   late final GeneratedColumn<String> kind = GeneratedColumn<String>(
     'kind',
@@ -665,6 +721,7 @@ class InspectionSchedules extends Table with TableInfo {
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL',
   );
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
     'title',
@@ -672,6 +729,7 @@ class InspectionSchedules extends Table with TableInfo {
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL',
   );
   late final GeneratedColumn<int> intervalMonths = GeneratedColumn<int>(
     'interval_months',
@@ -679,20 +737,23 @@ class InspectionSchedules extends Table with TableInfo {
     true,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
+    $customConstraints: 'NULL',
   );
-  late final GeneratedColumn<DateTime> lastDoneAt = GeneratedColumn<DateTime>(
+  late final GeneratedColumn<int> lastDoneAt = GeneratedColumn<int>(
     'last_done_at',
     aliasedName,
     true,
-    type: DriftSqlType.dateTime,
+    type: DriftSqlType.int,
     requiredDuringInsert: false,
+    $customConstraints: 'NULL',
   );
-  late final GeneratedColumn<DateTime> dueAt = GeneratedColumn<DateTime>(
+  late final GeneratedColumn<int> dueAt = GeneratedColumn<int>(
     'due_at',
     aliasedName,
     false,
-    type: DriftSqlType.dateTime,
+    type: DriftSqlType.int,
     requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL',
   );
   late final GeneratedColumn<String> notes = GeneratedColumn<String>(
     'notes',
@@ -700,14 +761,17 @@ class InspectionSchedules extends Table with TableInfo {
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
+    $customConstraints: 'NOT NULL DEFAULT \'\'',
     defaultValue: const CustomExpression('\'\''),
   );
-  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+  late final GeneratedColumn<int> updatedAt = GeneratedColumn<int>(
     'updated_at',
     aliasedName,
     false,
-    type: DriftSqlType.dateTime,
+    type: DriftSqlType.int,
     requiredDuringInsert: false,
+    $customConstraints:
+        'NOT NULL DEFAULT (CAST(strftime(\'%s\', CURRENT_TIMESTAMP) AS INTEGER))',
     defaultValue: const CustomExpression(
       'CAST(strftime(\'%s\', CURRENT_TIMESTAMP) AS INTEGER)',
     ),
@@ -740,6 +804,9 @@ class InspectionSchedules extends Table with TableInfo {
   InspectionSchedules createAlias(String alias) {
     return InspectionSchedules(attachedDatabase, alias);
   }
+
+  @override
+  bool get dontWriteConstraints => true;
 }
 
 class InspectionLog extends Table with TableInfo {
@@ -754,9 +821,7 @@ class InspectionLog extends Table with TableInfo {
     hasAutoIncrement: true,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
+    $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT',
   );
   late final GeneratedColumn<int> scheduleId = GeneratedColumn<int>(
     'schedule_id',
@@ -764,16 +829,16 @@ class InspectionLog extends Table with TableInfo {
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES inspection_schedules (id) ON DELETE CASCADE',
-    ),
+    $customConstraints:
+        'NOT NULL REFERENCES inspection_schedules(id)ON DELETE CASCADE',
   );
-  late final GeneratedColumn<DateTime> doneAt = GeneratedColumn<DateTime>(
+  late final GeneratedColumn<int> doneAt = GeneratedColumn<int>(
     'done_at',
     aliasedName,
     false,
-    type: DriftSqlType.dateTime,
+    type: DriftSqlType.int,
     requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL',
   );
   late final GeneratedColumn<String> doneBy = GeneratedColumn<String>(
     'done_by',
@@ -781,6 +846,7 @@ class InspectionLog extends Table with TableInfo {
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
+    $customConstraints: 'NOT NULL DEFAULT \'\'',
     defaultValue: const CustomExpression('\'\''),
   );
   late final GeneratedColumn<String> note = GeneratedColumn<String>(
@@ -789,6 +855,7 @@ class InspectionLog extends Table with TableInfo {
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
+    $customConstraints: 'NOT NULL DEFAULT \'\'',
     defaultValue: const CustomExpression('\'\''),
   );
   @override
@@ -809,6 +876,9 @@ class InspectionLog extends Table with TableInfo {
   InspectionLog createAlias(String alias) {
     return InspectionLog(attachedDatabase, alias);
   }
+
+  @override
+  bool get dontWriteConstraints => true;
 }
 
 class UserAliases extends Table with TableInfo {
@@ -823,9 +893,7 @@ class UserAliases extends Table with TableInfo {
     hasAutoIncrement: true,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
+    $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT',
   );
   late final GeneratedColumn<String> alias = GeneratedColumn<String>(
     'alias',
@@ -833,7 +901,7 @@ class UserAliases extends Table with TableInfo {
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+    $customConstraints: 'NOT NULL UNIQUE',
   );
   late final GeneratedColumn<int> equipmentId = GeneratedColumn<int>(
     'equipment_id',
@@ -841,16 +909,17 @@ class UserAliases extends Table with TableInfo {
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES equipment_items (id) ON DELETE CASCADE',
-    ),
+    $customConstraints:
+        'NOT NULL REFERENCES equipment_items(id)ON DELETE CASCADE',
   );
-  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+  late final GeneratedColumn<int> updatedAt = GeneratedColumn<int>(
     'updated_at',
     aliasedName,
     false,
-    type: DriftSqlType.dateTime,
+    type: DriftSqlType.int,
     requiredDuringInsert: false,
+    $customConstraints:
+        'NOT NULL DEFAULT (CAST(strftime(\'%s\', CURRENT_TIMESTAMP) AS INTEGER))',
     defaultValue: const CustomExpression(
       'CAST(strftime(\'%s\', CURRENT_TIMESTAMP) AS INTEGER)',
     ),
@@ -873,6 +942,9 @@ class UserAliases extends Table with TableInfo {
   UserAliases createAlias(String alias) {
     return UserAliases(attachedDatabase, alias);
   }
+
+  @override
+  bool get dontWriteConstraints => true;
 }
 
 class SyncMeta extends Table with TableInfo {
@@ -886,6 +958,7 @@ class SyncMeta extends Table with TableInfo {
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
+    $customConstraints: 'NOT NULL DEFAULT 1',
     defaultValue: const CustomExpression('1'),
   );
   late final GeneratedColumn<int> lastPulledVersion = GeneratedColumn<int>(
@@ -894,25 +967,33 @@ class SyncMeta extends Table with TableInfo {
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
+    $customConstraints: 'NOT NULL DEFAULT 0',
     defaultValue: const CustomExpression('0'),
   );
-  late final GeneratedColumn<DateTime> lastPulledAt = GeneratedColumn<DateTime>(
+  late final GeneratedColumn<int> lastPulledAt = GeneratedColumn<int>(
     'last_pulled_at',
     aliasedName,
     true,
-    type: DriftSqlType.dateTime,
+    type: DriftSqlType.int,
     requiredDuringInsert: false,
+    $customConstraints: 'NULL',
   );
-  late final GeneratedColumn<bool> localDirty = GeneratedColumn<bool>(
+  late final GeneratedColumn<int> localDirty = GeneratedColumn<int>(
     'local_dirty',
     aliasedName,
     false,
-    type: DriftSqlType.bool,
+    type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("local_dirty" IN (0, 1))',
-    ),
+    $customConstraints: 'NOT NULL DEFAULT 0 CHECK (local_dirty IN (0, 1))',
     defaultValue: const CustomExpression('0'),
+  );
+  late final GeneratedColumn<String> lastTypeCursor = GeneratedColumn<String>(
+    'last_type_cursor',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    $customConstraints: 'NULL',
   );
   @override
   List<GeneratedColumn> get $columns => [
@@ -920,6 +1001,7 @@ class SyncMeta extends Table with TableInfo {
     lastPulledVersion,
     lastPulledAt,
     localDirty,
+    lastTypeCursor,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -937,10 +1019,307 @@ class SyncMeta extends Table with TableInfo {
   SyncMeta createAlias(String alias) {
     return SyncMeta(attachedDatabase, alias);
   }
+
+  @override
+  List<String> get customConstraints => const ['PRIMARY KEY(id)'];
+  @override
+  bool get dontWriteConstraints => true;
 }
 
-class DatabaseAtV2 extends GeneratedDatabase {
-  DatabaseAtV2(QueryExecutor e) : super(e);
+class LearningProgress extends Table with TableInfo {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  LearningProgress(this.attachedDatabase, [this._alias]);
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT',
+  );
+  late final GeneratedColumn<int> equipmentId = GeneratedColumn<int>(
+    'equipment_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    $customConstraints:
+        'NOT NULL REFERENCES equipment_items(id)ON DELETE CASCADE',
+  );
+  late final GeneratedColumn<int> correctCount = GeneratedColumn<int>(
+    'correct_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    $customConstraints: 'NOT NULL DEFAULT 0',
+    defaultValue: const CustomExpression('0'),
+  );
+  late final GeneratedColumn<int> wrongCount = GeneratedColumn<int>(
+    'wrong_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    $customConstraints: 'NOT NULL DEFAULT 0',
+    defaultValue: const CustomExpression('0'),
+  );
+  late final GeneratedColumn<int> lastPracticedAt = GeneratedColumn<int>(
+    'last_practiced_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    $customConstraints:
+        'NOT NULL DEFAULT (CAST(strftime(\'%s\', CURRENT_TIMESTAMP) AS INTEGER))',
+    defaultValue: const CustomExpression(
+      'CAST(strftime(\'%s\', CURRENT_TIMESTAMP) AS INTEGER)',
+    ),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    equipmentId,
+    correctCount,
+    wrongCount,
+    lastPracticedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'learning_progress';
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {equipmentId},
+  ];
+  @override
+  Never map(Map<String, dynamic> data, {String? tablePrefix}) {
+    throw UnsupportedError('TableInfo.map in schema verification code');
+  }
+
+  @override
+  LearningProgress createAlias(String alias) {
+    return LearningProgress(attachedDatabase, alias);
+  }
+
+  @override
+  List<String> get customConstraints => const ['UNIQUE(equipment_id)'];
+  @override
+  bool get dontWriteConstraints => true;
+}
+
+class InventorySessions extends Table with TableInfo {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  InventorySessions(this.attachedDatabase, [this._alias]);
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT',
+  );
+  late final GeneratedColumn<int> vehicleId = GeneratedColumn<int>(
+    'vehicle_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL REFERENCES vehicles(id)ON DELETE CASCADE',
+  );
+  late final GeneratedColumn<int> startedAt = GeneratedColumn<int>(
+    'started_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    $customConstraints:
+        'NOT NULL DEFAULT (CAST(strftime(\'%s\', CURRENT_TIMESTAMP) AS INTEGER))',
+    defaultValue: const CustomExpression(
+      'CAST(strftime(\'%s\', CURRENT_TIMESTAMP) AS INTEGER)',
+    ),
+  );
+  late final GeneratedColumn<int> finishedAt = GeneratedColumn<int>(
+    'finished_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    $customConstraints: 'NULL',
+  );
+  late final GeneratedColumn<String> doneBy = GeneratedColumn<String>(
+    'done_by',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    $customConstraints: 'NOT NULL DEFAULT \'\'',
+    defaultValue: const CustomExpression('\'\''),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    vehicleId,
+    startedAt,
+    finishedAt,
+    doneBy,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'inventory_sessions';
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Never map(Map<String, dynamic> data, {String? tablePrefix}) {
+    throw UnsupportedError('TableInfo.map in schema verification code');
+  }
+
+  @override
+  InventorySessions createAlias(String alias) {
+    return InventorySessions(attachedDatabase, alias);
+  }
+
+  @override
+  bool get dontWriteConstraints => true;
+}
+
+class InventoryChecks extends Table with TableInfo {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  InventoryChecks(this.attachedDatabase, [this._alias]);
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT',
+  );
+  late final GeneratedColumn<int> sessionId = GeneratedColumn<int>(
+    'session_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    $customConstraints:
+        'NOT NULL REFERENCES inventory_sessions(id)ON DELETE CASCADE',
+  );
+  late final GeneratedColumn<int> equipmentId = GeneratedColumn<int>(
+    'equipment_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    $customConstraints: 'NULL',
+  );
+  late final GeneratedColumn<int> compartmentId = GeneratedColumn<int>(
+    'compartment_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    $customConstraints: 'NULL',
+  );
+  late final GeneratedColumn<String> equipmentName = GeneratedColumn<String>(
+    'equipment_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL',
+  );
+  late final GeneratedColumn<String> compartmentLabel = GeneratedColumn<String>(
+    'compartment_label',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL',
+  );
+  late final GeneratedColumn<int> targetQuantity = GeneratedColumn<int>(
+    'target_quantity',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    $customConstraints: 'NOT NULL DEFAULT 1',
+    defaultValue: const CustomExpression('1'),
+  );
+  late final GeneratedColumn<int> actualQuantity = GeneratedColumn<int>(
+    'actual_quantity',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    $customConstraints: 'NULL',
+  );
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    $customConstraints: 'NOT NULL DEFAULT \'open\'',
+    defaultValue: const CustomExpression('\'open\''),
+  );
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    $customConstraints: 'NOT NULL DEFAULT \'\'',
+    defaultValue: const CustomExpression('\'\''),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    sessionId,
+    equipmentId,
+    compartmentId,
+    equipmentName,
+    compartmentLabel,
+    targetQuantity,
+    actualQuantity,
+    status,
+    note,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'inventory_checks';
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Never map(Map<String, dynamic> data, {String? tablePrefix}) {
+    throw UnsupportedError('TableInfo.map in schema verification code');
+  }
+
+  @override
+  InventoryChecks createAlias(String alias) {
+    return InventoryChecks(attachedDatabase, alias);
+  }
+
+  @override
+  bool get dontWriteConstraints => true;
+}
+
+class DatabaseAtV5 extends GeneratedDatabase {
+  DatabaseAtV5(QueryExecutor e) : super(e);
   late final Vehicles vehicles = Vehicles(this);
   late final Compartments compartments = Compartments(this);
   late final EquipmentItems equipmentItems = EquipmentItems(this);
@@ -955,6 +1334,9 @@ class DatabaseAtV2 extends GeneratedDatabase {
   late final InspectionLog inspectionLog = InspectionLog(this);
   late final UserAliases userAliases = UserAliases(this);
   late final SyncMeta syncMeta = SyncMeta(this);
+  late final LearningProgress learningProgress = LearningProgress(this);
+  late final InventorySessions inventorySessions = InventorySessions(this);
+  late final InventoryChecks inventoryChecks = InventoryChecks(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -970,7 +1352,104 @@ class DatabaseAtV2 extends GeneratedDatabase {
     inspectionLog,
     userAliases,
     syncMeta,
+    learningProgress,
+    inventorySessions,
+    inventoryChecks,
   ];
   @override
-  int get schemaVersion => 2;
+  StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'vehicles',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('compartments', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'compartments',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('equipment_assignments', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'equipment_items',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('equipment_assignments', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'vehicles',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('quiz_results', kind: UpdateKind.update)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'equipment_items',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('equipment_instances', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'vehicles',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('equipment_instances', kind: UpdateKind.update)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'compartments',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('equipment_instances', kind: UpdateKind.update)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'equipment_instances',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('inspection_schedules', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'inspection_schedules',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('inspection_log', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'equipment_items',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('user_aliases', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'equipment_items',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('learning_progress', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'vehicles',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('inventory_sessions', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'inventory_sessions',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('inventory_checks', kind: UpdateKind.delete)],
+    ),
+  ]);
+  @override
+  int get schemaVersion => 5;
 }

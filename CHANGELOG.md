@@ -12,6 +12,24 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.13.0] – 2026-08-02
+
+### Neu
+
+- **Gerätetypen gehören jetzt der ganzen Wehr.** Was ein C-Strahlrohr *ist* —
+  Name, Kurzform, Foto, Piktogramm — pflegt ihr ab sofort gemeinsam: Legt
+  Grombach einen Typ an, steht er auch in Bad Rappenau Stadt zur Verfügung,
+  mit demselben Bild. Die Geräte selbst, ihre Seriennummern und die
+  Prüfhistorie bleiben unverändert bei eurer Abteilung.
+- Damit sich beim Umschalten nichts doppelt: Ein geteilter Typ hängt sich an
+  das Gerät an, das ihr schon habt, statt daneben ein zweites anzulegen.
+
+### Hinweis
+
+Die App holt den geteilten Bestand ab dieser Version im Hintergrund mit —
+beim Start und bei **Jetzt aktualisieren**. Die Oberfläche dazu (Typen
+suchen, ändern, aus dem Bestand nehmen) kommt in der nächsten Version.
+
 ## [1.12.0] – 2026-08-02
 
 ### Neu

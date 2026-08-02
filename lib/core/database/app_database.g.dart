@@ -1316,6 +1316,43 @@ class $EquipmentItemsTable extends EquipmentItems
     requiredDuringInsert: false,
     defaultValue: currentDateAndTime,
   );
+  static const VerificationMeta _remoteTypeIdMeta = const VerificationMeta(
+    'remoteTypeId',
+  );
+  @override
+  late final GeneratedColumn<String> remoteTypeId = GeneratedColumn<String>(
+    'remote_type_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _remoteTypeUpdatedAtMeta =
+      const VerificationMeta('remoteTypeUpdatedAt');
+  @override
+  late final GeneratedColumn<String> remoteTypeUpdatedAt =
+      GeneratedColumn<String>(
+        'remote_type_updated_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _typeDirtyMeta = const VerificationMeta(
+    'typeDirty',
+  );
+  @override
+  late final GeneratedColumn<bool> typeDirty = GeneratedColumn<bool>(
+    'type_dirty',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("type_dirty" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1332,6 +1369,9 @@ class $EquipmentItemsTable extends EquipmentItems
     trainingQuestionsJson,
     typicalUseJson,
     updatedAt,
+    remoteTypeId,
+    remoteTypeUpdatedAt,
+    typeDirty,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1452,6 +1492,30 @@ class $EquipmentItemsTable extends EquipmentItems
         updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
       );
     }
+    if (data.containsKey('remote_type_id')) {
+      context.handle(
+        _remoteTypeIdMeta,
+        remoteTypeId.isAcceptableOrUnknown(
+          data['remote_type_id']!,
+          _remoteTypeIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('remote_type_updated_at')) {
+      context.handle(
+        _remoteTypeUpdatedAtMeta,
+        remoteTypeUpdatedAt.isAcceptableOrUnknown(
+          data['remote_type_updated_at']!,
+          _remoteTypeUpdatedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('type_dirty')) {
+      context.handle(
+        _typeDirtyMeta,
+        typeDirty.isAcceptableOrUnknown(data['type_dirty']!, _typeDirtyMeta),
+      );
+    }
     return context;
   }
 
@@ -1527,6 +1591,19 @@ class $EquipmentItemsTable extends EquipmentItems
             DriftSqlType.dateTime,
             data['${effectivePrefix}updated_at'],
           )!,
+      remoteTypeId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}remote_type_id'],
+      ),
+      remoteTypeUpdatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}remote_type_updated_at'],
+      ),
+      typeDirty:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}type_dirty'],
+          )!,
     );
   }
 
@@ -1552,6 +1629,29 @@ class EquipmentItemData extends DataClass
   final String trainingQuestionsJson;
   final String typicalUseJson;
   final DateTime updatedAt;
+
+  /// UUID des geteilten Gerätetyps der Gesamtwehr (Nutzerkonzept Stufe ②,
+  /// Issue #99). `null` heißt: noch nicht mit dem geteilten Bestand
+  /// verbunden — im Lokalmodus, ohne Gesamtwehr, oder vor dem ersten
+  /// Typ-Sync. Die lokale [id] bleibt der Schlüssel, an dem Zuordnungen und
+  /// Exemplare hängen; hier steht nur der Verweis nach draußen.
+  final String? remoteTypeId;
+
+  /// Der Stand des Typs, wie ihn der Server beim letzten Zug meldete —
+  /// wortgleich als Zeitstempel-Text.
+  ///
+  /// Das ist die **Version dieser Zeile**, nicht eine Uhrzeit: Beim Schieben
+  /// geht sie zurück an den Server, der ablehnt, wenn er seither
+  /// weitergezogen ist. Dasselbe Prinzip wie `expected_version` beim
+  /// Snapshot, nur je Zeile. Ein Vergleich über die LOKALE Uhr wäre hier
+  /// falsch — Drift rundet `DateTime` auf Sekunden, Postgres arbeitet mit
+  /// Mikrosekunden, und zwei Geräte gehen ohnehin nie gleich.
+  final String? remoteTypeUpdatedAt;
+
+  /// Lokal geändert und noch nicht in den geteilten Bestand geschoben.
+  /// Getrennt von `SyncMeta.localDirty`, weil Typen einen eigenen Weg gehen:
+  /// Der Snapshot wird als Ganzes veröffentlicht, ein Typ Zeile für Zeile.
+  final bool typeDirty;
   const EquipmentItemData({
     required this.id,
     required this.name,
@@ -1567,6 +1667,9 @@ class EquipmentItemData extends DataClass
     required this.trainingQuestionsJson,
     required this.typicalUseJson,
     required this.updatedAt,
+    this.remoteTypeId,
+    this.remoteTypeUpdatedAt,
+    required this.typeDirty,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1595,6 +1698,13 @@ class EquipmentItemData extends DataClass
     map['training_questions_json'] = Variable<String>(trainingQuestionsJson);
     map['typical_use_json'] = Variable<String>(typicalUseJson);
     map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || remoteTypeId != null) {
+      map['remote_type_id'] = Variable<String>(remoteTypeId);
+    }
+    if (!nullToAbsent || remoteTypeUpdatedAt != null) {
+      map['remote_type_updated_at'] = Variable<String>(remoteTypeUpdatedAt);
+    }
+    map['type_dirty'] = Variable<bool>(typeDirty);
     return map;
   }
 
@@ -1626,6 +1736,15 @@ class EquipmentItemData extends DataClass
       trainingQuestionsJson: Value(trainingQuestionsJson),
       typicalUseJson: Value(typicalUseJson),
       updatedAt: Value(updatedAt),
+      remoteTypeId:
+          remoteTypeId == null && nullToAbsent
+              ? const Value.absent()
+              : Value(remoteTypeId),
+      remoteTypeUpdatedAt:
+          remoteTypeUpdatedAt == null && nullToAbsent
+              ? const Value.absent()
+              : Value(remoteTypeUpdatedAt),
+      typeDirty: Value(typeDirty),
     );
   }
 
@@ -1659,6 +1778,11 @@ class EquipmentItemData extends DataClass
       ),
       typicalUseJson: serializer.fromJson<String>(json['typicalUseJson']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      remoteTypeId: serializer.fromJson<String?>(json['remoteTypeId']),
+      remoteTypeUpdatedAt: serializer.fromJson<String?>(
+        json['remoteTypeUpdatedAt'],
+      ),
+      typeDirty: serializer.fromJson<bool>(json['typeDirty']),
     );
   }
   @override
@@ -1683,6 +1807,9 @@ class EquipmentItemData extends DataClass
       'trainingQuestionsJson': serializer.toJson<String>(trainingQuestionsJson),
       'typicalUseJson': serializer.toJson<String>(typicalUseJson),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'remoteTypeId': serializer.toJson<String?>(remoteTypeId),
+      'remoteTypeUpdatedAt': serializer.toJson<String?>(remoteTypeUpdatedAt),
+      'typeDirty': serializer.toJson<bool>(typeDirty),
     };
   }
 
@@ -1701,6 +1828,9 @@ class EquipmentItemData extends DataClass
     String? trainingQuestionsJson,
     String? typicalUseJson,
     DateTime? updatedAt,
+    Value<String?> remoteTypeId = const Value.absent(),
+    Value<String?> remoteTypeUpdatedAt = const Value.absent(),
+    bool? typeDirty,
   }) => EquipmentItemData(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -1721,6 +1851,12 @@ class EquipmentItemData extends DataClass
     trainingQuestionsJson: trainingQuestionsJson ?? this.trainingQuestionsJson,
     typicalUseJson: typicalUseJson ?? this.typicalUseJson,
     updatedAt: updatedAt ?? this.updatedAt,
+    remoteTypeId: remoteTypeId.present ? remoteTypeId.value : this.remoteTypeId,
+    remoteTypeUpdatedAt:
+        remoteTypeUpdatedAt.present
+            ? remoteTypeUpdatedAt.value
+            : this.remoteTypeUpdatedAt,
+    typeDirty: typeDirty ?? this.typeDirty,
   );
   EquipmentItemData copyWithCompanion(EquipmentItemsCompanion data) {
     return EquipmentItemData(
@@ -1758,6 +1894,15 @@ class EquipmentItemData extends DataClass
               ? data.typicalUseJson.value
               : this.typicalUseJson,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      remoteTypeId:
+          data.remoteTypeId.present
+              ? data.remoteTypeId.value
+              : this.remoteTypeId,
+      remoteTypeUpdatedAt:
+          data.remoteTypeUpdatedAt.present
+              ? data.remoteTypeUpdatedAt.value
+              : this.remoteTypeUpdatedAt,
+      typeDirty: data.typeDirty.present ? data.typeDirty.value : this.typeDirty,
     );
   }
 
@@ -1777,7 +1922,10 @@ class EquipmentItemData extends DataClass
           ..write('extraAttributesJson: $extraAttributesJson, ')
           ..write('trainingQuestionsJson: $trainingQuestionsJson, ')
           ..write('typicalUseJson: $typicalUseJson, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('remoteTypeId: $remoteTypeId, ')
+          ..write('remoteTypeUpdatedAt: $remoteTypeUpdatedAt, ')
+          ..write('typeDirty: $typeDirty')
           ..write(')'))
         .toString();
   }
@@ -1798,6 +1946,9 @@ class EquipmentItemData extends DataClass
     trainingQuestionsJson,
     typicalUseJson,
     updatedAt,
+    remoteTypeId,
+    remoteTypeUpdatedAt,
+    typeDirty,
   );
   @override
   bool operator ==(Object other) =>
@@ -1816,7 +1967,10 @@ class EquipmentItemData extends DataClass
           other.extraAttributesJson == this.extraAttributesJson &&
           other.trainingQuestionsJson == this.trainingQuestionsJson &&
           other.typicalUseJson == this.typicalUseJson &&
-          other.updatedAt == this.updatedAt);
+          other.updatedAt == this.updatedAt &&
+          other.remoteTypeId == this.remoteTypeId &&
+          other.remoteTypeUpdatedAt == this.remoteTypeUpdatedAt &&
+          other.typeDirty == this.typeDirty);
 }
 
 class EquipmentItemsCompanion extends UpdateCompanion<EquipmentItemData> {
@@ -1834,6 +1988,9 @@ class EquipmentItemsCompanion extends UpdateCompanion<EquipmentItemData> {
   final Value<String> trainingQuestionsJson;
   final Value<String> typicalUseJson;
   final Value<DateTime> updatedAt;
+  final Value<String?> remoteTypeId;
+  final Value<String?> remoteTypeUpdatedAt;
+  final Value<bool> typeDirty;
   const EquipmentItemsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
@@ -1849,6 +2006,9 @@ class EquipmentItemsCompanion extends UpdateCompanion<EquipmentItemData> {
     this.trainingQuestionsJson = const Value.absent(),
     this.typicalUseJson = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.remoteTypeId = const Value.absent(),
+    this.remoteTypeUpdatedAt = const Value.absent(),
+    this.typeDirty = const Value.absent(),
   });
   EquipmentItemsCompanion.insert({
     this.id = const Value.absent(),
@@ -1865,6 +2025,9 @@ class EquipmentItemsCompanion extends UpdateCompanion<EquipmentItemData> {
     this.trainingQuestionsJson = const Value.absent(),
     this.typicalUseJson = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.remoteTypeId = const Value.absent(),
+    this.remoteTypeUpdatedAt = const Value.absent(),
+    this.typeDirty = const Value.absent(),
   }) : name = Value(name);
   static Insertable<EquipmentItemData> custom({
     Expression<int>? id,
@@ -1881,6 +2044,9 @@ class EquipmentItemsCompanion extends UpdateCompanion<EquipmentItemData> {
     Expression<String>? trainingQuestionsJson,
     Expression<String>? typicalUseJson,
     Expression<DateTime>? updatedAt,
+    Expression<String>? remoteTypeId,
+    Expression<String>? remoteTypeUpdatedAt,
+    Expression<bool>? typeDirty,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1902,6 +2068,10 @@ class EquipmentItemsCompanion extends UpdateCompanion<EquipmentItemData> {
         'training_questions_json': trainingQuestionsJson,
       if (typicalUseJson != null) 'typical_use_json': typicalUseJson,
       if (updatedAt != null) 'updated_at': updatedAt,
+      if (remoteTypeId != null) 'remote_type_id': remoteTypeId,
+      if (remoteTypeUpdatedAt != null)
+        'remote_type_updated_at': remoteTypeUpdatedAt,
+      if (typeDirty != null) 'type_dirty': typeDirty,
     });
   }
 
@@ -1920,6 +2090,9 @@ class EquipmentItemsCompanion extends UpdateCompanion<EquipmentItemData> {
     Value<String>? trainingQuestionsJson,
     Value<String>? typicalUseJson,
     Value<DateTime>? updatedAt,
+    Value<String?>? remoteTypeId,
+    Value<String?>? remoteTypeUpdatedAt,
+    Value<bool>? typeDirty,
   }) {
     return EquipmentItemsCompanion(
       id: id ?? this.id,
@@ -1939,6 +2112,9 @@ class EquipmentItemsCompanion extends UpdateCompanion<EquipmentItemData> {
           trainingQuestionsJson ?? this.trainingQuestionsJson,
       typicalUseJson: typicalUseJson ?? this.typicalUseJson,
       updatedAt: updatedAt ?? this.updatedAt,
+      remoteTypeId: remoteTypeId ?? this.remoteTypeId,
+      remoteTypeUpdatedAt: remoteTypeUpdatedAt ?? this.remoteTypeUpdatedAt,
+      typeDirty: typeDirty ?? this.typeDirty,
     );
   }
 
@@ -1995,6 +2171,17 @@ class EquipmentItemsCompanion extends UpdateCompanion<EquipmentItemData> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
+    if (remoteTypeId.present) {
+      map['remote_type_id'] = Variable<String>(remoteTypeId.value);
+    }
+    if (remoteTypeUpdatedAt.present) {
+      map['remote_type_updated_at'] = Variable<String>(
+        remoteTypeUpdatedAt.value,
+      );
+    }
+    if (typeDirty.present) {
+      map['type_dirty'] = Variable<bool>(typeDirty.value);
+    }
     return map;
   }
 
@@ -2014,7 +2201,10 @@ class EquipmentItemsCompanion extends UpdateCompanion<EquipmentItemData> {
           ..write('extraAttributesJson: $extraAttributesJson, ')
           ..write('trainingQuestionsJson: $trainingQuestionsJson, ')
           ..write('typicalUseJson: $typicalUseJson, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('remoteTypeId: $remoteTypeId, ')
+          ..write('remoteTypeUpdatedAt: $remoteTypeUpdatedAt, ')
+          ..write('typeDirty: $typeDirty')
           ..write(')'))
         .toString();
   }
@@ -4599,12 +4789,24 @@ class $SyncMetaTable extends SyncMeta
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _lastTypeCursorMeta = const VerificationMeta(
+    'lastTypeCursor',
+  );
+  @override
+  late final GeneratedColumn<String> lastTypeCursor = GeneratedColumn<String>(
+    'last_type_cursor',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
     lastPulledVersion,
     lastPulledAt,
     localDirty,
+    lastTypeCursor,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -4645,6 +4847,15 @@ class $SyncMetaTable extends SyncMeta
         localDirty.isAcceptableOrUnknown(data['local_dirty']!, _localDirtyMeta),
       );
     }
+    if (data.containsKey('last_type_cursor')) {
+      context.handle(
+        _lastTypeCursorMeta,
+        lastTypeCursor.isAcceptableOrUnknown(
+          data['last_type_cursor']!,
+          _lastTypeCursorMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -4673,6 +4884,10 @@ class $SyncMetaTable extends SyncMeta
             DriftSqlType.bool,
             data['${effectivePrefix}local_dirty'],
           )!,
+      lastTypeCursor: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}last_type_cursor'],
+      ),
     );
   }
 
@@ -4687,11 +4902,24 @@ class SyncMetaData extends DataClass implements Insertable<SyncMetaData> {
   final int lastPulledVersion;
   final DateTime? lastPulledAt;
   final bool localDirty;
+
+  /// Obergrenze des zuletzt gezogenen Typ-Fensters (Stufe ②). Der Typ-Sync
+  /// holt nur, was seither geändert wurde — anders als der Snapshot, der
+  /// immer vollständig kommt.
+  ///
+  /// ⚠️ **Text, nicht DateTime, und das mit Absicht.** Drift legt
+  /// `DateTimeColumn` als Unix-Sekunden ab; Postgres liefert Mikrosekunden.
+  /// Ein zurückgeschriebener `DateTime` wäre also immer eine Winzigkeit ZU
+  /// FRÜH, und das Fenster holte dieselbe Zeile bei jedem Lauf erneut. Hier
+  /// steht deshalb der Zeitstempel des Servers wortgleich — er ist ein
+  /// Lesezeichen, keine Uhrzeit.
+  final String? lastTypeCursor;
   const SyncMetaData({
     required this.id,
     required this.lastPulledVersion,
     this.lastPulledAt,
     required this.localDirty,
+    this.lastTypeCursor,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -4702,6 +4930,9 @@ class SyncMetaData extends DataClass implements Insertable<SyncMetaData> {
       map['last_pulled_at'] = Variable<DateTime>(lastPulledAt);
     }
     map['local_dirty'] = Variable<bool>(localDirty);
+    if (!nullToAbsent || lastTypeCursor != null) {
+      map['last_type_cursor'] = Variable<String>(lastTypeCursor);
+    }
     return map;
   }
 
@@ -4714,6 +4945,10 @@ class SyncMetaData extends DataClass implements Insertable<SyncMetaData> {
               ? const Value.absent()
               : Value(lastPulledAt),
       localDirty: Value(localDirty),
+      lastTypeCursor:
+          lastTypeCursor == null && nullToAbsent
+              ? const Value.absent()
+              : Value(lastTypeCursor),
     );
   }
 
@@ -4727,6 +4962,7 @@ class SyncMetaData extends DataClass implements Insertable<SyncMetaData> {
       lastPulledVersion: serializer.fromJson<int>(json['lastPulledVersion']),
       lastPulledAt: serializer.fromJson<DateTime?>(json['lastPulledAt']),
       localDirty: serializer.fromJson<bool>(json['localDirty']),
+      lastTypeCursor: serializer.fromJson<String?>(json['lastTypeCursor']),
     );
   }
   @override
@@ -4737,6 +4973,7 @@ class SyncMetaData extends DataClass implements Insertable<SyncMetaData> {
       'lastPulledVersion': serializer.toJson<int>(lastPulledVersion),
       'lastPulledAt': serializer.toJson<DateTime?>(lastPulledAt),
       'localDirty': serializer.toJson<bool>(localDirty),
+      'lastTypeCursor': serializer.toJson<String?>(lastTypeCursor),
     };
   }
 
@@ -4745,11 +4982,14 @@ class SyncMetaData extends DataClass implements Insertable<SyncMetaData> {
     int? lastPulledVersion,
     Value<DateTime?> lastPulledAt = const Value.absent(),
     bool? localDirty,
+    Value<String?> lastTypeCursor = const Value.absent(),
   }) => SyncMetaData(
     id: id ?? this.id,
     lastPulledVersion: lastPulledVersion ?? this.lastPulledVersion,
     lastPulledAt: lastPulledAt.present ? lastPulledAt.value : this.lastPulledAt,
     localDirty: localDirty ?? this.localDirty,
+    lastTypeCursor:
+        lastTypeCursor.present ? lastTypeCursor.value : this.lastTypeCursor,
   );
   SyncMetaData copyWithCompanion(SyncMetaCompanion data) {
     return SyncMetaData(
@@ -4764,6 +5004,10 @@ class SyncMetaData extends DataClass implements Insertable<SyncMetaData> {
               : this.lastPulledAt,
       localDirty:
           data.localDirty.present ? data.localDirty.value : this.localDirty,
+      lastTypeCursor:
+          data.lastTypeCursor.present
+              ? data.lastTypeCursor.value
+              : this.lastTypeCursor,
     );
   }
 
@@ -4773,14 +5017,20 @@ class SyncMetaData extends DataClass implements Insertable<SyncMetaData> {
           ..write('id: $id, ')
           ..write('lastPulledVersion: $lastPulledVersion, ')
           ..write('lastPulledAt: $lastPulledAt, ')
-          ..write('localDirty: $localDirty')
+          ..write('localDirty: $localDirty, ')
+          ..write('lastTypeCursor: $lastTypeCursor')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, lastPulledVersion, lastPulledAt, localDirty);
+  int get hashCode => Object.hash(
+    id,
+    lastPulledVersion,
+    lastPulledAt,
+    localDirty,
+    lastTypeCursor,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -4788,7 +5038,8 @@ class SyncMetaData extends DataClass implements Insertable<SyncMetaData> {
           other.id == this.id &&
           other.lastPulledVersion == this.lastPulledVersion &&
           other.lastPulledAt == this.lastPulledAt &&
-          other.localDirty == this.localDirty);
+          other.localDirty == this.localDirty &&
+          other.lastTypeCursor == this.lastTypeCursor);
 }
 
 class SyncMetaCompanion extends UpdateCompanion<SyncMetaData> {
@@ -4796,29 +5047,34 @@ class SyncMetaCompanion extends UpdateCompanion<SyncMetaData> {
   final Value<int> lastPulledVersion;
   final Value<DateTime?> lastPulledAt;
   final Value<bool> localDirty;
+  final Value<String?> lastTypeCursor;
   const SyncMetaCompanion({
     this.id = const Value.absent(),
     this.lastPulledVersion = const Value.absent(),
     this.lastPulledAt = const Value.absent(),
     this.localDirty = const Value.absent(),
+    this.lastTypeCursor = const Value.absent(),
   });
   SyncMetaCompanion.insert({
     this.id = const Value.absent(),
     this.lastPulledVersion = const Value.absent(),
     this.lastPulledAt = const Value.absent(),
     this.localDirty = const Value.absent(),
+    this.lastTypeCursor = const Value.absent(),
   });
   static Insertable<SyncMetaData> custom({
     Expression<int>? id,
     Expression<int>? lastPulledVersion,
     Expression<DateTime>? lastPulledAt,
     Expression<bool>? localDirty,
+    Expression<String>? lastTypeCursor,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (lastPulledVersion != null) 'last_pulled_version': lastPulledVersion,
       if (lastPulledAt != null) 'last_pulled_at': lastPulledAt,
       if (localDirty != null) 'local_dirty': localDirty,
+      if (lastTypeCursor != null) 'last_type_cursor': lastTypeCursor,
     });
   }
 
@@ -4827,12 +5083,14 @@ class SyncMetaCompanion extends UpdateCompanion<SyncMetaData> {
     Value<int>? lastPulledVersion,
     Value<DateTime?>? lastPulledAt,
     Value<bool>? localDirty,
+    Value<String?>? lastTypeCursor,
   }) {
     return SyncMetaCompanion(
       id: id ?? this.id,
       lastPulledVersion: lastPulledVersion ?? this.lastPulledVersion,
       lastPulledAt: lastPulledAt ?? this.lastPulledAt,
       localDirty: localDirty ?? this.localDirty,
+      lastTypeCursor: lastTypeCursor ?? this.lastTypeCursor,
     );
   }
 
@@ -4851,6 +5109,9 @@ class SyncMetaCompanion extends UpdateCompanion<SyncMetaData> {
     if (localDirty.present) {
       map['local_dirty'] = Variable<bool>(localDirty.value);
     }
+    if (lastTypeCursor.present) {
+      map['last_type_cursor'] = Variable<String>(lastTypeCursor.value);
+    }
     return map;
   }
 
@@ -4860,7 +5121,8 @@ class SyncMetaCompanion extends UpdateCompanion<SyncMetaData> {
           ..write('id: $id, ')
           ..write('lastPulledVersion: $lastPulledVersion, ')
           ..write('lastPulledAt: $lastPulledAt, ')
-          ..write('localDirty: $localDirty')
+          ..write('localDirty: $localDirty, ')
+          ..write('lastTypeCursor: $lastTypeCursor')
           ..write(')'))
         .toString();
   }
@@ -7632,6 +7894,9 @@ typedef $$EquipmentItemsTableCreateCompanionBuilder =
       Value<String> trainingQuestionsJson,
       Value<String> typicalUseJson,
       Value<DateTime> updatedAt,
+      Value<String?> remoteTypeId,
+      Value<String?> remoteTypeUpdatedAt,
+      Value<bool> typeDirty,
     });
 typedef $$EquipmentItemsTableUpdateCompanionBuilder =
     EquipmentItemsCompanion Function({
@@ -7649,6 +7914,9 @@ typedef $$EquipmentItemsTableUpdateCompanionBuilder =
       Value<String> trainingQuestionsJson,
       Value<String> typicalUseJson,
       Value<DateTime> updatedAt,
+      Value<String?> remoteTypeId,
+      Value<String?> remoteTypeUpdatedAt,
+      Value<bool> typeDirty,
     });
 
 final class $$EquipmentItemsTableReferences
@@ -7821,6 +8089,21 @@ class $$EquipmentItemsTableFilterComposer
 
   ColumnFilters<DateTime> get updatedAt => $composableBuilder(
     column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get remoteTypeId => $composableBuilder(
+    column: $table.remoteTypeId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get remoteTypeUpdatedAt => $composableBuilder(
+    column: $table.remoteTypeUpdatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get typeDirty => $composableBuilder(
+    column: $table.typeDirty,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -8003,6 +8286,21 @@ class $$EquipmentItemsTableOrderingComposer
     column: $table.updatedAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get remoteTypeId => $composableBuilder(
+    column: $table.remoteTypeId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get remoteTypeUpdatedAt => $composableBuilder(
+    column: $table.remoteTypeUpdatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get typeDirty => $composableBuilder(
+    column: $table.typeDirty,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$EquipmentItemsTableAnnotationComposer
@@ -8071,6 +8369,19 @@ class $$EquipmentItemsTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get remoteTypeId => $composableBuilder(
+    column: $table.remoteTypeId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get remoteTypeUpdatedAt => $composableBuilder(
+    column: $table.remoteTypeUpdatedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get typeDirty =>
+      $composableBuilder(column: $table.typeDirty, builder: (column) => column);
 
   Expression<T> equipmentAssignmentsRefs<T extends Object>(
     Expression<T> Function($$EquipmentAssignmentsTableAnnotationComposer a) f,
@@ -8228,6 +8539,9 @@ class $$EquipmentItemsTableTableManager
                 Value<String> trainingQuestionsJson = const Value.absent(),
                 Value<String> typicalUseJson = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
+                Value<String?> remoteTypeId = const Value.absent(),
+                Value<String?> remoteTypeUpdatedAt = const Value.absent(),
+                Value<bool> typeDirty = const Value.absent(),
               }) => EquipmentItemsCompanion(
                 id: id,
                 name: name,
@@ -8243,6 +8557,9 @@ class $$EquipmentItemsTableTableManager
                 trainingQuestionsJson: trainingQuestionsJson,
                 typicalUseJson: typicalUseJson,
                 updatedAt: updatedAt,
+                remoteTypeId: remoteTypeId,
+                remoteTypeUpdatedAt: remoteTypeUpdatedAt,
+                typeDirty: typeDirty,
               ),
           createCompanionCallback:
               ({
@@ -8260,6 +8577,9 @@ class $$EquipmentItemsTableTableManager
                 Value<String> trainingQuestionsJson = const Value.absent(),
                 Value<String> typicalUseJson = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
+                Value<String?> remoteTypeId = const Value.absent(),
+                Value<String?> remoteTypeUpdatedAt = const Value.absent(),
+                Value<bool> typeDirty = const Value.absent(),
               }) => EquipmentItemsCompanion.insert(
                 id: id,
                 name: name,
@@ -8275,6 +8595,9 @@ class $$EquipmentItemsTableTableManager
                 trainingQuestionsJson: trainingQuestionsJson,
                 typicalUseJson: typicalUseJson,
                 updatedAt: updatedAt,
+                remoteTypeId: remoteTypeId,
+                remoteTypeUpdatedAt: remoteTypeUpdatedAt,
+                typeDirty: typeDirty,
               ),
           withReferenceMapper:
               (p0) =>
@@ -11001,6 +11324,7 @@ typedef $$SyncMetaTableCreateCompanionBuilder =
       Value<int> lastPulledVersion,
       Value<DateTime?> lastPulledAt,
       Value<bool> localDirty,
+      Value<String?> lastTypeCursor,
     });
 typedef $$SyncMetaTableUpdateCompanionBuilder =
     SyncMetaCompanion Function({
@@ -11008,6 +11332,7 @@ typedef $$SyncMetaTableUpdateCompanionBuilder =
       Value<int> lastPulledVersion,
       Value<DateTime?> lastPulledAt,
       Value<bool> localDirty,
+      Value<String?> lastTypeCursor,
     });
 
 class $$SyncMetaTableFilterComposer
@@ -11036,6 +11361,11 @@ class $$SyncMetaTableFilterComposer
 
   ColumnFilters<bool> get localDirty => $composableBuilder(
     column: $table.localDirty,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get lastTypeCursor => $composableBuilder(
+    column: $table.lastTypeCursor,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -11068,6 +11398,11 @@ class $$SyncMetaTableOrderingComposer
     column: $table.localDirty,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get lastTypeCursor => $composableBuilder(
+    column: $table.lastTypeCursor,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$SyncMetaTableAnnotationComposer
@@ -11094,6 +11429,11 @@ class $$SyncMetaTableAnnotationComposer
 
   GeneratedColumn<bool> get localDirty => $composableBuilder(
     column: $table.localDirty,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get lastTypeCursor => $composableBuilder(
+    column: $table.lastTypeCursor,
     builder: (column) => column,
   );
 }
@@ -11133,11 +11473,13 @@ class $$SyncMetaTableTableManager
                 Value<int> lastPulledVersion = const Value.absent(),
                 Value<DateTime?> lastPulledAt = const Value.absent(),
                 Value<bool> localDirty = const Value.absent(),
+                Value<String?> lastTypeCursor = const Value.absent(),
               }) => SyncMetaCompanion(
                 id: id,
                 lastPulledVersion: lastPulledVersion,
                 lastPulledAt: lastPulledAt,
                 localDirty: localDirty,
+                lastTypeCursor: lastTypeCursor,
               ),
           createCompanionCallback:
               ({
@@ -11145,11 +11487,13 @@ class $$SyncMetaTableTableManager
                 Value<int> lastPulledVersion = const Value.absent(),
                 Value<DateTime?> lastPulledAt = const Value.absent(),
                 Value<bool> localDirty = const Value.absent(),
+                Value<String?> lastTypeCursor = const Value.absent(),
               }) => SyncMetaCompanion.insert(
                 id: id,
                 lastPulledVersion: lastPulledVersion,
                 lastPulledAt: lastPulledAt,
                 localDirty: localDirty,
+                lastTypeCursor: lastTypeCursor,
               ),
           withReferenceMapper:
               (p0) =>

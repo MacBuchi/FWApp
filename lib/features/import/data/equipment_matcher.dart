@@ -3,6 +3,7 @@
 /// normalized fuzzy matching (token overlap + Levenshtein, pure Dart).
 library;
 import 'package:fwapp/core/database/app_database.dart';
+import 'package:fwapp/core/utils/equipment_naming.dart';
 import 'package:fwapp/features/import/domain/import_models.dart';
 
 class EquipmentMatcher {
@@ -100,14 +101,11 @@ class EquipmentMatcher {
   // ── Normalization & similarity ──
 
   /// Lowercase, fold umlauts, strip punctuation, collapse whitespace.
-  static String normalize(String s) => s
-      .toLowerCase()
-      .replaceAll('ä', 'ae')
-      .replaceAll('ö', 'oe')
-      .replaceAll('ü', 'ue')
-      .replaceAll('ß', 'ss')
-      .replaceAll(RegExp(r'[^a-z0-9]+'), ' ')
-      .trim();
+  ///
+  /// Die Regel selbst liegt seit Stufe ② in `core/utils/equipment_naming.dart`
+  /// — der Typ-Sync braucht dieselbe, und der Server spiegelt sie in SQL.
+  /// Hier bleibt nur der vertraute Name stehen.
+  static String normalize(String s) => normalizeEquipmentName(s);
 
   static Set<String> _tokens(String s) =>
       normalize(s).split(' ').where((t) => t.length > 1).toSet();

@@ -14,14 +14,14 @@ void main() {
     verifier = SchemaVerifier(GeneratedHelper());
   });
 
-  test('migrates from v1 to v4 without schema errors', () async {
+  test('migrates from v1 to v5 without schema errors', () async {
     final connection = await verifier.startAt(1);
     final db = AppDatabase(connection);
-    await verifier.migrateAndValidate(db, 4);
+    await verifier.migrateAndValidate(db, 5);
     await db.close();
   });
 
-  test('v1 data survives the migration to v4', () async {
+  test('v1 data survives the migration to v5', () async {
     final schema = await verifier.schemaAt(1);
 
     schema.rawDatabase
@@ -40,7 +40,7 @@ void main() {
           "VALUES (1, 1, 1, 2, 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 4);
+    await verifier.migrateAndValidate(db, 5);
 
     final vehicle = await db.vehicleDao.getById(1);
     expect(vehicle?.name, 'AB-G');
@@ -63,7 +63,7 @@ void main() {
       () async {
     final connection = await verifier.startAt(2);
     final db = AppDatabase(connection);
-    await verifier.migrateAndValidate(db, 4);
+    await verifier.migrateAndValidate(db, 5);
 
     final equipmentId = await db.equipmentDao
         .insertEquipment(EquipmentItemsCompanion.insert(name: 'Spineboard'));
@@ -81,7 +81,7 @@ void main() {
   test('new v2 tables are usable after migration', () async {
     final connection = await verifier.startAt(1);
     final db = AppDatabase(connection);
-    await verifier.migrateAndValidate(db, 4);
+    await verifier.migrateAndValidate(db, 5);
 
     final vehicleId = await db.vehicleDao.insertVehicle(
         VehiclesCompanion.insert(name: 'LF 10', type: 'LF'));
@@ -113,6 +113,38 @@ void main() {
     final counts = await db.inspectionDao.watchDueCountsByVehicle().first;
     expect(counts[vehicleId]?.overdueCount, 1);
     expect(counts[vehicleId]?.dueSoonCount, 0);
+
+    await db.close();
+  });
+
+  test('v4→v5: bestehende Geräte überstehen den Typ-Anschluss unverbunden',
+      () async {
+    // Nutzerkonzept Stufe ② (Issue #99). Der Anschluss an den geteilten
+    // Typ-Bestand darf einen Bestandsdatensatz NICHT verändern: Er läuft
+    // unverbunden weiter und findet seinen Typ beim ersten Typ-Sync. Ein
+    // Gerät im Feld ohne Gesamtwehr bleibt für immer so.
+    final schema = await verifier.schemaAt(4);
+    schema.rawDatabase.execute(
+        "INSERT INTO equipment_items (id, name, equipment_functions_json, "
+        "deployment_scenarios_json, description, is_custom, "
+        "extra_attributes_json, training_questions_json, typical_use_json, "
+        "updated_at) VALUES (1, 'Feuerwehraxt', '[]', '[]', 'Bestand', 0, "
+        "'{}', '[]', '[]', 0)");
+
+    final db = AppDatabase(schema.newConnection());
+    await verifier.migrateAndValidate(db, 5);
+
+    final geraet = await db.equipmentDao.getById(1);
+    expect(geraet?.name, 'Feuerwehraxt');
+    expect(geraet?.description, 'Bestand');
+    expect(geraet?.remoteTypeId, isNull);
+    expect(geraet?.typeDirty, isFalse);
+
+    final meta = await (db.select(db.syncMeta)
+          ..where((t) => t.id.equals(1)))
+        .getSingleOrNull();
+    // Kein Fenster gezogen: Der erste Typ-Sync holt alles.
+    expect(meta?.lastTypeCursor, isNull);
 
     await db.close();
   });

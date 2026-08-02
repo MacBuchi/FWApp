@@ -297,6 +297,10 @@ class _ConnectionSection extends ConsumerWidget {
     try {
       final version =
           await ref.read(syncServiceProvider)?.pullIfNewer(force: true);
+      // Die Gerätetypen der Gesamtwehr kommen auf ihrem eigenen Weg mit
+      // (Stufe ②) — „Jetzt aktualisieren" soll alles holen, nicht nur den
+      // Bestand der Abteilung.
+      await ref.read(equipmentTypeSyncProvider)?.sync();
       unawaited(ref.read(imagePrecacheProvider.notifier).run());
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(

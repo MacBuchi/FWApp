@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/database/database_providers.dart';
 import 'package:fwapp/core/sync/abteilung_providers.dart';
+import 'package:fwapp/core/sync/equipment_type_sync.dart';
 import 'package:fwapp/core/sync/image_sync_service.dart';
 import 'package:fwapp/core/sync/membership_providers.dart';
 import 'package:fwapp/core/sync/sync_service.dart';
@@ -175,6 +176,19 @@ final syncServiceProvider = Provider<SyncService?>((ref) {
   service.startDirtyTracking();
   ref.onDispose(service.dispose);
   return service;
+});
+
+/// Der zeilenweise Sync der Gerätetypen (Nutzerkonzept Stufe ②, Issue #99).
+/// Hängt wie [syncServiceProvider] an der gewählten Abteilung — über sie
+/// findet er die Gesamtwehr, deren Typ-Bestand gilt.
+final equipmentTypeSyncProvider = Provider<EquipmentTypeSync?>((ref) {
+  final client = ref.watch(supabaseClientProvider);
+  if (client == null) return null;
+  return EquipmentTypeSync(
+    ref.watch(appDatabaseProvider),
+    client,
+    abteilungOverride: ref.watch(selectedAbteilungIdProvider),
+  );
 });
 
 /// Live-Erreichbarkeitscheck des Sync-Servers (GET /auth/v1/health).

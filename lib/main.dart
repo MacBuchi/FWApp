@@ -156,6 +156,10 @@ class _FWAppState extends ConsumerState<FWApp> {
       try {
         await sync.pullIfNewer();
         if (!mounted) return;
+        // Gerätetypen der Gesamtwehr (Stufe ②, Issue #99) — eigener,
+        // zeilenweiser Weg neben dem Snapshot. Ohne Gesamtwehr ein No-op.
+        await ref.read(equipmentTypeSyncProvider)?.sync();
+        if (!mounted) return;
         // Warm the offline image cache in the background (M2).
         unawaited(ref.read(imagePrecacheProvider.notifier).run());
       } catch (e) {

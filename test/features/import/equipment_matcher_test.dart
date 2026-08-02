@@ -20,6 +20,7 @@ EquipmentItemData _item(int id, String name,
       typicalUseJson: '[]',
       libraryEquipmentId: libraryId,
       updatedAt: DateTime(2026),
+      typeDirty: false,
     );
 
 void main() {

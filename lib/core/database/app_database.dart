@@ -315,10 +315,24 @@ class CompartmentDao extends DatabaseAccessor<AppDatabase>
       (delete(compartments)..where((t) => t.id.equals(id))).go();
 }
 
-@DriftAccessor(tables: [EquipmentItems])
+@DriftAccessor(
+    tables: [EquipmentItems, EquipmentAssignments, EquipmentInstances])
 class EquipmentDao extends DatabaseAccessor<AppDatabase>
     with _$EquipmentDaoMixin {
   EquipmentDao(super.db);
+
+  /// Was hängt an dem Gerät? Beides verschwindet mit ihm (Kaskade) — die
+  /// Exemplare samt Prüfterminen und Prüfhistorie. Deshalb wird vor dem
+  /// Entfernen danach gefragt (Issue #99).
+  Future<List<AssignmentData>> assignmentsFor(int equipmentId) =>
+      (select(equipmentAssignments)
+            ..where((t) => t.equipmentId.equals(equipmentId)))
+          .get();
+
+  Future<List<EquipmentInstanceData>> instancesFor(int equipmentId) =>
+      (select(equipmentInstances)
+            ..where((t) => t.equipmentId.equals(equipmentId)))
+          .get();
 
   Future<List<EquipmentItemData>> getAll() =>
       (select(equipmentItems)..orderBy([(t) => OrderingTerm.asc(t.name)]))

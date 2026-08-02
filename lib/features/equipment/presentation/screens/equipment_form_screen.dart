@@ -6,8 +6,10 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart' show ImageSource;
 import 'package:fwapp/core/database/standard_catalog.dart';
 import 'package:fwapp/core/images/image_capture.dart';
+import 'package:fwapp/core/sync/equipment_type_sync.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
+import 'package:fwapp/core/widgets/geteilter_bestand_hinweis.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_enums.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_item.dart';
 import 'package:fwapp/features/equipment/presentation/providers/equipment_providers.dart';
@@ -37,6 +39,17 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
   final Set<String> _scenarios = {};
   bool _isSubmitting = false;
   String? _error;
+
+  /// Der geladene Stand beim Bearbeiten.
+  ///
+  /// ⚠️ Er wird beim Speichern als Grundlage benutzt und nicht neu
+  /// zusammengesetzt: Das Formular zeigt nur einen Teil des Geräts —
+  /// Trainingsfragen, typische Verwendung, technische Daten und die
+  /// Katalog-Herkunft stehen in keinem Feld. Ein frisch gebautes
+  /// [EquipmentItem] hätte sie alle auf ihren Vorgabewerten, und seit
+  /// Stufe ② (Issue #99) verteilt sich dieser Verlust an die ganze
+  /// Gesamtwehr.
+  EquipmentItem? _original;
 
   /// Katalog für das automatische Symbolbild — lädt einmal im Hintergrund.
   StandardCatalog? _katalog;
@@ -162,19 +175,31 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
     });
     try {
       final repo = ref.read(equipmentRepositoryProvider);
-      final item = EquipmentItem(
+      final messenger = ScaffoldMessenger.of(context);
+      final trainingUrl =
+          _urlCtrl.text.trim().isEmpty ? null : _urlCtrl.text.trim();
+      // Beim Bearbeiten auf dem geladenen Stand aufsetzen, damit die Felder
+      // ohne Eingabefeld erhalten bleiben (siehe [_original]).
+      final item = (_original ??
+              EquipmentItem(
+                id: 0,
+                name: '',
+                equipmentFunctions: const [],
+                deploymentScenarios: const [],
+                description: '',
+                libraryEquipmentId: null,
+                isCustom: true,
+                extraAttributes: const {},
+                updatedAt: DateTime.now(),
+              ))
+          .copyWith(
         id: widget.editId ?? 0,
         name: _nameCtrl.text.trim(),
         equipmentFunctions: _functions.toList(),
         deploymentScenarios: _scenarios.toList(),
         description: _descCtrl.text.trim(),
         imagePath: _imagePath,
-        trainingUrl: _urlCtrl.text.trim().isEmpty
-            ? null
-            : _urlCtrl.text.trim(),
-        libraryEquipmentId: null,
-        isCustom: true,
-        extraAttributes: {},
+        trainingUrl: trainingUrl,
         updatedAt: DateTime.now(),
       );
       int? newId;
@@ -186,6 +211,16 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
         await _uploadImageIfPossible(widget.editId!);
       }
       ref.invalidate(equipmentListProvider);
+      // Sofort verteilen: Der Typ gehört der Gesamtwehr, und „sofort überall
+      // sichtbar" war die Vorgabe. Klappt es nicht, bleibt die Änderung
+      // vorgemerkt und geht beim nächsten Aktualisieren mit.
+      final geteilt =
+          await typenSofortTeilen(ref.read(equipmentTypeSyncProvider));
+      if (geteilt) {
+        messenger.showSnackBar(const SnackBar(
+            content: Text('Gespeichert — alle Abteilungen der Gesamtwehr '
+                'sehen die Änderung.')));
+      }
       // Die neue ID ist das Pop-Ergebnis: Der Fach-Picker („neu anlegen")
       // weist das frisch angelegte Gerät damit direkt dem offenen Fach zu.
       if (mounted) context.pop(newId);
@@ -201,6 +236,7 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
     _descCtrl.text = item.description;
     _urlCtrl.text = item.trainingUrl ?? '';
     setState(() {
+      _original = item;
       _imagePath = item.imagePath;
       _originalImagePath = item.imagePath;
       _functions
@@ -222,6 +258,15 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          // Stufe ②: Wer hier tippt, ändert den Typ für die ganze Wehr —
+          // das muss VOR dem Speichern dastehen, nicht danach.
+          if (_original?.remoteTypeId != null) ...[
+            const GeteilterBestandHinweis(
+              text: 'Dieses Gerät gehört zum geteilten Bestand der '
+                  'Gesamtwehr. Änderungen sehen alle Abteilungen.',
+            ),
+            const SizedBox(height: 12),
+          ],
           GestureDetector(
             onTap: _pickImage,
             child: ClipRRect(

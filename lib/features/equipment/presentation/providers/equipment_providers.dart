@@ -80,11 +80,18 @@ class EquipmentFilterNotifier extends _$EquipmentFilterNotifier {
   void clear() => state = const EquipmentFilter();
 }
 
+/// Die gefilterte Liste hängt am STROM, nicht an einer Momentaufnahme.
+///
+/// Sonst müsste jede schreibende Stelle daran denken, sie ungültig zu machen
+/// — und genau das ging beim Entfernen (Issue #99) schief: Ein `invalidate`
+/// mitten im Seitenwechsel baut die abgehende Seite noch einmal, was
+/// Riverpod als „setState during build" meldet. Mit dem Strom ist die Liste
+/// von selbst aktuell, egal wer schreibt.
 @riverpod
 Future<List<EquipmentItem>> filteredEquipment(
     Ref ref) async {
   final filter = ref.watch(equipmentFilterProvider);
-  final all = await ref.watch(equipmentListProvider.future);
+  final all = await ref.watch(equipmentListStreamProvider.future);
 
   return all.where((item) {
     if (filter.searchQuery.isNotEmpty) {

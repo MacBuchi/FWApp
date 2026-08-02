@@ -247,6 +247,14 @@ pauschales Formatieren in Feature-PRs.
   Abteilungs-Sheet #96. Also `useRootNavigator: true` — und für die
   Sichtprüfung die Verschachtelung im Prüfstand nachbauen, ein flacher
   Navigator lässt den Fehler durch.
+- ⚠️ **`push_equipment_types` schreibt ohne `coalesce`** — `short_name`,
+  `image_path`, `training_url` und `library_equipment_id` stehen danach
+  zentral auf NULL, wenn sie in der Nutzlast fehlen. Wer den Schreibweg für
+  eine kleine Änderung benutzt (etwa nur `deleted_at` zum Archivieren),
+  löscht damit das Foto der ganzen Gesamtwehr. Deshalb baut
+  `EquipmentTypeSync._zeile` immer die VOLLE Zeile, auch beim Archivieren.
+  Aus demselben Grund hält der Push Zeilen zurück, deren Bild noch ein
+  Pfad auf DIESES Gerät ist: zentral wäre er tot und überschriebe das gute.
 - ⚠️ **`pumpAndSettle` reicht auf echten Geräten nicht:** Solange asynchrone
   Provider auf I/O warten, steht kein Frame an – `pumpAndSettle` kehrt zurück,
   während noch „Lade…" auf dem Schirm steht. Dafür gibt es `waitFor()`.

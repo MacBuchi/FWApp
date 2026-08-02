@@ -6,9 +6,11 @@ import 'package:go_router/go_router.dart';
 import 'package:fwapp/core/images/image_capture.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:fwapp/core/logging/app_logger.dart';
+import 'package:fwapp/core/sync/equipment_type_sync.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
 import 'package:fwapp/core/widgets/abteilung_switcher.dart';
+import 'package:fwapp/core/widgets/geteilter_bestand_hinweis.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_enums.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_item.dart';
 import 'package:fwapp/features/equipment/presentation/widgets/equipment_avatar.dart';
@@ -37,13 +39,34 @@ class EquipmentDetailScreen extends ConsumerWidget {
           appBar: AppBar(
             title: Text(item.name),
             actions: [
-              if (ref.watch(canEditProvider))
+              if (ref.watch(canEditProvider)) ...[
                 IconButton(
                   icon: const Icon(Icons.edit),
                   tooltip: 'Bearbeiten',
                   onPressed: () =>
                       context.push('/equipment/$equipmentId/edit'),
                 ),
+                PopupMenuButton<String>(
+                  tooltip: 'Weitere Aktionen',
+                  // Die Detailseite liegt in der ShellRoute: Ohne den
+                  // Wurzel-Navigator läge das Menü UNTER der
+                  // NavigationBar (AGENTS.md § Stolperfallen).
+                  useRootNavigator: true,
+                  itemBuilder: (_) => const [
+                    PopupMenuItem(
+                      value: 'entfernen',
+                      child: ListTile(
+                        leading: Icon(Icons.delete_outline),
+                        title: Text('Gerät entfernen'),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                  ],
+                  onSelected: (v) {
+                    if (v == 'entfernen') _entfernen(context, ref, item);
+                  },
+                ),
+              ],
               const AbteilungAction(),
             ],
           ),
@@ -88,6 +111,23 @@ class EquipmentDetailScreen extends ConsumerWidget {
                 ),
               ],
               const SizedBox(height: 16),
+
+              // Woher kommt dieses Gerät — nur von hier oder aus dem
+              // geteilten Bestand der Gesamtwehr (Stufe ②, Issue #99)?
+              if (item.typeDirty && item.remoteTypeId != null) ...[
+                const GeteilterBestandHinweis(
+                  offen: true,
+                  text: 'Änderung noch nicht verteilt — sie geht beim '
+                      'nächsten Aktualisieren an die Gesamtwehr.',
+                ),
+                const SizedBox(height: 12),
+              ] else if (item.remoteTypeId != null) ...[
+                const GeteilterBestandHinweis(
+                  text: 'Geteilter Bestand der Gesamtwehr — dieses Gerät '
+                      'steht allen Abteilungen gleich zur Verfügung.',
+                ),
+                const SizedBox(height: 12),
+              ],
 
               // Custom item banner
               if (item.isCustom)
@@ -271,6 +311,108 @@ class EquipmentDetailScreen extends ConsumerWidget {
     );
   }
 
+  /// Gerät entfernen — löschen oder archivieren (Stufe ②, Issue #99).
+  ///
+  /// Die Entscheidung trifft nicht der Bedienende, sondern die Verwendung:
+  /// Wirklich gelöscht wird nur, was in KEINER anderen Abteilung mehr hängt;
+  /// sonst wird der Typ archiviert und überlebt dort, wo er gebraucht wird
+  /// (Marcus' Regel, docs/NUTZERKONZEPT.md §4). Zentral ist beides derselbe
+  /// Vorgang — der Unterschied ist, was hier ehrlich angesagt wird.
+  Future<void> _entfernen(
+      BuildContext context, WidgetRef ref, EquipmentItem item) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final typen = ref.read(equipmentTypeSyncProvider);
+    final geteilt = item.remoteTypeId != null && typen != null;
+
+    // Was hier hängt, weiß die lokale Datei — auch ohne Netz. Was in den
+    // anderen Abteilungen hängt, weiß nur der Server.
+    final hier = await ref.read(equipmentRepositoryProvider)
+        .verwendungHier(item.id);
+    VerwendungAnderswo anderswo;
+    try {
+      anderswo = geteilt
+          ? await typen.verwendungAnderswo(item.id)
+          : const VerwendungAnderswo();
+    } catch (e) {
+      // Ohne die fremden Abteilungen ist „löschen oder archivieren" nicht zu
+      // entscheiden. Raten wäre hier der teuerste Fehler: Ein hartes Löschen
+      // risse einer anderen Abteilung die Beladung auf.
+      appLog.w('Verwendung des Gerätetyps nicht ermittelbar', error: e);
+      messenger.showSnackBar(const SnackBar(
+          content: Text('Zum Entfernen braucht es eine Serververbindung — '
+              'sonst ist nicht zu sehen, ob eine andere Abteilung das '
+              'Gerät noch benutzt.')));
+      return;
+    }
+    if (!context.mounted) return;
+
+    final archivieren = anderswo.nurArchivieren;
+    final zeilen = <String>[
+      if (archivieren)
+        '${anderswo.abteilungen} andere '
+            '${anderswo.abteilungen == 1 ? "Abteilung benutzt" : "Abteilungen benutzen"} '
+            '„${item.name}" noch. Es wird deshalb nur archiviert: Dort '
+            'bleibt es erhalten, aus dem gemeinsamen Katalog verschwindet es.'
+      else if (geteilt)
+        '„${item.name}" wird aus dem geteilten Bestand der Gesamtwehr '
+            'gelöscht — in allen Abteilungen. Keine andere Abteilung '
+            'benutzt es.'
+      else
+        '„${item.name}" wird gelöscht.',
+      if (hier.zuordnungen + hier.exemplare > 0)
+        'Hier hängen daran ${hier.zuordnungen} '
+            '${hier.zuordnungen == 1 ? "Zuordnung" : "Zuordnungen"} '
+            'und ${hier.exemplare} '
+            '${hier.exemplare == 1 ? "Exemplar" : "Exemplare"}. '
+            'Sie gehen mit verloren, samt Prüfhistorie.',
+    ];
+
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(archivieren ? 'Gerät archivieren?' : 'Gerät löschen?'),
+        content: SingleChildScrollView(child: Text(zeilen.join('\n\n'))),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Abbrechen')),
+          FilledButton(
+            style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(ctx).colorScheme.error),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(archivieren ? 'Archivieren' : 'Löschen'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !context.mounted) return;
+
+    try {
+      // Erst zentral, dann lokal: Andersherum wäre das Gerät hier weg und
+      // käme beim nächsten vollen Zug wortlos zurück.
+      if (geteilt) await typen.ausBestandNehmen(item.id);
+      await ref.read(equipmentRepositoryProvider).delete(item.id);
+    } on TypKonfliktException {
+      messenger.showSnackBar(const SnackBar(
+          content: Text('Jemand hat das Gerät zwischenzeitlich geändert. '
+              'Bitte erst „Jetzt aktualisieren", dann erneut entscheiden.')));
+      return;
+    } catch (e) {
+      messenger.showSnackBar(
+          SnackBar(content: Text('Entfernen fehlgeschlagen: $e')));
+      return;
+    }
+
+    // Kein `invalidate` hier: Die Liste hängt am Strom und merkt das
+    // Löschen von selbst, und ein Auffrischen mitten im Seitenwechsel würde
+    // die abgehende Seite noch einmal bauen lassen.
+    if (context.mounted) context.pop();
+    messenger.showSnackBar(SnackBar(
+        content: Text(archivieren
+            ? '„${item.name}" archiviert.'
+            : '„${item.name}" gelöscht.')));
+  }
+
   /// Bildquelle wählen: Foto (Kamera/Galerie, wird zentral hochgeladen)
   /// oder Symbolbild aus der Bildbibliothek.
   Future<void> _changeImage(
@@ -309,12 +451,18 @@ class EquipmentDetailScreen extends ConsumerWidget {
     await ref
         .read(equipmentRepositoryProvider)
         .update(item.copyWith(imagePath: asset));
+    // Das Symbolbild ist ein mitgeliefertes Asset — es gilt auf jedem Gerät
+    // und darf deshalb sofort an die Gesamtwehr (Stufe ②).
+    final geteilt =
+        await typenSofortTeilen(ref.read(equipmentTypeSyncProvider));
     ref.invalidate(equipmentDetailProvider(item.id));
     ref.invalidate(equipmentListProvider);
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Symbolbild übernommen. Zum Verteilen an alle '
-              'Geräte: Einstellungen → Veröffentlichen.')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(geteilt
+              ? 'Symbolbild übernommen — alle Abteilungen sehen es.'
+              : 'Symbolbild übernommen. Zum Verteilen an alle '
+                  'Geräte: Einstellungen → Veröffentlichen.')));
     }
   }
 
@@ -364,12 +512,19 @@ class EquipmentDetailScreen extends ConsumerWidget {
     await ref
         .read(equipmentRepositoryProvider)
         .update(item.copyWith(imagePath: newPath));
+    // Nur ein hochgeladenes Foto ist teilbar; ein reiner Gerätepfad bliebe
+    // für die anderen Abteilungen tot — der Push hält solche Zeilen selbst
+    // zurück, hier wird gar nicht erst danach gefragt.
+    final geteilt = uploaded &&
+        await typenSofortTeilen(ref.read(equipmentTypeSyncProvider));
     ref.invalidate(equipmentDetailProvider(item.id));
     ref.invalidate(equipmentListProvider);
     if (context.mounted && uploaded) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Foto hochgeladen. Zum Verteilen an alle Geräte: '
-              'Einstellungen → Veröffentlichen.')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(geteilt
+              ? 'Foto hochgeladen — alle Abteilungen sehen es.'
+              : 'Foto hochgeladen. Zum Verteilen an alle Geräte: '
+                  'Einstellungen → Veröffentlichen.')));
     }
   }
 }

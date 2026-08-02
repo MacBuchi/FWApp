@@ -1475,6 +1475,141 @@ Future<void> main() async {
       expect(await dbB.equipmentDao.getAll(), hasLength(1));
     });
 
+    /// Aus dem Bestand nehmen — die Oberfläche zu Stufe ② (Issue #99).
+    ///
+    /// Zentral ist „löschen" und „archivieren" derselbe Vorgang
+    /// (`deleted_at` setzen). Was die App unterscheidet, ist die ANSAGE —
+    /// und die hängt daran, ob eine ANDERE Abteilung den Typ noch benutzt.
+    group('aus dem Bestand nehmen', () {
+      /// Ein Gerät in [mirror], das im geteilten Bestand angekommen ist.
+      Future<(AppDatabase, SyncService, EquipmentTypeSync, String)> vorbereiten(
+          String name) async {
+        final (dbA, syncA, typenA) = sicht(mirror);
+        await syncA.pullIfNewer(force: true);
+        await dbA.delete(dbA.vehicles).go();
+        await dbA.delete(dbA.equipmentItems).go();
+        await dbA.into(dbA.equipmentItems).insert(
+            EquipmentItemsCompanion.insert(
+                id: const Value(1),
+                name: name,
+                shortName: const Value('KS'),
+                imagePath: const Value('assets/equipment_library/'
+                    'images/std_kuebelspritze.png')));
+        await syncA.publish();
+        await typenA.pull(force: true);
+        return (
+          dbA,
+          syncA,
+          typenA,
+          (await dbA.equipmentDao.getById(1))!.remoteTypeId!
+        );
+      }
+
+      test('was frei ist, wird gelöscht — und nimmt nichts mit', () async {
+        final (_, _, typenA, typId) = await vorbereiten('Kübelspritze');
+        expect((await typenA.verwendungAnderswo(1)).nurArchivieren, isFalse,
+            reason: 'niemand sonst benutzt den Typ');
+
+        await typenA.ausBestandNehmen(1);
+
+        final zentral = await asService((s) async => await s
+            .from('equipment_types')
+            .select('deleted_at, short_name, image_path')
+            .eq('id', typId)
+            .single());
+        expect(zentral['deleted_at'], isNotNull);
+        // ⚠️ Der Schreibweg setzt short_name und image_path OHNE coalesce:
+        // Wer beim Archivieren nur `deleted_at` schickt, löscht der ganzen
+        // Wehr den Namen und das Foto mit.
+        expect(zentral['short_name'], 'KS');
+        expect(zentral['image_path'], contains('std_kuebelspritze'));
+      });
+
+      test('was eine andere Abteilung benutzt, wird nur archiviert',
+          () async {
+        final (dbA, syncA, typenA, _) = await vorbereiten('Ölbindemittel');
+
+        // Die Schwester legt den Typ in ein Fach.
+        final (dbB, syncB, typenB) = sicht(schwester);
+        await typenB.pull(force: true);
+        final vehicleId = await dbB.vehicleDao
+            .insertVehicle(VehiclesCompanion.insert(name: 'LF', type: 'LF'));
+        final fach = await dbB.compartmentDao.insertCompartment(
+            CompartmentsCompanion.insert(vehicleId: vehicleId, label: 'G1'));
+        await dbB.assignmentDao.insertAssignment(
+            EquipmentAssignmentsCompanion.insert(
+                compartmentId: fach,
+                equipmentId: (await dbB.equipmentDao.getAll()).single.id));
+        await syncB.publish();
+
+        final anderswo = await typenA.verwendungAnderswo(1);
+        expect(anderswo.nurArchivieren, isTrue);
+        expect(anderswo.abteilungen, 1);
+        expect(anderswo.summe, 1);
+
+        // Und die eigene Verwendung zählt NICHT mit: Sie verschwindet mit
+        // dem Entfernen ohnehin, sonst wäre nie etwas löschbar.
+        final vehicleA = await dbA.vehicleDao
+            .insertVehicle(VehiclesCompanion.insert(name: 'HLF', type: 'HLF'));
+        final fachA = await dbA.compartmentDao.insertCompartment(
+            CompartmentsCompanion.insert(vehicleId: vehicleA, label: 'G2'));
+        await dbA.assignmentDao.insertAssignment(
+            EquipmentAssignmentsCompanion.insert(
+                compartmentId: fachA, equipmentId: 1));
+        await syncA.publish();
+        expect((await typenA.verwendungAnderswo(1)).abteilungen, 1,
+            reason: 'die eigene Abteilung zählt nicht als „anderswo"');
+      });
+
+      test('wer auf einem überholten Stand entfernt, wird abgewiesen',
+          () async {
+        final (_, _, typenA, typId) = await vorbereiten('Sprungretter');
+
+        // Jemand anders pflegt den Typ, A weiß davon nichts.
+        await adminClient.rpc('push_equipment_types', params: {
+          'gw': gesamtwehr,
+          'aenderungen': [
+            {'id': typId, 'name': 'Sprungretter', 'description': 'gepflegt'},
+          ],
+        });
+
+        // Ohne die Prüfung verschwände das Gerät lokal, bliebe zentral aber
+        // stehen — und käme beim nächsten vollen Zug wortlos zurück.
+        await expectLater(
+            typenA.ausBestandNehmen(1), throwsA(isA<TypKonfliktException>()));
+        final zentral = await asService((s) async => await s
+            .from('equipment_types')
+            .select('deleted_at')
+            .eq('id', typId)
+            .single());
+        expect(zentral['deleted_at'], isNull);
+      });
+
+      test('ein Foto, das nur hier liegt, geht nicht in den Bestand',
+          () async {
+        // Kamera und Galerie liefern einen Pfad auf DIESES Gerät. Zentral
+        // wäre er tot — und `image_path` wird ohne coalesce geschrieben, das
+        // gute Bild der Wehr wäre weg. Solche Zeilen bleiben vorgemerkt.
+        final (dbA, _, typenA, typId) = await vorbereiten('Rettungssäge');
+        await dbA.equipmentDao.patchEquipment(
+            1,
+            const EquipmentItemsCompanion(
+              imagePath: Value('/data/user/0/com.feuerwehr.fwapp/saege.jpg'),
+              typeDirty: Value(true),
+            ));
+
+        expect(await typenA.push(), 0);
+        expect((await dbA.equipmentDao.getById(1))?.typeDirty, isTrue,
+            reason: 'die Zeile bleibt vorgemerkt, bis der Upload durch ist');
+        final zentral = await asService((s) async => await s
+            .from('equipment_types')
+            .select('image_path')
+            .eq('id', typId)
+            .single());
+        expect(zentral['image_path'], contains('std_kuebelspritze'));
+      });
+    });
+
     test('ohne Gesamtwehr ist der Typ-Sync ein No-op', () async {
       // Lokalmodus, Alt-Server, Abteilung ohne Gesamtwehr: Die App muss
       // unverändert auf dem Snapshot-Weg weiterlaufen.

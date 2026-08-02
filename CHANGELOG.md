@@ -12,6 +12,40 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.14.0] – 2026-08-02
+
+### Neu
+
+- **Der geteilte Gerätebestand ist jetzt bedienbar.** Was ihr an einem Gerät
+  ändert — Name, Beschreibung, Lernmaterial, Foto oder Piktogramm — geht
+  sofort an die ganze Gesamtwehr; ein neu angelegtes Gerät ebenso. Die
+  Meldung nach dem Speichern sagt euch, ob es draußen ist.
+- **Ihr seht jetzt, wie weit eine Änderung reicht.** Auf der Geräteseite und
+  im Bearbeiten-Formular steht, ob das Gerät zum geteilten Bestand der
+  Gesamtwehr gehört — und wenn eine Änderung noch beim nächsten
+  Aktualisieren rausgeht, steht auch das dort.
+- **Geräte entfernen — mit klarer Ansage.** Unter den drei Punkten oben
+  rechts. Benutzt keine andere Abteilung das Gerät, wird es überall
+  gelöscht. Hängt es anderswo noch in einem Fach oder an einem Exemplar,
+  wird es nur archiviert: Dort bleibt es erhalten, aus dem gemeinsamen
+  Katalog verschwindet es. Was bei euch selbst daran hängt, nennt die
+  Rückfrage vorher beim Namen.
+
+### Behoben
+
+- **Beim Bearbeiten gingen Angaben verloren, die das Formular gar nicht
+  zeigt** — Trainingsfragen, typische Verwendung, technische Daten und die
+  Zugehörigkeit zum mitgelieferten Katalog. Wer nur den Namen korrigierte,
+  räumte sie mit weg. Sie bleiben jetzt stehen.
+- Die Geräteliste hält sich von selbst aktuell: Ein gelöschtes oder neu
+  angelegtes Gerät ist sofort verschwunden bzw. da, ohne Umweg.
+
+### Hinweis
+
+Ein Foto, das nur auf eurem Gerät liegt (weil der Upload nicht durchkam),
+wird nicht an die anderen Abteilungen verteilt — es wäre dort ein toter
+Verweis. Es bleibt vorgemerkt und geht mit, sobald der Upload klappt.
+
 ## [1.13.0] – 2026-08-02
 
 ### Neu

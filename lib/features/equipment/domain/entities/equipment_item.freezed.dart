@@ -14,7 +14,11 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$EquipmentItem {
 
- int get id; String get name; String? get shortName; List<String> get equipmentFunctions; List<String> get deploymentScenarios; String get description; String? get imagePath; String? get trainingUrl; String? get libraryEquipmentId; bool get isCustom; Map<String, dynamic> get extraAttributes; List<String> get trainingQuestions; List<String> get typicalUse; DateTime get updatedAt;
+ int get id; String get name; String? get shortName; List<String> get equipmentFunctions; List<String> get deploymentScenarios; String get description; String? get imagePath; String? get trainingUrl; String? get libraryEquipmentId; bool get isCustom; Map<String, dynamic> get extraAttributes; List<String> get trainingQuestions; List<String> get typicalUse; DateTime get updatedAt;/// Verweis in den geteilten Typ-Bestand der Gesamtwehr (Stufe ②,
+/// Issue #99). `null` heißt: Dieses Gerät steht nur hier — im
+/// Lokalmodus, ohne Gesamtwehr, oder noch vor dem ersten Abgleich.
+ String? get remoteTypeId;/// Lokal geändert und noch nicht an die Gesamtwehr verteilt.
+ bool get typeDirty;
 /// Create a copy of EquipmentItem
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +29,16 @@ $EquipmentItemCopyWith<EquipmentItem> get copyWith => _$EquipmentItemCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is EquipmentItem&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.shortName, shortName) || other.shortName == shortName)&&const DeepCollectionEquality().equals(other.equipmentFunctions, equipmentFunctions)&&const DeepCollectionEquality().equals(other.deploymentScenarios, deploymentScenarios)&&(identical(other.description, description) || other.description == description)&&(identical(other.imagePath, imagePath) || other.imagePath == imagePath)&&(identical(other.trainingUrl, trainingUrl) || other.trainingUrl == trainingUrl)&&(identical(other.libraryEquipmentId, libraryEquipmentId) || other.libraryEquipmentId == libraryEquipmentId)&&(identical(other.isCustom, isCustom) || other.isCustom == isCustom)&&const DeepCollectionEquality().equals(other.extraAttributes, extraAttributes)&&const DeepCollectionEquality().equals(other.trainingQuestions, trainingQuestions)&&const DeepCollectionEquality().equals(other.typicalUse, typicalUse)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is EquipmentItem&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.shortName, shortName) || other.shortName == shortName)&&const DeepCollectionEquality().equals(other.equipmentFunctions, equipmentFunctions)&&const DeepCollectionEquality().equals(other.deploymentScenarios, deploymentScenarios)&&(identical(other.description, description) || other.description == description)&&(identical(other.imagePath, imagePath) || other.imagePath == imagePath)&&(identical(other.trainingUrl, trainingUrl) || other.trainingUrl == trainingUrl)&&(identical(other.libraryEquipmentId, libraryEquipmentId) || other.libraryEquipmentId == libraryEquipmentId)&&(identical(other.isCustom, isCustom) || other.isCustom == isCustom)&&const DeepCollectionEquality().equals(other.extraAttributes, extraAttributes)&&const DeepCollectionEquality().equals(other.trainingQuestions, trainingQuestions)&&const DeepCollectionEquality().equals(other.typicalUse, typicalUse)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.remoteTypeId, remoteTypeId) || other.remoteTypeId == remoteTypeId)&&(identical(other.typeDirty, typeDirty) || other.typeDirty == typeDirty));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,shortName,const DeepCollectionEquality().hash(equipmentFunctions),const DeepCollectionEquality().hash(deploymentScenarios),description,imagePath,trainingUrl,libraryEquipmentId,isCustom,const DeepCollectionEquality().hash(extraAttributes),const DeepCollectionEquality().hash(trainingQuestions),const DeepCollectionEquality().hash(typicalUse),updatedAt);
+int get hashCode => Object.hash(runtimeType,id,name,shortName,const DeepCollectionEquality().hash(equipmentFunctions),const DeepCollectionEquality().hash(deploymentScenarios),description,imagePath,trainingUrl,libraryEquipmentId,isCustom,const DeepCollectionEquality().hash(extraAttributes),const DeepCollectionEquality().hash(trainingQuestions),const DeepCollectionEquality().hash(typicalUse),updatedAt,remoteTypeId,typeDirty);
 
 @override
 String toString() {
-  return 'EquipmentItem(id: $id, name: $name, shortName: $shortName, equipmentFunctions: $equipmentFunctions, deploymentScenarios: $deploymentScenarios, description: $description, imagePath: $imagePath, trainingUrl: $trainingUrl, libraryEquipmentId: $libraryEquipmentId, isCustom: $isCustom, extraAttributes: $extraAttributes, trainingQuestions: $trainingQuestions, typicalUse: $typicalUse, updatedAt: $updatedAt)';
+  return 'EquipmentItem(id: $id, name: $name, shortName: $shortName, equipmentFunctions: $equipmentFunctions, deploymentScenarios: $deploymentScenarios, description: $description, imagePath: $imagePath, trainingUrl: $trainingUrl, libraryEquipmentId: $libraryEquipmentId, isCustom: $isCustom, extraAttributes: $extraAttributes, trainingQuestions: $trainingQuestions, typicalUse: $typicalUse, updatedAt: $updatedAt, remoteTypeId: $remoteTypeId, typeDirty: $typeDirty)';
 }
 
 
@@ -45,7 +49,7 @@ abstract mixin class $EquipmentItemCopyWith<$Res>  {
   factory $EquipmentItemCopyWith(EquipmentItem value, $Res Function(EquipmentItem) _then) = _$EquipmentItemCopyWithImpl;
 @useResult
 $Res call({
- int id, String name, String? shortName, List<String> equipmentFunctions, List<String> deploymentScenarios, String description, String? imagePath, String? trainingUrl, String? libraryEquipmentId, bool isCustom, Map<String, dynamic> extraAttributes, List<String> trainingQuestions, List<String> typicalUse, DateTime updatedAt
+ int id, String name, String? shortName, List<String> equipmentFunctions, List<String> deploymentScenarios, String description, String? imagePath, String? trainingUrl, String? libraryEquipmentId, bool isCustom, Map<String, dynamic> extraAttributes, List<String> trainingQuestions, List<String> typicalUse, DateTime updatedAt, String? remoteTypeId, bool typeDirty
 });
 
 
@@ -62,7 +66,7 @@ class _$EquipmentItemCopyWithImpl<$Res>
 
 /// Create a copy of EquipmentItem
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? shortName = freezed,Object? equipmentFunctions = null,Object? deploymentScenarios = null,Object? description = null,Object? imagePath = freezed,Object? trainingUrl = freezed,Object? libraryEquipmentId = freezed,Object? isCustom = null,Object? extraAttributes = null,Object? trainingQuestions = null,Object? typicalUse = null,Object? updatedAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? shortName = freezed,Object? equipmentFunctions = null,Object? deploymentScenarios = null,Object? description = null,Object? imagePath = freezed,Object? trainingUrl = freezed,Object? libraryEquipmentId = freezed,Object? isCustom = null,Object? extraAttributes = null,Object? trainingQuestions = null,Object? typicalUse = null,Object? updatedAt = null,Object? remoteTypeId = freezed,Object? typeDirty = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -78,7 +82,9 @@ as bool,extraAttributes: null == extraAttributes ? _self.extraAttributes : extra
 as Map<String, dynamic>,trainingQuestions: null == trainingQuestions ? _self.trainingQuestions : trainingQuestions // ignore: cast_nullable_to_non_nullable
 as List<String>,typicalUse: null == typicalUse ? _self.typicalUse : typicalUse // ignore: cast_nullable_to_non_nullable
 as List<String>,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,remoteTypeId: freezed == remoteTypeId ? _self.remoteTypeId : remoteTypeId // ignore: cast_nullable_to_non_nullable
+as String?,typeDirty: null == typeDirty ? _self.typeDirty : typeDirty // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -163,10 +169,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  String? shortName,  List<String> equipmentFunctions,  List<String> deploymentScenarios,  String description,  String? imagePath,  String? trainingUrl,  String? libraryEquipmentId,  bool isCustom,  Map<String, dynamic> extraAttributes,  List<String> trainingQuestions,  List<String> typicalUse,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  String? shortName,  List<String> equipmentFunctions,  List<String> deploymentScenarios,  String description,  String? imagePath,  String? trainingUrl,  String? libraryEquipmentId,  bool isCustom,  Map<String, dynamic> extraAttributes,  List<String> trainingQuestions,  List<String> typicalUse,  DateTime updatedAt,  String? remoteTypeId,  bool typeDirty)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _EquipmentItem() when $default != null:
-return $default(_that.id,_that.name,_that.shortName,_that.equipmentFunctions,_that.deploymentScenarios,_that.description,_that.imagePath,_that.trainingUrl,_that.libraryEquipmentId,_that.isCustom,_that.extraAttributes,_that.trainingQuestions,_that.typicalUse,_that.updatedAt);case _:
+return $default(_that.id,_that.name,_that.shortName,_that.equipmentFunctions,_that.deploymentScenarios,_that.description,_that.imagePath,_that.trainingUrl,_that.libraryEquipmentId,_that.isCustom,_that.extraAttributes,_that.trainingQuestions,_that.typicalUse,_that.updatedAt,_that.remoteTypeId,_that.typeDirty);case _:
   return orElse();
 
 }
@@ -184,10 +190,10 @@ return $default(_that.id,_that.name,_that.shortName,_that.equipmentFunctions,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  String? shortName,  List<String> equipmentFunctions,  List<String> deploymentScenarios,  String description,  String? imagePath,  String? trainingUrl,  String? libraryEquipmentId,  bool isCustom,  Map<String, dynamic> extraAttributes,  List<String> trainingQuestions,  List<String> typicalUse,  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  String? shortName,  List<String> equipmentFunctions,  List<String> deploymentScenarios,  String description,  String? imagePath,  String? trainingUrl,  String? libraryEquipmentId,  bool isCustom,  Map<String, dynamic> extraAttributes,  List<String> trainingQuestions,  List<String> typicalUse,  DateTime updatedAt,  String? remoteTypeId,  bool typeDirty)  $default,) {final _that = this;
 switch (_that) {
 case _EquipmentItem():
-return $default(_that.id,_that.name,_that.shortName,_that.equipmentFunctions,_that.deploymentScenarios,_that.description,_that.imagePath,_that.trainingUrl,_that.libraryEquipmentId,_that.isCustom,_that.extraAttributes,_that.trainingQuestions,_that.typicalUse,_that.updatedAt);case _:
+return $default(_that.id,_that.name,_that.shortName,_that.equipmentFunctions,_that.deploymentScenarios,_that.description,_that.imagePath,_that.trainingUrl,_that.libraryEquipmentId,_that.isCustom,_that.extraAttributes,_that.trainingQuestions,_that.typicalUse,_that.updatedAt,_that.remoteTypeId,_that.typeDirty);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -204,10 +210,10 @@ return $default(_that.id,_that.name,_that.shortName,_that.equipmentFunctions,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  String? shortName,  List<String> equipmentFunctions,  List<String> deploymentScenarios,  String description,  String? imagePath,  String? trainingUrl,  String? libraryEquipmentId,  bool isCustom,  Map<String, dynamic> extraAttributes,  List<String> trainingQuestions,  List<String> typicalUse,  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  String? shortName,  List<String> equipmentFunctions,  List<String> deploymentScenarios,  String description,  String? imagePath,  String? trainingUrl,  String? libraryEquipmentId,  bool isCustom,  Map<String, dynamic> extraAttributes,  List<String> trainingQuestions,  List<String> typicalUse,  DateTime updatedAt,  String? remoteTypeId,  bool typeDirty)?  $default,) {final _that = this;
 switch (_that) {
 case _EquipmentItem() when $default != null:
-return $default(_that.id,_that.name,_that.shortName,_that.equipmentFunctions,_that.deploymentScenarios,_that.description,_that.imagePath,_that.trainingUrl,_that.libraryEquipmentId,_that.isCustom,_that.extraAttributes,_that.trainingQuestions,_that.typicalUse,_that.updatedAt);case _:
+return $default(_that.id,_that.name,_that.shortName,_that.equipmentFunctions,_that.deploymentScenarios,_that.description,_that.imagePath,_that.trainingUrl,_that.libraryEquipmentId,_that.isCustom,_that.extraAttributes,_that.trainingQuestions,_that.typicalUse,_that.updatedAt,_that.remoteTypeId,_that.typeDirty);case _:
   return null;
 
 }
@@ -219,7 +225,7 @@ return $default(_that.id,_that.name,_that.shortName,_that.equipmentFunctions,_th
 
 
 class _EquipmentItem implements EquipmentItem {
-  const _EquipmentItem({required this.id, required this.name, this.shortName, required final  List<String> equipmentFunctions, required final  List<String> deploymentScenarios, required this.description, this.imagePath, this.trainingUrl, this.libraryEquipmentId, required this.isCustom, required final  Map<String, dynamic> extraAttributes, final  List<String> trainingQuestions = const [], final  List<String> typicalUse = const [], required this.updatedAt}): _equipmentFunctions = equipmentFunctions,_deploymentScenarios = deploymentScenarios,_extraAttributes = extraAttributes,_trainingQuestions = trainingQuestions,_typicalUse = typicalUse;
+  const _EquipmentItem({required this.id, required this.name, this.shortName, required final  List<String> equipmentFunctions, required final  List<String> deploymentScenarios, required this.description, this.imagePath, this.trainingUrl, this.libraryEquipmentId, required this.isCustom, required final  Map<String, dynamic> extraAttributes, final  List<String> trainingQuestions = const [], final  List<String> typicalUse = const [], required this.updatedAt, this.remoteTypeId, this.typeDirty = false}): _equipmentFunctions = equipmentFunctions,_deploymentScenarios = deploymentScenarios,_extraAttributes = extraAttributes,_trainingQuestions = trainingQuestions,_typicalUse = typicalUse;
   
 
 @override final  int id;
@@ -266,6 +272,12 @@ class _EquipmentItem implements EquipmentItem {
 }
 
 @override final  DateTime updatedAt;
+/// Verweis in den geteilten Typ-Bestand der Gesamtwehr (Stufe ②,
+/// Issue #99). `null` heißt: Dieses Gerät steht nur hier — im
+/// Lokalmodus, ohne Gesamtwehr, oder noch vor dem ersten Abgleich.
+@override final  String? remoteTypeId;
+/// Lokal geändert und noch nicht an die Gesamtwehr verteilt.
+@override@JsonKey() final  bool typeDirty;
 
 /// Create a copy of EquipmentItem
 /// with the given fields replaced by the non-null parameter values.
@@ -277,16 +289,16 @@ _$EquipmentItemCopyWith<_EquipmentItem> get copyWith => __$EquipmentItemCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _EquipmentItem&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.shortName, shortName) || other.shortName == shortName)&&const DeepCollectionEquality().equals(other._equipmentFunctions, _equipmentFunctions)&&const DeepCollectionEquality().equals(other._deploymentScenarios, _deploymentScenarios)&&(identical(other.description, description) || other.description == description)&&(identical(other.imagePath, imagePath) || other.imagePath == imagePath)&&(identical(other.trainingUrl, trainingUrl) || other.trainingUrl == trainingUrl)&&(identical(other.libraryEquipmentId, libraryEquipmentId) || other.libraryEquipmentId == libraryEquipmentId)&&(identical(other.isCustom, isCustom) || other.isCustom == isCustom)&&const DeepCollectionEquality().equals(other._extraAttributes, _extraAttributes)&&const DeepCollectionEquality().equals(other._trainingQuestions, _trainingQuestions)&&const DeepCollectionEquality().equals(other._typicalUse, _typicalUse)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _EquipmentItem&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.shortName, shortName) || other.shortName == shortName)&&const DeepCollectionEquality().equals(other._equipmentFunctions, _equipmentFunctions)&&const DeepCollectionEquality().equals(other._deploymentScenarios, _deploymentScenarios)&&(identical(other.description, description) || other.description == description)&&(identical(other.imagePath, imagePath) || other.imagePath == imagePath)&&(identical(other.trainingUrl, trainingUrl) || other.trainingUrl == trainingUrl)&&(identical(other.libraryEquipmentId, libraryEquipmentId) || other.libraryEquipmentId == libraryEquipmentId)&&(identical(other.isCustom, isCustom) || other.isCustom == isCustom)&&const DeepCollectionEquality().equals(other._extraAttributes, _extraAttributes)&&const DeepCollectionEquality().equals(other._trainingQuestions, _trainingQuestions)&&const DeepCollectionEquality().equals(other._typicalUse, _typicalUse)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.remoteTypeId, remoteTypeId) || other.remoteTypeId == remoteTypeId)&&(identical(other.typeDirty, typeDirty) || other.typeDirty == typeDirty));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,shortName,const DeepCollectionEquality().hash(_equipmentFunctions),const DeepCollectionEquality().hash(_deploymentScenarios),description,imagePath,trainingUrl,libraryEquipmentId,isCustom,const DeepCollectionEquality().hash(_extraAttributes),const DeepCollectionEquality().hash(_trainingQuestions),const DeepCollectionEquality().hash(_typicalUse),updatedAt);
+int get hashCode => Object.hash(runtimeType,id,name,shortName,const DeepCollectionEquality().hash(_equipmentFunctions),const DeepCollectionEquality().hash(_deploymentScenarios),description,imagePath,trainingUrl,libraryEquipmentId,isCustom,const DeepCollectionEquality().hash(_extraAttributes),const DeepCollectionEquality().hash(_trainingQuestions),const DeepCollectionEquality().hash(_typicalUse),updatedAt,remoteTypeId,typeDirty);
 
 @override
 String toString() {
-  return 'EquipmentItem(id: $id, name: $name, shortName: $shortName, equipmentFunctions: $equipmentFunctions, deploymentScenarios: $deploymentScenarios, description: $description, imagePath: $imagePath, trainingUrl: $trainingUrl, libraryEquipmentId: $libraryEquipmentId, isCustom: $isCustom, extraAttributes: $extraAttributes, trainingQuestions: $trainingQuestions, typicalUse: $typicalUse, updatedAt: $updatedAt)';
+  return 'EquipmentItem(id: $id, name: $name, shortName: $shortName, equipmentFunctions: $equipmentFunctions, deploymentScenarios: $deploymentScenarios, description: $description, imagePath: $imagePath, trainingUrl: $trainingUrl, libraryEquipmentId: $libraryEquipmentId, isCustom: $isCustom, extraAttributes: $extraAttributes, trainingQuestions: $trainingQuestions, typicalUse: $typicalUse, updatedAt: $updatedAt, remoteTypeId: $remoteTypeId, typeDirty: $typeDirty)';
 }
 
 
@@ -297,7 +309,7 @@ abstract mixin class _$EquipmentItemCopyWith<$Res> implements $EquipmentItemCopy
   factory _$EquipmentItemCopyWith(_EquipmentItem value, $Res Function(_EquipmentItem) _then) = __$EquipmentItemCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String name, String? shortName, List<String> equipmentFunctions, List<String> deploymentScenarios, String description, String? imagePath, String? trainingUrl, String? libraryEquipmentId, bool isCustom, Map<String, dynamic> extraAttributes, List<String> trainingQuestions, List<String> typicalUse, DateTime updatedAt
+ int id, String name, String? shortName, List<String> equipmentFunctions, List<String> deploymentScenarios, String description, String? imagePath, String? trainingUrl, String? libraryEquipmentId, bool isCustom, Map<String, dynamic> extraAttributes, List<String> trainingQuestions, List<String> typicalUse, DateTime updatedAt, String? remoteTypeId, bool typeDirty
 });
 
 
@@ -314,7 +326,7 @@ class __$EquipmentItemCopyWithImpl<$Res>
 
 /// Create a copy of EquipmentItem
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? shortName = freezed,Object? equipmentFunctions = null,Object? deploymentScenarios = null,Object? description = null,Object? imagePath = freezed,Object? trainingUrl = freezed,Object? libraryEquipmentId = freezed,Object? isCustom = null,Object? extraAttributes = null,Object? trainingQuestions = null,Object? typicalUse = null,Object? updatedAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? shortName = freezed,Object? equipmentFunctions = null,Object? deploymentScenarios = null,Object? description = null,Object? imagePath = freezed,Object? trainingUrl = freezed,Object? libraryEquipmentId = freezed,Object? isCustom = null,Object? extraAttributes = null,Object? trainingQuestions = null,Object? typicalUse = null,Object? updatedAt = null,Object? remoteTypeId = freezed,Object? typeDirty = null,}) {
   return _then(_EquipmentItem(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -330,7 +342,9 @@ as bool,extraAttributes: null == extraAttributes ? _self._extraAttributes : extr
 as Map<String, dynamic>,trainingQuestions: null == trainingQuestions ? _self._trainingQuestions : trainingQuestions // ignore: cast_nullable_to_non_nullable
 as List<String>,typicalUse: null == typicalUse ? _self._typicalUse : typicalUse // ignore: cast_nullable_to_non_nullable
 as List<String>,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,remoteTypeId: freezed == remoteTypeId ? _self.remoteTypeId : remoteTypeId // ignore: cast_nullable_to_non_nullable
+as String?,typeDirty: null == typeDirty ? _self.typeDirty : typeDirty // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

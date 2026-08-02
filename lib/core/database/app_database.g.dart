@@ -32,6 +32,12 @@ class CompartmentDaoManager {
 
 mixin _$EquipmentDaoMixin on DatabaseAccessor<AppDatabase> {
   $EquipmentItemsTable get equipmentItems => attachedDatabase.equipmentItems;
+  $VehiclesTable get vehicles => attachedDatabase.vehicles;
+  $CompartmentsTable get compartments => attachedDatabase.compartments;
+  $EquipmentAssignmentsTable get equipmentAssignments =>
+      attachedDatabase.equipmentAssignments;
+  $EquipmentInstancesTable get equipmentInstances =>
+      attachedDatabase.equipmentInstances;
   EquipmentDaoManager get managers => EquipmentDaoManager(this);
 }
 
@@ -42,6 +48,20 @@ class EquipmentDaoManager {
       $$EquipmentItemsTableTableManager(
         _db.attachedDatabase,
         _db.equipmentItems,
+      );
+  $$VehiclesTableTableManager get vehicles =>
+      $$VehiclesTableTableManager(_db.attachedDatabase, _db.vehicles);
+  $$CompartmentsTableTableManager get compartments =>
+      $$CompartmentsTableTableManager(_db.attachedDatabase, _db.compartments);
+  $$EquipmentAssignmentsTableTableManager get equipmentAssignments =>
+      $$EquipmentAssignmentsTableTableManager(
+        _db.attachedDatabase,
+        _db.equipmentAssignments,
+      );
+  $$EquipmentInstancesTableTableManager get equipmentInstances =>
+      $$EquipmentInstancesTableTableManager(
+        _db.attachedDatabase,
+        _db.equipmentInstances,
       );
 }
 

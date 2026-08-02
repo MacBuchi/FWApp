@@ -1007,4 +1007,232 @@ Future<void> main() async {
       expect(faellig.single.schedule.title, 'Prüfung A');
     });
   });
+
+  /// Gerätetypen auf Gesamtwehr-Ebene (Nutzerkonzept Stufe ②, Issue #99).
+  ///
+  /// Der Snapshot bleibt je Abteilung, die TYPEN gehören der ganzen Wehr und
+  /// haben einen eigenen, zeilenweisen Weg. Die Tests beweisen beide Hälften:
+  /// dass zwei Abteilungen denselben Typ teilen, und dass der Weg dorthin
+  /// keinen fremden Stand überschreibt.
+  group('Gerätetypen auf Gesamtwehr-Ebene (Stufe ②)', () {
+    late String mirror;
+    late String schwester;
+    late String gesamtwehr;
+
+    setUp(() async {
+      mirror = await mirrorAbteilungId();
+      gesamtwehr = await adminClient
+          .rpc('create_gesamtwehr', params: {'name': 'GW Typen'}) as String;
+      schwester = await adminClient
+          .rpc('create_abteilung', params: {'name': 'Nord Typen'}) as String;
+    });
+
+    tearDown(() async {
+      await asService((s) async {
+        await s.from('abteilungen').delete().eq('legacy_mirror', false);
+        await s
+            .from('abteilungen')
+            .update({'gesamtwehr_id': null}).eq('id', mirror);
+        await s.from('gesamtwehren').delete().neq('name', 'nie');
+        await s
+            .from('profiles')
+            .update({'abteilung_id': mirror}).filter('abteilung_id', 'is', null);
+        final profs = await s.from('profiles').select('id, role, abteilung_id');
+        await s.from('memberships').upsert([
+          for (final p in profs)
+            if (p['abteilung_id'] != null)
+              {
+                'user_id': p['id'],
+                'abteilung_id': p['abteilung_id'],
+                'role': p['role'],
+              },
+        ], onConflict: 'user_id,abteilung_id');
+      });
+    });
+
+    /// Veröffentlicht [name] als einziges Gerät der Abteilung — auf genau dem
+    /// Weg, den die App HEUTE geht: Der Client kennt `type_id` nicht, die
+    /// Payload trägt sie also nicht. Damit ist jeder dieser Aufrufe zugleich
+    /// ein Alt-Client-Test.
+    Future<AppDatabase> veroeffentlicheGeraet(
+      String abteilung,
+      String name, {
+      String? katalogId,
+    }) async {
+      final db = createTestDatabase();
+      addTearDown(db.close);
+      final sync = SyncService(db, adminClient, abteilungOverride: abteilung);
+      await sync.pullIfNewer(force: true);
+      await db.delete(db.vehicles).go();
+      await db.delete(db.equipmentItems).go();
+      await db.into(db.equipmentItems).insert(EquipmentItemsCompanion.insert(
+          id: const Value(1),
+          name: name,
+          libraryEquipmentId: Value(katalogId)));
+      await sync.publish();
+      return db;
+    }
+
+    Future<List<Map<String, dynamic>>> typen() async => asService((s) async =>
+        List<Map<String, dynamic>>.from(await s
+            .from('equipment_types')
+            .select('id, name, library_equipment_id, deleted_at')
+            .eq('gesamtwehr_id', gesamtwehr)));
+
+    test('zwei Abteilungen laufen auf denselben Typ zusammen', () async {
+      // Unterschiedliche Schreibweise, gleicher Typ — normalisiert wird nach
+      // derselben Regel wie im Import-Matcher.
+      await veroeffentlicheGeraet(mirror, 'C-Rohr', katalogId: 'std_c_rohr');
+      await veroeffentlicheGeraet(schwester, 'C-ROHR!');
+
+      expect(await typen(), hasLength(1));
+
+      final projektionen = await asService((s) async =>
+          List<Map<String, dynamic>>.from(await s
+              .from('equipment_items')
+              .select('abteilung_id, id, type_id')
+              .inFilter('abteilung_id', [mirror, schwester])));
+      expect(projektionen, hasLength(2));
+      // Beide behalten ihre eigene lokale ID 1 und zeigen doch auf einen Typ.
+      expect(projektionen.map((p) => p['id']).toSet(), {1});
+      expect(projektionen.map((p) => p['type_id']).toSet(), hasLength(1));
+      expect(projektionen.first['type_id'], isNotNull);
+    });
+
+    test('jeder Gerätewart der Gesamtwehr darf den Typ pflegen', () async {
+      await veroeffentlicheGeraet(mirror, 'Kübelspritze');
+      final typ = (await typen()).single;
+
+      // Der Gerätewart hat seine Mitgliedschaft NUR in der Bestands-Abteilung
+      // — für den geteilten Typ-Bestand genügt das, er gehört der Wehr.
+      final gwClient = SupabaseClient(_url, _anonKey);
+      addTearDown(gwClient.dispose);
+      await gwClient.auth.signInWithPassword(
+          email: 'geraetewart@fw.local', password: 'test1234');
+
+      await gwClient.rpc('push_equipment_types', params: {
+        'gw': gesamtwehr,
+        'aenderungen': [
+          {...typ, 'name': 'Kübelspritze 10 l', 'updated_at': null},
+        ],
+      });
+      expect((await typen()).single['name'], 'Kübelspritze 10 l');
+    });
+
+    test('ohne Schreibrolle in der Gesamtwehr prallt der Schreibweg ab',
+        () async {
+      await veroeffentlicheGeraet(mirror, 'Feuerpatsche');
+      await expectLater(
+        memberClient.rpc('push_equipment_types', params: {
+          'gw': gesamtwehr,
+          'aenderungen': [
+            {'name': 'Heimlich umbenannt'},
+          ],
+        }),
+        throwsA(isA<PostgrestException>().having(
+            (e) => e.message, 'message', contains('permission denied'))),
+      );
+    });
+
+    test('ein Alt-Client überschreibt den gepflegten Typ NICHT', () async {
+      // Genau die Falle der Alt-Client-Choreografie: Solange die Mindest-
+      // version nicht steht, veröffentlichen Apps ohne Typ-Kenntnis weiter.
+      // Sie dürfen anlegen und verknüpfen — aber nicht zurückrollen.
+      await veroeffentlicheGeraet(mirror, 'Schaumrohr');
+      final typ = (await typen()).single;
+
+      await adminClient.rpc('push_equipment_types', params: {
+        'gw': gesamtwehr,
+        'aenderungen': [
+          {...typ, 'name': 'Schaumrohr M4', 'description': 'Mittelschaum'},
+        ],
+      });
+
+      // Dieselbe Abteilung veröffentlicht erneut mit dem ALTEN Namen.
+      await veroeffentlicheGeraet(mirror, 'Schaumrohr');
+
+      final danach = (await typen()).single;
+      expect(danach['name'], 'Schaumrohr M4',
+          reason: 'Der Snapshot eines Alt-Clients darf die Pflege der '
+              'Gesamtwehr nicht zurückrollen');
+      expect(await typen(), hasLength(1),
+          reason: 'und schon gar keinen zweiten Typ anlegen');
+    });
+
+    test('ein Alt-Client löscht gepflegte Felder nicht weg', () async {
+      // Der gefährlichere Fall als das Umbenennen, weil er unbemerkt bleibt:
+      // Ein Gerätewart hängt Foto und Beschreibung an den geteilten Typ, und
+      // eine ANDERE Abteilung veröffentlicht danach mit einer App, die von
+      // Typen nichts weiß — ihre Payload trägt an denselben Feldern nichts.
+      // Der Name passt hier weiterhin, das Verknüpfungs-Gedächtnis greift
+      // also gar nicht: Diese Zeile schützt allein `nur_anlegen`.
+      await veroeffentlicheGeraet(mirror, 'Feuerwehrleine');
+      final typ = (await typen()).single;
+
+      await adminClient.rpc('push_equipment_types', params: {
+        'gw': gesamtwehr,
+        'aenderungen': [
+          {
+            ...typ,
+            'description': 'Kernmantel, 30 m',
+            'image_path': 'supabase://equipment-images/leine.jpg',
+            'short_name': 'FW-Leine',
+          },
+        ],
+      });
+
+      await veroeffentlicheGeraet(schwester, 'Feuerwehrleine');
+
+      final danach = await asService((s) async => await s
+          .from('equipment_types')
+          .select('description, image_path, short_name')
+          .eq('gesamtwehr_id', gesamtwehr)
+          .single());
+      expect(danach['description'], 'Kernmantel, 30 m');
+      expect(danach['image_path'], 'supabase://equipment-images/leine.jpg');
+      expect(danach['short_name'], 'FW-Leine');
+      expect(await typen(), hasLength(1));
+    });
+
+    test('ein älterer Stand rollt eine neuere Pflege nicht zurück', () async {
+      await veroeffentlicheGeraet(mirror, 'Trennschleifer');
+      final typ = (await typen()).single;
+
+      await adminClient.rpc('push_equipment_types', params: {
+        'gw': gesamtwehr,
+        'aenderungen': [
+          {...typ, 'name': 'Trennschleifer neu'},
+        ],
+      });
+
+      // Ein Gerät, das lange offline war, schickt seinen alten Stand.
+      await adminClient.rpc('push_equipment_types', params: {
+        'gw': gesamtwehr,
+        'aenderungen': [
+          {
+            ...typ,
+            'name': 'Trennschleifer alt',
+            'updated_at': DateTime.utc(2020).toIso8601String(),
+          },
+        ],
+      });
+      expect((await typen()).single['name'], 'Trennschleifer neu');
+    });
+
+    test('die Verwendung zählt über alle Abteilungen der Gesamtwehr',
+        () async {
+      // Grundlage für „löschen oder archivieren?": Die App darf einen Typ nur
+      // dann wirklich löschen, wenn ihn NIEMAND mehr zugeordnet hat — und die
+      // eigene RLS-Sicht zeigt ihr die fremden Abteilungen nicht vollständig.
+      await veroeffentlicheGeraet(mirror, 'Rettungsspreizer');
+      await veroeffentlicheGeraet(schwester, 'Rettungsspreizer');
+      final typ = (await typen()).single;
+
+      final verwendung = List<Map<String, dynamic>>.from(await adminClient
+          .rpc('equipment_type_verwendung', params: {'ziel': typ['id']}));
+      expect(verwendung, hasLength(2));
+      expect(verwendung.map((v) => v['abteilung_id']).toSet(),
+          {mirror, schwester});
+    });
+  });
 }

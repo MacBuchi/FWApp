@@ -11,6 +11,7 @@ import 'dart:io';
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/core/database/app_database.dart';
+import 'package:fwapp/core/sync/equipment_type_sync.dart';
 import 'package:fwapp/core/sync/sync_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -1233,6 +1234,261 @@ Future<void> main() async {
       expect(verwendung, hasLength(2));
       expect(verwendung.map((v) => v['abteilung_id']).toSet(),
           {mirror, schwester});
+    });
+  });
+
+  /// Der Client-Weg zum geteilten Typ-Bestand (Stufe ②, Issue #99).
+  ///
+  /// Der Snapshot-Sync bleibt, wie er ist; daneben zieht und schiebt
+  /// [EquipmentTypeSync] die Typen zeilenweise. Die Tests decken die drei
+  /// Stellen ab, an denen das schiefgehen kann: die Erstverbindung mit dem
+  /// schon vorhandenen lokalen Katalog, das Fenster, und der Rückweg.
+  group('Typ-Sync im Client (Stufe ②)', () {
+    late String mirror;
+    late String schwester;
+    late String gesamtwehr;
+
+    setUp(() async {
+      mirror = await mirrorAbteilungId();
+      gesamtwehr = await adminClient
+          .rpc('create_gesamtwehr', params: {'name': 'GW Client'}) as String;
+      schwester = await adminClient
+          .rpc('create_abteilung', params: {'name': 'Nord Client'}) as String;
+    });
+
+    tearDown(() async {
+      await asService((s) async {
+        await s.from('abteilungen').delete().eq('legacy_mirror', false);
+        await s
+            .from('abteilungen')
+            .update({'gesamtwehr_id': null}).eq('id', mirror);
+        await s.from('gesamtwehren').delete().neq('name', 'nie');
+        await s
+            .from('profiles')
+            .update({'abteilung_id': mirror}).filter('abteilung_id', 'is', null);
+        final profs = await s.from('profiles').select('id, role, abteilung_id');
+        await s.from('memberships').upsert([
+          for (final p in profs)
+            if (p['abteilung_id'] != null)
+              {
+                'user_id': p['id'],
+                'abteilung_id': p['abteilung_id'],
+                'role': p['role'],
+              },
+        ], onConflict: 'user_id,abteilung_id');
+      });
+    });
+
+    (AppDatabase, SyncService, EquipmentTypeSync) sicht(String abteilung) {
+      final db = createTestDatabase();
+      addTearDown(db.close);
+      return (
+        db,
+        SyncService(db, adminClient, abteilungOverride: abteilung),
+        EquipmentTypeSync(db, adminClient, abteilungOverride: abteilung),
+      );
+    }
+
+    test('der erste Zug hängt sich an den vorhandenen Katalog an', () async {
+      // DER Fallstrick: Lokal liegen die Katalog-Geräte aus dem Seeder schon.
+      // Ohne Zuordnung legte der erste Zug jedes davon ein zweites Mal an.
+      final (dbA, syncA, _) = sicht(mirror);
+      await syncA.pullIfNewer(force: true);
+      await dbA.delete(dbA.vehicles).go();
+      await dbA.delete(dbA.equipmentItems).go();
+      await dbA.into(dbA.equipmentItems).insert(EquipmentItemsCompanion.insert(
+          id: const Value(1),
+          name: 'C-Rohr',
+          libraryEquipmentId: const Value('std_c_rohr')));
+      await syncA.publish();
+
+      // Zweite Abteilung, frische lokale Datei — aber mit demselben Katalog,
+      // wie ihn der Seeder auf jedem Gerät anlegt.
+      final (dbB, _, typenB) = sicht(schwester);
+      await dbB.into(dbB.equipmentItems).insert(EquipmentItemsCompanion.insert(
+          id: const Value(1),
+          name: 'C-Rohr',
+          libraryEquipmentId: const Value('std_c_rohr')));
+
+      expect(await typenB.pull(force: true), 1);
+      final geraete = await dbB.equipmentDao.getAll();
+      expect(geraete, hasLength(1),
+          reason: 'der gezogene Typ gehört an das vorhandene Gerät, '
+              'nicht daneben');
+      expect(geraete.single.remoteTypeId, isNotNull);
+      expect(geraete.single.id, 1, reason: 'die lokale ID bleibt, woran '
+          'Zuordnungen und Exemplare hängen');
+    });
+
+    test('ein unbekannter Typ kommt als neues Gerät an', () async {
+      final (dbA, syncA, _) = sicht(mirror);
+      await syncA.pullIfNewer(force: true);
+      await dbA.delete(dbA.vehicles).go();
+      await dbA.delete(dbA.equipmentItems).go();
+      await dbA.into(dbA.equipmentItems).insert(EquipmentItemsCompanion.insert(
+          id: const Value(1), name: 'Kübelspritze'));
+      await syncA.publish();
+
+      final (dbB, _, typenB) = sicht(schwester);
+      expect(await typenB.pull(force: true), 1);
+      expect((await dbB.equipmentDao.getAll()).single.name, 'Kübelspritze');
+    });
+
+    test('das Fenster zieht nur Neues, nicht alles', () async {
+      final (dbA, syncA, _) = sicht(mirror);
+      await syncA.pullIfNewer(force: true);
+      await dbA.delete(dbA.vehicles).go();
+      await dbA.delete(dbA.equipmentItems).go();
+      await dbA.into(dbA.equipmentItems).insert(EquipmentItemsCompanion.insert(
+          id: const Value(1), name: 'Halligan-Tool'));
+      await syncA.publish();
+
+      final (dbB, _, typenB) = sicht(schwester);
+      expect(await typenB.pull(force: true), 1);
+      // Nichts hat sich geändert: Der zweite Zug bleibt leer.
+      expect(await typenB.pull(), 0);
+
+      // Jetzt kommt einer dazu — und NUR der wird geholt.
+      await dbA.into(dbA.equipmentItems).insert(EquipmentItemsCompanion.insert(
+          id: const Value(2), name: 'Brechstange'));
+      await syncA.publish();
+      expect(await typenB.pull(), 1);
+      expect((await dbB.equipmentDao.getAll()).map((e) => e.name),
+          containsAll(['Halligan-Tool', 'Brechstange']));
+    });
+
+    test('ein lokal geänderter Typ geht hoch und kommt bestätigt zurück',
+        () async {
+      final (dbA, syncA, typenA) = sicht(mirror);
+      await syncA.pullIfNewer(force: true);
+      await dbA.delete(dbA.vehicles).go();
+      await dbA.delete(dbA.equipmentItems).go();
+      await dbA.into(dbA.equipmentItems).insert(EquipmentItemsCompanion.insert(
+          id: const Value(1), name: 'Wärmebildkamera'));
+      await syncA.publish();
+      await typenA.pull(force: true);
+
+      // So ändert die App einen Typ: Inhalt schreiben, `updatedAt` hochziehen
+      // und als offen kennzeichnen. Das Hochziehen ist Pflicht — der Server
+      // entscheidet daran, ob die Änderung neuer ist als sein Stand.
+      await dbA.equipmentDao.patchEquipment(
+          1,
+          EquipmentItemsCompanion(
+            description: const Value('Bullard QXT'),
+            updatedAt: Value(DateTime.now()),
+            typeDirty: const Value(true),
+          ));
+      expect(await typenA.push(), 1);
+
+      final lokal = await dbA.equipmentDao.getById(1);
+      expect(lokal?.typeDirty, isFalse, reason: 'nach dem Schieben abgeräumt');
+      expect(lokal?.remoteTypeId, isNotNull);
+
+      // Und die Schwester-Abteilung sieht die Änderung.
+      final (dbB, _, typenB) = sicht(schwester);
+      await typenB.pull(force: true);
+      expect((await dbB.equipmentDao.getAll()).single.description,
+          'Bullard QXT');
+    });
+
+    test('wer auf einem überholten Stand schreibt, wird abgewiesen', () async {
+      // Optimistische Nebenläufigkeit je Zeile: Der Client schickt die
+      // Version zurück, die er zuletzt gesehen hat. Ist der Server seither
+      // weitergezogen, gilt dessen Stand. Ein Uhrenvergleich täte das NICHT
+      // zuverlässig — Drift rundet auf Sekunden, und zwei Geräte gehen nie
+      // gleich.
+      final (dbA, syncA, typenA) = sicht(mirror);
+      await syncA.pullIfNewer(force: true);
+      await dbA.delete(dbA.vehicles).go();
+      await dbA.delete(dbA.equipmentItems).go();
+      await dbA.into(dbA.equipmentItems).insert(EquipmentItemsCompanion.insert(
+          id: const Value(1), name: 'Sprungretter'));
+      await syncA.publish();
+      await typenA.pull(force: true);
+      final typId = (await dbA.equipmentDao.getById(1))!.remoteTypeId!;
+
+      // Jemand anders pflegt den Typ — A weiß davon nichts.
+      await adminClient.rpc('push_equipment_types', params: {
+        'gw': gesamtwehr,
+        'aenderungen': [
+          {'id': typId, 'name': 'Sprungretter', 'description': 'von Kollege'},
+        ],
+      });
+
+      // A ändert auf seinem überholten Stand und schiebt.
+      await dbA.equipmentDao.patchEquipment(
+          1,
+          const EquipmentItemsCompanion(
+            description: Value('von A'),
+            typeDirty: Value(true),
+          ));
+      await typenA.push();
+
+      final zentral = await asService((s) async => await s
+          .from('equipment_types')
+          .select('description')
+          .eq('id', typId)
+          .single());
+      expect(zentral['description'], 'von Kollege',
+          reason: 'der überholte Stand darf die neuere Pflege nicht kippen');
+    });
+
+    test('ein archivierter Typ verschwindet nur, wenn er frei ist', () async {
+      final (dbA, syncA, typenA) = sicht(mirror);
+      await syncA.pullIfNewer(force: true);
+      await dbA.delete(dbA.vehicles).go();
+      await dbA.delete(dbA.equipmentItems).go();
+      await dbA.into(dbA.equipmentItems).insert(EquipmentItemsCompanion.insert(
+          id: const Value(1), name: 'Ölbindemittel'));
+      await syncA.publish();
+      await typenA.pull(force: true);
+      final typId = (await dbA.equipmentDao.getById(1))!.remoteTypeId!;
+
+      // Ein zweites Gerät derselben Wehr, das den Typ BENUTZT.
+      final (dbB, syncB, typenB) = sicht(schwester);
+      await typenB.pull(force: true);
+      final vehicleId = await dbB.vehicleDao
+          .insertVehicle(VehiclesCompanion.insert(name: 'LF', type: 'LF'));
+      final fach = await dbB.compartmentDao.insertCompartment(
+          CompartmentsCompanion.insert(vehicleId: vehicleId, label: 'G1'));
+      final geraetB = (await dbB.equipmentDao.getAll()).single.id;
+      await dbB.assignmentDao.insertAssignment(
+          EquipmentAssignmentsCompanion.insert(
+              compartmentId: fach, equipmentId: geraetB));
+      await syncB.publish();
+
+      // Aus dem Bestand nehmen.
+      await adminClient.rpc('push_equipment_types', params: {
+        'gw': gesamtwehr,
+        'aenderungen': [
+          {'id': typId, 'deleted_at': DateTime.now().toUtc().toIso8601String()},
+        ],
+      });
+
+      // Wo er frei ist, verschwindet er …
+      expect(await typenA.pull(), 1);
+      expect(await dbA.equipmentDao.getAll(), isEmpty);
+
+      // … wo er in einem Fach liegt, bleibt er. Sonst risse das Archivieren
+      // einer anderen Abteilung ein Loch in ihre Beladung.
+      expect(await typenB.pull(), 1);
+      expect(await dbB.equipmentDao.getAll(), hasLength(1));
+    });
+
+    test('ohne Gesamtwehr ist der Typ-Sync ein No-op', () async {
+      // Lokalmodus, Alt-Server, Abteilung ohne Gesamtwehr: Die App muss
+      // unverändert auf dem Snapshot-Weg weiterlaufen.
+      await asService((s) async =>
+          await s.from('abteilungen').update({'gesamtwehr_id': null}).eq(
+              'id', mirror));
+      final (dbA, _, typenA) = sicht(mirror);
+      await dbA.into(dbA.equipmentItems).insert(EquipmentItemsCompanion.insert(
+          id: const Value(1), name: 'Einreißhaken', typeDirty: const Value(true)));
+
+      expect(await typenA.pull(force: true), 0);
+      expect(await typenA.push(), 0);
+      // Unangetastet — insbesondere bleibt das Kennzeichen stehen.
+      expect((await dbA.equipmentDao.getById(1))?.typeDirty, isTrue);
     });
   });
 }

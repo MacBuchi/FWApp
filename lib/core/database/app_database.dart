@@ -61,6 +61,29 @@ class EquipmentItems extends Table {
       text().withDefault(const Constant('[]'))();
   DateTimeColumn get updatedAt =>
       dateTime().withDefault(currentDateAndTime)();
+
+  /// UUID des geteilten Gerätetyps der Gesamtwehr (Nutzerkonzept Stufe ②,
+  /// Issue #99). `null` heißt: noch nicht mit dem geteilten Bestand
+  /// verbunden — im Lokalmodus, ohne Gesamtwehr, oder vor dem ersten
+  /// Typ-Sync. Die lokale [id] bleibt der Schlüssel, an dem Zuordnungen und
+  /// Exemplare hängen; hier steht nur der Verweis nach draußen.
+  TextColumn get remoteTypeId => text().nullable()();
+
+  /// Der Stand des Typs, wie ihn der Server beim letzten Zug meldete —
+  /// wortgleich als Zeitstempel-Text.
+  ///
+  /// Das ist die **Version dieser Zeile**, nicht eine Uhrzeit: Beim Schieben
+  /// geht sie zurück an den Server, der ablehnt, wenn er seither
+  /// weitergezogen ist. Dasselbe Prinzip wie `expected_version` beim
+  /// Snapshot, nur je Zeile. Ein Vergleich über die LOKALE Uhr wäre hier
+  /// falsch — Drift rundet `DateTime` auf Sekunden, Postgres arbeitet mit
+  /// Mikrosekunden, und zwei Geräte gehen ohnehin nie gleich.
+  TextColumn get remoteTypeUpdatedAt => text().nullable()();
+
+  /// Lokal geändert und noch nicht in den geteilten Bestand geschoben.
+  /// Getrennt von `SyncMeta.localDirty`, weil Typen einen eigenen Weg gehen:
+  /// Der Snapshot wird als Ganzes veröffentlicht, ein Typ Zeile für Zeile.
+  BoolColumn get typeDirty => boolean().withDefault(const Constant(false))();
 }
 
 @DataClassName('AssignmentData')
@@ -147,6 +170,18 @@ class SyncMeta extends Table {
       integer().withDefault(const Constant(0))();
   DateTimeColumn get lastPulledAt => dateTime().nullable()();
   BoolColumn get localDirty => boolean().withDefault(const Constant(false))();
+
+  /// Obergrenze des zuletzt gezogenen Typ-Fensters (Stufe ②). Der Typ-Sync
+  /// holt nur, was seither geändert wurde — anders als der Snapshot, der
+  /// immer vollständig kommt.
+  ///
+  /// ⚠️ **Text, nicht DateTime, und das mit Absicht.** Drift legt
+  /// `DateTimeColumn` als Unix-Sekunden ab; Postgres liefert Mikrosekunden.
+  /// Ein zurückgeschriebener `DateTime` wäre also immer eine Winzigkeit ZU
+  /// FRÜH, und das Fenster holte dieselbe Zeile bei jedem Lauf erneut. Hier
+  /// steht deshalb der Zeitstempel des Servers wortgleich — er ist ein
+  /// Lesezeichen, keine Uhrzeit.
+  TextColumn get lastTypeCursor => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -634,7 +669,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -657,6 +692,24 @@ class AppDatabase extends _$AppDatabase {
           if (from < 4) {
             await m.createTable(inventorySessions);
             await m.createTable(inventoryChecks);
+          }
+          if (from < 5) {
+            // Gerätetypen auf Gesamtwehr-Ebene (Issue #99). Alle drei
+            // Spalten sind nullable bzw. haben einen Default — ein
+            // Bestandsgerät läuft ohne Zutun weiter und verbindet sich beim
+            // ersten Typ-Sync.
+            await m.addColumn(equipmentItems, equipmentItems.remoteTypeId);
+            await m.addColumn(
+                equipmentItems, equipmentItems.remoteTypeUpdatedAt);
+            await m.addColumn(equipmentItems, equipmentItems.typeDirty);
+            // ⚠️ `syncMeta` entsteht oben per createTable — und createTable
+            // legt IMMER die heutige Definition an, inklusive dieser Spalte.
+            // Wer von v1 kommt, hat sie damit schon; ein zweites addColumn
+            // bricht mit „duplicate column name" ab. `equipmentItems` gibt es
+            // dagegen seit v1, dort ist der Zusatz immer nötig.
+            if (from >= 2) {
+              await m.addColumn(syncMeta, syncMeta.lastTypeCursor);
+            }
           }
         },
         beforeOpen: (details) async {

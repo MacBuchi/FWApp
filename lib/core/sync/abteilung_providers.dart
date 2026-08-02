@@ -134,6 +134,9 @@ class AbteilungSwitcher {
     // lokale Datei der Abteilung ist dann der ehrliche Stand.
     try {
       await _ref.read(syncServiceProvider)?.pullIfNewer(force: true);
+      // Die neue Sicht hat ihre eigene lokale Datei und damit ihr eigenes
+      // Typ-Fenster — deshalb `force` (Stufe ②, Issue #99).
+      await _ref.read(equipmentTypeSyncProvider)?.pull(force: true);
     } catch (e) {
       appLog.w('Pull nach Abteilungswechsel fehlgeschlagen', error: e);
     }

@@ -27,7 +27,36 @@ import 'package:drift/drift.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/logging/app_logger.dart';
 import 'package:fwapp/core/utils/equipment_naming.dart';
+import 'package:fwapp/core/utils/image_utils.dart' show isLocalImagePath;
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+/// Ein Typ ließ sich nicht aus dem geteilten Bestand nehmen, weil ihn
+/// jemand anders seither gepflegt hat. Dieselbe Regel wie beim Snapshot:
+/// erst aktualisieren, dann noch einmal entscheiden.
+class TypKonfliktException implements Exception {
+  @override
+  String toString() => 'type was changed elsewhere';
+}
+
+/// Wie oft hängt ein Gerätetyp in den ÜBRIGEN Abteilungen der Gesamtwehr?
+///
+/// Grundlage für „löschen oder archivieren": Wirklich löschen darf die App
+/// nur, was sonst nirgends mehr gebraucht wird — und die eigene Sicht zeigt
+/// ihr die fremden Abteilungen nicht. Was in der eigenen Abteilung hängt,
+/// zählt die lokale Datei (`EquipmentRepository.verwendungHier`): Sie kennt
+/// den Stand, den der Bedienende gerade sieht, der Server nur den zuletzt
+/// veröffentlichten.
+class VerwendungAnderswo {
+  /// Zuordnungen und Exemplare zusammen, und in wie vielen Abteilungen.
+  final int summe;
+  final int abteilungen;
+
+  const VerwendungAnderswo({this.summe = 0, this.abteilungen = 0});
+
+  /// Solange eine andere Abteilung den Typ benutzt, wird nur archiviert —
+  /// ein hartes Löschen risse dort ein Loch in Beladung oder Prüfhistorie.
+  bool get nurArchivieren => summe > 0;
+}
 
 class EquipmentTypeSync {
   final AppDatabase db;
@@ -37,6 +66,7 @@ class EquipmentTypeSync {
   final String? abteilungOverride;
 
   String? _gesamtwehrId;
+  String? _abteilungId;
   bool _ohneGesamtwehr = false;
 
   EquipmentTypeSync(this.db, this.client, {this.abteilungOverride});
@@ -54,6 +84,7 @@ class EquipmentTypeSync {
         _ohneGesamtwehr = true;
         return null;
       }
+      _abteilungId = abteilung;
       final row = await client
           .from('abteilungen')
           .select('gesamtwehr_id')
@@ -218,51 +249,65 @@ class EquipmentTypeSync {
 
   // ── Schieben ────────────────────────────────────────────────────────────
 
+  /// Eine Zeile, wie der Schreibweg sie erwartet.
+  ///
+  /// ⚠️ **Immer die GANZE Zeile schicken.** `push_equipment_types` schreibt
+  /// `short_name`, `image_path`, `training_url` und `library_equipment_id`
+  /// ohne `coalesce` — was in der Nutzlast fehlt, steht danach zentral auf
+  /// NULL. Ein Aufruf, der nur ein einzelnes Feld setzen will (etwa
+  /// [ausBestandNehmen]), löschte sonst das Foto der ganzen Wehr.
+  Map<String, dynamic> _zeile(EquipmentItemData e, {String? deletedAt}) => {
+        if (e.remoteTypeId != null) 'id': e.remoteTypeId,
+        'name': e.name,
+        'short_name': e.shortName,
+        'equipment_functions_json': e.equipmentFunctionsJson,
+        'deployment_scenarios_json': e.deploymentScenariosJson,
+        'description': e.description,
+        'image_path': e.imagePath,
+        'training_url': e.trainingUrl,
+        'library_equipment_id': e.libraryEquipmentId,
+        'is_custom': e.isCustom,
+        'extra_attributes_json': e.extraAttributesJson,
+        'training_questions_json': e.trainingQuestionsJson,
+        'typical_use_json': e.typicalUseJson,
+        if (deletedAt != null) 'deleted_at': deletedAt,
+        // Die Zeilen-Version, wie der Server sie zuletzt meldete — NICHT die
+        // lokale Uhr. Der Server lehnt ab, wenn er seither weitergezogen ist.
+        // `null` bei einem neuen Typ: Dann gibt es nichts zu überholen.
+        'updated_at': e.remoteTypeUpdatedAt,
+      };
+
   /// Schiebt alle lokal geänderten Typen hoch. Das Kennzeichen `typeDirty`
   /// setzt, wer den Typ ändert — hier wird es nur abgeräumt.
-  ///
-  /// ⚠️ **Wer `typeDirty` setzt, muss `updatedAt` mit hochziehen.** Der
-  /// Server vergleicht den mitgeschickten Zeitstempel mit seinem eigenen und
-  /// verwirft, was älter ist (damit ein lange offline gewesenes Gerät keine
-  /// neuere Pflege zurückrollt). Bleibt `updatedAt` auf dem Wert des letzten
-  /// Zugs stehen, verwirft der Server die eigene Änderung stillschweigend.
   ///
   /// Liefert die Zahl der geschobenen Typen.
   Future<int> push() async {
     final gw = await _gesamtwehr();
     if (gw == null) return 0;
 
-    final offen = await (db.select(db.equipmentItems)
+    final vorgemerkt = await (db.select(db.equipmentItems)
           ..where((t) => t.typeDirty.equals(true)))
         .get();
+
+    // ⚠️ Ein Foto, das nur auf DIESEM Gerät liegt (Kamera/Galerie, Upload
+    // noch nicht durch), ist für die anderen Abteilungen ein toter Pfad —
+    // und `push_equipment_types` schreibt `image_path` ohne `coalesce`, das
+    // gute zentrale Bild wäre also weg. Solche Zeilen bleiben vorgemerkt,
+    // bis der Upload den Pfad in einen `supabase://`-Marker verwandelt hat.
+    final offen = [
+      for (final e in vorgemerkt)
+        if (!isLocalImagePath(e.imagePath)) e,
+    ];
+    if (offen.length != vorgemerkt.length) {
+      appLog.i('Typ-Sync: ${vorgemerkt.length - offen.length} Typen warten '
+          'noch auf ihren Foto-Upload.');
+    }
     if (offen.isEmpty) return 0;
 
     try {
       final antwort = await client.rpc('push_equipment_types', params: {
         'gw': gw,
-        'aenderungen': [
-          for (final e in offen)
-            {
-              if (e.remoteTypeId != null) 'id': e.remoteTypeId,
-              'name': e.name,
-              'short_name': e.shortName,
-              'equipment_functions_json': e.equipmentFunctionsJson,
-              'deployment_scenarios_json': e.deploymentScenariosJson,
-              'description': e.description,
-              'image_path': e.imagePath,
-              'training_url': e.trainingUrl,
-              'library_equipment_id': e.libraryEquipmentId,
-              'is_custom': e.isCustom,
-              'extra_attributes_json': e.extraAttributesJson,
-              'training_questions_json': e.trainingQuestionsJson,
-              'typical_use_json': e.typicalUseJson,
-              // Die Zeilen-Version, wie der Server sie zuletzt meldete —
-              // NICHT die lokale Uhr. Der Server lehnt ab, wenn er seither
-              // weitergezogen ist. `null` bei einem neuen Typ: Dann gibt es
-              // nichts zu überholen.
-              'updated_at': e.remoteTypeUpdatedAt,
-            },
-        ],
+        'aenderungen': [for (final e in offen) _zeile(e)],
       });
 
       // Der Server antwortet mit den zentral gültigen Zeilen IN DERSELBEN
@@ -299,18 +344,81 @@ class EquipmentTypeSync {
     }
   }
 
-  /// Wo wird [remoteTypeId] in der Gesamtwehr überall benutzt? Grundlage für
-  /// „löschen oder archivieren": Wirklich löschen darf die App nur, was in
-  /// KEINER Abteilung zugeordnet ist — und die eigene Sicht zeigt ihr das
-  /// nicht.
-  Future<int> verwendungInDerGesamtwehr(String remoteTypeId) async {
-    final rows = List<Map<String, dynamic>>.from(await client
-        .rpc('equipment_type_verwendung', params: {'ziel': remoteTypeId}));
-    return rows.fold<int>(
-        0,
-        (n, r) =>
-            n +
-            (r['zuordnungen'] as num).toInt() +
-            (r['exemplare'] as num).toInt());
+  // ── Aus dem Bestand nehmen ──────────────────────────────────────────────
+
+  /// Wo hängt der Typ des Geräts [lokaleId] außerhalb dieser Abteilung?
+  ///
+  /// Wirft, wenn der Server nicht antwortet: Ohne die fremden Abteilungen
+  /// ist die Frage „löschen oder archivieren" nicht zu beantworten, und
+  /// geraten wird sie nicht.
+  Future<VerwendungAnderswo> verwendungAnderswo(int lokaleId) async {
+    final geraet = await db.equipmentDao.getById(lokaleId);
+    final typId = geraet?.remoteTypeId;
+    // Nur lokal vorhanden: Es gibt keine fremde Abteilung, die mitredet.
+    if (typId == null || await _gesamtwehr() == null) {
+      return const VerwendungAnderswo();
+    }
+
+    final rows = List<Map<String, dynamic>>.from(
+        await client.rpc('equipment_type_verwendung', params: {'ziel': typId}));
+    var summe = 0;
+    var abteilungen = 0;
+    for (final r in rows) {
+      // Die eigene Abteilung überspringen: Was hier hängt, verschwindet mit
+      // dem Entfernen ohnehin — und die lokale Datei weiß es genauer als der
+      // zuletzt veröffentlichte Stand.
+      if (r['abteilung_id'] == _abteilungId) continue;
+      final n =
+          (r['zuordnungen'] as num).toInt() + (r['exemplare'] as num).toInt();
+      if (n == 0) continue;
+      summe += n;
+      abteilungen++;
+    }
+    return VerwendungAnderswo(summe: summe, abteilungen: abteilungen);
+  }
+
+  /// Nimmt den Typ des Geräts [lokaleId] aus dem geteilten Bestand.
+  ///
+  /// Zentral ist das immer dasselbe: `deleted_at` setzen. Ob die App den
+  /// Vorgang „löschen" oder „archivieren" nennt, entscheidet sie anhand von
+  /// [verwendungAnderswo] — wo der Typ noch hängt, überlebt er den Zug
+  /// (siehe [_anwenden]), sonst verschwindet er überall.
+  ///
+  /// Wirft [TypKonfliktException], wenn der Server die Änderung verworfen
+  /// hat, weil jemand anders den Typ seither gepflegt hat. Ohne diese
+  /// Prüfung verschwände das Gerät lokal, bliebe zentral aber bestehen — und
+  /// käme beim nächsten vollen Zug wortlos zurück.
+  Future<void> ausBestandNehmen(int lokaleId) async {
+    final gw = await _gesamtwehr();
+    final geraet = await db.equipmentDao.getById(lokaleId);
+    if (gw == null || geraet?.remoteTypeId == null) return;
+
+    final antwort = await client.rpc('push_equipment_types', params: {
+      'gw': gw,
+      'aenderungen': [
+        _zeile(geraet!, deletedAt: DateTime.now().toUtc().toIso8601String()),
+      ],
+    });
+    final zeilen = List<Map<String, dynamic>>.from(antwort as List);
+    if (zeilen.length != 1 || zeilen.single['deleted_at'] == null) {
+      throw TypKonfliktException();
+    }
+  }
+}
+
+/// Schiebt geänderte Typen sofort, ohne den Bedienfluss aufzuhalten.
+///
+/// Der Aufrufer hat lokal schon gespeichert — das hier ist die Verteilung an
+/// die Gesamtwehr. Scheitert sie (offline, Alt-Server), bleibt `typeDirty`
+/// stehen und der nächste Sync holt es nach; deshalb ist ein Fehlschlag
+/// keine Ausnahme, sondern ein `false`.
+Future<bool> typenSofortTeilen(EquipmentTypeSync? sync) async {
+  if (sync == null) return false;
+  try {
+    return await sync.push() > 0;
+  } catch (e) {
+    appLog.w('Typ-Sync: Sofort-Verteilen fehlgeschlagen — bleibt vorgemerkt',
+        error: e);
+    return false;
   }
 }

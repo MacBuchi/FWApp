@@ -378,8 +378,24 @@ abstract class _$EquipmentFilterNotifier extends $Notifier<EquipmentFilter> {
   }
 }
 
+/// Die gefilterte Liste hängt am STROM, nicht an einer Momentaufnahme.
+///
+/// Sonst müsste jede schreibende Stelle daran denken, sie ungültig zu machen
+/// — und genau das ging beim Entfernen (Issue #99) schief: Ein `invalidate`
+/// mitten im Seitenwechsel baut die abgehende Seite noch einmal, was
+/// Riverpod als „setState during build" meldet. Mit dem Strom ist die Liste
+/// von selbst aktuell, egal wer schreibt.
+
 @ProviderFor(filteredEquipment)
 final filteredEquipmentProvider = FilteredEquipmentProvider._();
+
+/// Die gefilterte Liste hängt am STROM, nicht an einer Momentaufnahme.
+///
+/// Sonst müsste jede schreibende Stelle daran denken, sie ungültig zu machen
+/// — und genau das ging beim Entfernen (Issue #99) schief: Ein `invalidate`
+/// mitten im Seitenwechsel baut die abgehende Seite noch einmal, was
+/// Riverpod als „setState during build" meldet. Mit dem Strom ist die Liste
+/// von selbst aktuell, egal wer schreibt.
 
 final class FilteredEquipmentProvider
     extends
@@ -391,6 +407,13 @@ final class FilteredEquipmentProvider
     with
         $FutureModifier<List<EquipmentItem>>,
         $FutureProvider<List<EquipmentItem>> {
+  /// Die gefilterte Liste hängt am STROM, nicht an einer Momentaufnahme.
+  ///
+  /// Sonst müsste jede schreibende Stelle daran denken, sie ungültig zu machen
+  /// — und genau das ging beim Entfernen (Issue #99) schief: Ein `invalidate`
+  /// mitten im Seitenwechsel baut die abgehende Seite noch einmal, was
+  /// Riverpod als „setState during build" meldet. Mit dem Strom ist die Liste
+  /// von selbst aktuell, egal wer schreibt.
   FilteredEquipmentProvider._()
     : super(
         from: null,
@@ -417,4 +440,4 @@ final class FilteredEquipmentProvider
   }
 }
 
-String _$filteredEquipmentHash() => r'ae9eeed341a7db0dd9841da0fba3d08c29f0f4e2';
+String _$filteredEquipmentHash() => r'f8b194ca1a9023ee376cfa9f596e264ff8d3162a';

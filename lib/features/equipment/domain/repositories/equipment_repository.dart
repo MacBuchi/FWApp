@@ -12,4 +12,11 @@ abstract class EquipmentRepository {
   Future<void> delete(int id);
   Future<int> count();
   Future<List<EquipmentItem>> search(String query);
+
+  /// Was hängt in DIESER Abteilung an dem Gerät? Zuordnungen zu Fächern und
+  /// physische Exemplare — beide verschwinden mit ihm (Kaskade), Exemplare
+  /// samt Prüfhistorie. Grundlage für die Rückfrage vor dem Entfernen; die
+  /// fremden Abteilungen kennt nur der Server
+  /// (`EquipmentTypeSync.verwendungAnderswo`).
+  Future<({int zuordnungen, int exemplare})> verwendungHier(int id);
 }

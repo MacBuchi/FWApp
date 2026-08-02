@@ -21,5 +21,13 @@ abstract class EquipmentItem with _$EquipmentItem {
     @Default([]) List<String> trainingQuestions,
     @Default([]) List<String> typicalUse,
     required DateTime updatedAt,
+
+    /// Verweis in den geteilten Typ-Bestand der Gesamtwehr (Stufe ②,
+    /// Issue #99). `null` heißt: Dieses Gerät steht nur hier — im
+    /// Lokalmodus, ohne Gesamtwehr, oder noch vor dem ersten Abgleich.
+    String? remoteTypeId,
+
+    /// Lokal geändert und noch nicht an die Gesamtwehr verteilt.
+    @Default(false) bool typeDirty,
   }) = _EquipmentItem;
 }

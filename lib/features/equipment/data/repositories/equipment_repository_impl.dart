@@ -32,9 +32,20 @@ class EquipmentRepositoryImpl implements EquipmentRepository {
     return row == null ? null : _toEntity(row);
   }
 
+  /// Jede Pflege über diese Schicht ist eine Änderung am GERÄTETYP und
+  /// gehört damit der ganzen Gesamtwehr (Stufe ②, Issue #99). Das
+  /// Kennzeichen sammelt sie ein; verteilt wird zeilenweise über
+  /// `EquipmentTypeSync.push`, unabhängig vom Snapshot der Abteilung.
+  ///
+  /// Bewusst hier und nicht im DAO: Seeder und Import-Assistent schreiben
+  /// direkt über das DAO, und ihre Massen gehören nicht Zeile für Zeile in
+  /// den geteilten Bestand — sie kommen über den Snapshot dorthin.
+  static const _typGeaendert = Value(true);
+
   @override
   Future<int> insert(EquipmentItem item) => _dao.insertEquipment(
         EquipmentItemsCompanion.insert(
+          typeDirty: _typGeaendert,
           name: item.name,
           shortName: Value(item.shortName),
           trainingQuestionsJson:
@@ -57,6 +68,7 @@ class EquipmentRepositoryImpl implements EquipmentRepository {
   Future<void> update(EquipmentItem item) => _dao.updateEquipment(
         EquipmentItemsCompanion(
           id: Value(item.id),
+          typeDirty: _typGeaendert,
           name: Value(item.name),
           shortName: Value(item.shortName),
           trainingQuestionsJson:
@@ -83,6 +95,12 @@ class EquipmentRepositoryImpl implements EquipmentRepository {
   Future<int> count() => _dao.count();
 
   @override
+  Future<({int zuordnungen, int exemplare})> verwendungHier(int id) async => (
+        zuordnungen: (await _dao.assignmentsFor(id)).length,
+        exemplare: (await _dao.instancesFor(id)).length,
+      );
+
+  @override
   Future<List<EquipmentItem>> search(String query) async {
     final rows = await _dao.search(query);
     return rows.map(_toEntity).toList();
@@ -103,5 +121,7 @@ class EquipmentRepositoryImpl implements EquipmentRepository {
         isCustom: row.isCustom,
         extraAttributes: jsonToMap(row.extraAttributesJson),
         updatedAt: row.updatedAt,
+        remoteTypeId: row.remoteTypeId,
+        typeDirty: row.typeDirty,
       );
 }

@@ -68,6 +68,10 @@
     {
       "name": "20260803140000_einladungen.sql",
       "sha256": "714cb1a282f5d63763e1ff7a596c9696bf411ee8496cfc1db15f026ca7a7ba7f"
+    },
+    {
+      "name": "20260803200000_umbenennen.sql",
+      "sha256": "a3b28847b635a44fad997515cdcd13db0c6ca9b9434e9a36204cac2de745646b"
     }
   ],
   "functions": {

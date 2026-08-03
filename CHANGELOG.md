@@ -12,6 +12,23 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.18.0] – 2026-08-03
+
+### Neu
+
+- **Abteilungen und die Gesamtwehr lassen sich umbenennen.** Unter
+  *Mehr → Abteilung & Gesamtwehr* steht neben jedem Namen ein Stift. Der
+  Abteilungskommandant ändert den Namen seiner Abteilung, der
+  Feuerwehrkommandant jeden Namen seiner Wehr — auch den der Wehr selbst.
+  Bisher stand ein Name fest, sobald er einmal vergeben war: Ein Tippfehler
+  im Abteilungsnamen war nur noch am Server zu heilen.
+
+### Gut zu wissen
+
+- Beim Umbenennen ändert sich **nur die Beschriftung**. Alles, was an einer
+  Abteilung hängt — Fahrzeuge, Geräte, Mitgliedschaften, Prüfungen —, bleibt
+  unangetastet, und alle Geräte sehen den neuen Namen beim nächsten Abgleich.
+
 ## [1.17.0] – 2026-08-03
 
 ### Neu

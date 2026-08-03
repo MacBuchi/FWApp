@@ -262,4 +262,73 @@ void main() {
       expect(rolle('A', mitgliedschaften: null, kommandiert: {'GW'}), isNull);
     });
   });
+
+  group('darfAbteilungUmbenennen (#119)', () {
+    // Zwilling zu darf_mitglieder_verwalten(ziel, null) auf dem Server. Der
+    // Server entscheidet, hier geht es nur darum, welcher Stift erscheint —
+    // aber ein Stift, der in eine Absage läuft, ist schlimmer als keiner.
+    bool darf(
+      String id, {
+      String? gesamtwehr,
+      Map<String, String>? mitgliedschaften,
+      Set<String>? kommandiert,
+    }) => darfAbteilungUmbenennen(
+      abteilungId: id,
+      gesamtwehrId: gesamtwehr,
+      mitgliedschaften: mitgliedschaften,
+      kommandierteGesamtwehren: kommandiert,
+    );
+
+    test('der Abteilungskommandant darf seine eigene Abteilung', () {
+      expect(darf('A', mitgliedschaften: {'A': 'admin'}), isTrue);
+    });
+
+    test('aber KEINE Nachbarabteilung', () {
+      // Die Grenze, um die es in #119 überhaupt geht: Wer in A das Sagen hat,
+      // benennt deshalb nicht B um.
+      expect(
+        darf('B', gesamtwehr: 'GW', mitgliedschaften: {'A': 'admin'}),
+        isFalse,
+      );
+    });
+
+    test('der Feuerwehrkommandant darf jede Abteilung seiner Wehr', () {
+      expect(
+        darf('B',
+            gesamtwehr: 'GW',
+            mitgliedschaften: const {},
+            kommandiert: {'GW'}),
+        isTrue,
+      );
+    });
+
+    test('seine Stellung trägt nicht in eine fremde Gesamtwehr', () {
+      expect(
+        darf('B',
+            gesamtwehr: 'GW',
+            mitgliedschaften: const {},
+            kommandiert: {'ANDERE'}),
+        isFalse,
+      );
+    });
+
+    test('Gerätewart und Truppführer dürfen nicht', () {
+      // Sie pflegen den Bestand, nicht die Aufstellung der Wehr.
+      expect(darf('A', mitgliedschaften: {'A': 'geraetewart'}), isFalse);
+      expect(darf('A', mitgliedschaften: {'A': 'member'}), isFalse);
+    });
+
+    test('Alt-Server ohne Mitgliedschaften zeigt keinen Stift', () {
+      expect(darf('A', mitgliedschaften: null, kommandiert: {'GW'}), isFalse);
+    });
+
+    test('ohne Gesamtwehr zählt allein die Mitgliedschaft', () {
+      // Eine eigenständige Abteilung hat keinen Feuerwehrkommandanten über
+      // sich — sonst käme eine frische Installation nie an ihren Namen.
+      expect(darf('A', mitgliedschaften: {'A': 'admin'}, kommandiert: {'GW'}),
+          isTrue);
+      expect(darf('A', mitgliedschaften: {'A': 'member'}, kommandiert: {'GW'}),
+          isFalse);
+    });
+  });
 }

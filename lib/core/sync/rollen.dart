@@ -57,3 +57,27 @@ String? schreibrolleInAbteilung({
   }
   return null;
 }
+
+/// Darf der Angemeldete DIESE Abteilung umbenennen? (Issue #119)
+///
+/// Zwilling zu `darf_mitglieder_verwalten(ziel, null)` auf dem Server —
+/// dort sitzt die Wahrheit, hier nur die Frage, ob ein Stift angeboten wird.
+/// Ein Gerätewart darf ausdrücklich nicht: Er pflegt den Bestand, nicht die
+/// Aufstellung der Wehr.
+///
+/// [mitgliedschaften] `null` = Alt-Server ohne Mitgliedschaften; dann ist die
+/// Frage von hier aus nicht beantwortbar und die Antwort lautet „nein“ —
+/// lieber ein fehlender Stift als einer, der in eine Absage läuft.
+bool darfAbteilungUmbenennen({
+  required String abteilungId,
+  required String? gesamtwehrId,
+  required Map<String, String>? mitgliedschaften,
+  required Set<String>? kommandierteGesamtwehren,
+}) {
+  if (mitgliedschaften == null) return false;
+  if (gesamtwehrId != null &&
+      (kommandierteGesamtwehren?.contains(gesamtwehrId) ?? false)) {
+    return true;
+  }
+  return mitgliedschaften[abteilungId] == 'admin';
+}

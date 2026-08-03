@@ -14,6 +14,7 @@ import 'package:fwapp/core/sync/equipment_type_sync.dart';
 import 'package:fwapp/core/sync/image_sync_service.dart';
 import 'package:fwapp/core/sync/membership_providers.dart';
 import 'package:fwapp/core/sync/sync_service.dart';
+import 'package:fwapp/core/sync/temp_rechte_providers.dart';
 import 'package:fwapp/core/utils/image_utils.dart'
     show supabaseStorageBaseUrl, supabaseStorageHeaders;
 import 'package:http/http.dart' as http;
@@ -112,6 +113,13 @@ final canEditProvider = Provider<bool>((ref) {
   }
   final rolle = mitgliedschaften[selected];
   if (rolle == 'admin' || rolle == 'geraetewart') return true;
+
+  // Temporäres Gerätewart-Recht (Stufe ③, #100): dieselbe Freischaltung wie
+  // eine Schreibrolle, nur mit Ablauf. Der Server prüft es noch einmal in
+  // can_publish_abteilung — hier wird nur die Oberfläche freigegeben.
+  final temporaer = ref.watch(meineTemporaerenRechteProvider).value;
+  final laeuftAb = temporaer?[selected];
+  if (laeuftAb != null && laeuftAb.isAfter(DateTime.now())) return true;
 
   // Feuerwehrkommandant: schreibt in jeder Abteilung seiner Gesamtwehr.
   final kommandiert = ref.watch(meineKommandoGesamtwehrenProvider).value;

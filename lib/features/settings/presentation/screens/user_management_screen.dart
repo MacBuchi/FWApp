@@ -14,6 +14,7 @@ import 'package:fwapp/core/sync/abteilung_providers.dart';
 import 'package:fwapp/core/sync/auth_utils.dart';
 import 'package:fwapp/core/sync/membership_providers.dart';
 import 'package:fwapp/core/sync/rollen.dart';
+import 'package:fwapp/core/sync/temp_rechte_providers.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/features/settings/presentation/providers/einladung_providers.dart';
 import 'package:fwapp/features/settings/presentation/providers/user_admin_providers.dart';
@@ -527,6 +528,26 @@ class _UserTile extends ConsumerWidget {
     // schon als Nutzername im Titel. Sichtbar wird die Adresse erst, wenn
     // sie eine echte ist (dann ist sie auch die Anmeldung).
     final echteMail = hatEchteMail(user.email);
+
+    final meineKommandos =
+        ref.watch(meineKommandoGesamtwehrenProvider).value ?? const <String>{};
+    // Übungsrechte (#100): nur für Konten OHNE Schreibrolle, und nur dort, wo
+    // der Angemeldete selbst erteilen darf. Ist das nicht eindeutig eine
+    // Abteilung, bleibt der Eintrag weg — ein Menüpunkt, der raten müsste,
+    // erteilt irgendwann das Falsche.
+    final tempZiel = _uebungsZiel(
+      ref.watch(meineMitgliedschaftenProvider).value,
+      meineKommandos,
+      abteilungen,
+    );
+    final laufendesRecht = tempZiel == null
+        ? null
+        : ref
+            .watch(temporaereRechteDerAbteilungProvider(tempZiel))
+            .value
+            ?.where((r) => r.userId == user.id && r.laeuft)
+            .firstOrNull;
+
     // Eine Zeile je Wirkungskreis: „Gerätewart (Grombach)" — der
     // Abteilungsname entfällt, solange es nur eine Abteilung gibt.
     final rollen = <String>[
@@ -549,6 +570,8 @@ class _UserTile extends ConsumerWidget {
           abteilungsName(user.abteilungId, abteilungen),
       ],
       if (echteMail) user.email,
+      if (laufendesRecht != null)
+        'Übungsrechte bis ${_fmtUhr(laufendesRecht.laeuftAb)}',
       if (user.banned) 'GESPERRT',
       if (user.mustChangePassword) 'Initialpasswort aktiv',
       if (user.lastSignInAt != null)
@@ -559,8 +582,6 @@ class _UserTile extends ConsumerWidget {
 
     // Kommandant ernennen/entlassen: nur dort, wo der Angemeldete selbst
     // Feuerwehrkommandant ist UND das Ziel eindeutig ist.
-    final meineKommandos =
-        ref.watch(meineKommandoGesamtwehrenProvider).value ?? const <String>{};
     final kommandantZiel = _kommandantZiel(meineKommandos, abteilungen);
 
     return ListTile(
@@ -613,6 +634,12 @@ class _UserTile extends ConsumerWidget {
           if (echteMail)
             const PopupMenuItem(
                 value: 'zugangsmail', child: Text('Passwort-Mail senden')),
+          if (tempZiel != null)
+            PopupMenuItem(
+                value: 'uebung',
+                child: Text(laufendesRecht != null
+                    ? 'Übungsrechte beenden'
+                    : 'Übungsrechte erteilen')),
           const PopupMenuItem(
               value: 'mfa', child: Text('Zwei-Faktor zurücksetzen')),
           PopupMenuItem(
@@ -638,9 +665,78 @@ class _UserTile extends ConsumerWidget {
     return ziele.length == 1 ? ziele.first : null;
   }
 
+  /// Die eine Abteilung, in der Übungsrechte für dieses Konto in Frage
+  /// kommen: Der Angemeldete muss dort erteilen dürfen, und das Konto darf
+  /// dort noch KEINE Schreibrolle haben (der Server lehnt das sonst mit
+  /// „already permanent" ab — hier wird der Menüpunkt gar nicht erst gezeigt).
+  String? _uebungsZiel(
+    Map<String, String>? meineMitgliedschaften,
+    Set<String> meineKommandos,
+    List<AbteilungInfo> abteilungen,
+  ) {
+    if (meineMitgliedschaften == null) return null;
+    final ziele = <String>{};
+    for (final e in user.memberships.entries) {
+      if (e.value == 'admin' || e.value == 'geraetewart') continue;
+      final abteilung =
+          abteilungen.where((a) => a.id == e.key).firstOrNull;
+      if (darfTemporaeresRechtErteilen(
+        abteilungId: e.key,
+        gesamtwehrId: abteilung?.gesamtwehrId,
+        mitgliedschaften: meineMitgliedschaften,
+        kommandierteGesamtwehren: meineKommandos,
+      )) {
+        ziele.add(e.key);
+      }
+    }
+    return ziele.length == 1 ? ziele.first : null;
+  }
+
+  Future<void> _uebungsrechte(BuildContext context, WidgetRef ref,
+      String abteilungId, TemporaeresRecht? laufend) async {
+    final dienst = ref.read(tempRechteServiceProvider);
+    if (dienst == null) return;
+
+    if (laufend != null) {
+      final ok = await _confirm(
+          context,
+          'Übungsrechte beenden?',
+          '„${user.username}“ kann danach sofort nicht mehr bearbeiten. '
+              'Das Protokoll bleibt erhalten.');
+      if (!ok || !context.mounted) return;
+      await _run(context, ref, () => dienst.zieheZurueck(laufend.id, abteilungId),
+          erfolg: 'Übungsrechte beendet.', fehlerText: tempRechtFehlerText);
+      return;
+    }
+
+    final bis = await showDialog<DateTime>(
+      context: context,
+      // ShellRoute-Regel aus AGENTS.md: sonst liegt der Dialog unter der
+      // NavigationBar.
+      useRootNavigator: true,
+      builder: (_) => _UebungsrechteDialog(name: user.username),
+    );
+    if (bis == null || !context.mounted) return;
+    await _run(context, ref, () => dienst.erteile(user.id, abteilungId, bis),
+        erfolg: 'Übungsrechte bis ${_fmtUhr(bis)} erteilt.',
+        fehlerText: tempRechtFehlerText);
+  }
+
   Future<void> _onAction(BuildContext context, WidgetRef ref, String action,
       List<AbteilungInfo> abteilungen) async {
     switch (action) {
+      case 'uebung':
+        final meine = ref.read(meineMitgliedschaftenProvider).value;
+        final kommandos = ref.read(meineKommandoGesamtwehrenProvider).value ??
+            const <String>{};
+        final ziel = _uebungsZiel(meine, kommandos, abteilungen);
+        if (ziel == null) return;
+        final laufend = ref
+            .read(temporaereRechteDerAbteilungProvider(ziel))
+            .value
+            ?.where((r) => r.userId == user.id && r.laeuft)
+            .firstOrNull;
+        await _uebungsrechte(context, ref, ziel, laufend);
       case 'mitgliedschaften':
         await _editMitgliedschaften(context, ref, abteilungen);
       case 'kommandant':
@@ -1008,16 +1104,110 @@ class _UserTile extends ConsumerWidget {
 
 /// Führt eine Verwaltungsaktion aus, meldet Fehler als Snackbar und lädt
 /// die Liste neu.
-Future<void> _run(BuildContext context, WidgetRef ref,
-    Future<void> Function() action) async {
+/// [erfolg] meldet den Vollzug — nötig überall dort, wo man das Ergebnis der
+/// Liste nicht ansieht. [fehlerText] übersetzt die Absagen des Servers; ohne
+/// ihn bleibt es beim technischen Wortlaut.
+Future<void> _run(
+  BuildContext context,
+  WidgetRef ref,
+  Future<void> Function() action, {
+  String? erfolg,
+  String Function(Object)? fehlerText,
+}) async {
   try {
     await action();
+    if (erfolg != null && context.mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(erfolg)));
+    }
   } catch (e) {
     if (context.mounted) {
+      final text = fehlerText == null ? 'Fehlgeschlagen: $e' : fehlerText(e);
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Fehlgeschlagen: $e')));
+          .showSnackBar(SnackBar(content: Text(text)));
     }
   } finally {
     ref.invalidate(managedUsersProvider);
   }
+}
+
+/// Wie lange? Drei Vorgaben statt einer Zeitauswahl — im Gerätehaus tippt
+/// niemand an einem Uhrzeit-Rad, und „bis Tagesende" deckt den Normalfall
+/// (eine Übung an diesem Abend) vollständig ab.
+class _UebungsrechteDialog extends StatefulWidget {
+  final String name;
+  const _UebungsrechteDialog({required this.name});
+
+  @override
+  State<_UebungsrechteDialog> createState() => _UebungsrechteDialogState();
+}
+
+class _UebungsrechteDialogState extends State<_UebungsrechteDialog> {
+  /// Stunden ab jetzt; `null` = bis Tagesende (Zeitzone des Geräts).
+  int? _stunden;
+
+  DateTime get _bis => _stunden == null
+      ? tagesendeAblauf()
+      : DateTime.now().add(Duration(hours: _stunden!));
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+        title: const Text('Übungsrechte erteilen'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '„${widget.name}“ darf danach in dieser Abteilung Fahrzeuge, '
+              'Fächer und Geräte anlegen und ändern — wie ein Gerätewart, '
+              'aber befristet. Nutzer verwalten kann er weiterhin nicht.',
+              style: const TextStyle(fontSize: 13),
+            ),
+            const SizedBox(height: 12),
+            // Bewusst ListTiles statt RadioListTile: Letzteres ist seit
+            // Flutter 3.32 zugunsten eines RadioGroup-Vorfahren abgekündigt,
+            // und drei Zeilen Auswahl rechtfertigen den nicht.
+            for (final wahl in const [
+              (null, 'Bis Tagesende'),
+              (2, 'Zwei Stunden'),
+              (4, 'Vier Stunden'),
+            ])
+              ListTile(
+                onTap: () => setState(() => _stunden = wahl.$1),
+                title: Text(wahl.$2),
+                leading: Icon(_stunden == wahl.$1
+                    ? Icons.radio_button_checked
+                    : Icons.radio_button_unchecked),
+                contentPadding: EdgeInsets.zero,
+                dense: true,
+              ),
+            const SizedBox(height: 4),
+            Text(
+              'Läuft ab um ${_fmtUhr(_bis)}. Rechte wirken nur online — vor '
+              'der Übung erteilen, nicht im Keller.',
+              style: const TextStyle(fontSize: 12),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Abbrechen'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, _bis),
+            child: const Text('Erteilen'),
+          ),
+        ],
+      );
+}
+
+/// „18:00", bei einem anderen Tag mit Datum davor.
+String _fmtUhr(DateTime t) {
+  final uhr = '${t.hour.toString().padLeft(2, '0')}:'
+      '${t.minute.toString().padLeft(2, '0')}';
+  final heute = DateTime.now();
+  final gleicherTag =
+      t.year == heute.year && t.month == heute.month && t.day == heute.day;
+  return gleicherTag ? uhr : '${t.day}.${t.month}. $uhr';
 }

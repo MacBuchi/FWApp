@@ -5,6 +5,8 @@ library;
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cached_network_image_platform_interface/cached_network_image_platform_interface.dart'
+    show ImageRenderMethodForWeb;
 import 'package:flutter/material.dart';
 
 /// Prefix for centrally stored images. Markers stay stable when the server
@@ -108,6 +110,18 @@ Widget resolveImage({
       // and lets the pull-time precache warm exactly this entry.
       cacheKey: path,
       httpHeaders: supabaseStorageHeaders?.call(),
+      // ⚠️ Ohne diese Zeile lädt in der WEB-App KEIN einziges zentrales Bild
+      // (Issue #114). Voreingestellt ist `HtmlImage`: Das Bild geht dann durch
+      // die Bild-Pipeline des Browsers, und die kann keine Kopfzeilen
+      // mitschicken — der private Bucket bekommt weder `apikey` noch
+      // `Authorization` zu sehen und antwortet mit
+      // `400 / "Invalid Compact JWS"`. `HttpGet` holt das Bild stattdessen
+      // über den HTTP-Client, mit Kopfzeilen. Der Preis steht so in der
+      // Paket-Doku: Der browsereigene Bild-Cache entfällt — hier kein
+      // Verlust, denn gecacht wird ohnehin über flutter_cache_manager, und
+      // genau dessen Einträge füllt der Precache vor.
+      // Auf Android und iOS ist der Wert wirkungslos.
+      imageRenderMethodForWeb: ImageRenderMethodForWeb.HttpGet,
       width: width,
       height: height,
       fit: fit,

@@ -12,6 +12,17 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.16.1] – 2026-08-03
+
+### Behoben
+
+- **In der Web-App auf dem iPhone sind wieder alle Fotos zu sehen.** Gerätefotos,
+  Fahrzeugfotos und der neue Kopfbereich blieben dort leer und zeigten nur eine
+  graue Fläche — auf Android war alles in Ordnung. Ursache war die Art, wie die
+  Web-App Bilder vom Server holte: Sie schickte dabei die Anmeldung nicht mit,
+  und der Server gibt Fotos nur an Angemeldete heraus. Das betraf alle zentral
+  gespeicherten Fotos, seit es sie gibt.
+
 ## [1.16.0] – 2026-08-03
 
 ### Neu

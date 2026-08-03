@@ -255,16 +255,20 @@ pauschales Formatieren in Feature-PRs.
   `EquipmentTypeSync._zeile` immer die VOLLE Zeile, auch beim Archivieren.
   Aus demselben Grund hält der Push Zeilen zurück, deren Bild noch ein
   Pfad auf DIESES Gerät ist: zentral wäre er tot und überschriebe das gute.
-- ⚠️ **In der Web-App laden zentrale Bilder NICHT** (Issue #114). Flutter-Web
-  holt Bilder über die Bild-Pipeline des Browsers, und die kann keine
-  Kopfzeilen mitschicken — der `httpHeaders`-Parameter von
-  `CachedNetworkImage` in `resolveImage` fällt dort einfach unter den Tisch.
-  Ohne `apikey` und `Authorization` antwortet Storage mit
-  `400 / "Invalid Compact JWS"`; genau diese Meldung ist das Erkennungszeichen
-  (mit `apikey` allein käme 404, mit Sitzung 200). Betrifft Gerätefotos,
-  Fahrzeugfotos und den Gesamtwehr-Kopf gleichermaßen. **Kein Grund, im
-  Browser nach einem Fehler in der eigenen Änderung zu suchen** — und kein
-  Grund, den Durchklick sein zu lassen: Alles außer den Bildern stimmt dort.
+- ⚠️ **`imageRenderMethodForWeb: ImageRenderMethodForWeb.HttpGet` in
+  `resolveImage` NIE entfernen** (Issue #114). Die Voreinstellung des Pakets
+  ist `HtmlImage`: Das Bild geht dann durch die Bild-Pipeline des Browsers,
+  und die kann keine Kopfzeilen mitschicken. Der private Bucket sieht weder
+  `apikey` noch `Authorization` und antwortet mit
+  `400 / "Invalid Compact JWS"` — genau diese Meldung ist das
+  Erkennungszeichen (mit `apikey` allein käme 404, mit Sitzung 200). Es traf
+  Gerätefotos, Fahrzeugfotos und den Gesamtwehr-Kopf gleichermaßen, und zwar
+  seit M2, ohne dass es jemandem auffiel: Android ist nicht betroffen, und
+  die Web-App ist die iPhone-Zwischenlösung.
+  ⚠️ **Kein Test kann das absichern** — der Renderweg wird nur in der
+  Web-Fassung des Pakets ausgewertet, Tests laufen auf der VM. Beweis ist
+  allein der Durchklick im Browser: In den Netzwerk-Antworten muss der
+  Storage-Abruf `200` liefern, nicht `400`.
 - ⚠️ **Mehr als ein Storage-Bucket:** Wer aus einem `supabase://`-Marker den
   Objektnamen zieht, muss den Bucket im Präfix PRÜFEN, nicht nur dessen Länge
   abschneiden (`objektImBucket` in image_utils.dart). Sonst liefert ein Marker

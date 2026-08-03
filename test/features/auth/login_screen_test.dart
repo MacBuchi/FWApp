@@ -126,6 +126,47 @@ void main() {
     await endTestApp(tester);
   });
 
+  testWidgets('nach dem Wechsel hat das erste Feld der neuen Ansicht den Fokus',
+      (tester) async {
+    // ⚠️ DIESER TEST BEWEIST DEN FIX NICHT — er hält nur fest, dass das
+    // erste Feld am Ende Fokus hat. Gegenprobe gemacht: Ohne den
+    // ausdrücklichen Fokuswechsel in `_wechsle` bleibt er GRÜN, weil im
+    // Widget-Test `autofocus: true` greift. Genau das tut es im Browser
+    // nicht, und dort hängt daran das DOM-Formular für den Passwortmanager
+    // (#120). Der Beweis dafür ist die Messung im Browser (im PR belegt:
+    // ohne Fokuswechsel 0 Formulare nach dem Moduswechsel, mit ihm eines
+    // mit beiden `new-password`-Feldern) — nicht dieser Test.
+    await pumpLogin(tester);
+    await tester.ensureVisible(find.text('Ich habe eine Einladung'));
+    await tester.tap(find.text('Ich habe eine Einladung'));
+    await tester.pumpAndSettle();
+
+    final mail = tester.widget<TextField>(
+        find.widgetWithText(TextField, 'E-Mail-Adresse'));
+    expect(mail.focusNode?.hasFocus, isTrue,
+        reason: 'Das Adressfeld der Einladungs-Ansicht muss den Fokus haben');
+    await endTestApp(tester);
+  });
+
+  testWidgets('jede Ansicht bekommt ihre eigene AutofillGroup', (tester) async {
+    // Der Schlüssel wirft die Gruppe beim Wechsel weg. Ohne ihn behält
+    // Flutter den einmal aufgebauten Autofill-Kontext der Anmeldung bei
+    // (#120) — dann trägt das DOM-Formular `username`/`current-password`,
+    // während man ein neues Passwort setzen will.
+    await pumpLogin(tester);
+    final vorher = tester.widget<AutofillGroup>(find.byType(AutofillGroup)).key;
+    expect(vorher, isNotNull, reason: 'ohne Schlüssel wird nie neu aufgebaut');
+
+    await tester.ensureVisible(find.text('Ich habe eine Einladung'));
+    await tester.tap(find.text('Ich habe eine Einladung'));
+    await tester.pumpAndSettle();
+
+    final nachher = tester.widget<AutofillGroup>(find.byType(AutofillGroup)).key;
+    expect(nachher, isNot(vorher),
+        reason: 'ein anderer Modus muss eine andere Gruppe ergeben');
+    await endTestApp(tester);
+  });
+
   testWidgets('beide Felder liegen in einer AutofillGroup', (tester) async {
     await pumpLogin(tester);
     expect(find.byType(AutofillGroup), findsOneWidget);

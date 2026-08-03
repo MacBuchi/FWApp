@@ -12,6 +12,23 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.18.1] – 2026-08-04
+
+### Behoben
+
+- **Passwortmanager erkennen die Passwortfelder wieder.** Beim Zurücksetzen
+  des Passworts und beim Einlösen einer Einladung boten Bitwarden & Co.
+  nichts an, und „generiertes Passwort einfügen" tat sichtbar nichts. Ursache
+  war im Browser messbar: Die App meldete dem Browser weiterhin das
+  Anmeldeformular, während längst die Felder für ein neues Passwort auf dem
+  Bildschirm standen.
+
+### Gut zu wissen
+
+- Auf dem Bildschirm **„Neues Passwort festlegen"** (Pflichtwechsel nach der
+  ersten Anmeldung mit einem Zugangszettel) hilft der Manager erst, nachdem
+  man einmal ins Feld getippt hat. Danach füllt er beide Felder normal.
+
 ## [1.18.0] – 2026-08-03
 
 ### Neu

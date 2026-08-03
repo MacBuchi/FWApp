@@ -49,6 +49,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _neu1 = TextEditingController();
   final _neu2 = TextEditingController();
   final _totp = TextEditingController();
+
+  /// Fokus für das jeweils ERSTE Feld der gerade gezeigten Ansicht.
+  ///
+  /// ⚠️ Daran hängt der Passwortmanager (Issue #120). Flutter-Web baut das
+  /// DOM-Formular, an dem Bitwarden & Co. andocken, für das Feld mit Fokus —
+  /// und baut es beim Moduswechsel NICHT neu. Gemessen: Nach dem Wechsel auf
+  /// „Einladung einlösen" stand im DOM noch das Anmelde-Formular mit
+  /// `username`/`current-password`, während die sichtbaren Felder als
+  /// namenlose `autocomplete="off"` daneben lagen. Der Manager bot deshalb
+  /// nichts an, und „generiertes Passwort einfügen" tat sichtbar nichts.
+  ///
+  /// `autofocus: true` an den Feldern reicht nicht: Beim Wechsel innerhalb
+  /// desselben Bildschirms wird es nicht erneut ausgewertet.
+  final _fokusErstes = FocusNode();
   var _modus = _Modus.anmelden;
   bool _busy = false;
   String? _error;
@@ -66,6 +80,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     _neu1.dispose();
     _neu2.dispose();
     _totp.dispose();
+    _fokusErstes.dispose();
     super.dispose();
   }
 
@@ -101,6 +116,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           _modus = _Modus.zweiterFaktor;
           _hinweis = 'Bitte den Code aus deiner Authenticator-App eingeben.';
         });
+        _fokusAufErstesFeld();
         return;
       }
       // Bewusst KEIN context.go(): Das Auth-Ereignis stößt den Router an,
@@ -151,6 +167,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           _hinweis = 'Wenn es zu dieser Adresse ein Konto gibt, ist ein Code '
               'unterwegs. Er gilt eine Stunde.';
         });
+        _fokusAufErstesFeld();
       }
     }
   }
@@ -346,20 +363,39 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         _Modus.zweiterFaktor => _zweitenFaktorPruefen(),
       };
 
-  void _wechsle(_Modus ziel) => setState(() {
-        _modus = ziel;
-        _error = null;
-        _hinweis = switch (ziel) {
-          _Modus.adresse =>
-            'Das funktioniert nur für Konten mit hinterlegter E-Mail-Adresse '
-                '(Admins und Gerätewarte). Mit einem Zugangszettel-Konto hilft '
-                'der Gerätewart weiter.',
-          _Modus.einladung =>
-            'Trage die Adresse ein, an die die Einladung ging, dazu den Code '
-                'aus der Mail — und wähle dein eigenes Passwort.',
-          _ => null,
-        };
-      });
+  void _wechsle(_Modus ziel) {
+    setState(() {
+      _modus = ziel;
+      _error = null;
+      _hinweis = switch (ziel) {
+        _Modus.adresse =>
+          'Das funktioniert nur für Konten mit hinterlegter E-Mail-Adresse '
+              '(Admins und Gerätewarte). Mit einem Zugangszettel-Konto hilft '
+              'der Gerätewart weiter.',
+        _Modus.einladung =>
+          'Trage die Adresse ein, an die die Einladung ging, dazu den Code '
+              'aus der Mail — und wähle dein eigenes Passwort.',
+        _ => null,
+      };
+    });
+    _fokusAufErstesFeld();
+  }
+
+  /// Nach JEDEM Wechsel der Ansicht aufrufen — auch bei den beiden, die an
+  /// [_wechsle] vorbeigehen (zweiter Faktor, Code angefordert). Erst nach dem
+  /// Neubau anfordern: Vorher gibt es das Feld der neuen Ansicht noch nicht.
+  void _fokusAufErstesFeld() {
+    // ⚠️ Erst abgeben, dann neu anfordern. [_fokusErstes] hängt in JEDER
+    // Ansicht am ersten Feld und behält den Fokus über den Wechsel hinweg —
+    // ein `requestFocus` auf einen Knoten, der ihn schon hat, tut nichts,
+    // und ohne Fokus-WECHSEL meldet Flutter dem Browser keinen neuen
+    // Eingabekontext. Genau daran hing das DOM-Formular für den
+    // Passwortmanager (#120): Es entstand erst beim Hineinklicken von Hand.
+    FocusManager.instance.primaryFocus?.unfocus();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _fokusErstes.requestFocus();
+    });
+  }
 
   List<Widget> _felder() => switch (_modus) {
         _Modus.anmelden => [
@@ -371,6 +407,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               keyboardType: TextInputType.emailAddress,
               autocorrect: false,
+              focusNode: _fokusErstes,
               autofocus: true,
               textInputAction: TextInputAction.next,
               autofillHints: const [AutofillHints.username],
@@ -390,6 +427,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               decoration: const InputDecoration(labelText: 'E-Mail-Adresse'),
               keyboardType: TextInputType.emailAddress,
               autocorrect: false,
+              focusNode: _fokusErstes,
               autofocus: true,
               textInputAction: TextInputAction.done,
               autofillHints: const [AutofillHints.email],
@@ -405,6 +443,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               keyboardType: TextInputType.number,
               autocorrect: false,
+              focusNode: _fokusErstes,
               autofocus: true,
               textInputAction: TextInputAction.done,
               autofillHints: const [AutofillHints.oneTimeCode],
@@ -420,6 +459,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               keyboardType: TextInputType.number,
               autocorrect: false,
+              focusNode: _fokusErstes,
               autofocus: true,
               textInputAction: TextInputAction.next,
               autofillHints: const [AutofillHints.oneTimeCode],
@@ -453,6 +493,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               keyboardType: TextInputType.emailAddress,
               autocorrect: false,
+              focusNode: _fokusErstes,
               autofocus: true,
               textInputAction: TextInputAction.next,
               autofillHints: const [AutofillHints.email],
@@ -570,7 +611,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               constraints: const BoxConstraints(maxWidth: 400),
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 24, vertical: eng ? 12 : 24),
+                // ⚠️ Der Schlüssel ist der eigentliche Fix für #120: Flutter
+                // baut den Autofill-Kontext (und damit das DOM-Formular, an
+                // dem ein Passwortmanager andockt) EINMAL je AutofillGroup
+                // auf. Ohne eigenen Schlüssel bleibt beim Moduswechsel das
+                // Anmelde-Formular im DOM stehen, während die sichtbaren
+                // Felder als namenlose `autocomplete="off"` daneben liegen —
+                // im Browser gemessen. Ein Wechsel des Schlüssels wirft die
+                // Gruppe weg und lässt eine neue entstehen.
                 child: AutofillGroup(
+                  key: ValueKey(_modus),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [

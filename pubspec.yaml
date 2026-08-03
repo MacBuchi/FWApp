@@ -2,7 +2,7 @@ name: fwapp
 description: Feuerwehr-Lernapp – Fahrzeuge, Geräte, Beladepläne und Trainings-Spielmodi.
 publish_to: 'none'
 
-version: 1.16.0+39
+version: 1.16.1+40
 
 environment:
   sdk: ^3.7.0
@@ -45,6 +45,9 @@ dependencies:
   file_picker: ^11.0.3
   image_picker: ^1.1.2
   cached_network_image: ^3.4.1
+  # Nur wegen ImageRenderMethodForWeb (Issue #114): Die Aufzaehlung wird von
+  # cached_network_image nicht re-exportiert, der Import braucht sie direkt.
+  cached_network_image_platform_interface: ^4.1.1
   flutter_cache_manager: ^3.4.1
   image: ^4.3.0
   cross_file: ^0.3.4

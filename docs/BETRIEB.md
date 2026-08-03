@@ -222,9 +222,9 @@ Gesamtwehr.
 Alles leer lassen (und das Bild entfernen) heißt: Die Startseite zeigt gar
 keinen Kopf — kein leerer Kasten, sondern nichts.
 
-⚠️ **In der Web-App (iPhone) fehlt derzeit das Bild**, Überschrift und Text
-stehen dort normal. Grund und Stand: Issue #114. Auf Android ist alles zu
-sehen.
+Das gilt auf Android wie in der Web-App auf dem iPhone. (In v1.16.0 fehlte in
+der Web-App noch das Bild — seit v1.16.1 ist auch das behoben, und mit ihm die
+Gerätefotos, die dort aus demselben Grund leer blieben.)
 
 ### Prüftermine pflegen (Gerätewart)
 

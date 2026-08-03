@@ -40,11 +40,16 @@ String rolleAnzeigename(
 /// [mitgliedschaften] `null` = Alt-Server ohne Mitgliedschaften; dann ist die
 /// Frage von hier aus nicht beantwortbar und der Aufrufer bleibt bei der
 /// alten Regel „Heimat schreibend, Schwester lesend".
+/// [temporaereRechte] Abteilungen mit einem gerade laufenden temporären
+/// Gerätewart-Recht (Stufe ③, #100). Sie ergeben dieselbe Schreibrolle wie
+/// eine Mitgliedschaft — der Zusatz „(befristet)" macht sichtbar, dass sie
+/// abläuft, denn genau das unterscheidet sie im Alltag.
 String? schreibrolleInAbteilung({
   required String abteilungId,
   required String? gesamtwehrId,
   required Map<String, String>? mitgliedschaften,
   required Set<String>? kommandierteGesamtwehren,
+  Set<String>? temporaereRechte,
 }) {
   if (mitgliedschaften == null) return null;
   if (gesamtwehrId != null &&
@@ -55,7 +60,41 @@ String? schreibrolleInAbteilung({
   if (rolle == 'admin' || rolle == 'geraetewart') {
     return rolleAnzeigename(rolle);
   }
+  // Nach der Mitgliedschaft geprüft: Wer dauerhaft schreiben darf, soll nicht
+  // als befristet erscheinen. Der Server lässt beides ohnehin nicht
+  // gleichzeitig zu („already permanent"), aber die Reihenfolge hier hängt
+  // nicht davon ab.
+  if (temporaereRechte?.contains(abteilungId) ?? false) {
+    return '${rolleAnzeigename('geraetewart')} (befristet)';
+  }
   return null;
+}
+
+/// Darf der Angemeldete in DIESER Abteilung temporäre Gerätewart-Rechte
+/// erteilen? (Issue #100)
+///
+/// Zwilling zu `darf_temporaeres_recht_erteilen` auf dem Server. Die Regel
+/// ist bewusst „wer selbst schreiben darf": Ein Recht weitergeben kann nur,
+/// wer es hat. Das schließt den Gerätewart ein — er steht bei der Übung
+/// daneben, und ihn dafür zum Kommandanten zu schicken wäre der Grund,
+/// warum solche Funktionen im Feld nicht benutzt werden.
+///
+/// ⚠️ Ein temporäres Recht berechtigt NICHT zum Weitergeben: `mitgliedschaften`
+/// trägt es nicht, und das ist Absicht — sonst verlängert sich eine Kette von
+/// Übungsrechten selbst über den Ablauf hinaus.
+bool darfTemporaeresRechtErteilen({
+  required String abteilungId,
+  required String? gesamtwehrId,
+  required Map<String, String>? mitgliedschaften,
+  required Set<String>? kommandierteGesamtwehren,
+}) {
+  if (mitgliedschaften == null) return false;
+  if (gesamtwehrId != null &&
+      (kommandierteGesamtwehren?.contains(gesamtwehrId) ?? false)) {
+    return true;
+  }
+  final rolle = mitgliedschaften[abteilungId];
+  return rolle == 'admin' || rolle == 'geraetewart';
 }
 
 /// Darf der Angemeldete DIESE Abteilung umbenennen? (Issue #119)

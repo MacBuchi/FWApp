@@ -12,6 +12,7 @@ import 'package:fwapp/core/sync/abteilung_providers.dart';
 import 'package:fwapp/core/sync/membership_providers.dart';
 import 'package:fwapp/core/sync/rollen.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
+import 'package:fwapp/core/sync/temp_rechte_providers.dart';
 
 void main() {
   ProviderContainer build({
@@ -260,6 +261,126 @@ void main() {
       // Wichtig, weil der Aufrufer dann bei der alten Regel bleiben muss und
       // nicht „nur lesen" für die eigene Abteilung behaupten darf.
       expect(rolle('A', mitgliedschaften: null, kommandiert: {'GW'}), isNull);
+    });
+  });
+
+  group('temporäre Gerätewart-Rechte (#100)', () {
+    String? rolle(
+      String id, {
+      String? gesamtwehr,
+      Map<String, String>? mitgliedschaften,
+      Set<String>? kommandiert,
+      Set<String>? temporaer,
+    }) => schreibrolleInAbteilung(
+      abteilungId: id,
+      gesamtwehrId: gesamtwehr,
+      mitgliedschaften: mitgliedschaften,
+      kommandierteGesamtwehren: kommandiert,
+      temporaereRechte: temporaer,
+    );
+
+    test('ein befristetes Recht ergibt eine Schreibrolle — sichtbar befristet',
+        () {
+      expect(
+        rolle('A', mitgliedschaften: {'A': 'member'}, temporaer: {'A'}),
+        'Gerätewart (befristet)',
+      );
+    });
+
+    test('eine dauerhafte Rolle gewinnt gegen die befristete Anzeige', () {
+      // Sonst stünde beim Gerätewart „befristet", und er würde auf einen
+      // Ablauf warten, den es nicht gibt.
+      expect(
+        rolle('A', mitgliedschaften: {'A': 'geraetewart'}, temporaer: {'A'}),
+        'Gerätewart',
+      );
+    });
+
+    test('ein Recht in einer anderen Abteilung wirkt hier nicht', () {
+      expect(
+        rolle('B', mitgliedschaften: {'B': 'member'}, temporaer: {'A'}),
+        isNull,
+      );
+    });
+
+    test('ohne befristete Rechte bleibt alles wie vorher', () {
+      expect(rolle('A', mitgliedschaften: {'A': 'member'}), isNull);
+    });
+
+    group('darfTemporaeresRechtErteilen', () {
+      bool darf(
+        String id, {
+        String? gesamtwehr,
+        Map<String, String>? mitgliedschaften,
+        Set<String>? kommandiert,
+      }) => darfTemporaeresRechtErteilen(
+        abteilungId: id,
+        gesamtwehrId: gesamtwehr,
+        mitgliedschaften: mitgliedschaften,
+        kommandierteGesamtwehren: kommandiert,
+      );
+
+      test('der Gerätewart darf erteilen', () {
+        // Der wichtigste Fall: Er steht bei der Übung daneben. Müsste man
+        // dafür den Kommandanten holen, würde die Funktion nie benutzt.
+        expect(darf('A', mitgliedschaften: {'A': 'geraetewart'}), isTrue);
+      });
+
+      test('der Abteilungskommandant auch', () {
+        expect(darf('A', mitgliedschaften: {'A': 'admin'}), isTrue);
+      });
+
+      test('der Feuerwehrkommandant in jeder Abteilung seiner Wehr', () {
+        expect(
+          darf('B',
+              gesamtwehr: 'GW',
+              mitgliedschaften: const {},
+              kommandiert: {'GW'}),
+          isTrue,
+        );
+      });
+
+      test('ein Truppführer NICHT', () {
+        expect(darf('A', mitgliedschaften: {'A': 'member'}), isFalse);
+      });
+
+      test('und in einer fremden Abteilung niemand', () {
+        expect(
+          darf('B', gesamtwehr: 'GW', mitgliedschaften: {'A': 'geraetewart'}),
+          isFalse,
+        );
+      });
+    });
+  });
+
+  group('tagesendeAblauf (#100)', () {
+    test('mitten am Tag endet es um 23:59 desselben Tages', () {
+      final ende = tagesendeAblauf(DateTime(2026, 8, 4, 14, 30));
+      expect(ende, DateTime(2026, 8, 4, 23, 59));
+    });
+
+    test('kurz vor Mitternacht wären es Minuten — dann vier Stunden', () {
+      // Ein Recht von zehn Minuten hilft bei einer Übung niemandem.
+      final ende = tagesendeAblauf(DateTime(2026, 8, 4, 23, 30));
+      expect(ende, DateTime(2026, 8, 5, 3, 30));
+    });
+
+    test('die Grenze liegt bei einer Stunde Restlaufzeit', () {
+      expect(tagesendeAblauf(DateTime(2026, 8, 4, 22, 59)),
+          DateTime(2026, 8, 4, 23, 59));
+      expect(tagesendeAblauf(DateTime(2026, 8, 4, 23, 0)),
+          DateTime(2026, 8, 5, 3, 0));
+    });
+
+    test('bleibt immer unter den 24 Stunden, die der Server zulässt', () {
+      // Sonst käme aus dem Dialog ein Wert, den die RPC ablehnt.
+      for (final stunde in List.generate(24, (i) => i)) {
+        final jetzt = DateTime(2026, 8, 4, stunde, 17);
+        final ende = tagesendeAblauf(jetzt);
+        expect(ende.difference(jetzt).inHours, lessThan(24),
+            reason: 'um $stunde Uhr');
+        expect(ende.isAfter(jetzt), isTrue, reason: 'um $stunde Uhr');
+      }
     });
   });
 

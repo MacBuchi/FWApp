@@ -12,6 +12,30 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.19.0] – 2026-08-04
+
+### Neu
+
+- **Übungsrechte: Gerätewarte können Truppführern befristet Schreibrechte
+  geben.** In der Nutzerverwaltung steht beim Konto jetzt *Übungsrechte
+  erteilen* — bis Tagesende, zwei oder vier Stunden. Der Betreffende darf
+  danach Fahrzeuge, Fächer und Geräte anlegen und ändern, genau wie ein
+  Gerätewart, und sieht auf der Startseite bis wann. Gedacht für die Übung:
+  Wer mitschreibt, muss dafür nicht dauerhaft Gerätewart werden.
+
+### Gut zu wissen
+
+- **Verwalten bleibt außen vor.** Übungsrechte schalten das Bearbeiten frei,
+  niemals die Nutzerverwaltung — und wer sie hat, kann sie nicht selbst
+  weitergeben.
+- **Erteilen darf, wer selbst schreiben darf**: der Gerätewart, der
+  Abteilungskommandant, der Feuerwehrkommandant. Nicht nötig, dafür jemanden
+  zu holen.
+- **Beenden wirkt sofort**, und jedes Erteilen und Beenden bleibt
+  nachvollziehbar: wer wem wann.
+- **Nur online.** Rechteänderungen erreichen ein Gerät nur mit Verbindung —
+  also vor der Übung erteilen, nicht unten im Keller.
+
 ## [1.18.1] – 2026-08-04
 
 ### Behoben

@@ -15,7 +15,9 @@ import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:fwapp/core/crash/crash_report.dart';
 import 'package:fwapp/core/crash/crash_store.dart';
 import 'package:fwapp/core/logging/app_logger.dart';
+import 'package:fwapp/core/sync/abteilung_providers.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
+import 'package:fwapp/core/sync/temp_rechte_providers.dart';
 import 'package:fwapp/core/update/update_check.dart';
 import 'package:fwapp/features/feedback/data/feedback_repository.dart';
 import 'package:ota_update/ota_update.dart';
@@ -83,13 +85,32 @@ class HomeBanners extends ConsumerWidget {
     final showCrash =
         crashes.isNotEmpty && !ref.watch(crashBannerDismissedProvider);
 
-    if (!showUpdate && !showFeedback && !showCrash) {
+    // Temporäre Gerätewart-Rechte (#100): Der Empfänger MUSS sehen, dass er
+    // gerade schreiben darf und bis wann — sonst wundert er sich später, dass
+    // Knöpfe verschwunden sind. Bewusst OHNE Wegklicken: Das hier ist kein
+    // Angebot, sondern der Zustand seines Kontos.
+    final selected = ref.watch(selectedAbteilungIdProvider) ??
+        ref.watch(myAbteilungIdProvider).value;
+    final laeuftAb =
+        ref.watch(meineTemporaerenRechteProvider).value?[selected];
+    final zeigeTempRecht =
+        laeuftAb != null && laeuftAb.isAfter(DateTime.now());
+
+    if (!showUpdate && !showFeedback && !showCrash && !zeigeTempRecht) {
       return const SizedBox.shrink();
     }
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        if (zeigeTempRecht)
+          _BannerCard(
+            emoji: '🔧',
+            text: 'Gerätewart-Rechte bis '
+                '${_uhrzeit(laeuftAb)} — du darfst jetzt bearbeiten',
+            color: Theme.of(context).colorScheme.tertiaryContainer,
+            onColor: Theme.of(context).colorScheme.onTertiaryContainer,
+          ),
         // Zuerst: Ein Absturz ist die dringendste der drei Meldungen.
         if (showCrash)
           _BannerCard(
@@ -151,16 +172,20 @@ class _BannerCard extends StatelessWidget {
   /// die geerbte onSurface passt nur zufällig, solange die Fläche pastellhell
   /// ist (Issue #58: bei kräftigen Konzeptfarben wurde sie unlesbar).
   final Color onColor;
-  final VoidCallback onTap;
-  final VoidCallback onDismiss;
+  final VoidCallback? onTap;
+
+  /// `null` = nicht wegklickbar. Gilt für Banner, die einen ZUSTAND melden
+  /// statt eines Angebots — ein Hinweis auf befristete Rechte, den man
+  /// wegtippen kann, wäre eine Falle (#100).
+  final VoidCallback? onDismiss;
 
   const _BannerCard({
     required this.emoji,
     required this.text,
     required this.color,
     required this.onColor,
-    required this.onTap,
-    required this.onDismiss,
+    this.onTap,
+    this.onDismiss,
   });
 
   @override
@@ -174,12 +199,14 @@ class _BannerCard extends StatelessWidget {
         leading: Text(emoji, style: const TextStyle(fontSize: 24)),
         title: Text(text,
             style: const TextStyle(fontWeight: FontWeight.w600)),
-        trailing: IconButton(
-          icon: const Icon(Icons.close, size: 20),
-          color: onColor,
-          tooltip: 'Ausblenden',
-          onPressed: onDismiss,
-        ),
+        trailing: onDismiss == null
+            ? null
+            : IconButton(
+                icon: const Icon(Icons.close, size: 20),
+                color: onColor,
+                tooltip: 'Ausblenden',
+                onPressed: onDismiss,
+              ),
         onTap: onTap,
       ),
     );
@@ -560,3 +587,8 @@ class _FeedbackDialogState extends State<_FeedbackDialog> {
     );
   }
 }
+
+/// „18:00" — bewusst ohne intl: Die App hat keine Lokalisierung, und für eine
+/// Uhrzeit im Banner wäre ein Paket der falsche Preis.
+String _uhrzeit(DateTime t) =>
+    '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';

@@ -25,6 +25,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/sync/abteilung_providers.dart';
 import 'package:fwapp/core/sync/membership_providers.dart';
 import 'package:fwapp/core/sync/rollen.dart';
+import 'package:fwapp/core/sync/temp_rechte_providers.dart';
 
 /// Anzeige der aktuellen Abteilung als AppBar-Action, mit Wechsel per Tipp.
 ///
@@ -162,6 +163,7 @@ String abteilungsRechteText(
   required bool istHeimat,
   required Map<String, String>? mitgliedschaften,
   required Set<String>? kommandierteGesamtwehren,
+  Set<String>? temporaereRechte,
 }) {
   final wo = istHeimat ? 'Deine Abteilung' : 'Schwester-Abteilung';
   if (mitgliedschaften == null) {
@@ -172,6 +174,7 @@ String abteilungsRechteText(
     gesamtwehrId: a.gesamtwehrId,
     mitgliedschaften: mitgliedschaften,
     kommandierteGesamtwehren: kommandierteGesamtwehren,
+    temporaereRechte: temporaereRechte,
   );
   return rolle == null ? '$wo — nur lesen' : '$wo — $rolle';
 }
@@ -191,6 +194,11 @@ class _AbteilungSheet extends ConsumerWidget {
     final selectedId = ref.watch(selectedAbteilungIdProvider) ?? own;
     final mitgliedschaften = ref.watch(meineMitgliedschaftenProvider).value;
     final kommandiert = ref.watch(meineKommandoGesamtwehrenProvider).value;
+    // Befristete Rechte erscheinen hier wie eine Schreibrolle, nur mit dem
+    // Zusatz „(befristet)" — im Gerätehaus ist der Unterschied genau der,
+    // der zählt (#100).
+    final temporaer =
+        ref.watch(meineTemporaerenRechteProvider).value?.keys.toSet();
     final theme = Theme.of(context);
 
     return SafeArea(
@@ -227,6 +235,7 @@ class _AbteilungSheet extends ConsumerWidget {
                     istHeimat: a.id == own,
                     mitgliedschaften: mitgliedschaften,
                     kommandierteGesamtwehren: kommandiert,
+                    temporaereRechte: temporaer,
                   ),
                 ),
                 trailing: a.id == selectedId

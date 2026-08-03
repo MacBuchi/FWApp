@@ -367,5 +367,24 @@ void main() {
           '/',
           reason: 'ohne Server gibt es keine Abteilungen');
     });
+
+    test('der Kopfbereich erbt den Schutz der Gesamtwehr-Seite (#57 P5)', () {
+      // Die Unterseite darf nicht durchrutschen, nur weil der Guard auf
+      // Gleichheit statt auf den Pfad-Anfang prüft.
+      expect(asMember('/gesamtwehr/kopfbereich'), '/');
+      expect(asEditor('/gesamtwehr/kopfbereich'), isNull);
+      expect(
+          guardRedirect(
+              path: '/gesamtwehr/kopfbereich',
+              canEdit: true,
+              isAdmin: true,
+              supabaseReady: false,
+              loggedIn: true,
+              mustChangePassword: false,
+              recoveryPending: false,
+              mfaPending: false),
+          '/',
+          reason: 'ohne Server gibt es keinen geteilten Kopfbereich');
+    });
   });
 }

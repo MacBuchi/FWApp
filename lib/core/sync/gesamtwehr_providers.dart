@@ -188,6 +188,11 @@ final eigenerAntragProvider = FutureProvider<EigenerAntrag?>((ref) async {
 /// eine falsche Beruhigung wäre schlimmer als eine fremde Meldung.
 String gesamtwehrFehlerText(Object fehler) {
   final roh = fehler is PostgrestException ? fehler.message : fehler.toString();
+  // Vor der allgemeinen Rechte-Meldung: Die Branding-Absage enthält beide
+  // Wortlaute, und „nur der Kommandant" ist die genauere Auskunft.
+  if (roh.contains('feuerwehrkommandant')) {
+    return 'Den Auftritt der Gesamtwehr pflegt nur ihr Feuerwehrkommandant.';
+  }
   if (roh.contains('permission denied')) {
     return 'Dafür fehlt die Berechtigung — das darf nur ein Admin der '
         'Gesamtwehr.';

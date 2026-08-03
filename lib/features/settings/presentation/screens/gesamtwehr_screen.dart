@@ -8,6 +8,8 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:fwapp/core/sync/branding_providers.dart';
 import 'package:fwapp/core/sync/gesamtwehr_providers.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 
@@ -58,6 +60,7 @@ class GesamtwehrScreen extends ConsumerWidget {
                 _WeitereAbteilung(org: org),
                 const _OffeneAnfragen(),
               ],
+              if (org.verbunden) const _KopfbereichKarte(),
               const SizedBox(height: 8),
               const _Erklaerung(),
             ],
@@ -217,6 +220,33 @@ class _WeitereAbteilung extends ConsumerWidget {
           },
         ),
       );
+}
+
+/// Einstieg in die Branding-Pflege (#57 P5). Nur für den Feuerwehrkommandanten
+/// dieser Wehr — enger als der übrige Screen, der auch Gerätewarten offensteht.
+class _KopfbereichKarte extends ConsumerWidget {
+  const _KopfbereichKarte();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (!(ref.watch(darfBrandingPflegenProvider).value ?? false)) {
+      return const SizedBox.shrink();
+    }
+    final gepflegt =
+        !(ref.watch(gesamtwehrBrandingProvider).value?.istLeer ?? true);
+    return Card(
+      child: ListTile(
+        leading: const Icon(Icons.photo_size_select_actual_outlined),
+        title: const Text('Kopfbereich der Startseite'),
+        subtitle: Text(gepflegt
+            ? 'Bild und Begrüßung — sehen alle Abteilungen'
+            : 'Noch nicht eingerichtet — Bild und Begrüßung für alle '
+                'Abteilungen'),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => context.push('/gesamtwehr/kopfbereich'),
+      ),
+    );
+  }
 }
 
 class _OffeneAnfragen extends ConsumerWidget {

@@ -193,11 +193,38 @@ mit dem Konto gearbeitet hat, löst deshalb einmal Einstellungen → Sync →
 **Pull** aus; das erzwingt den Abgleich und räumt den alten Bestand weg.
 Konten, die noch nie auf einem Gerät angemeldet waren, brauchen nichts.
 
-**Bekannte Lücken (Stand v1.6.3):** Eine Abteilung, die gar keiner
+**Bekannte Lücken (Stand v1.16.0):** Eine Abteilung, die gar keiner
 Gesamtwehr beitreten will, kann niemand in der App freigeben — das bleibt
-Sache des Betreibers. Branding der Gesamtwehr (eigener Header, Bild) und
-eigene Konten mit Mail-Bestätigung/2FA sind die nächsten Schritte von
-Issue #57.
+Sache des Betreibers. Einladungen per Mail und temporäre Gerätewart-Rechte
+sind der nächste Schritt von Issue #57 (Stufe ③).
+
+### Kopfbereich der Startseite (nur Feuerwehrkommandant, seit v1.16.0)
+
+Jede Gesamtwehr kann sich auf der Startseite selbst zeigen — mit Bild,
+Überschrift und einem Begrüßungstext. Das sehen **alle Abteilungen** der
+Gesamtwehr.
+
+1. **Mehr → Abteilung & Gesamtwehr → Kopfbereich der Startseite.** Die Karte
+   erscheint nur beim Feuerwehrkommandanten; ein Gerätewart sieht sie nicht
+   (er pflegt den Gerätebestand, nicht den Auftritt der Wehr).
+2. **Überschrift** leer lassen zeigt den Namen der Gesamtwehr — der
+   Normalfall. Eintragen lohnt nur, wenn oben etwas anderes stehen soll.
+3. **Begrüßungstext:** ein bis zwei Sätze, etwa der nächste Übungstermin.
+   Er steht unter dem Bild und wird nicht abgeschnitten.
+4. **Kopfbild:** quer aufgenommen wirkt am besten — das Bild wird auf einen
+   breiten Streifen zugeschnitten, Hochformat verliert dabei oben und unten.
+   Die Überschrift liegt darüber; ein dunkler Verlauf hält sie auch auf
+   hellen Fotos lesbar.
+5. **Speichern.** Die anderen Abteilungen sehen den neuen Kopf, sobald ihr
+   Gerät das nächste Mal Netz hat. Ein einmal geladener Kopf bleibt danach
+   auch offline stehen.
+
+Alles leer lassen (und das Bild entfernen) heißt: Die Startseite zeigt gar
+keinen Kopf — kein leerer Kasten, sondern nichts.
+
+⚠️ **In der Web-App (iPhone) fehlt derzeit das Bild**, Überschrift und Text
+stehen dort normal. Grund und Stand: Issue #114. Auf Android ist alles zu
+sehen.
 
 ### Prüftermine pflegen (Gerätewart)
 

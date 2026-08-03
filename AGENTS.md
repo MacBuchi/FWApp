@@ -255,6 +255,26 @@ pauschales Formatieren in Feature-PRs.
   `EquipmentTypeSync._zeile` immer die VOLLE Zeile, auch beim Archivieren.
   Aus demselben Grund hält der Push Zeilen zurück, deren Bild noch ein
   Pfad auf DIESES Gerät ist: zentral wäre er tot und überschriebe das gute.
+- ⚠️ **In der Web-App laden zentrale Bilder NICHT** (Issue #114). Flutter-Web
+  holt Bilder über die Bild-Pipeline des Browsers, und die kann keine
+  Kopfzeilen mitschicken — der `httpHeaders`-Parameter von
+  `CachedNetworkImage` in `resolveImage` fällt dort einfach unter den Tisch.
+  Ohne `apikey` und `Authorization` antwortet Storage mit
+  `400 / "Invalid Compact JWS"`; genau diese Meldung ist das Erkennungszeichen
+  (mit `apikey` allein käme 404, mit Sitzung 200). Betrifft Gerätefotos,
+  Fahrzeugfotos und den Gesamtwehr-Kopf gleichermaßen. **Kein Grund, im
+  Browser nach einem Fehler in der eigenen Änderung zu suchen** — und kein
+  Grund, den Durchklick sein zu lassen: Alles außer den Bildern stimmt dort.
+- ⚠️ **Mehr als ein Storage-Bucket:** Wer aus einem `supabase://`-Marker den
+  Objektnamen zieht, muss den Bucket im Präfix PRÜFEN, nicht nur dessen Länge
+  abschneiden (`objektImBucket` in image_utils.dart). Sonst liefert ein Marker
+  aus dem fremden Bucket einen verstümmelten Namen — und der Aufräum-Zweig des
+  Uploads löscht damit daneben.
+- ⚠️ **`git checkout -- <datei>` holt aus dem INDEX, nicht aus HEAD.** Vor
+  jeder Gegenprobe neu `git add -A` — einmal am Anfang reicht nicht. Wer
+  zwischendurch weitergearbeitet hat und dann eine Gegenprobe zurücknimmt,
+  verliert alles, was seit dem letzten `add` entstanden ist. Ist in dieser
+  Form schon zweimal passiert (#111 und #115).
 - ⚠️ **`pumpAndSettle` reicht auf echten Geräten nicht:** Solange asynchrone
   Provider auf I/O warten, steht kein Frame an – `pumpAndSettle` kehrt zurück,
   während noch „Lade…" auf dem Schirm steht. Dafür gibt es `waitFor()`.

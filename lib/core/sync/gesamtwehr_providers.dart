@@ -1,8 +1,9 @@
 /// gesamtwehr_providers.dart – Gesamtwehr und Verbindungen (Issue #57 Phase 3).
 ///
-/// Vier Vorgänge, alle als RPC auf dem Server (die Tabellen haben bewusst
+/// Sechs Vorgänge, alle als RPC auf dem Server (die Tabellen haben bewusst
 /// keine Schreib-Policies, siehe `20260801120000_gesamtwehr_verbindungen.sql`):
-/// gründen, weitere Abteilung anlegen, Anschluss beantragen, entscheiden.
+/// gründen, weitere Abteilung anlegen, Anschluss beantragen, entscheiden,
+/// Abteilung umbenennen, Gesamtwehr umbenennen (#119).
 /// Dieser Client hält nur die Lesesicht darauf und übersetzt die Fehler.
 ///
 /// Manuelle Provider wie der Rest von core/sync (Supabase-Typen vertragen
@@ -188,6 +189,16 @@ final eigenerAntragProvider = FutureProvider<EigenerAntrag?>((ref) async {
 /// eine falsche Beruhigung wäre schlimmer als eine fremde Meldung.
 String gesamtwehrFehlerText(Object fehler) {
   final roh = fehler is PostgrestException ? fehler.message : fehler.toString();
+  // Ganz oben, weil beide Absagen sowohl „permission denied" als auch
+  // (die zweite) „feuerwehrkommandant" enthalten und sonst von den
+  // allgemeineren Zweigen darunter abgefangen würden.
+  if (roh.contains('gesamtwehr umbenennen')) {
+    return 'Den Namen der Gesamtwehr ändert nur ihr Feuerwehrkommandant.';
+  }
+  if (roh.contains('abteilung umbenennen')) {
+    return 'Diese Abteilung darfst du nicht umbenennen — das kann ihr '
+        'Abteilungskommandant oder der Feuerwehrkommandant.';
+  }
   // Vor der allgemeinen Rechte-Meldung: Die Branding-Absage enthält beide
   // Wortlaute, und „nur der Kommandant" ist die genauere Auskunft.
   if (roh.contains('feuerwehrkommandant')) {
@@ -252,6 +263,20 @@ class GesamtwehrService {
     final id = await _client.rpc('create_abteilung', params: {'name': name});
     _aktualisiereSichten();
     return id as String;
+  }
+
+  /// Benennt eine Abteilung um (#119). Die Kennung bleibt, also bleiben auch
+  /// alle Verweise — nur die Beschriftung ändert sich, und zwar für alle.
+  Future<void> benenneAbteilungUm(String abteilungId, String name) async {
+    await _client.rpc('rename_abteilung',
+        params: {'ziel': abteilungId, 'neuer_name': name});
+    _aktualisiereSichten();
+  }
+
+  Future<void> benenneGesamtwehrUm(String gesamtwehrId, String name) async {
+    await _client.rpc('rename_gesamtwehr',
+        params: {'ziel': gesamtwehrId, 'neuer_name': name});
+    _aktualisiereSichten();
   }
 
   Future<void> beantrageVerbindung(String gesamtwehrId,

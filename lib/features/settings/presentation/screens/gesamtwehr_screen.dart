@@ -9,8 +9,11 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:fwapp/core/sync/abteilung_providers.dart';
 import 'package:fwapp/core/sync/branding_providers.dart';
 import 'package:fwapp/core/sync/gesamtwehr_providers.dart';
+import 'package:fwapp/core/sync/membership_providers.dart';
+import 'package:fwapp/core/sync/rollen.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 
 class GesamtwehrScreen extends ConsumerWidget {
@@ -56,6 +59,7 @@ class GesamtwehrScreen extends ConsumerWidget {
             children: [
               _AbteilungsKarte(org: org),
               if (!org.verbunden) _OhneKlammer(org: org, isAdmin: isAdmin),
+              if (org.verbunden) _SchwesterAbteilungen(org: org),
               if (org.verbunden && isAdmin) ...[
                 _WeitereAbteilung(org: org),
                 const _OffeneAnfragen(),
@@ -71,13 +75,33 @@ class GesamtwehrScreen extends ConsumerWidget {
   }
 }
 
-class _AbteilungsKarte extends StatelessWidget {
+class _AbteilungsKarte extends ConsumerWidget {
   final MeineOrganisation org;
   const _AbteilungsKarte({required this.org});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final farben = Theme.of(context).colorScheme;
+    final kommandiert = ref.watch(meineKommandoGesamtwehrenProvider).value;
+    final darfAbteilung = darfAbteilungUmbenennen(
+      abteilungId: org.abteilungId,
+      gesamtwehrId: org.gesamtwehrId,
+      mitgliedschaften: ref.watch(meineMitgliedschaftenProvider).value,
+      kommandierteGesamtwehren: kommandiert,
+    );
+    // Die Wehr umbenennen darf nur ihr Feuerwehrkommandant — enger als die
+    // Abteilung, aus demselben Grund wie beim Kopfbereich: Sonst ändert der
+    // Kommandant der kleinsten Abteilung den Auftritt der ganzen Wehr.
+    final darfWehr = org.gesamtwehrId != null &&
+        (kommandiert?.contains(org.gesamtwehrId) ?? false);
+
+    final wartet = org.freigegeben
+        ? null
+        : Chip(
+            label: const Text('wartet'),
+            backgroundColor: farben.tertiaryContainer,
+          );
+
     return Card(
       child: Column(
         children: [
@@ -87,12 +111,16 @@ class _AbteilungsKarte extends StatelessWidget {
             subtitle: Text(org.freigegeben
                 ? 'Deine Abteilung'
                 : 'Deine Abteilung — noch nicht freigegeben'),
-            trailing: org.freigegeben
-                ? null
-                : Chip(
-                    label: const Text('wartet'),
-                    backgroundColor: farben.tertiaryContainer,
-                  ),
+            trailing: _Anhang(
+              chip: wartet,
+              stift: darfAbteilung
+                  ? _Stift(
+                      tooltip: 'Abteilung umbenennen',
+                      onTap: () => _benenneAbteilungUm(
+                          context, ref, org.abteilungId, org.abteilungName),
+                    )
+                  : null,
+            ),
           ),
           const Divider(indent: 16, endIndent: 16),
           ListTile(
@@ -101,11 +129,138 @@ class _AbteilungsKarte extends StatelessWidget {
             subtitle: Text(org.verbunden
                 ? 'Gesamtwehr — ihre Abteilungen sehen einander lesend'
                 : 'Die Abteilung arbeitet eigenständig'),
+            trailing: darfWehr
+                ? _Stift(
+                    tooltip: 'Gesamtwehr umbenennen',
+                    onTap: () => _benenneWehrUm(context, ref, org.gesamtwehrId!,
+                        org.gesamtwehrName ?? ''),
+                  )
+                : null,
           ),
         ],
       ),
     );
   }
+}
+
+/// Die Schwestern derselben Gesamtwehr — nur für den, der sie auch umbenennen
+/// darf. Ohne diese Karte käme der Feuerwehrkommandant an alles außer der
+/// eigenen Abteilung nicht heran: Der Rest des Screens zeigt immer nur die
+/// Heimat-Abteilung aus dem Profil, nicht die gewählte.
+class _SchwesterAbteilungen extends ConsumerWidget {
+  final MeineOrganisation org;
+  const _SchwesterAbteilungen({required this.org});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final kommandiert = ref.watch(meineKommandoGesamtwehrenProvider).value;
+    final mitgliedschaften = ref.watch(meineMitgliedschaftenProvider).value;
+    final alle = ref.watch(abteilungenProvider).value ?? const [];
+    final schwestern = [
+      for (final a in alle)
+        if (a.id != org.abteilungId && a.gesamtwehrId == org.gesamtwehrId)
+          a,
+    ];
+    final benennbar = [
+      for (final a in schwestern)
+        if (darfAbteilungUmbenennen(
+          abteilungId: a.id,
+          gesamtwehrId: a.gesamtwehrId,
+          mitgliedschaften: mitgliedschaften,
+          kommandierteGesamtwehren: kommandiert,
+        ))
+          a,
+    ];
+    if (benennbar.isEmpty) return const SizedBox.shrink();
+
+    return Card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
+            child: Text('Weitere Abteilungen der Gesamtwehr',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+          for (final a in benennbar)
+            ListTile(
+              leading: const Icon(Icons.fire_truck_outlined),
+              title: Text(a.name),
+              trailing: _Stift(
+                tooltip: 'Abteilung umbenennen',
+                onTap: () => _benenneAbteilungUm(context, ref, a.id, a.name),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Stift extends StatelessWidget {
+  final String tooltip;
+  final VoidCallback onTap;
+  const _Stift({required this.tooltip, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) => IconButton(
+        icon: const Icon(Icons.edit_outlined),
+        tooltip: tooltip,
+        onPressed: onTap,
+      );
+}
+
+/// Chip und Stift nebeneinander, ohne dass eines von beiden ein leeres
+/// `Row` erzwingt — `trailing: null` lässt der ListTile ihren Platz.
+class _Anhang extends StatelessWidget {
+  final Widget? chip;
+  final Widget? stift;
+  const _Anhang({this.chip, this.stift});
+
+  @override
+  Widget build(BuildContext context) {
+    if (chip == null) return stift ?? const SizedBox.shrink();
+    if (stift == null) return chip!;
+    return Row(mainAxisSize: MainAxisSize.min, children: [chip!, stift!]);
+  }
+}
+
+Future<void> _benenneAbteilungUm(
+  BuildContext context,
+  WidgetRef ref,
+  String id,
+  String bisher,
+) async {
+  final name = await _frageName(
+    context,
+    titel: 'Abteilung umbenennen',
+    feld: 'Name der Abteilung',
+    beispiel: 'z. B. 02 - Babstadt',
+    vorbelegt: bisher,
+    knopf: 'Umbenennen',
+  );
+  if (name == null || name == bisher || !context.mounted) return;
+  await _fuehreAus(context, ref, 'Heißt jetzt „$name".',
+      (dienst) => dienst.benenneAbteilungUm(id, name));
+}
+
+Future<void> _benenneWehrUm(
+  BuildContext context,
+  WidgetRef ref,
+  String id,
+  String bisher,
+) async {
+  final name = await _frageName(
+    context,
+    titel: 'Gesamtwehr umbenennen',
+    feld: 'Name der Gesamtwehr',
+    beispiel: 'z. B. Freiwillige Feuerwehr Musterstadt',
+    vorbelegt: bisher,
+    knopf: 'Umbenennen',
+  );
+  if (name == null || name == bisher || !context.mounted) return;
+  await _fuehreAus(context, ref, 'Heißt jetzt „$name".',
+      (dienst) => dienst.benenneGesamtwehrUm(id, name));
 }
 
 /// Die Seite ohne Klammer: gründen oder beitreten — oder warten.
@@ -434,10 +589,18 @@ Future<String?> _frageName(
   required String titel,
   required String feld,
   required String beispiel,
+  String vorbelegt = '',
+  String knopf = 'Anlegen',
 }) async {
   final name = await showDialog<String>(
     context: context,
-    builder: (_) => _NameDialog(titel: titel, feld: feld, beispiel: beispiel),
+    builder: (_) => _NameDialog(
+      titel: titel,
+      feld: feld,
+      beispiel: beispiel,
+      vorbelegt: vorbelegt,
+      knopf: knopf,
+    ),
   );
   final sauber = name?.trim();
   return (sauber == null || sauber.isEmpty) ? null : sauber;
@@ -454,15 +617,25 @@ class _NameDialog extends StatefulWidget {
   final String titel;
   final String feld;
   final String beispiel;
-  const _NameDialog(
-      {required this.titel, required this.feld, required this.beispiel});
+  final String vorbelegt;
+  final String knopf;
+  const _NameDialog({
+    required this.titel,
+    required this.feld,
+    required this.beispiel,
+    this.vorbelegt = '',
+    this.knopf = 'Anlegen',
+  });
 
   @override
   State<_NameDialog> createState() => _NameDialogState();
 }
 
 class _NameDialogState extends State<_NameDialog> {
-  final _steuerung = TextEditingController();
+  late final _steuerung = TextEditingController(text: widget.vorbelegt)
+    // Beim Umbenennen steht der alte Name schon da; der Cursor gehört ans
+    // Ende, sonst tippt man beim ersten Zeichen mitten hinein.
+    ..selection = TextSelection.collapsed(offset: widget.vorbelegt.length);
 
   @override
   void dispose() {
@@ -487,7 +660,7 @@ class _NameDialogState extends State<_NameDialog> {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, _steuerung.text),
-            child: const Text('Anlegen'),
+            child: Text(widget.knopf),
           ),
         ],
       );

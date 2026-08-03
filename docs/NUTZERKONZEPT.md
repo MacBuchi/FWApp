@@ -19,8 +19,8 @@ Abteilung wählen, nachschlagen, lernen.
 | Anzeigename | Technischer Schlüssel | Ebene | Kurzbeschreibung |
 |---|---|---|---|
 | KreisDatenMeister | `operator` (heute: `service_role` auf der VM) | Installation | Betreibt die Instanz, genehmigt neue Gesamtwehren, letzter Wiederherstellungspfad |
-| Feuerwehrkommandant | Gesamtwehr-Rolle, **explizit** | Gesamtwehr | Legt Abteilungen an, lädt Abteilungskommandanten ein, verwaltet Mehrfach-Zuständigkeiten |
-| Abteilungskommandant | `admin` (je Abteilung) | Abteilung | Nutzerverwaltung seiner Abteilung, lädt Gerätewarte ein, darf die Abteilung archivieren |
+| Feuerwehrkommandant | Gesamtwehr-Rolle, **explizit** | Gesamtwehr | Legt Abteilungen an, lädt Abteilungskommandanten ein, verwaltet Mehrfach-Zuständigkeiten, benennt Abteilungen **und die Wehr** um |
+| Abteilungskommandant | `admin` (je Abteilung) | Abteilung | Nutzerverwaltung seiner Abteilung, lädt Gerätewarte ein, benennt **seine** Abteilung um, darf sie archivieren |
 | Gerätewart | `geraetewart` (je Abteilung) | Abteilung | Schreibzugriff auf den Bestand, veröffentlicht, erteilt temporäre Rechte |
 | Truppführer | `member` | Abteilung(en) | Mail-Konto, lesend; eigener Anzeigename + Avatar; kann temporäre Gerätewart-Rechte bekommen |
 | Truppmann | Gastzugang (Code + Name) | — | Immer nur lesend, kein Konto |

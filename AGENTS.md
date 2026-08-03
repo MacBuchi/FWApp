@@ -233,6 +233,19 @@ pauschales Formatieren in Feature-PRs.
 
 ## Bekannte Eigenheiten und Stolperfallen
 
+- ⚠️ **Alle E2E-Dateien teilen sich EINE Datenbank — sie laufen serialisiert.**
+  `flutter test` fährt Testdateien nebenläufig, und `sync_e2e_test` räumt
+  zwischen seinen Tests **global** auf: alle `abteilungen` mit
+  `legacy_mirror = false`, **alle** `gesamtwehren`, dazu Profile und
+  Mitgliedschaften. Wer parallel eine eigene Wehr anlegt, verliert sie mitten
+  im Lauf — in CI riss so `branding_e2e_test` in `setUpAll` mit einer
+  Fremdschlüssel-Verletzung ab, sobald eine fünfte Datei die Zeitfenster
+  verschob. Deshalb nimmt **jede** neue Datei unter `test/integration/` in
+  `setUpAll` `stackSperreHolen()` und in `tearDownAll` als Letztes
+  `stackSperreFreigeben()` (siehe `test/integration/stack_sperre.dart`).
+  Deterministisch nachweisbar: eine von außen angelegte Gesamtwehr ist nach
+  einem einzigen `sync_e2e_test`-Lauf weg.
+
 - ⚠️ **Mailvorlagen (`web/mail/*.html`) sind Go-Templates — samt Kommentar.**
   GoTrue parst die Datei mit `html/template`, und das liest den
   HTML-Kommentar mit. Ein Platzhalter darin, der nicht aufgeht (etwa eine

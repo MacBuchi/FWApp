@@ -22,6 +22,8 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'stack_sperre.dart';
+
 const _url = 'http://127.0.0.1:54321';
 const _mailpit = 'http://127.0.0.1:54324';
 const _anonKey =
@@ -111,6 +113,7 @@ Future<void> main() async {
   final erzeugteKonten = <String>[];
 
   setUpAll(() async {
+    await stackSperreHolen();
     kommandant = SupabaseClient(_url, _anonKey);
     abteilungsChef = SupabaseClient(_url, _anonKey);
     wart = SupabaseClient(_url, _anonKey);
@@ -197,6 +200,7 @@ Future<void> main() async {
     await kommandant.dispose();
     await abteilungsChef.dispose();
     await wart.dispose();
+    await stackSperreFreigeben();
   });
 
   /// Die zuletzt an [adresse] zugestellte Mail (Betreff + Rumpf).

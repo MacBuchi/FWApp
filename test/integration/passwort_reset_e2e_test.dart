@@ -17,6 +17,8 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'stack_sperre.dart';
+
 const _url = 'http://127.0.0.1:54321';
 const _mailpit = 'http://127.0.0.1:54324';
 const _anonKey =
@@ -93,6 +95,7 @@ Future<void> main() async {
   String? userId;
 
   setUpAll(() async {
+    await stackSperreHolen();
     client = SupabaseClient(_url, _anonKey,
         authOptions: AuthClientOptions(
           autoRefreshToken: false,
@@ -120,6 +123,7 @@ Future<void> main() async {
     }
     await _json('DELETE', '$_mailpit/api/v1/messages');
     await client.dispose();
+    await stackSperreFreigeben();
   });
 
   /// Holt den Text der zuletzt zugestellten Mail.

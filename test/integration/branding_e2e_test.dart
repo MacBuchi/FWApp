@@ -16,6 +16,8 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'stack_sperre.dart';
+
 const _url = 'http://127.0.0.1:54321';
 const _anonKey =
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
@@ -72,6 +74,7 @@ Future<void> main() async {
   late String abteilungId;
 
   setUpAll(() async {
+    await stackSperreHolen();
     kommandantClient = SupabaseClient(_url, _anonKey);
     gwClient = SupabaseClient(_url, _anonKey);
     memberClient = SupabaseClient(_url, _anonKey);
@@ -151,6 +154,7 @@ Future<void> main() async {
     await kommandantClient.dispose();
     await gwClient.dispose();
     await memberClient.dispose();
+    await stackSperreFreigeben();
   });
 
   test('der Feuerwehrkommandant pflegt den Kopfbereich', () async {

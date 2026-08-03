@@ -19,6 +19,8 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'stack_sperre.dart';
+
 const _url = 'http://127.0.0.1:54321';
 const _anonKey =
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
@@ -97,6 +99,7 @@ Future<void> main() async {
   String? userId;
 
   setUpAll(() async {
+    await stackSperreHolen();
     client = SupabaseClient(_url, _anonKey,
         authOptions: const AuthClientOptions(autoRefreshToken: false));
     final angelegt = await _admin('POST', '/auth/v1/admin/users', body: {
@@ -114,6 +117,7 @@ Future<void> main() async {
       await _admin('DELETE', '/auth/v1/admin/users/$userId');
     }
     await client.dispose();
+    await stackSperreFreigeben();
   });
 
   test('Einrichten hebt die Sitzung erst nach dem Code auf aal2', () async {

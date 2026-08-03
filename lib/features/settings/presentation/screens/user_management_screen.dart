@@ -15,6 +15,7 @@ import 'package:fwapp/core/sync/auth_utils.dart';
 import 'package:fwapp/core/sync/membership_providers.dart';
 import 'package:fwapp/core/sync/rollen.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
+import 'package:fwapp/features/settings/presentation/providers/einladung_providers.dart';
 import 'package:fwapp/features/settings/presentation/providers/user_admin_providers.dart';
 
 class UserManagementScreen extends ConsumerWidget {
@@ -59,12 +60,16 @@ class UserManagementScreen extends ConsumerWidget {
             ),
           ),
         ),
-        data: (users) => ListView.separated(
+        data: (users) => ListView(
           padding: const EdgeInsets.only(bottom: 88),
-          itemCount: users.length,
-          separatorBuilder: (_, _) =>
-              const Divider(height: 1, indent: 16, endIndent: 16),
-          itemBuilder: (context, i) => _UserTile(user: users[i]),
+          children: [
+            const _EinladungenAbschnitt(),
+            const Divider(height: 24),
+            for (var i = 0; i < users.length; i++) ...[
+              if (i > 0) const Divider(height: 1, indent: 16, endIndent: 16),
+              _UserTile(user: users[i]),
+            ],
+          ],
         ),
       ),
     );
@@ -235,6 +240,279 @@ Future<void> _showCredentials(
       ],
     ),
   );
+}
+
+/// Einladungen per Mail (Nutzerkonzept Stufe 3, Issue #100).
+///
+/// Steht bewusst ÜBER der Kontoliste: Für alle mit erreichbarer Adresse ist
+/// das der bessere Weg — ein eingeladenes Konto kann sein Passwort selbst
+/// zurücksetzen, ein Zettel-Konto (`@fw.local`) nie. Der Zettel bleibt für
+/// die Truppmannschaft ohne Mailadresse.
+class _EinladungenAbschnitt extends ConsumerWidget {
+  const _EinladungenAbschnitt();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final offen = ref.watch(offeneEinladungenProvider).value ?? const [];
+    final abteilungen = ref.watch(abteilungenProvider).value ?? const [];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 8, 0),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text('Einladungen',
+                    style: Theme.of(context).textTheme.titleMedium),
+              ),
+              FilledButton.tonalIcon(
+                onPressed: () => _einladen(context, ref),
+                icon: const Icon(Icons.mail_outline),
+                label: const Text('Einladen'),
+              ),
+            ],
+          ),
+        ),
+        if (offen.isEmpty)
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: Text(
+              'Keine offene Einladung. Wer eine E-Mail-Adresse hat, wird '
+              'eingeladen statt mit Zugangszettel angelegt — nur so kann er '
+              'sein Passwort später selbst zurücksetzen.',
+              style: TextStyle(fontSize: 12),
+            ),
+          )
+        else
+          for (final e in offen)
+            ListTile(
+              leading: const Icon(Icons.hourglass_empty),
+              title: Text(
+                  e.anzeigename?.isNotEmpty == true ? e.anzeigename! : e.email),
+              subtitle: Text(
+                '${e.email}\n'
+                '${rolleAnzeigename(e.role, kommandant: e.alsKommandant)} · '
+                '${abteilungsName(e.abteilungId, abteilungen)} · '
+                'wartet auf Bestätigung',
+              ),
+              isThreeLine: true,
+              trailing: PopupMenuButton<String>(
+                onSelected: (wahl) => _einladungAktion(context, ref, e, wahl),
+                itemBuilder: (_) => const [
+                  PopupMenuItem(
+                      value: 'invite_resend', child: Text('Erneut senden')),
+                  PopupMenuItem(
+                      value: 'invite_revoke', child: Text('Zurückziehen')),
+                ],
+              ),
+            ),
+      ],
+    );
+  }
+
+  Future<void> _einladungAktion(
+      BuildContext context, WidgetRef ref, Einladung e, String aktion) async {
+    if (aktion == 'invite_revoke') {
+      final ok = await showDialog<bool>(
+        context: context,
+        // Die Route liegt in der ShellRoute — ohne den Wurzel-Navigator läge
+        // der Dialog UNTER der NavigationBar, und ein Tipp knapp daneben
+        // bräche ihn ab und wechselte den Tab (AGENTS.md, #79/#96).
+        useRootNavigator: true,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Einladung zurückziehen?'),
+          content: Text('${e.email} kann den Code dann nicht mehr einlösen. '
+              'Die Adresse ist danach wieder frei für eine neue Einladung.'),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Abbrechen')),
+            FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Zurückziehen')),
+          ],
+        ),
+      );
+      if (ok != true || !context.mounted) return;
+    }
+    await _run(context, ref, () async {
+      await invokeAdminUsers(ref.read(supabaseClientProvider), {
+        'action': aktion,
+        'einladung_id': e.id,
+      });
+      ref.invalidate(offeneEinladungenProvider);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(aktion == 'invite_resend'
+              ? 'Neue Einladung an ${e.email} verschickt.'
+              : 'Einladung zurückgezogen.'),
+        ));
+      }
+    });
+  }
+
+  Future<void> _einladen(BuildContext context, WidgetRef ref) async {
+    final mailCtrl = TextEditingController();
+    final nameCtrl = TextEditingController();
+    var role = 'geraetewart';
+    var alsKommandant = false;
+    String? error;
+
+    final abteilungen = ref.read(abteilungenProvider).value ?? const [];
+    final kommandiert =
+        ref.read(meineKommandoGesamtwehrenProvider).value ?? const <String>{};
+    final eigene = ref.read(myAbteilungIdProvider).value;
+    var abteilung = abteilungen.any((a) => a.id == eigene)
+        ? eigene
+        : (abteilungen.isNotEmpty ? abteilungen.first.id : null);
+
+    // Der Feuerwehrkommandant ist eine Gesamtwehr-Stellung — die Frage ergibt
+    // nur Sinn, wenn die gewählte Abteilung an einer Gesamtwehr hängt UND der
+    // Einladende dort selbst Kommandant ist. Der Server prüft es nochmal.
+    bool darfKommandantErnennen(String? abteilungId) {
+      for (final a in abteilungen) {
+        if (a.id == abteilungId) {
+          return a.gesamtwehrId != null &&
+              kommandiert.contains(a.gesamtwehrId);
+        }
+      }
+      return false;
+    }
+
+    final ok = await showDialog<bool>(
+      context: context,
+      useRootNavigator: true, // siehe oben
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) => AlertDialog(
+          title: const Text('Per E-Mail einladen'),
+          content: SingleChildScrollView(
+              child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: mailCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'E-Mail-Adresse',
+                  helperText: 'Dorthin geht der Code — muss erreichbar sein',
+                ),
+                keyboardType: TextInputType.emailAddress,
+                autocorrect: false,
+                autofocus: true,
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: nameCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Anzeigename',
+                  helperText: 'Wie die Person in der Wehr gerufen wird',
+                ),
+              ),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<String>(
+                initialValue: role,
+                decoration: const InputDecoration(labelText: 'Rolle'),
+                items: const [
+                  DropdownMenuItem(
+                      value: 'member', child: Text('Truppführer (liest)')),
+                  DropdownMenuItem(
+                      value: 'geraetewart',
+                      child: Text('Gerätewart (bearbeitet)')),
+                  DropdownMenuItem(
+                      value: 'admin',
+                      child: Text('Abteilungskommandant (verwaltet)')),
+                ],
+                onChanged: (v) => setState(() => role = v ?? 'geraetewart'),
+              ),
+              if (abteilungen.length > 1) ...[
+                const SizedBox(height: 8),
+                DropdownButtonFormField<String>(
+                  initialValue: abteilung,
+                  decoration: const InputDecoration(labelText: 'Abteilung'),
+                  items: [
+                    for (final a in abteilungen)
+                      DropdownMenuItem(value: a.id, child: Text(a.name)),
+                  ],
+                  onChanged: (v) => setState(() {
+                    abteilung = v ?? abteilung;
+                    if (!darfKommandantErnennen(abteilung)) {
+                      alsKommandant = false;
+                    }
+                  }),
+                ),
+              ],
+              if (darfKommandantErnennen(abteilung))
+                CheckboxListTile(
+                  value: alsKommandant,
+                  onChanged: (v) => setState(() => alsKommandant = v ?? false),
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Auch Feuerwehrkommandant'),
+                  subtitle: const Text(
+                    'Zwei Kommandanten je Gesamtwehr sind der Schutz davor, '
+                    'dass sich die Wehr aussperrt.',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                ),
+              if (error != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(error!,
+                      style: const TextStyle(color: Colors.red, fontSize: 12)),
+                ),
+            ],
+          )),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Abbrechen')),
+            FilledButton(
+              onPressed: () {
+                final mail = mailCtrl.text.trim().toLowerCase();
+                if (!mail.contains('@') || !mail.contains('.')) {
+                  setState(() => error =
+                      'Bitte eine vollständige E-Mail-Adresse angeben.');
+                  return;
+                }
+                if (!hatEchteMail(mail)) {
+                  setState(() => error =
+                      '@$kAccountDomain ist die interne Zettel-Form — dorthin '
+                      'kann keine Mail zugestellt werden.');
+                  return;
+                }
+                if (abteilung == null) {
+                  setState(() => error = 'Keine Abteilung wählbar.');
+                  return;
+                }
+                Navigator.pop(ctx, true);
+              },
+              child: const Text('Einladen'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (ok != true || !context.mounted) return;
+
+    final mail = mailCtrl.text.trim().toLowerCase();
+    await _run(context, ref, () async {
+      await invokeAdminUsers(ref.read(supabaseClientProvider), {
+        'action': 'invite',
+        'email': mail,
+        'anzeigename': nameCtrl.text.trim(),
+        'abteilung_id': abteilung,
+        'role': role,
+        'als_kommandant': alsKommandant,
+      });
+      ref.invalidate(offeneEinladungenProvider);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Einladung an $mail verschickt. Der Code gilt '
+              'mindestens eine Stunde.'),
+        ));
+      }
+    });
+  }
 }
 
 class _UserTile extends ConsumerWidget {

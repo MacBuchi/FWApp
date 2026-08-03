@@ -233,6 +233,44 @@ pauschales Formatieren in Feature-PRs.
 
 ## Bekannte Eigenheiten und Stolperfallen
 
+- ⚠️ **Alle E2E-Dateien teilen sich EINE Datenbank — sie laufen serialisiert.**
+  `flutter test` fährt Testdateien nebenläufig, und `sync_e2e_test` räumt
+  zwischen seinen Tests **global** auf: alle `abteilungen` mit
+  `legacy_mirror = false`, **alle** `gesamtwehren`, dazu Profile und
+  Mitgliedschaften. Wer parallel eine eigene Wehr anlegt, verliert sie mitten
+  im Lauf — in CI riss so `branding_e2e_test` in `setUpAll` mit einer
+  Fremdschlüssel-Verletzung ab, sobald eine fünfte Datei die Zeitfenster
+  verschob. Deshalb nimmt **jede** neue Datei unter `test/integration/` in
+  `setUpAll` `stackSperreHolen()` und in `tearDownAll` als Letztes
+  `stackSperreFreigeben()` (siehe `test/integration/stack_sperre.dart`).
+  Deterministisch nachweisbar: eine von außen angelegte Gesamtwehr ist nach
+  einem einzigen `sync_e2e_test`-Lauf weg.
+
+- ⚠️ **Mailvorlagen (`web/mail/*.html`) sind Go-Templates — samt Kommentar.**
+  GoTrue parst die Datei mit `html/template`, und das liest den
+  HTML-Kommentar mit. Ein Platzhalter darin, der nicht aufgeht (etwa eine
+  Feldliste mit Sternchen), lässt die **ganze** Vorlage scheitern — und dann
+  verschickt GoTrue **still** seine englische Standardmail *mit Link*, ohne
+  dass am Aufruf etwas fehlschlägt. Der einzige Hinweis steht im Log des
+  auth-Containers (`templatemailer_template_body_parse_error`). Deshalb: im
+  Kommentar keine `{{ }}` und keine einzelnen geraden Anführungszeichen
+  (eine ungerade Zahl bringt die `style`-Attribute durcheinander → 500 mit
+  `ends in a non-text context`).
+- ⚠️ **Nach jeder Änderung an einer Mailvorlage den auth-Container neu
+  starten.** Das automatische Nachladen erholt sich **nicht** von einem
+  einmal gescheiterten Parse: Der alte Fehler bleibt hängen, auch wenn die
+  Datei längst wieder in Ordnung ist. Das hat eine halbe Stunde Suche nach
+  einem Fehler gekostet, den es nicht mehr gab. Lokal
+  `docker restart supabase_auth_FWApp`, auf dem Server
+  `docker compose up -d auth`.
+- ⚠️ **Der lokale Stack bindet die Mailvorlagen als EINZELDATEI-Mount ein.**
+  Wer die Datei *ersetzt* (jeder Editor, der neu schreibt statt zu
+  überschreiben), hinterlässt im Container den alten Inode — `docker exec
+  … wc -c /home/kong/templates/email/<datei>` zeigt dann eine andere Größe
+  als das Arbeitsverzeichnis, und GoTrue arbeitet mit einem Torso. Heilung:
+  `supabase stop && supabase start` (Container neu anlegen). `cp` über die
+  bestehende Datei erhält den Inode und geht durch.
+
 - ⚠️ **Das Pixel XL im Testrig liegt quer** – `tester.view` meldet 683 × 411 dp.
   In dem flachen Fenster rutschen Listeneinträge unter die `NavigationBar`;
   `tester.tap(find.text(...))` trifft dann die Leiste, und der Test wandert

@@ -118,7 +118,7 @@ class MoreScreen extends ConsumerWidget {
                       leading: const Icon(Icons.manage_accounts),
                       title: const Text('Nutzerverwaltung'),
                       subtitle: const Text(
-                          'Konten anlegen, Passwörter zurücksetzen (Admin)'),
+                          'Einladen, Konten anlegen, Passwörter zurücksetzen'),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => context.push('/user-management'),
                     ),

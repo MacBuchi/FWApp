@@ -123,7 +123,16 @@ des Einsenders (braucht dessen GitHub-Konto, keinen Token).
   ersatzlos.
 - **Einladungen** verschicken Kommandanten per Mail (GoTrue-Invite über
   die Mail-Brücke); Rolle und Abteilung stecken in der Einladung, das
-  Konto zählt erst nach Verifikation.
+  Konto zählt erst nach Verifikation. **Umgesetzt in v1.17.0.** Zwei
+  Festlegungen aus der Umsetzung, die man beim Weiterbauen kennen muss:
+  - Die Einladung steht in der Tabelle `einladungen`, **nicht** in
+    `raw_user_meta_data`. Metadaten darf der Client beim Signup selbst
+    mitschicken — wer die Rolle dort ablegte, verschenkte sie. Die
+    Metadaten tragen nur noch den Mailtext.
+  - Die Mail zeigt einen **sechsstelligen Code, keinen Link** — aus
+    demselben Grund, aus dem §8 die Genehmigen-Links gestrichen hat: Ein
+    GET-Link wird vom ersten Mail-Scanner eingelöst. Ein Code funktioniert
+    außerdem in der Android-App, ein Weblink nicht.
 - **Bootstrap des KreisDatenMeisters** beim Aufsetzen der Installation per
   Setup-Skript auf dem Server — kein lokales Admin-Portal. Seine
   Mail-Adresse (Ziel der Anfrage-Benachrichtigungen) steht in einer
@@ -138,7 +147,7 @@ des Einsenders (braucht dessen GitHub-Konto, keinen Token).
 |---|---|---|
 | ① | Mitgliedschaften + expliziter Feuerwehrkommandant + Anzeigenamen. Backfill: bestehende Admins werden Kommandanten ihrer Gesamtwehr (Ist-Verhalten bleibt; Zurückstufen geht danach in der App) | **Umgesetzt (v1.11.0)** |
 | ② | Gerätetypen auf Gesamtwehr-Ebene mit eigenem Sync (der größte Brocken) | **Umgesetzt (v1.15.0)** |
-| ③ | Einladungen per Mail, temporäre Rechte, Anzeigename + Avatar | Zielbild |
+| ③ | Einladungen per Mail, temporäre Rechte, Anzeigename + Avatar | **Einladungen umgesetzt (v1.17.0)**, Rest Zielbild |
 | ④ | KreisDatenMeister-Konsole + Freigabe neuer Gesamtwehren — erst, wenn eine zweite Wehr real absehbar ist; das Schema aus ① trägt sie schon | Zielbild |
 
 Daneben, unabhängig und klein: Katalog-Picker im Geräteformular,

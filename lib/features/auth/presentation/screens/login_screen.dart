@@ -37,8 +37,9 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 /// anmelden → Adresse (Passwort vergessen) → Code einlösen.
+/// Daneben: einladung — der Weg für ein Konto, das es noch gar nicht gibt.
 /// Quer dazu: zweiterFaktor, wenn das Konto TOTP eingerichtet hat.
-enum _Modus { anmelden, adresse, code, zweiterFaktor }
+enum _Modus { anmelden, adresse, code, einladung, zweiterFaktor }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _user = TextEditingController();
@@ -219,6 +220,81 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  /// Löst eine Einladung ein: Code prüfen, eigenes Passwort setzen.
+  ///
+  /// Dieselbe heikle Reihenfolge wie beim Zurücksetzen — `verifyOTP` erzeugt
+  /// eine gültige Sitzung, BEVOR ein Passwort existiert. Bliebe es dabei
+  /// stehen, wäre jemand angemeldet, ohne sein Passwort zu kennen, und käme
+  /// beim nächsten Start nicht mehr hinein.
+  ///
+  /// Erst dieses Einlösen bestätigt die Adresse — und erst dadurch entsteht
+  /// auf dem Server die Mitgliedschaft (Trigger `on_auth_user_confirmed`).
+  /// Bis dahin ist die Einladung nur eine Einladung, das Konto hat kein Recht.
+  ///
+  /// `clear_must_change_password` wie beim Zurücksetzen braucht es hier
+  /// nicht: Das Flag setzt ausschließlich ein Verwalter beim Vergeben eines
+  /// Initialpassworts, ein eingeladenes Konto hatte nie eines.
+  Future<void> _einladungAnnehmen() async {
+    final client = ref.read(supabaseClientProvider);
+    if (client == null) return;
+    final mail = _mail.text.trim().toLowerCase();
+    if (!mail.contains('@')) {
+      setState(() {
+        _error = 'Bitte die E-Mail-Adresse eingeben, an die die Einladung '
+            'ging.';
+        _hinweis = null;
+      });
+      return;
+    }
+    // Passwortregeln VOR dem Einlösen prüfen: Der Code ist einmalig, ein
+    // Tippfehler im Passwort würde ihn sonst verbrennen.
+    final fehler = validateNewPassword(_neu1.text, _neu2.text);
+    if (fehler != null) {
+      setState(() {
+        _error = fehler;
+        _hinweis = null;
+      });
+      return;
+    }
+    if (_code.text.trim().isEmpty) {
+      setState(() {
+        _error = 'Bitte den Code aus der Einladungsmail eingeben.';
+        _hinweis = null;
+      });
+      return;
+    }
+    setState(() {
+      _busy = true;
+      _error = null;
+      _hinweis = null;
+    });
+    ref.read(recoveryPendingProvider.notifier).state = true;
+    try {
+      await client.auth.verifyOTP(
+        email: mail,
+        token: _code.text.trim(),
+        type: OtpType.invite,
+      );
+      await client.auth.updateUser(UserAttributes(password: _neu1.text));
+      if (!mounted) return;
+      ref.read(recoveryPendingProvider.notifier).state = false;
+      return;
+    } catch (e, s) {
+      // Halbe Sitzung wegwerfen — sie gehört zu einem Passwort, das der
+      // Nutzer nicht gesetzt hat.
+      await client.auth.signOut().catchError((_) {});
+      appLog.w('Einladung annehmen fehlgeschlagen', error: e, stackTrace: s);
+      if (!mounted) return;
+      setState(() => _error = 'Der Code stimmt nicht oder ist abgelaufen. '
+          'Bitte deinen Kommandanten um eine neue Einladung.');
+    } finally {
+      if (mounted) {
+        ref.read(recoveryPendingProvider.notifier).state = false;
+        setState(() => _busy = false);
+      }
+    }
+  }
+
   /// Löst den zweiten Faktor ein und hebt die Sitzung auf aal2.
   Future<void> _zweitenFaktorPruefen() async {
     final client = ref.read(supabaseClientProvider);
@@ -266,17 +342,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         _Modus.anmelden => _signIn(),
         _Modus.adresse => _codeAnfordern(),
         _Modus.code => _codeEinloesen(),
+        _Modus.einladung => _einladungAnnehmen(),
         _Modus.zweiterFaktor => _zweitenFaktorPruefen(),
       };
 
   void _wechsle(_Modus ziel) => setState(() {
         _modus = ziel;
         _error = null;
-        _hinweis = ziel == _Modus.adresse
-            ? 'Das funktioniert nur für Konten mit hinterlegter E-Mail-Adresse '
+        _hinweis = switch (ziel) {
+          _Modus.adresse =>
+            'Das funktioniert nur für Konten mit hinterlegter E-Mail-Adresse '
                 '(Admins und Gerätewarte). Mit einem Zugangszettel-Konto hilft '
-                'der Gerätewart weiter.'
-            : null;
+                'der Gerätewart weiter.',
+          _Modus.einladung =>
+            'Trage die Adresse ein, an die die Einladung ging, dazu den Code '
+                'aus der Mail — und wähle dein eigenes Passwort.',
+          _ => null,
+        };
       });
 
   List<Widget> _felder() => switch (_modus) {
@@ -359,6 +441,51 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               onSubmitted: (_) => _busy ? null : _codeEinloesen(),
             ),
           ],
+        // Wie _Modus.code, aber mit dem Adressfeld davor: Wer eine Einladung
+        // annimmt, hat noch kein Konto und kommt nicht über „Passwort
+        // vergessen" — die Adresse muss er hier selbst eintragen.
+        _Modus.einladung => [
+            TextField(
+              controller: _mail,
+              decoration: const InputDecoration(
+                labelText: 'E-Mail-Adresse',
+                helperText: 'Die Adresse, an die die Einladung ging',
+              ),
+              keyboardType: TextInputType.emailAddress,
+              autocorrect: false,
+              autofocus: true,
+              textInputAction: TextInputAction.next,
+              autofillHints: const [AutofillHints.email],
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _code,
+              decoration: const InputDecoration(
+                labelText: 'Code aus der Einladung',
+                helperText: 'Sechs Ziffern',
+              ),
+              keyboardType: TextInputType.number,
+              autocorrect: false,
+              textInputAction: TextInputAction.next,
+              autofillHints: const [AutofillHints.oneTimeCode],
+            ),
+            const SizedBox(height: 8),
+            PasswordField(
+              controller: _neu1,
+              labelText: 'Passwort wählen',
+              helperText: 'Mindestens 8 Zeichen',
+              autofillHints: const [AutofillHints.newPassword],
+              textInputAction: TextInputAction.next,
+            ),
+            const SizedBox(height: 8),
+            PasswordField(
+              controller: _neu2,
+              labelText: 'Passwort wiederholen',
+              autofillHints: const [AutofillHints.newPassword],
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) => _busy ? null : _einladungAnnehmen(),
+            ),
+          ],
       };
 
   List<Widget> _nebenwege() => switch (_modus) {
@@ -367,9 +494,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               onPressed: _busy ? null : () => _wechsle(_Modus.adresse),
               child: const Text('Passwort vergessen?'),
             ),
+            TextButton(
+              onPressed: _busy ? null : () => _wechsle(_Modus.einladung),
+              child: const Text('Ich habe eine Einladung'),
+            ),
             const Text(
-              'Keine Registrierung nötig — die Zugangsdaten vergibt der '
-              'Gerätewart (Zugangszettel im Gerätehaus).',
+              'Keine Registrierung nötig — den Zugang vergibt der Kommandant: '
+              'per Einladung an deine E-Mail-Adresse oder mit einem '
+              'Zugangszettel aus dem Gerätehaus.',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
@@ -404,6 +536,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             TextButton(
               onPressed: _busy ? null : () => _wechsle(_Modus.anmelden),
               child: const Text('Zurück zur Anmeldung'),
+            ),
+          ],
+        _Modus.einladung => [
+            TextButton(
+              onPressed: _busy ? null : () => _wechsle(_Modus.anmelden),
+              child: const Text('Zurück zur Anmeldung'),
+            ),
+            const Text(
+              'Keine Einladung erhalten? Der Kommandant kann sie erneut '
+              'schicken — der Code gilt mindestens eine Stunde.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
           ],
       };
@@ -487,6 +631,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 _Modus.anmelden => 'Anmelden',
                                 _Modus.adresse => 'Code anfordern',
                                 _Modus.code => 'Passwort setzen',
+                                _Modus.einladung => 'Einladung annehmen',
                                 _Modus.zweiterFaktor => 'Bestätigen',
                               }),
                       ),

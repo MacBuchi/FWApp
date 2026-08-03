@@ -12,6 +12,35 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.17.0] – 2026-08-03
+
+### Neu
+
+- **Kommandanten laden neue Leute jetzt per E-Mail ein.** In der
+  Nutzerverwaltung steht ganz oben „Einladen": Adresse, Name, Abteilung und
+  Rolle eintragen, fertig. Der Eingeladene bekommt eine Mail mit einem
+  sechsstelligen Code, tippt in der App auf **„Ich habe eine Einladung"** und
+  wählt dabei sein eigenes Passwort. Der große Gewinn: So ein Konto kann
+  „Passwort vergessen" benutzen — ein Konto vom Zugangszettel nie, weil an die
+  interne Adresse `@fw.local` keine Post zugestellt werden kann. Der
+  Zugangszettel bleibt für alle, die keine E-Mail-Adresse angeben wollen.
+- **Die Einladung entscheidet nicht über Rechte — die Bestätigung tut es.**
+  Solange der Code nicht eingelöst ist, hat das Konto keine Abteilung und
+  keine Rolle; es sieht also auch nichts. Erst mit dem Einlösen bekommt es
+  genau die Rolle in genau der Abteilung, die in der Einladung steht.
+- **Offene Einladungen stehen in der Liste** — mit „Erneut senden", falls die
+  Mail nicht ankam, und „Zurückziehen", falls sie an die falsche Adresse ging.
+  Zurückziehen gibt die Adresse sofort wieder frei.
+- **Der Anzeigename kommt aus der Einladung.** Wer als „Max Muster"
+  eingeladen wird, heißt danach in der Nutzerliste auch so — und nicht
+  `max.muster` nach dem Anfang seiner E-Mail-Adresse.
+- **Wer wen einladen darf, folgt der Feuerwehr-Hierarchie:** Der
+  Feuerwehrkommandant lädt in jede Abteilung seiner Gesamtwehr ein und kann
+  einen zweiten Feuerwehrkommandanten ernennen (der Schutz davor, dass sich
+  die Wehr aussperrt). Ein Abteilungskommandant lädt nur in seine eigene
+  Abteilung ein und höchstens als Gerätewart. Ein Gerätewart lädt niemanden
+  ein.
+
 ## [1.16.1] – 2026-08-03
 
 ### Behoben

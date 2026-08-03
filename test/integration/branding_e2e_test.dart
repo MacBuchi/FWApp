@@ -60,7 +60,16 @@ Future<void> main() async {
 
   late String gesamtwehrId;
   late String fremdeGesamtwehrId;
-  late String spiegelAbteilung;
+
+  /// Eigene Abteilung in der eigenen Gesamtwehr.
+  ///
+  /// ⚠️ Bewusst NICHT die Spiegel-Abteilung: `flutter test` lässt Testdateien
+  /// nebenläufig laufen, und sync_e2e_test hängt dieselbe Spiegel-Abteilung an
+  /// seine eigene Gesamtwehr und löst sie danach wieder. Wer sich hier
+  /// daranhängt, verliert seine Leserechte mitten im Lauf — je nach
+  /// Reihenfolge, also sporadisch. Dieser Test fasst nur an, was er selbst
+  /// angelegt hat.
+  late String abteilungId;
 
   setUpAll(() async {
     kommandantClient = SupabaseClient(_url, _anonKey);
@@ -74,12 +83,6 @@ Future<void> main() async {
         .signInWithPassword(email: 'member@fw.local', password: 'test1234');
 
     await asService((s) async {
-      spiegelAbteilung = (await s
-          .from('abteilungen')
-          .select('id')
-          .eq('legacy_mirror', true)
-          .single())['id'] as String;
-
       final gw = await s
           .from('gesamtwehren')
           .insert({'name': 'GW Branding', 'slug': 'gw-branding'})
@@ -96,15 +99,39 @@ Future<void> main() async {
           .single();
       fremdeGesamtwehrId = fremd['id'] as String;
 
-      await s
+      final abt = await s
           .from('abteilungen')
-          .update({'gesamtwehr_id': gesamtwehrId}).eq('id', spiegelAbteilung);
+          .insert({
+            'name': 'Abteilung Branding',
+            'slug': 'abteilung-branding',
+            'status': 'active',
+            'gesamtwehr_id': gesamtwehrId,
+          })
+          .select('id')
+          .single();
+      abteilungId = abt['id'] as String;
+
+      // Gerätewart und Mitglied gehören zur Wehr — darüber greift
+      // `can_read_gesamtwehr`. Der Gerätewart hat damit dieselbe Schreibrolle
+      // am geteilten Gerätebestand wie in Stufe ②, und trotzdem darf er den
+      // Kopfbereich nicht anfassen: genau das ist hier zu zeigen.
+      await s.from('memberships').upsert([
+        {
+          'user_id': gwClient.auth.currentUser!.id,
+          'abteilung_id': abteilungId,
+          'role': 'geraetewart',
+        },
+        {
+          'user_id': memberClient.auth.currentUser!.id,
+          'abteilung_id': abteilungId,
+          'role': 'member',
+        },
+      ]);
 
       // admin@fw.local wird Feuerwehrkommandant — der Gerätewart bewusst
       // NICHT, das ist der ganze Punkt dieses Tests.
-      final adminId = kommandantClient.auth.currentUser!.id;
       await s.from('gesamtwehr_kommandanten').upsert({
-        'user_id': adminId,
+        'user_id': kommandantClient.auth.currentUser!.id,
         'gesamtwehr_id': gesamtwehrId,
       });
     });
@@ -114,9 +141,8 @@ Future<void> main() async {
     await asService((s) async {
       await s.from('gesamtwehr_branding').delete().inFilter(
           'gesamtwehr_id', [gesamtwehrId, fremdeGesamtwehrId]);
-      await s
-          .from('abteilungen')
-          .update({'gesamtwehr_id': null}).eq('id', spiegelAbteilung);
+      await s.from('memberships').delete().eq('abteilung_id', abteilungId);
+      await s.from('abteilungen').delete().eq('id', abteilungId);
       await s
           .from('gesamtwehren')
           .delete()

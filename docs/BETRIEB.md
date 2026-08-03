@@ -303,11 +303,18 @@ Reihenfolge, damit niemand in einer Sackgasse landet:
    Kein `NOTIFY` nötig — die Funktion liest den Wert bei jedem Aufruf.
 4. **Rückweg:** Wert auf `NULL` setzen = Gate aus (fail-open, sofort).
 
-> **Aktueller Stand:** Das Gate ist seit dem 2026-08-01 auf **1.5.5**
-> scharf geschaltet (Freigabe Marcus, nachdem das In-App-Update auf einem
-> echten Gerät durchlief). Aktuellstes Release ist 1.5.6 — der Puffer aus
-> Punkt 2 ist damit eingehalten. Geprüft direkt nach dem Setzen: 1.5.3 und
-> 1.5.4 werden abgewiesen, ab 1.5.5 darf veröffentlicht werden.
+> **Verbindlich ist die Datenbank, nicht dieser Absatz** — der Wert wird von
+> Hand gesetzt und veraltet hier sonst still. Nachsehen:
+> `select minimum_supported_version from public.dataset_meta where id = 1;`
+>
+> Gesetzt wurde bisher: **1.5.5** am 2026-08-01 (Erst-Scharfschaltung),
+> **1.11.0** nach dem Domain-/Rollen-Umbau, **1.13.0** am 2026-08-03 — der
+> Schritt, der Stufe ② abschließt: ab 1.13.0 bringt jeder Client den
+> zeilenweisen Gerätetyp-Sync mit, ältere dürfen nicht mehr veröffentlichen.
+> Jedes Mal erst gesetzt, nachdem das In-App-Update auf einem echten Gerät
+> durchlief, und danach lesend gegengeprüft (`compare_app_versions` gegen den
+> gesetzten Wert: 1.12.1 abgewiesen, 1.13.0 frei). Aktuellstes Release war
+> dabei 1.15.0 — der Puffer aus Punkt 2 ist eingehalten.
 
 Beim Setzen per SSH gilt eine Stolperfalle: Kommt das Skript über
 `ssh … 'bash -s' < skript.sh` herein, verschluckt ein `docker exec -i psql -c …`

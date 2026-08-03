@@ -64,10 +64,14 @@
     {
       "name": "20260803090000_gesamtwehr_branding.sql",
       "sha256": "5d343a3df0b6a110e5151eadcfdd92a09a283537fa1745bc4a43d5d31a4f149f"
+    },
+    {
+      "name": "20260803140000_einladungen.sql",
+      "sha256": "714cb1a282f5d63763e1ff7a596c9696bf411ee8496cfc1db15f026ca7a7ba7f"
     }
   ],
   "functions": {
-    "admin-users/index.ts": "80392c1b6946a9bf4868c6e35ffd8be48cf20c1b6cd1c62466208816fbff1b72",
+    "admin-users/index.ts": "fc904281f87a99e761bfc8672193c5f9ca851035c8ed5a707c9348de5c699ddc",
     "main/index.ts": "e35427a3f30635ba6db7742870e377dfb978786a07f99efb1644b1714be614c5"
   }
 }

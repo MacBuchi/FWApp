@@ -27,6 +27,9 @@
 //   clear_mfa {user_id}
 //   disable {user_id} / enable {user_id}
 //   delete  {user_id}
+//   invite        {email, anzeigename?, abteilung_id, role, als_kommandant?}
+//   invite_resend {einladung_id}
+//   invite_revoke {einladung_id}
 // Selbst-Schutz: eigene Rollen/Mitgliedschaften/Sperre/Löschung sind tabu.
 //
 // Rechte-Hierarchie (docs/NUTZERKONZEPT.md §2):
@@ -41,6 +44,13 @@
 //
 // Mandanten-Schutz: Diese Function arbeitet mit dem Service-Role-Key, der
 // RLS vollständig umgeht — jede Zuordnung wird deshalb HIER geprüft.
+// AUSNAHME: die drei invite*-Aktionen. Deren Recht prüft die Datenbank
+// (`darf_mitglieder_verwalten`), weil die Lese-Policy auf `einladungen`
+// dieselbe Regel ohnehin in SQL braucht — sie ein zweites Mal hier zu
+// prüfen hiesse, zwei Definitionen desselben Rechts zu pflegen. Diese
+// Function ruft die RPCs deshalb mit dem JWT des Aufrufers und benutzt den
+// Service-Key nur noch für das, was wirklich privilegiert ist: den
+// Mailversand über GoTrue.
 // Spiegel-Pflege: Nach jeder Mitgliedschafts-Änderung ruft sie
 // sync_profile_mirror(), damit Alt-Clients (≤ v1.10.0) in profiles.role/
 // abteilung_id weiter das Richtige lesen.
@@ -237,6 +247,123 @@ async function darfKonto(caller: Caller, userId: string): Promise<boolean> {
   return await darfVerwalten(caller, heimat, null);
 }
 
+/// Ein Fehler, den die Datenbank geworfen hat (RAISE in einer RPC). Getrennt
+/// vom Rest, weil er dem Aufrufer gehört (400) und nicht dem Server (500).
+class RpcFehler extends Error {}
+
+/// PostgREST-RPC mit dem JWT des AUFRUFERS statt mit dem Service-Key —
+/// nur so greift die Rechteprüfung in der Funktion (auth.uid()).
+async function rpcAlsAufrufer(
+  req: Request,
+  name: string,
+  params: Record<string, unknown>,
+): Promise<unknown> {
+  const resp = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`, {
+    method: "POST",
+    headers: {
+      apikey: ANON_KEY,
+      Authorization: req.headers.get("Authorization") ?? "",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(params),
+  });
+  const text = await resp.text();
+  if (!resp.ok) {
+    let grund = text;
+    try {
+      grund = JSON.parse(text).message ?? text;
+    } catch { /* kein JSON — dann eben der Klartext */ }
+    throw new RpcFehler(grund);
+  }
+  return text.length > 0 ? JSON.parse(text) : null;
+}
+
+/// Die `raise`-Texte der Einladungs-RPCs in Sätze, die im Gerätehaus
+/// weiterhelfen. Unbekanntes reicht der Aufrufer unverändert durch — eine
+/// fremde Meldung ist immer noch besser als ein verwischtes „Fehler".
+const RPC_TEXTE: Record<string, string> = {
+  "permission denied": "Dazu fehlt dir das Recht.",
+  "permission denied: feuerwehrkommandant required":
+    "Einen Feuerwehrkommandanten ernennt nur ein Feuerwehrkommandant.",
+  "invalid email": "Keine gültige E-Mail-Adresse.",
+  "fw.local addresses cannot receive mail":
+    `@${EMAIL_DOMAIN} ist die interne Zettel-Form — dorthin kann keine Mail ` +
+    `zugestellt werden. Bitte eine echte Adresse.`,
+  "invalid role": "Ungültige Rolle.",
+  "account already exists":
+    "Zu dieser Adresse gibt es schon ein Konto. Gib ihm stattdessen eine " +
+    "Mitgliedschaft.",
+  "invitation already open":
+    "Für diese Adresse ist bereits eine Einladung offen.",
+  "invitation not found": "Diese Einladung gibt es nicht mehr.",
+  "invitation is not open":
+    "Diese Einladung ist bereits angenommen oder zurückgezogen.",
+  "invitation already accepted": "Diese Einladung wurde bereits angenommen.",
+  "abteilung has no gesamtwehr":
+    "Diese Abteilung gehört zu keiner Gesamtwehr.",
+};
+
+/// Rollenschlüssel → Anzeigename (docs/NUTZERKONZEPT.md §2). Steht hier und
+/// nicht in SQL, weil es Text für die Mail ist und kein Recht.
+const ROLLEN_TEXT: Record<string, string> = {
+  admin: "Abteilungskommandant",
+  geraetewart: "Gerätewart",
+  member: "Truppführer",
+};
+
+/// Verschickt die Einladungsmail zu einer bestehenden Einladungszeile.
+/// Dient dem ersten Versand UND dem erneuten: GoTrue lädt eine noch
+/// unbestätigte Adresse erneut ein und erzeugt dabei einen frischen Code
+/// (am lokalen Stack geprüft, bevor diese Aktion entstand).
+async function einladungVersenden(
+  req: Request,
+  einladungId: string,
+): Promise<void> {
+  const zeilen = await rpcAlsAufrufer(req, "einladung_versanddaten", {
+    ziel: einladungId,
+  }) as {
+    email: string;
+    anzeigename: string | null;
+    role: string;
+    als_kommandant: boolean;
+    abteilung: string;
+    wehr: string | null;
+  }[];
+  if (!Array.isArray(zeilen) || zeilen.length !== 1) {
+    throw new RpcFehler("invitation not found");
+  }
+  const e = zeilen[0];
+  const resp = await serviceFetch("/auth/v1/invite", {
+    method: "POST",
+    body: JSON.stringify({
+      email: e.email,
+      // NUR für den Mailtext (web/mail/invite.html). Welche Rolle jemand
+      // wirklich bekommt, steht in `einladungen` — Metadaten darf der
+      // Eingeladene bei eingeschalteter Selbstregistrierung selbst setzen.
+      data: {
+        wehr: e.wehr ?? "deiner Feuerwehr",
+        abteilung: e.abteilung,
+        rolle: e.als_kommandant
+          ? "Feuerwehrkommandant"
+          : (ROLLEN_TEXT[e.role] ?? e.role),
+      },
+    }),
+  });
+  const angelegt = await resp.json().catch(() => ({}));
+  if (!resp.ok) {
+    const msg = angelegt.msg ?? angelegt.message ?? resp.status;
+    throw new Error(`Einladung konnte nicht verschickt werden: ${msg}`);
+  }
+  if (angelegt.id) {
+    // Das (noch unbestätigte) Konto an der Einladung vermerken — beim
+    // Zurückziehen wird genau dieses wieder entfernt.
+    await serviceFetch("/rest/v1/rpc/einladung_konto_vermerken", {
+      method: "POST",
+      body: JSON.stringify({ ziel: einladungId, konto: angelegt.id }),
+    });
+  }
+}
+
 async function upsertMembership(
   userId: string,
   abteilungId: string,
@@ -338,6 +465,13 @@ async function listUsers(caller: Caller): Promise<unknown[]> {
   };
 
   return users
+    // Eingeladen, aber noch nicht angenommen: Diese Konten stehen in der
+    // Einladungsliste und gehören nicht in die Kontoliste — sie haben weder
+    // Rolle noch Abteilung und wären dort nur eine Zeile, die niemand
+    // einordnen kann.
+    .filter((u: Record<string, unknown>) =>
+      !(u.invited_at != null && u.email_confirmed_at == null)
+    )
     .filter((u: Record<string, unknown>) => sichtbar(u.id as string))
     .map((u: Record<string, unknown>) => {
       const email = (u.email as string) ?? "";
@@ -713,10 +847,65 @@ Deno.serve(async (req: Request) => {
         return json({ ok: true });
       }
 
+      case "invite": {
+        // Rechteprüfung macht die RPC (siehe Kopf). Hier nur die
+        // Vorprüfungen, die einen Rundweg sparen.
+        const abteilung = String(body.abteilung_id ?? "");
+        const role = String(body.role ?? "member");
+        if (!abteilung) return json({ error: "abteilung_id fehlt" }, 400);
+        if (!ROLES.includes(role)) return json({ error: "Ungültige Rolle" }, 400);
+        const neu = await rpcAlsAufrufer(req, "einladung_anlegen", {
+          adresse: String(body.email ?? ""),
+          name: body.anzeigename == null ? null : String(body.anzeigename),
+          abteilung,
+          rolle: role,
+          kommandant: body.als_kommandant === true,
+        }) as string;
+        try {
+          await einladungVersenden(req, neu);
+        } catch (e) {
+          // Kein Versand, keine Einladung. Sonst bliebe eine Zeile stehen,
+          // die niemand annehmen kann — und der Eindeutigkeits-Index
+          // sperrte die Adresse für jeden weiteren Versuch.
+          await rpcAlsAufrufer(req, "einladung_zurueckziehen", { ziel: neu })
+            .catch(() => {});
+          throw e;
+        }
+        return json({ ok: true, id: neu });
+      }
+
+      case "invite_resend": {
+        const ziel = String(body.einladung_id ?? "");
+        if (!ziel) return json({ error: "einladung_id fehlt" }, 400);
+        await einladungVersenden(req, ziel);
+        return json({ ok: true });
+      }
+
+      case "invite_revoke": {
+        const ziel = String(body.einladung_id ?? "");
+        if (!ziel) return json({ error: "einladung_id fehlt" }, 400);
+        const konto = await rpcAlsAufrufer(req, "einladung_zurueckziehen", {
+          ziel,
+        }) as string | null;
+        // Das unbestätigte Konto muss mit weg, sonst bleibt die Adresse
+        // belegt und die nächste Einladung läuft in „User already
+        // registered". Angenommene Einladungen kommen hier nie an — die
+        // RPC lehnt sie ab.
+        if (konto) {
+          await serviceFetch(`/auth/v1/admin/users/${konto}`, {
+            method: "DELETE",
+          });
+        }
+        return json({ ok: true });
+      }
+
       default:
         return json({ error: `Unbekannte Aktion: ${action}` }, 400);
     }
   } catch (e) {
+    if (e instanceof RpcFehler) {
+      return json({ error: RPC_TEXTE[e.message] ?? e.message }, 400);
+    }
     return json({ error: String(e) }, 500);
   }
 });

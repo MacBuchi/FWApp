@@ -95,8 +95,34 @@ void main() {
   testWidgets('erklärt, woher die Zugangsdaten kommen', (tester) async {
     await pumpLogin(tester);
     // Der Satz stand vorher im Login-Dialog der Einstellungen und ist der
-    // einzige Hinweis darauf, dass man sich hier NICHT registriert.
-    expect(find.textContaining('Zugangszettel im Gerätehaus'), findsOneWidget);
+    // einzige Hinweis darauf, dass man sich hier NICHT registriert. Seit
+    // Stufe 3 nennt er beide Wege — Einladung und Zugangszettel.
+    expect(
+        find.textContaining('Zugangszettel aus dem Gerätehaus'), findsOneWidget);
+    expect(find.textContaining('Einladung'), findsWidgets);
+    await endTestApp(tester);
+  });
+
+  testWidgets('führt vom Anmelden zur Einladung und wieder zurück',
+      (tester) async {
+    await pumpLogin(tester);
+    // Ohne diesen Weg ist eine verschickte Einladung wertlos: Der Code aus
+    // der Mail liesse sich nirgends eingeben.
+    await tester.ensureVisible(find.text('Ich habe eine Einladung'));
+    await tester.tap(find.text('Ich habe eine Einladung'));
+    await tester.pumpAndSettle();
+
+    expect(find.widgetWithText(TextField, 'Code aus der Einladung'),
+        findsOneWidget);
+    expect(find.widgetWithText(TextField, 'E-Mail-Adresse'), findsOneWidget);
+    // Passwort UND Wiederholung: Das Konto bekommt sein Passwort in einem Zug
+    // mit dem Einlösen, sonst bliebe eine Sitzung ohne Passwort stehen.
+    expect(find.byType(PasswordField), findsNWidgets(2));
+
+    await tester.ensureVisible(find.text('Zurück zur Anmeldung'));
+    await tester.tap(find.text('Zurück zur Anmeldung'));
+    await tester.pumpAndSettle();
+    expect(find.widgetWithText(TextField, 'Nutzername'), findsOneWidget);
     await endTestApp(tester);
   });
 

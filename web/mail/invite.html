@@ -1,0 +1,78 @@
+<!--
+  invite.html – Vorlage für die Einladungsmail (Issue #100, Nutzerkonzept
+  Stufe 3).
+
+  ⚠️ DIESER KOMMENTAR IST TEIL DER VORLAGE. GoTrue schickt die Datei durch
+  Gos html/template, und das liest Kommentare mit: Ein Go-Platzhalter darin
+  wird geparst. War er ungültig, scheitert die GANZE Vorlage — und GoTrue
+  verschickt still seine englische Standardmail MIT LINK, ohne dass am
+  Aufruf etwas fehlschlägt. Deshalb steht hier keiner. Genau so entstanden,
+  sichtbar nur im Log des auth-Containers
+  (templatemailer_template_body_parse_error).
+
+  ⚠️ NACH JEDER ÄNDERUNG DEN AUTH-CONTAINER NEU STARTEN. Das automatische
+  Nachladen der Vorlagen erholt sich NICHT von einem einmal gescheiterten
+  Parse: Der Fehler bleibt hängen, auch wenn die Datei längst wieder in
+  Ordnung ist. Eine halbe Stunde Suche nach einem Fehler, den es nicht mehr
+  gab — lokal `docker restart supabase_auth_FWApp`, auf dem Server
+  `docker compose up -d auth`.
+
+  Wie die Passwort-vergessen-Mail zeigt sie den sechsstelligen Code — und
+  BEWUSST KEINEN Link. Zwei Gründe, beide schon einmal teuer geworden:
+
+  1. Ein Einladungslink ist ein GET, das den Token VERBRAUCHT. Mail-Scanner
+     und Link-Vorschauen rufen solche Links automatisch ab — die Einladung
+     wäre eingelöst, bevor ein Mensch sie liest. Genau deshalb hat das
+     Nutzerkonzept schon die Genehmigen-Links gestrichen (§8).
+  2. Der Standardlink führt in den Browser. Die Wehr arbeitet auf Android;
+     ein Code lässt sich in der App eingeben, ein Weblink nicht.
+
+  Die Data-Felder unten sind die Metadaten aus dem Einladungsaufruf. Sie
+  stehen dort NUR für den Text — welche Rolle jemand wirklich bekommt,
+  entscheidet die Tabelle einladungen auf dem Server (Begründung im Kopf der
+  Migration).
+
+  Ausgeliefert wird die Datei mit dem Web-Build (web/ landet in build/web).
+  GoTrue holt sie über GOTRUE_MAILER_TEMPLATES_INVITE vom nginx-Container im
+  selben Docker-Netz — kein Weg über das Internet nötig.
+-->
+<div style="font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; max-width: 480px; color: #1c1b1f; line-height: 1.5;">
+  <h2 style="color: #9b1c1c; font-size: 20px; margin: 0 0 16px;">
+    Willkommen bei der FWApp
+  </h2>
+
+  <p style="margin: 0 0 16px;">
+    Du wurdest für <strong>{{ .Data.wehr }}</strong> eingeladen — Abteilung
+    <strong>{{ .Data.abteilung }}</strong>, als
+    <strong>{{ .Data.rolle }}</strong>.
+  </p>
+
+  <p style="margin: 0 0 16px;">
+    Öffne die FWApp, tippe auf <em>„Ich habe eine Einladung“</em> und gib
+    diesen Code zusammen mit deiner E-Mail-Adresse ein. Danach wählst du dein
+    eigenes Passwort:
+  </p>
+
+  <p style="font-size: 32px; font-weight: 700; letter-spacing: 6px;
+            background: #f5eaea; color: #9b1c1c; padding: 16px;
+            text-align: center; border-radius: 8px; margin: 0 0 16px;">
+    {{ .Token }}
+  </p>
+
+  <p style="margin: 0 0 16px;">
+    Der Code gilt mindestens eine Stunde. Ist er abgelaufen, bittest du
+    einfach deinen Kommandanten um eine neue Einladung.
+  </p>
+
+  <p style="margin: 0 0 16px; color: #49454f; font-size: 14px;">
+    Du weißt nichts von dieser Einladung? Dann ignoriere die Mail — ohne den
+    Code entsteht kein Zugang.
+  </p>
+
+  <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 24px 0;">
+
+  <p style="color: #79747e; font-size: 12px; margin: 0;">
+    FWApp — die Lern-App deiner Feuerwehr. Diese Nachricht wurde automatisch
+    verschickt, eine Antwort darauf liest niemand.
+  </p>
+</div>

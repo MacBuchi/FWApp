@@ -102,7 +102,29 @@ Abteilung** (Zielbild in [NUTZERKONZEPT.md](NUTZERKONZEPT.md)):
 arbeitet, Abteilungen anlegt und Kommandanten ernennt. Dieselbe Person
 kann in mehreren Abteilungen (auch verschiedene) Rollen haben.
 
-- **Mehr → Nutzerverwaltung**: Konto anlegen mit **Nutzername**
+- **Mehr → Nutzerverwaltung → „Einladen"** (seit v1.17.0, der bevorzugte
+  Weg): E-Mail-Adresse, Anzeigename, Abteilung und Rolle eintragen. Die
+  Person bekommt eine Mail mit einem **sechsstelligen Code**, tippt in der
+  App auf **„Ich habe eine Einladung"**, gibt Adresse und Code ein und wählt
+  dabei ihr eigenes Passwort.
+  - **Warum bevorzugt:** Nur ein Konto mit echter Adresse kann „Passwort
+    vergessen" benutzen. An die interne Zettel-Form `@fw.local` kann
+    niemand etwas schicken — dort bist du auf Dauer der Passwort-Dienst
+    deiner Abteilung.
+  - **Solange nicht bestätigt ist, hat das Konto nichts.** Keine Abteilung,
+    keine Rolle, kein Zugriff. Es taucht auch nicht in der Kontoliste auf,
+    sondern nur unter „Einladungen" mit dem Vermerk „wartet auf
+    Bestätigung".
+  - **Kam die Mail nicht an?** In der Einladungszeile → „Erneut senden"
+    (schickt einen frischen Code). Falsche Adresse erwischt? →
+    „Zurückziehen"; die Adresse ist danach sofort wieder frei.
+  - **Wer darf wen einladen:** Der Feuerwehrkommandant in jede Abteilung
+    seiner Gesamtwehr, und er kann beim Einladen gleich einen zweiten
+    Feuerwehrkommandanten ernennen (Aussperr-Schutz). Ein
+    Abteilungskommandant nur in seine eigene Abteilung und höchstens als
+    Gerätewart. Ein Gerätewart gar nicht.
+- **Mehr → Nutzerverwaltung → „Nutzer anlegen"** (Zugangszettel-Weg, für
+  alle ohne E-Mail-Adresse): Konto anlegen mit **Nutzername**
   (z. B. `max.m`), Rolle und generiertem **Initialpasswort**. Die
   Zugangsdaten werden genau **einmal** angezeigt — direkt auf den
   Zugangszettel übertragen.

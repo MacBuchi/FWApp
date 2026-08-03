@@ -251,10 +251,13 @@ otp_expiry = 3600
 subject = "FWApp: Passwort zurücksetzen"
 content_path = "./web/mail/recovery.html"
 
-# Uncomment to customize email template
-# [auth.email.template.invite]
-# subject = "You have been invited"
-# content_path = "./supabase/templates/invite.html"
+# Einladungsmail (Issue #100, Nutzerkonzept Stufe 3). Gleiches Muster wie
+# oben: Produktion fährt dieselbe Datei über GOTRUE_MAILER_TEMPLATES_INVITE.
+# Ohne diesen Eintrag verschickt GoTrue seine englische Standardvorlage mit
+# einem Link — und der verbrennt sich am ersten Mail-Scanner.
+[auth.email.template.invite]
+subject = "FWApp: Einladung deiner Feuerwehr"
+content_path = "./web/mail/invite.html"
 
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]

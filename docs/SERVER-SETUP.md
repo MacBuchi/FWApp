@@ -497,6 +497,37 @@ GOTRUE_MAILER_TEMPLATES_RECOVERY: http://fwapp-web/mail/recovery.html
 GOTRUE_MAILER_SUBJECTS_RECOVERY: "FWApp: Passwort zurücksetzen"
 ```
 
+**Einladungsmail (seit v1.17.0):** Gleiches Muster, gleiche Begründung —
+Code statt Link. Beim Einladen kommt der Grund noch dazu, dass ein
+Einladungslink ein **GET** ist, das den Token verbraucht: Mail-Scanner und
+Link-Vorschauen lösen ihn ein, bevor ein Mensch die Mail öffnet. Vorlage:
+`web/mail/invite.html`.
+
+```yaml
+GOTRUE_MAILER_TEMPLATES_INVITE: http://fwapp-web/mail/invite.html
+GOTRUE_MAILER_SUBJECTS_INVITE: "FWApp: Einladung deiner Feuerwehr"
+```
+
+⚠️ **Zwei Fallen, beide beim Bau der Vorlage zugeschnappt:**
+
+1. **GoTrue parst auch HTML-Kommentare.** Ein Go-Platzhalter darin, der
+   nicht aufgeht, lässt die ganze Vorlage scheitern — und GoTrue verschickt
+   danach **still** seine englische Standardmail *mit Link*, ohne dass am
+   Aufruf etwas fehlschlägt. Der einzige Hinweis steht im Log:
+   `docker logs supabase-auth | grep template` →
+   `templatemailer_template_body_parse_error`.
+2. **Das automatische Nachladen erholt sich nicht von einem gescheiterten
+   Parse.** Der Fehler bleibt hängen, auch wenn die Datei längst wieder in
+   Ordnung ist. Nach jeder Änderung an einer Mailvorlage deshalb
+   `docker compose up -d auth` (lokal: `docker restart supabase_auth_FWApp`).
+
+**Reihenfolge beim Ausrollen** wie bei der Recovery-Vorlage: erst
+`tool/deploy_web.sh`, dann die Variablen setzen, dann den auth-Container
+neu starten. Danach eine Probe-Einladung an die eigene Adresse schicken und
+nachsehen, dass Betreff **deutsch** ist und die Mail **keinen** Link auf
+`/auth/v1/verify` enthält — genau das prüft auch
+`test/integration/einladungen_e2e_test.dart` lokal.
+
 Der Weg geht über den nginx-Container im selben Docker-Netz, braucht also
 kein Internet. **Reihenfolge beim Ausrollen:** erst `tool/deploy_web.sh`
 (sonst zeigt die URL ins Leere und GoTrue fällt auf die englische

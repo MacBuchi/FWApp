@@ -60,6 +60,10 @@
     {
       "name": "20260802180000_katalog_vorschlaege.sql",
       "sha256": "c226e298a1984dab7ec85b505ac1da2b0c7abb9be6dce05fd52af99d4ffdc836"
+    },
+    {
+      "name": "20260803090000_gesamtwehr_branding.sql",
+      "sha256": "5d343a3df0b6a110e5151eadcfdd92a09a283537fa1745bc4a43d5d31a4f149f"
     }
   ],
   "functions": {

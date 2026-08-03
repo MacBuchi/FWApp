@@ -56,6 +56,18 @@ String? supabaseImageUrl(String marker) {
   return '$base/storage/v1/object/authenticated/$bucketAndObject';
 }
 
+/// Objektname eines Markers — aber nur, wenn er wirklich in [bucket] liegt.
+///
+/// ⚠️ Es gibt mehr als einen Bucket (Gerätefotos und Kopfbilder der
+/// Gesamtwehr). Wer bloß „ist ein supabase://-Marker" prüft und dann die Länge
+/// des eigenen Präfixes abschneidet, erhält bei einem fremden Marker einen
+/// verstümmelten Objektnamen — und löscht damit im schlimmsten Fall daneben.
+String? objektImBucket(String? marker, String bucket) {
+  final prefix = '$kSupabaseImagePrefix$bucket/';
+  if (marker == null || !marker.startsWith(prefix)) return null;
+  return marker.substring(prefix.length);
+}
+
 /// Resolves an image path and returns the appropriate widget.
 /// Defaults to [BoxFit.contain] so images are never cropped.
 /// A [backgroundColor] (default light grey) is painted behind the image.

@@ -7,6 +7,7 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/database/database_providers.dart';
 import 'package:fwapp/core/logging/app_logger.dart';
+import 'package:fwapp/core/sync/branding_providers.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
 
 class ImagePrecacheState {
@@ -43,6 +44,18 @@ class ImagePrecacheNotifier extends Notifier<ImagePrecacheState> {
     }
     for (final v in await db.vehicleDao.getAll()) {
       if (isRemoteImagePath(v.imagePath)) paths.add(v.imagePath!);
+    }
+    // Kopfbild der Gesamtwehr (#57 P5). Es hängt an keiner der beiden
+    // Tabellen, muss aber genauso offline dastehen wie die Gerätefotos —
+    // sonst klafft im Keller ein Loch an der auffälligsten Stelle der App.
+    try {
+      final bild = (await ref.read(gesamtwehrBrandingProvider.future))?.bildPfad;
+      if (isRemoteImagePath(bild)) paths.add(bild!);
+    } catch (e) {
+      // Kein Server, keine Gesamtwehr, Alt-Server: Der Rest wird trotzdem
+      // vorgehalten — ein fehlendes Kopfbild ist kein Grund, die Gerätefotos
+      // aus dem Vorrat zu lassen.
+      appLog.i('Kopfbild nicht ermittelbar — bleibt aus dem Vorrat', error: e);
     }
     if (paths.isEmpty) {
       state = const ImagePrecacheState();

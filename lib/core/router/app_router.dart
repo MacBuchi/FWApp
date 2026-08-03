@@ -42,6 +42,7 @@ import 'package:fwapp/features/inventory/presentation/screens/inventory_screen.d
 import 'package:fwapp/features/inventory/presentation/screens/inventory_report_screen.dart';
 import 'package:fwapp/features/settings/presentation/screens/settings_screen.dart';
 import 'package:fwapp/features/settings/presentation/screens/changelog_screen.dart';
+import 'package:fwapp/features/settings/presentation/screens/branding_screen.dart';
 import 'package:fwapp/features/settings/presentation/screens/gesamtwehr_screen.dart';
 import 'package:fwapp/features/settings/presentation/screens/user_management_screen.dart';
 
@@ -117,7 +118,11 @@ String? guardRedirect({
   // Abteilung & Gesamtwehr (#57 Phase 3): Server UND Schreibrecht. Bewusst
   // canEdit statt isAdmin — den Anschluss beantragt auch der Gerätewart, nur
   // entscheiden darf er nicht (das prüft der Server).
-  if (path == '/gesamtwehr' && !(canEdit && supabaseReady)) return '/';
+  // Gilt auch für die Unterseiten (`/gesamtwehr/kopfbereich`, #57 P5). Wer
+  // dort wirklich schreiben darf, ist enger gefasst (Feuerwehrkommandant) —
+  // das prüfen der Server und die Maske selbst; der Guard hält nur Konten
+  // ohne Schreibrecht ganz draußen.
+  if (path.startsWith('/gesamtwehr') && !(canEdit && supabaseReady)) return '/';
   return null;
 }
 
@@ -302,6 +307,12 @@ final _routes = [
         GoRoute(
           path: '/gesamtwehr',
           builder: (_, _) => const GesamtwehrScreen(),
+          routes: [
+            GoRoute(
+              path: 'kopfbereich',
+              builder: (_, _) => const BrandingScreen(),
+            ),
+          ],
         ),
         GoRoute(
           path: '/operation',

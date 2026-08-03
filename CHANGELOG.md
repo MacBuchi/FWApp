@@ -12,6 +12,31 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.16.0] – 2026-08-03
+
+### Neu
+
+- **Eure Gesamtwehr zeigt sich jetzt auf der Startseite.** Ganz oben steht
+  ein eigener Kopfbereich: ein Bild vom Gerätehaus oder vom Fuhrpark, der
+  Name der Wehr und ein Begrüßungstext — zum Beispiel der nächste
+  Übungstermin. Alle Abteilungen der Gesamtwehr sehen dasselbe. Ist nichts
+  eingerichtet, bleibt die Startseite wie bisher; es entsteht kein leerer
+  Kasten.
+- **Eingerichtet wird das vom Feuerwehrkommandanten** unter *Mehr →
+  Abteilung & Gesamtwehr → Kopfbereich der Startseite*. Beim Tippen seht ihr
+  sofort, wie es später aussieht. Ein Gerätewart sieht den Kopf, ändern kann
+  ihn nur der Kommandant — den Gerätebestand pflegt die ganze Wehr, wie sie
+  sich zeigt, entscheidet ihre Führung.
+- Einmal geladen, steht der Kopfbereich **auch ohne Netz** — wie die
+  Gerätefotos.
+
+### Bekannt
+
+- In der **Web-App auf dem iPhone** fehlt im Kopfbereich zurzeit das Bild;
+  Überschrift und Text stehen dort normal. Auf Android ist alles zu sehen.
+  Die Ursache betrifft alle zentral gespeicherten Fotos und wird getrennt
+  behoben.
+
 ## [1.15.0] – 2026-08-02
 
 ### Neu

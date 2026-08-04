@@ -314,7 +314,24 @@ Bausteine in der VM:
   ganze App ein (das hat fünf Veröffentlichungen unsichtbar gemacht). Nach
   einer Änderung an der Datei einmal „Purge Everything" im
   Cloudflare-Dashboard, sonst liefert der Rand weiter den alten Stand bis
-  zum Ablauf seiner TTL. Zusätzlicher `location`-Block
+  zum Ablauf seiner TTL.
+  ⚠️ **Der nginx allein genügt nicht.** Gemessen am 2026-08-05 mit bereits
+  laufender Änderung: Der Ursprung antwortet auf der VM mit `no-cache`,
+  `index.html` und `version.json` kommen auch am Rand so heraus
+  (`cf-cache-status: DYNAMIC`) — **`.js` aber mit `max-age=14400`** und wird
+  am Rand gespeichert. Cloudflare setzt die Browser-Cache-TTL der Zone über
+  die Kopfzeile des Ursprungs, sobald die Endung als statisch gilt. Nötig
+  sind daher zusätzlich, einmalig im Dashboard: **Browser Cache TTL auf
+  „Respect Existing Headers"** (oder eine Cache-Regel für diesen Hostnamen)
+  und ein **„Purge Everything"**. Prüfen, ohne auf das abgelegte Objekt
+  hereinzufallen:
+
+  ```bash
+  curl -sI "https://fwapp.mcbuchi.de/main.dart.js?p=$(date +%s)" \
+    | grep -i cache-control       # muss no-cache sagen, nicht max-age=…
+  ```
+
+  Zusätzlicher `location`-Block
   `^/(auth|rest|storage|functions)/`, der an `http://supabase-kong:8000`
   durchreicht; `client_max_body_size 25m` (Foto-Uploads). Wichtig:
   `resolver 127.0.0.11 valid=30s ipv6=off;` und `proxy_pass` über eine

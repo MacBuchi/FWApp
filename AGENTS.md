@@ -285,6 +285,24 @@ pauschales Formatieren in Feature-PRs.
   liefert 304). Erkennungszeichen für den nächsten Verdachtsfall:
   `curl -sI <url>/main.dart.js` zeigt `cf-cache-status: HIT` mit hohem
   `age`, während die Datei auf der VM neu ist.
+- ⚠️ **Den Ursprung zu reparieren reicht nicht — Cloudflare schreibt
+  darüber hinweg.** Gemessen am 2026-08-05, nachdem die nginx-Änderung oben
+  längst lief: Der Ursprung antwortet auf der VM sauber mit `no-cache`,
+  `index.html` und `version.json` kommen auch am Rand mit `no-cache`
+  (`cf-cache-status: DYNAMIC`) heraus — **`.js` dagegen mit
+  `max-age=14400`** und wird am Rand gespeichert. Cloudflare behandelt
+  statische Endungen nach eigener Regel und setzt die Browser-Cache-TTL der
+  Zone über die Kopfzeile des Ursprungs. Für ein Flutter-Web-Bündel heißt
+  das: Auch mit perfektem nginx hält ein Browser `main.dart.js` bis zu vier
+  Stunden, und der Rand liefert einen alten Stand bis zu dessen TTL.
+  Nötig sind zwei Dinge in der Cloudflare-Oberfläche: **Browser Cache TTL
+  auf „Respect Existing Headers"** (oder eine Cache-Regel für diesen
+  Hostnamen) und **einmal „Purge Everything"**, weil ein unter alten
+  Kopfzeilen abgelegtes Objekt seine sieben Tage sonst zu Ende lebt.
+  Prüfbefehl, der den abgelegten Stand umgeht und zeigt, was der Rand
+  wirklich mit einer frischen Antwort tut:
+  `curl -sI "<url>/main.dart.js?p=$(date +%s)" | grep -i cache-control`
+  — dort muss `no-cache` stehen, nicht `max-age=…`.
 - ⚠️ **Der Mail-BETREFF ist ebenfalls eine Go-Vorlage.** GoTrue schickt
   `GOTRUE_MAILER_SUBJECTS_*` durch dieselbe Template-Maschine wie den Rumpf,
   `{{ .Data.… }}` wird dort also eingesetzt. In der Dokumentation steht das

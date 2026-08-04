@@ -280,7 +280,14 @@ Bausteine in der VM:
 - Container `fwapp-tunnel` (`cloudflare/cloudflared`, `--network host`,
   Restart-Policy `unless-stopped`), gestartet mit dem Tunnel-Token aus dem
   Cloudflare-Dashboard.
-- `~/fwapp-web/nginx.conf`: zusätzlicher `location`-Block
+- `~/fwapp-web/nginx.conf`: die Vorlage liegt im Repo unter
+  [tool/vm/fwapp-web-nginx.conf](../tool/vm/fwapp-web-nginx.conf).
+  ⚠️ **Alles steht auf `no-cache`** — kein Dateiname eines
+  Flutter-Web-Builds trägt einen Inhalts-Hash, langes Cachen friert also die
+  ganze App ein (das hat fünf Veröffentlichungen unsichtbar gemacht). Nach
+  einer Änderung an der Datei einmal „Purge Everything" im
+  Cloudflare-Dashboard, sonst liefert der Rand weiter den alten Stand bis
+  zum Ablauf seiner TTL. Zusätzlicher `location`-Block
   `^/(auth|rest|storage|functions)/`, der an `http://supabase-kong:8000`
   durchreicht; `client_max_body_size 25m` (Foto-Uploads). Wichtig:
   `resolver 127.0.0.11 valid=30s ipv6=off;` und `proxy_pass` über eine

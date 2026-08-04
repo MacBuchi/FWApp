@@ -271,6 +271,20 @@ pauschales Formatieren in Feature-PRs.
   `supabase stop && supabase start` (Container neu anlegen). `cp` über die
   bestehende Datei erhält den Inode und geht durch.
 
+- ⚠️ **Kein Dateiname eines Flutter-Web-Builds trägt einen Inhalts-Hash.**
+  `main.dart.js` heißt in jedem Build gleich, `assets/…` ebenso. Wer die
+  Auslieferung nach dem Muster „index.html kurz, alles andere lang cachen"
+  konfiguriert, friert damit die ganze App ein. Genau das ist passiert: Der
+  nginx vor der Web-App schickte `max-age=604800` für alles außer den
+  Einstiegsdateien, Cloudflare hielt sich daran, und **fünf
+  Veröffentlichungen (v1.19.0–v1.24.0) erreichten die Web-Nutzer nie** —
+  während `version.json` (nicht gecacht) brav die neue Version meldete, die
+  Aktualisierungs-Meldung also erschien und das Neuladen wieder dieselbe
+  alte App brachte. Konfiguration jetzt im Repo:
+  `tool/vm/fwapp-web-nginx.conf`, alles auf `no-cache` (= revalidieren, ETag
+  liefert 304). Erkennungszeichen für den nächsten Verdachtsfall:
+  `curl -sI <url>/main.dart.js` zeigt `cf-cache-status: HIT` mit hohem
+  `age`, während die Datei auf der VM neu ist.
 - ⚠️ **Der Mail-BETREFF ist ebenfalls eine Go-Vorlage.** GoTrue schickt
   `GOTRUE_MAILER_SUBJECTS_*` durch dieselbe Template-Maschine wie den Rumpf,
   `{{ .Data.… }}` wird dort also eingesetzt. In der Dokumentation steht das

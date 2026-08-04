@@ -17,6 +17,7 @@ import 'package:fwapp/core/sync/rollen.dart';
 import 'package:fwapp/core/sync/temp_rechte_providers.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/features/profil/presentation/widgets/fw_avatar.dart';
+import 'package:fwapp/features/settings/domain/zustellung.dart';
 import 'package:fwapp/features/settings/presentation/providers/einladung_providers.dart';
 import 'package:fwapp/features/settings/presentation/providers/user_admin_providers.dart';
 
@@ -39,7 +40,7 @@ class UserManagementScreen extends ConsumerWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _createUser(context, ref),
+        onPressed: () => _zugangszettelAnlegen(context, ref),
         icon: const Icon(Icons.person_add),
         label: const Text('Nutzer anlegen'),
       ),
@@ -76,134 +77,178 @@ class UserManagementScreen extends ConsumerWidget {
       ),
     );
   }
+}
 
-  Future<void> _createUser(BuildContext context, WidgetRef ref) async {
-    final usernameCtrl = TextEditingController();
-    final passwordCtrl =
-        TextEditingController(text: generateInitialPassword());
-    var role = 'member';
-    String? error;
-    // Ohne Auswahl legt der Server das Konto in die Abteilung des
-    // Anlegenden — deshalb ist `null` hier ein gültiger Zustand und nicht
-    // „vergessen".
-    final abteilungen = ref.read(abteilungenProvider).value ?? const [];
-    final eigene = ref.read(myAbteilungIdProvider).value;
-    String? abteilung = abteilungen.any((a) => a.id == eigene) ? eigene : null;
+/// Legt ein Zettel-Konto an (Nutzername + Initialpasswort auf Papier).
+///
+/// Top-Level und mit Vorbelegung, weil es zwei Wege hierher gibt: der Knopf
+/// „Nutzer anlegen" und — seit Issue #121 — die gescheiterte Einladung, bei
+/// der die Mail nachweislich nicht ankommt. Im zweiten Fall sind Rolle und
+/// Abteilung bereits entschieden; sie noch einmal auszuwählen wäre eine
+/// Gelegenheit, es anders zu machen als beabsichtigt.
+///
+/// [statt] ist die Einladung, die dieses Konto ersetzt: Nach dem Anlegen
+/// wird sie zurückgezogen, sonst stünde sie weiter als „offen" in der Liste
+/// und blockierte die Adresse für einen späteren zweiten Versuch.
+Future<void> _zugangszettelAnlegen(
+  BuildContext context,
+  WidgetRef ref, {
+  String? nameVorschlag,
+  String? rolleVorschlag,
+  String? abteilungVorschlag,
+  Einladung? statt,
+}) async {
+  final usernameCtrl = TextEditingController(text: nameVorschlag ?? '');
+  final passwordCtrl =
+      TextEditingController(text: generateInitialPassword());
+  var role = rolleVorschlag ?? 'member';
+  String? error;
+  // Ohne Auswahl legt der Server das Konto in die Abteilung des
+  // Anlegenden — deshalb ist `null` hier ein gültiger Zustand und nicht
+  // „vergessen".
+  final abteilungen = ref.read(abteilungenProvider).value ?? const [];
+  final eigene = ref.read(myAbteilungIdProvider).value;
+  final vorgabe = abteilungVorschlag ?? eigene;
+  String? abteilung = abteilungen.any((a) => a.id == vorgabe) ? vorgabe : null;
 
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setState) => AlertDialog(
-          title: const Text('Nutzer anlegen'),
-          // Scrollbar: verhindert Button-Überlappung auf kleinen Screens
-          // mit offener Tastatur (Feldtest Pixel XL).
-          content: SingleChildScrollView(
-              child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: usernameCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Nutzername',
-                  helperText: 'z. B. max.m – steht auf dem Zugangszettel',
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => StatefulBuilder(
+      builder: (ctx, setState) => AlertDialog(
+        title: Text(statt == null ? 'Nutzer anlegen' : 'Zugangszettel statt Mail'),
+        // Scrollbar: verhindert Button-Überlappung auf kleinen Screens
+        // mit offener Tastatur (Feldtest Pixel XL).
+        content: SingleChildScrollView(
+            child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (statt != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Text(
+                  'An ${statt.email} kommt keine Mail an. Dieses Konto '
+                  'bekommt stattdessen einen Zettel — die Einladung wird '
+                  'dabei zurückgezogen.\n\n'
+                  'Ein Zettel-Konto kann sein Passwort später NICHT selbst '
+                  'zurücksetzen; dafür braucht es eine erreichbare Adresse.',
+                  style: const TextStyle(fontSize: 12),
                 ),
-                autocorrect: false,
-                autofocus: true,
               ),
+            TextField(
+              controller: usernameCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Nutzername',
+                helperText: 'z. B. max.m – steht auf dem Zugangszettel',
+              ),
+              autocorrect: false,
+              autofocus: true,
+            ),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<String>(
+              initialValue: role,
+              decoration: const InputDecoration(labelText: 'Rolle'),
+              // Anzeigenamen aus dem Nutzerkonzept; ein frisches
+              // Zettel-Konto ohne echte Mail ist ein Truppmann.
+              items: const [
+                DropdownMenuItem(
+                    value: 'member', child: Text('Truppmann (liest)')),
+                DropdownMenuItem(
+                    value: 'geraetewart',
+                    child: Text('Gerätewart (bearbeitet)')),
+                DropdownMenuItem(
+                    value: 'admin',
+                    child: Text('Abteilungskommandant (verwaltet)')),
+              ],
+              onChanged: (v) => setState(() => role = v ?? 'member'),
+            ),
+            if (abteilungen.length > 1) ...[
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                initialValue: role,
-                decoration: const InputDecoration(labelText: 'Rolle'),
-                // Anzeigenamen aus dem Nutzerkonzept; ein frisches
-                // Zettel-Konto ohne echte Mail ist ein Truppmann.
-                items: const [
-                  DropdownMenuItem(
-                      value: 'member', child: Text('Truppmann (liest)')),
-                  DropdownMenuItem(
-                      value: 'geraetewart',
-                      child: Text('Gerätewart (bearbeitet)')),
-                  DropdownMenuItem(
-                      value: 'admin',
-                      child: Text('Abteilungskommandant (verwaltet)')),
+                initialValue: abteilung,
+                decoration: const InputDecoration(labelText: 'Abteilung'),
+                items: [
+                  for (final a in abteilungen)
+                    DropdownMenuItem(value: a.id, child: Text(a.name)),
                 ],
-                onChanged: (v) => setState(() => role = v ?? 'member'),
+                onChanged: (v) => setState(() => abteilung = v ?? abteilung),
               ),
-              if (abteilungen.length > 1) ...[
-                const SizedBox(height: 8),
-                DropdownButtonFormField<String>(
-                  initialValue: abteilung,
-                  decoration: const InputDecoration(labelText: 'Abteilung'),
-                  items: [
-                    for (final a in abteilungen)
-                      DropdownMenuItem(value: a.id, child: Text(a.name)),
-                  ],
-                  onChanged: (v) => setState(() => abteilung = v ?? abteilung),
-                ),
-              ],
-              const SizedBox(height: 8),
-              TextField(
-                controller: passwordCtrl,
-                decoration: InputDecoration(
-                  labelText: 'Initialpasswort',
-                  helperText: 'Muss beim ersten Login geändert werden',
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.casino),
-                    tooltip: 'Neu würfeln',
-                    onPressed: () => setState(
-                        () => passwordCtrl.text = generateInitialPassword()),
-                  ),
-                ),
-                autocorrect: false,
-              ),
-              if (error != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text(error!,
-                      style: const TextStyle(color: Colors.red, fontSize: 12)),
-                ),
             ],
-          )),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('Abbrechen')),
-            FilledButton(
-              onPressed: () {
-                final name = usernameCtrl.text.trim().toLowerCase();
-                if (!isValidUsername(name)) {
-                  setState(() => error =
-                      'Ungültiger Nutzername (3–32 Zeichen: a-z, 0-9, . _ -)');
-                  return;
-                }
-                if (passwordCtrl.text.length < 8) {
-                  setState(
-                      () => error = 'Passwort braucht mindestens 8 Zeichen');
-                  return;
-                }
-                Navigator.pop(ctx, true);
-              },
-              child: const Text('Anlegen'),
+            const SizedBox(height: 8),
+            TextField(
+              controller: passwordCtrl,
+              decoration: InputDecoration(
+                labelText: 'Initialpasswort',
+                helperText: 'Muss beim ersten Login geändert werden',
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.casino),
+                  tooltip: 'Neu würfeln',
+                  onPressed: () => setState(
+                      () => passwordCtrl.text = generateInitialPassword()),
+                ),
+              ),
+              autocorrect: false,
             ),
+            if (error != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(error!,
+                    style: const TextStyle(color: Colors.red, fontSize: 12)),
+              ),
           ],
-        ),
+        )),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Abbrechen')),
+          FilledButton(
+            onPressed: () {
+              final name = usernameCtrl.text.trim().toLowerCase();
+              if (!isValidUsername(name)) {
+                setState(() => error =
+                    'Ungültiger Nutzername (3–32 Zeichen: a-z, 0-9, . _ -)');
+                return;
+              }
+              if (passwordCtrl.text.length < 8) {
+                setState(
+                    () => error = 'Passwort braucht mindestens 8 Zeichen');
+                return;
+              }
+              Navigator.pop(ctx, true);
+            },
+            child: const Text('Anlegen'),
+          ),
+        ],
       ),
-    );
-    if (ok != true || !context.mounted) return;
+    ),
+  );
+  if (ok != true || !context.mounted) return;
 
-    final username = usernameCtrl.text.trim().toLowerCase();
-    await _run(context, ref, () async {
-      await invokeAdminUsers(ref.read(supabaseClientProvider), {
-        'action': 'create',
-        'username': username,
-        'role': role,
-        'password': passwordCtrl.text,
-        if (abteilung != null) 'abteilung_id': abteilung,
-      });
-      if (context.mounted) {
-        await _showCredentials(context, username, passwordCtrl.text);
-      }
+  final username = usernameCtrl.text.trim().toLowerCase();
+  await _run(context, ref, () async {
+    await invokeAdminUsers(ref.read(supabaseClientProvider), {
+      'action': 'create',
+      'username': username,
+      'role': role,
+      'password': passwordCtrl.text,
+      if (abteilung != null) 'abteilung_id': abteilung,
     });
-  }
+    // ⚠️ Erst anlegen, DANN zurückziehen. Andersherum stünde die Person
+    // ohne alles da, wenn das Anlegen scheitert — die Einladung wäre schon
+    // weg. Scheitert umgekehrt das Zurückziehen, gibt es das Konto und die
+    // Einladung bleibt sichtbar offen; das ist von Hand zu heilen und fällt
+    // wenigstens auf.
+    if (statt != null) {
+      await invokeAdminUsers(ref.read(supabaseClientProvider), {
+        'action': 'invite_revoke',
+        'einladung_id': statt.id,
+      });
+      ref.invalidate(offeneEinladungenProvider);
+    }
+    ref.invalidate(managedUsersProvider);
+    if (context.mounted) {
+      await _showCredentials(context, username, passwordCtrl.text);
+    }
+  });
 }
 
 /// Zeigt die Zugangsdaten GENAU EINMAL an (fürs Übertragen auf den
@@ -257,6 +302,10 @@ class _EinladungenAbschnitt extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final offen = ref.watch(offeneEinladungenProvider).value ?? const [];
     final abteilungen = ref.watch(abteilungenProvider).value ?? const [];
+    // Zustellung (Issue #121). Kommt nach — die Liste soll nicht darauf
+    // warten; bis dahin steht bei jeder Zeile „Zustellung nicht prüfbar".
+    final zustellung =
+        ref.watch(einladungZustellungProvider).value ?? Zustellstand.leer;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -289,70 +338,22 @@ class _EinladungenAbschnitt extends ConsumerWidget {
           )
         else
           for (final e in offen)
-            ListTile(
-              leading: const Icon(Icons.hourglass_empty),
-              title: Text(
-                  e.anzeigename?.isNotEmpty == true ? e.anzeigename! : e.email),
-              subtitle: Text(
-                '${e.email}\n'
-                '${rolleAnzeigename(e.role, kommandant: e.alsKommandant)} · '
-                '${abteilungsName(e.abteilungId, abteilungen)} · '
-                'wartet auf Bestätigung',
-              ),
-              isThreeLine: true,
-              trailing: PopupMenuButton<String>(
-                onSelected: (wahl) => _einladungAktion(context, ref, e, wahl),
-                itemBuilder: (_) => const [
-                  PopupMenuItem(
-                      value: 'invite_resend', child: Text('Erneut senden')),
-                  PopupMenuItem(
-                      value: 'invite_revoke', child: Text('Zurückziehen')),
-                ],
-              ),
+            _EinladungsZeile(
+              einladung: e,
+              zustellung: zustellung.fuer(e.id),
+              abteilungen: abteilungen,
             ),
+        if (zustellung.gekuerzt > 0)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: Text(
+              'Die Zustellung wurde nur für die ersten '
+              '${offen.length - zustellung.gekuerzt} Einladungen geprüft.',
+              style: const TextStyle(fontSize: 12),
+            ),
+          ),
       ],
     );
-  }
-
-  Future<void> _einladungAktion(
-      BuildContext context, WidgetRef ref, Einladung e, String aktion) async {
-    if (aktion == 'invite_revoke') {
-      final ok = await showDialog<bool>(
-        context: context,
-        // Die Route liegt in der ShellRoute — ohne den Wurzel-Navigator läge
-        // der Dialog UNTER der NavigationBar, und ein Tipp knapp daneben
-        // bräche ihn ab und wechselte den Tab (AGENTS.md, #79/#96).
-        useRootNavigator: true,
-        builder: (ctx) => AlertDialog(
-          title: const Text('Einladung zurückziehen?'),
-          content: Text('${e.email} kann den Code dann nicht mehr einlösen. '
-              'Die Adresse ist danach wieder frei für eine neue Einladung.'),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('Abbrechen')),
-            FilledButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Zurückziehen')),
-          ],
-        ),
-      );
-      if (ok != true || !context.mounted) return;
-    }
-    await _run(context, ref, () async {
-      await invokeAdminUsers(ref.read(supabaseClientProvider), {
-        'action': aktion,
-        'einladung_id': e.id,
-      });
-      ref.invalidate(offeneEinladungenProvider);
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(aktion == 'invite_resend'
-              ? 'Neue Einladung an ${e.email} verschickt.'
-              : 'Einladung zurückgezogen.'),
-        ));
-      }
-    });
   }
 
   Future<void> _einladen(BuildContext context, WidgetRef ref) async {
@@ -515,6 +516,134 @@ class _EinladungenAbschnitt extends ConsumerWidget {
       }
     });
   }
+}
+
+/// Eine offene Einladung — samt der Frage, ob sie überhaupt angekommen ist
+/// (Issue #121).
+///
+/// Vor #121 stand hier für jede Zeile dasselbe: eine Sanduhr und „wartet auf
+/// Bestätigung". Eine von Brevo verworfene Einladung sah damit exakt aus wie
+/// eine, die zugestellt im Postfach lag — der Kommandant wartete auf etwas,
+/// das nie kam, und der Eingeladene wusste nicht einmal davon.
+class _EinladungsZeile extends ConsumerWidget {
+  const _EinladungsZeile({
+    required this.einladung,
+    required this.zustellung,
+    required this.abteilungen,
+  });
+
+  final Einladung einladung;
+  final Zustellung zustellung;
+  final List<AbteilungInfo> abteilungen;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final e = einladung;
+    final gescheitert = zustellung.zustand == Zustellzustand.gescheitert;
+    final scheme = Theme.of(context).colorScheme;
+
+    // Nur das Scheitern bekommt Farbe. Ein grüner Haken für „zugestellt"
+    // wäre eine Beruhigung, die nicht trägt: Zugestellt heisst noch lange
+    // nicht gelesen — die Mail kann im Spam-Ordner liegen, so wie im Feld
+    // geschehen.
+    final zeit = zustellung.zeit;
+    return ListTile(
+      leading: Icon(
+        switch (zustellung.zustand) {
+          Zustellzustand.gescheitert => Icons.report_gmailerrorred,
+          Zustellzustand.zugestellt => Icons.mark_email_read_outlined,
+          _ => Icons.hourglass_empty,
+        },
+        color: gescheitert ? scheme.error : null,
+      ),
+      title: Text(e.anzeigename?.isNotEmpty == true ? e.anzeigename! : e.email),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${e.email}\n'
+            '${rolleAnzeigename(e.role, kommandant: e.alsKommandant)} · '
+            '${abteilungsName(e.abteilungId, abteilungen)} · '
+            'wartet auf Bestätigung',
+          ),
+          Text(
+            zustellungText(zustellung) +
+                (zeit == null ? '' : ' · ${_fmtUhr(zeit)}'),
+            style: TextStyle(
+              fontSize: 12,
+              color: gescheitert ? scheme.error : scheme.outline,
+              fontWeight: gescheitert ? FontWeight.w600 : null,
+            ),
+          ),
+        ],
+      ),
+      isThreeLine: true,
+      trailing: PopupMenuButton<String>(
+        onSelected: (wahl) => _einladungAktion(context, ref, e, wahl),
+        itemBuilder: (_) => const [
+          PopupMenuItem(value: 'invite_resend', child: Text('Erneut senden')),
+          // Steht bei JEDER Einladung, nicht nur bei den gescheiterten:
+          // Ohne Brevo-Schlüssel weiss der Server gar nicht, welche das
+          // sind — und dann wäre der Ausweg genau dort weg, wo er am
+          // nötigsten ist.
+          PopupMenuItem(
+              value: 'zettel', child: Text('Zugangszettel stattdessen')),
+          PopupMenuItem(value: 'invite_revoke', child: Text('Zurückziehen')),
+        ],
+      ),
+    );
+  }
+}
+
+Future<void> _einladungAktion(
+    BuildContext context, WidgetRef ref, Einladung e, String aktion) async {
+  if (aktion == 'zettel') {
+    return _zugangszettelAnlegen(
+      context,
+      ref,
+      nameVorschlag: zugangsnameVorschlag(e.email),
+      rolleVorschlag: e.role,
+      abteilungVorschlag: e.abteilungId,
+      statt: e,
+    );
+  }
+  if (aktion == 'invite_revoke') {
+    final ok = await showDialog<bool>(
+      context: context,
+      // Die Route liegt in der ShellRoute — ohne den Wurzel-Navigator läge
+      // der Dialog UNTER der NavigationBar, und ein Tipp knapp daneben
+      // bräche ihn ab und wechselte den Tab (AGENTS.md, #79/#96).
+      useRootNavigator: true,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Einladung zurückziehen?'),
+        content: Text('${e.email} kann den Code dann nicht mehr einlösen. '
+            'Die Adresse ist danach wieder frei für eine neue Einladung.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Abbrechen')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Zurückziehen')),
+        ],
+      ),
+    );
+    if (ok != true || !context.mounted) return;
+  }
+  await _run(context, ref, () async {
+    await invokeAdminUsers(ref.read(supabaseClientProvider), {
+      'action': aktion,
+      'einladung_id': e.id,
+    });
+    ref.invalidate(offeneEinladungenProvider);
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(aktion == 'invite_resend'
+            ? 'Neue Einladung an ${e.email} verschickt.'
+            : 'Einladung zurückgezogen.'),
+      ));
+    }
+  });
 }
 
 /// Der Kopf des Kontos mit der Rolle als kleinem Abzeichen (Issue #100).

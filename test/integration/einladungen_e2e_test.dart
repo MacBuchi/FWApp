@@ -529,4 +529,61 @@ Future<void> main() async {
       erzeugteKonten.add(konto['auth_user_id'] as String);
     });
   });
+
+  /// Zustellung (Issue #121). Brevo gibt es hier nicht — geprüft wird
+  /// deshalb genau das, was ohne Brevo überhaupt zu prüfen ist: dass die
+  /// Aktion trägt, dass sie ehrlich „weiß ich nicht" sagt statt zu
+  /// beruhigen, und woher sie ihre Adressen nimmt.
+  group('Zustellung abfragen', () {
+    test('ohne Mail-Brücke meldet der Server „nicht prüfbar"', () async {
+      // Der Zustand jedes Servers, auf dem die Brücke (noch) nicht
+      // eingetragen ist — und der des lokalen Stacks für immer. Er darf die
+      // Nutzerverwaltung nicht scheitern lassen.
+      final antwort = await kommandant.functions
+          .invoke('admin-users', body: {'action': 'invite_status'});
+      final daten = (antwort.data as Map).cast<String, dynamic>();
+      expect(daten['verfuegbar'], isFalse);
+      expect(daten['grund'], contains('BREVO_EVENTS_URL'));
+      expect(daten['zustellungen'], isEmpty);
+      expect(daten['gekuerzt'], 0);
+    });
+
+    test('ein Gerätewart darf gar nicht erst fragen', () async {
+      // Zustellereignisse sagen etwas über Menschen aus. Das Tor ist
+      // dasselbe wie für die ganze Nutzerverwaltung.
+      await expectLater(
+        wart.functions.invoke('admin-users', body: {'action': 'invite_status'}),
+        throwsA(isA<FunctionException>()),
+      );
+    });
+
+    test('die Adressen kommen aus der Tabelle, nicht aus dem Aufruf',
+        () async {
+      // Der eigentliche Schutz: Die Aktion nimmt KEINE Adressliste
+      // entgegen. Nähme sie eine, könnte jeder Verwalter Brevo nach
+      // beliebigen fremden Adressen fragen. Sie liest stattdessen genau
+      // diese Abfrage mit dem JWT des Aufrufers — hier wortgleich zu
+      // `offeneEinladungen()` in der Edge Function.
+      final id = await kommandant.rpc('einladung_anlegen', params: {
+        'adresse': 'zustell.quelle@example.org',
+        'name': 'Zustell Quelle',
+        'abteilung': abteilungA,
+        'rolle': 'member',
+      });
+      Future<List<dynamic>> abfrage(SupabaseClient s) => s
+          .from('einladungen')
+          .select('id, email, created_at')
+          .isFilter('angenommen_am', null)
+          .isFilter('zurueckgezogen_am', null)
+          .order('created_at');
+
+      expect(
+        (await abfrage(abteilungsChef)).map((r) => r['id']),
+        contains(id),
+      );
+      // Derselbe Aufruf, dieselbe Abteilung, anderes Recht: nichts.
+      expect((await abfrage(wart)).map((r) => r['id']), isNot(contains(id)));
+      await asService((s) => s.from('einladungen').delete().eq('id', id));
+    });
+  });
 }

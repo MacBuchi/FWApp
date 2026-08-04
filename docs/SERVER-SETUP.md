@@ -168,6 +168,33 @@ cp -r supabase/functions/admin-users ~/supabase/volumes/functions/
 cd ~/supabase && docker compose restart functions
 ```
 
+#### `BREVO_EVENTS_URL` — Zustellauskunft einschalten (Issue #121)
+
+Die Aktion `invite_status` sagt der Nutzerverwaltung, ob eine Einladung
+zugestellt oder verworfen wurde. Sie fragt **nicht** Brevo direkt (das ginge
+aus dem Container nicht, siehe Mail-Brücke), sondern die Brücke auf dem Host:
+
+```yaml
+# ~/supabase/docker-compose.override.yml
+services:
+  functions:
+    environment:
+      BREVO_EVENTS_URL: http://172.18.0.1:2501/events
+```
+
+```bash
+cd ~/supabase && docker compose up -d functions
+```
+
+**Ohne diese Zeile funktioniert alles weiter** — die Liste zeigt dann bei
+jeder Einladung „Zustellung nicht prüfbar" statt einer Auskunft. Das ist
+Absicht: eine Nutzerverwaltung, die wegen einer fehlenden Auskunft scheitert,
+hilft niemandem.
+
+⚠️ **Diese Variable fällt nicht unter den Abgleich aus Issue #118.** Der
+vergleicht `auth_env` gegen den `auth`-Container; hier geht es um den
+`functions`-Container. Fällt sie weg, merkt es niemand außer an der Anzeige.
+
 **Eigenheit dieses Servers:** Der mitgelieferte `main`-Router des Stacks
 importiert `jsr:@panva/jose` — ohne IPv4-Internet scheitert der
 Modul-Download beim Kaltstart (502 für alle Functions). Er ist deshalb durch
@@ -505,6 +532,17 @@ systemd-Dienst **direkt auf dem Host**: GoTrue spricht lokal SMTP, die Brücke
 - **Bind-Adresse `172.18.0.1:2500`** — das Gateway des
   `supabase_default`-Netzes. Container erreichen es über ihre Default-Route,
   das LAN hat keine Route dorthin (kein offenes Relay im Heimnetz).
+- **Zustellauskunft `GET /events?email=…&days=…`** auf `172.18.0.1:2501`
+  (Issue #121). Liefert Brevos Ereignisse zu einer Adresse, damit die
+  Nutzerverwaltung eine verworfene Einladung von einer offenen unterscheiden
+  kann. Sie sitzt aus demselben Grund hier wie der Versand: Der
+  edge-functions-Container erreicht `api.brevo.com` nicht (Bridge-Netz ohne
+  IPv6-Ausgang). Nebeneffekt: Der Schlüssel bleibt auf dem Host.
+  ⚠️ **Kein allgemeiner Weiterleiter** — die Ziel-URL ist fest verdrahtet,
+  es gibt genau einen Pfad, und von den Parametern kommen nur `email`
+  (Adressform geprüft) und `days` (auf 30 gedeckelt) durch. Abgesichert in
+  [test/config/mailbridge_events_test.dart](../test/config/mailbridge_events_test.dart),
+  das gegen die ausgelieferte Datei läuft.
 - **API-Key** liegt nur auf der VM: `~/brevo-api-key.txt` (chmod 600). Er wird
   pro Versand frisch gelesen — **Key-Tausch = Datei ersetzen, kein Neustart.**
   Achtung Brevo-Falle: Der Key muss mit `xkeysib-` beginnen (HTTP-API); der

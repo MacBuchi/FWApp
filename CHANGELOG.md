@@ -12,6 +12,21 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.23.0] – 2026-08-04
+
+### Geändert
+
+- **Die Einladungsmail kommt mit dem Namen eurer Wehr an.** Betreff und
+  Überschrift nennen jetzt die Gesamtfeuerwehr statt „Willkommen bei der
+  FWApp" — im Postfach sieht die Einladung damit nach Feuerwehr aus und
+  nicht nach Werbung. Abteilung und Rolle stehen wie bisher darunter.
+
+### Behoben
+
+- Stand keine Gesamtwehr dahinter, las sich die Einladung als „Du wurdest
+  für deiner Feuerwehr eingeladen". Der Satz ist weg; die Wehr steht in der
+  Überschrift.
+
 ## [1.22.0] – 2026-08-04
 
 ### Neu

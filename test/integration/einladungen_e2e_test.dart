@@ -373,6 +373,22 @@ Future<void> main() async {
       expect(mail.betreff, contains('Einladung'),
           reason: 'die englische Standardvorlage würde „You\'ve been invited" '
               'schicken — dann hat GoTrue unsere Vorlage nicht geparst');
+      // Der Wehrname im Betreff und als Überschrift: Eine Einladung, die mit
+      // dem Namen der eigenen Wehr ankommt, sieht im Postfach nach Feuerwehr
+      // aus und nicht nach Werbung. Der Betreff ist dabei SELBST eine
+      // Go-Vorlage — steht so in keiner Dokumentation, ist am lokalen Stack
+      // gemessen und hängt hier als Zusicherung.
+      expect(mail.betreff, contains('GW Einladung'),
+          reason: 'Betreff ohne Wehrname — wird GOTRUE_MAILER_SUBJECTS_INVITE '
+              'nicht als Vorlage ausgewertet?');
+      expect(mail.rumpf, contains('GW Einladung'),
+          reason: 'Überschrift ohne Wehrname');
+      // Und der alte Grammatikfehler ist damit weg: Ohne Gesamtwehr stand da
+      // früher „Du wurdest für deiner Feuerwehr eingeladen". Die Fußzeile
+      // („die Lern-App deiner Feuerwehr") ist richtig und bleibt — deshalb
+      // prüft das hier auf den Satzanfang und nicht auf die Wortgruppe.
+      expect(mail.rumpf, isNot(contains('für deiner Feuerwehr')));
+      expect(mail.rumpf, isNot(contains('Willkommen bei der FWApp')));
       expect(RegExp(r'>\s*\d{6}\s*<').hasMatch(mail.rumpf), isTrue,
           reason: 'kein sechsstelliger Code in der Mail');
       expect(mail.rumpf, isNot(contains('auth/v1/verify')),

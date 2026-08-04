@@ -505,8 +505,18 @@ Link-Vorschauen lösen ihn ein, bevor ein Mensch die Mail öffnet. Vorlage:
 
 ```yaml
 GOTRUE_MAILER_TEMPLATES_INVITE: http://fwapp-web/mail/invite.html
-GOTRUE_MAILER_SUBJECTS_INVITE: "FWApp: Einladung deiner Feuerwehr"
+GOTRUE_MAILER_SUBJECTS_INVITE: "{{ .Data.titel }}: Einladung"
 ```
+
+⚠️ **Der Betreff ist seit v1.23.0 selbst eine Vorlage.** Dass GoTrue ihn
+durch dieselbe Go-Template-Maschine schickt wie den Rumpf, steht in keiner
+Dokumentation — es ist am lokalen Stack gemessen (Platzhalter eingesetzt,
+Mail in Mailpit angesehen). `{{ .Data.titel }}` ist der Name der Gesamtwehr,
+den `admin-users` fertig mitschickt; ohne Gesamtwehr steht dort „FWApp".
+
+**Wer die Variable NICHT umstellt, bekommt weiterhin Mails** — dann nur mit
+dem alten, allgemeinen Betreff. Die Überschrift im Rumpf trägt den Wehrnamen
+so oder so, weil sie in der Vorlage steht und nicht in der Serverumgebung.
 
 ⚠️ **Zwei Fallen, beide beim Bau der Vorlage zugeschnappt:**
 

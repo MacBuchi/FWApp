@@ -256,7 +256,7 @@ content_path = "./web/mail/recovery.html"
 # Ohne diesen Eintrag verschickt GoTrue seine englische Standardvorlage mit
 # einem Link — und der verbrennt sich am ersten Mail-Scanner.
 [auth.email.template.invite]
-subject = "FWApp: Einladung deiner Feuerwehr"
+subject = "{{ .Data.titel }}: Einladung"
 content_path = "./web/mail/invite.html"
 
 # Uncomment to customize notification email template

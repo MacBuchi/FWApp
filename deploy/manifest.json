@@ -85,5 +85,13 @@
   "functions": {
     "admin-users/index.ts": "2d3022c7f4fd9c32b6bcb930e3b56c779b3e45f65b4174789252622fcc4e5994",
     "main/index.ts": "e35427a3f30635ba6db7742870e377dfb978786a07f99efb1644b1714be614c5"
+  },
+  "auth_env": {
+    "GOTRUE_MAILER_TEMPLATES_RECOVERY": "http://fwapp-web/mail/recovery.html",
+    "GOTRUE_MAILER_SUBJECTS_RECOVERY": "FWApp: Passwort zurücksetzen",
+    "GOTRUE_MAILER_TEMPLATES_INVITE": "http://fwapp-web/mail/invite.html",
+    "GOTRUE_MAILER_SUBJECTS_INVITE": "{{ .Data.titel }}: Einladung",
+    "GOTRUE_MFA_TOTP_ENROLL_ENABLED": "true",
+    "GOTRUE_MFA_TOTP_VERIFY_ENABLED": "true"
   }
 }

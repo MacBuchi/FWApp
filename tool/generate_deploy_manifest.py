@@ -27,10 +27,37 @@ REPO = Path(__file__).resolve().parent.parent
 MIGRATIONS = REPO / "supabase" / "migrations"
 FUNCTIONS = REPO / "supabase" / "functions"
 MANIFEST = REPO / "deploy" / "manifest.json"
+AUTH_ENV = REPO / "deploy" / "auth_env.json"
+
+# Schlüssel, die nach Geheimnis aussehen. Die Datei liegt öffentlich im
+# Repo; ein versehentlich einsortierter Schlüssel wäre unwiderruflich
+# veröffentlicht, sobald jemand pusht. Deshalb bricht der Generator hier ab
+# statt zu warnen.
+VERDAECHTIG = ("KEY", "SECRET", "PASSWORD", "TOKEN", "DSN", "SMTP_PASS")
 
 
 def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def auth_env() -> dict:
+    """Die nicht-geheimen Server-Einstellungen aus deploy/auth_env.json.
+
+    Schlüssel mit führendem `_` sind Kommentar und fliegen raus.
+    """
+    roh = json.loads(AUTH_ENV.read_text(encoding="utf-8"))
+    werte = {k: v for k, v in roh.items() if not k.startswith("_")}
+    for k, v in werte.items():
+        if any(w in k.upper() for w in VERDAECHTIG):
+            raise SystemExit(
+                f"FEHLER: '{k}' sieht nach einem Geheimnis aus. "
+                f"deploy/auth_env.json liegt ÖFFENTLICH im Repo — "
+                f"Schlüssel und Zugangsdaten bleiben auf der VM.")
+        if not isinstance(v, str):
+            raise SystemExit(
+                f"FEHLER: '{k}' ist kein Text. Umgebungsvariablen sind "
+                f"immer Zeichenketten — auch \"true\".")
+    return werte
 
 
 def build() -> dict:
@@ -51,6 +78,9 @@ def build() -> dict:
                    "über raw.githubusercontent.com (Issue #74, Route A).",
         "migrations": migrations,
         "functions": functions,
+        # Issue #118: Was der Autodeploy gegen den laufenden auth-Container
+        # hält. Er MELDET Abweichungen, er schreibt nichts.
+        "auth_env": auth_env(),
     }
 
 
@@ -65,19 +95,22 @@ def main() -> int:
             return 1
         if MANIFEST.read_text() != rendered:
             print("FEHLER: deploy/manifest.json ist nicht aktuell — "
-                  "Migrationen oder Functions haben sich geändert.")
+                  "Migrationen, Functions oder Server-Einstellungen haben "
+                  "sich geändert.")
             print("Beheben: python3 tool/generate_deploy_manifest.py && "
                   "Ergebnis committen.")
             return 1
         print(f"OK: Manifest aktuell ({len(manifest['migrations'])} "
-              f"Migrationen, {len(manifest['functions'])} Function-Dateien).")
+              f"Migrationen, {len(manifest['functions'])} Function-Dateien, "
+              f"{len(manifest['auth_env'])} Server-Einstellungen).")
         return 0
 
     MANIFEST.parent.mkdir(exist_ok=True)
     MANIFEST.write_text(rendered)
     print(f"Geschrieben: {MANIFEST.relative_to(REPO)} "
           f"({len(manifest['migrations'])} Migrationen, "
-          f"{len(manifest['functions'])} Function-Dateien).")
+          f"{len(manifest['functions'])} Function-Dateien, "
+          f"{len(manifest['auth_env'])} Server-Einstellungen).")
     return 0
 
 

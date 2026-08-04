@@ -414,7 +414,10 @@ alle 10 Minuten) startet [tool/vm/fwapp_autodeploy.sh](../tool/vm/fwapp_autodepl
    `postgres` + `NOTIFY pgrst`,
 4. gleicht die Edge-Function-Dateien per SHA-256 ab und startet bei
    Änderungen den functions-Container neu (Sicherung als `.bak-autodeploy`),
-5. gleicht die **Web-App** mit dem `web-dist`-Branch ab (den befüllt der
+5. hält die **Server-Einstellungen** aus `auth_env` im Manifest gegen
+   `docker exec supabase-auth env` — und **meldet** Abweichungen, statt sie
+   anzuwenden (siehe unten),
+6. gleicht die **Web-App** mit dem `web-dist`-Branch ab (den befüllt der
    Release-Lauf mit einem Tarball des fertigen Prod-Builds — Release-Assets
    wären von der IPv6-only-VM aus unerreichbar, `raw` ist der einzige Weg).
    Bei neuer Version: SHA-256 prüfen, entpacktes `version.json` gegen die
@@ -426,6 +429,41 @@ alle 10 Minuten) startet [tool/vm/fwapp_autodeploy.sh](../tool/vm/fwapp_autodepl
 
 Der Freigabe-Moment ist der **Merge auf main durch einen Menschen** — der
 Timer ist Zustellung, keine Entscheidung.
+
+### Server-Einstellungen, die Features tragen (Issue #118)
+
+Drei Funktionen hingen an GoTrue-Variablen, die **ausschließlich** in
+`~/supabase/docker-compose.override.yml` standen — und **zwei davon
+scheitern lautlos**: GoTrue verschickt dann seine englische Standardmail
+*mit Link*, ohne dass am Aufruf etwas fehlschlägt. Dokumentation ist eine
+Erinnerung, keine Prüfung.
+
+Der Soll-Zustand steht deshalb in [deploy/auth_env.json](../deploy/auth_env.json)
+und wandert von dort ins Manifest. Jeder Autodeploy-Lauf vergleicht ihn mit
+dem laufenden Container:
+
+- **Alles gleich** → eine Zeile im Log, sonst nichts.
+- **Abweichung** → die Einzelheiten stehen im Log *und* in
+  `~/autodeploy.auth-drift` (Schlüssel, Ist, Soll und der Befehl zum
+  Beheben). Sobald es wieder stimmt, verschwindet die Datei von selbst.
+
+⚠️ **Es wird gemeldet, nicht angewendet.** Der Autodeploy schreibt die
+compose-Datei nicht: Eine fehlende Mail-Betreffzeile darf nicht dazu führen,
+dass Migrationen und Web-Rollout stehen bleiben. Melden hätte alle drei
+Fälle gefangen und kann nichts kaputtmachen; automatisch schreiben und
+`auth` neu starten ist der viel größere Hammer und kann folgen, wenn sich
+das Melden bewährt hat.
+
+⚠️ **Nur Nicht-Geheimes.** `deploy/auth_env.json` liegt öffentlich im Repo.
+Der Generator bricht bei Schlüsseln ab, die nach Geheimnis aussehen
+(`…KEY`, `…SECRET`, `…PASSWORD`, `…TOKEN`); Brevo-Schlüssel, SMTP-Zugang und
+der Service-Role-Key bleiben auf der VM.
+
+Nach einer Änderung an den Variablen:
+
+```bash
+cd ~/supabase && sudo docker compose up -d auth
+```
 
 **Wenn etwas schiefgeht:** Der erste Fehler erzeugt `~/autodeploy.blocked`
 (mit Begründung) und alle weiteren Läufe tun nichts mehr — lieber stehen

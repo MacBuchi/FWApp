@@ -271,6 +271,19 @@ pauschales Formatieren in Feature-PRs.
   `supabase stop && supabase start` (Container neu anlegen). `cp` über die
   bestehende Datei erhält den Inode und geht durch.
 
+- ⚠️ **Der Mail-BETREFF ist ebenfalls eine Go-Vorlage.** GoTrue schickt
+  `GOTRUE_MAILER_SUBJECTS_*` durch dieselbe Template-Maschine wie den Rumpf,
+  `{{ .Data.… }}` wird dort also eingesetzt. In der Dokumentation steht das
+  nirgends — es ist am lokalen Stack gemessen (Platzhalter in
+  `supabase/config.toml`, Mail in Mailpit angesehen) und hängt seit v1.23.0
+  als Zusicherung im `einladungen_e2e_test`. Wer den Betreff ändert, ändert
+  ihn auf dem Server in `docker-compose.override.yml` — im Repo steht nur die
+  Fassung für den lokalen Stack.
+- ⚠️ **Vor einer Gegenprobe an einer Mailvorlage ODER am Betreff den Stack
+  neu starten**, nicht nur die Datei ändern: Sonst bleibt die Gegenprobe
+  fälschlich grün, weil GoTrue noch mit der alten Fassung arbeitet. Genau so
+  ist es beim Wehrnamen in der Überschrift passiert.
+
 - ⚠️ **Das Pixel XL im Testrig liegt quer** – `tester.view` meldet 683 × 411 dp.
   In dem flachen Fenster rutschen Listeneinträge unter die `NavigationBar`;
   `tester.tap(find.text(...))` trifft dann die Leiste, und der Test wandert

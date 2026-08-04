@@ -341,7 +341,16 @@ async function einladungVersenden(
       // wirklich bekommt, steht in `einladungen` — Metadaten darf der
       // Eingeladene bei eingeschalteter Selbstregistrierung selbst setzen.
       data: {
-        wehr: e.wehr ?? "deiner Feuerwehr",
+        // `titel` steht im Betreff UND als Überschrift in der Mail: Eine
+        // Einladung, die mit dem Namen der eigenen Wehr ankommt, sieht im
+        // Postfach nach Feuerwehr aus und nicht nach Werbung — genau das
+        // entscheidet, ob sie geöffnet wird.
+        //
+        // Bewusst hier fertig zusammengesetzt und nicht im Vorlagentext:
+        // Der Betreff ist eine Umgebungsvariable auf dem Server
+        // (GOTRUE_MAILER_SUBJECTS_INVITE) und driftet still (Issue #118).
+        // Je weniger Logik dort steht, desto weniger kann auseinanderlaufen.
+        titel: e.wehr ?? "FWApp",
         abteilung: e.abteilung,
         rolle: e.als_kommandant
           ? "Feuerwehrkommandant"

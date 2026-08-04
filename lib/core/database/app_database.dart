@@ -33,6 +33,11 @@ class Compartments extends Table {
   IntColumn get gridRow => integer().nullable()();
   IntColumn get gridCol => integer().nullable()();
   IntColumn get gridColSpan => integer().withDefault(const Constant(1))();
+
+  /// Fahrzeugseite für das Aufklappbild (Issue #126). Nullable, weil die
+  /// Seite bestehender Fächer niemand kennt — sie wird in der App
+  /// vorgeschlagen und bestätigt, nicht geraten.
+  TextColumn get seite => text().nullable()();
   DateTimeColumn get updatedAt =>
       dateTime().withDefault(currentDateAndTime)();
 }
@@ -683,7 +688,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -724,6 +729,12 @@ class AppDatabase extends _$AppDatabase {
             if (from >= 2) {
               await m.addColumn(syncMeta, syncMeta.lastTypeCursor);
             }
+          }
+          if (from < 6) {
+            // Fahrzeugseite je Fach (Issue #126). Nullable ohne Default —
+            // bestehende Fächer laufen unverändert weiter und landen in der
+            // Ansicht im Bereich „Ohne Seite", bis jemand sie zuordnet.
+            await m.addColumn(compartments, compartments.seite);
           }
         },
         beforeOpen: (details) async {

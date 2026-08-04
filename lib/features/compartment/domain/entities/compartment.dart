@@ -14,6 +14,11 @@ abstract class Compartment with _$Compartment {
     int? gridRow,
     int? gridCol,
     required int gridColSpan,
+
+    /// Fahrzeugseite für das Aufklappbild (Issue #126); `null` = noch nicht
+    /// zugeordnet. Werte: fahrerseite | beifahrerseite | heck | dach | front
+    /// (fahrzeug_seiten.dart).
+    String? seite,
     required DateTime updatedAt,
   }) = _Compartment;
 }

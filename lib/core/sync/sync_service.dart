@@ -269,6 +269,9 @@ class SyncService {
             gridRow: Value(_intOrNull(r['grid_row'])),
             gridCol: Value(_intOrNull(r['grid_col'])),
             gridColSpan: Value(_int(r['grid_col_span'])),
+            // Alt-Server ohne die Spalte liefert den Schlüssel gar nicht —
+            // dann bleibt die Seite leer statt den Pull scheitern zu lassen.
+            seite: Value(r['seite'] as String?),
             updatedAt: Value(_dt(r['updated_at'])),
           ));
     }
@@ -423,6 +426,7 @@ class SyncService {
             'grid_row': c.gridRow,
             'grid_col': c.gridCol,
             'grid_col_span': c.gridColSpan,
+            'seite': c.seite,
             'updated_at': _ts(c.updatedAt),
           }
       ],

@@ -14,7 +14,10 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Compartment {
 
- int get id; int get vehicleId; String get label; int get position; int? get gridRow; int? get gridCol; int get gridColSpan; DateTime get updatedAt;
+ int get id; int get vehicleId; String get label; int get position; int? get gridRow; int? get gridCol; int get gridColSpan;/// Fahrzeugseite für das Aufklappbild (Issue #126); `null` = noch nicht
+/// zugeordnet. Werte: fahrerseite | beifahrerseite | heck | dach | front
+/// (fahrzeug_seiten.dart).
+ String? get seite; DateTime get updatedAt;
 /// Create a copy of Compartment
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +28,16 @@ $CompartmentCopyWith<Compartment> get copyWith => _$CompartmentCopyWithImpl<Comp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Compartment&&(identical(other.id, id) || other.id == id)&&(identical(other.vehicleId, vehicleId) || other.vehicleId == vehicleId)&&(identical(other.label, label) || other.label == label)&&(identical(other.position, position) || other.position == position)&&(identical(other.gridRow, gridRow) || other.gridRow == gridRow)&&(identical(other.gridCol, gridCol) || other.gridCol == gridCol)&&(identical(other.gridColSpan, gridColSpan) || other.gridColSpan == gridColSpan)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Compartment&&(identical(other.id, id) || other.id == id)&&(identical(other.vehicleId, vehicleId) || other.vehicleId == vehicleId)&&(identical(other.label, label) || other.label == label)&&(identical(other.position, position) || other.position == position)&&(identical(other.gridRow, gridRow) || other.gridRow == gridRow)&&(identical(other.gridCol, gridCol) || other.gridCol == gridCol)&&(identical(other.gridColSpan, gridColSpan) || other.gridColSpan == gridColSpan)&&(identical(other.seite, seite) || other.seite == seite)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,vehicleId,label,position,gridRow,gridCol,gridColSpan,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,vehicleId,label,position,gridRow,gridCol,gridColSpan,seite,updatedAt);
 
 @override
 String toString() {
-  return 'Compartment(id: $id, vehicleId: $vehicleId, label: $label, position: $position, gridRow: $gridRow, gridCol: $gridCol, gridColSpan: $gridColSpan, updatedAt: $updatedAt)';
+  return 'Compartment(id: $id, vehicleId: $vehicleId, label: $label, position: $position, gridRow: $gridRow, gridCol: $gridCol, gridColSpan: $gridColSpan, seite: $seite, updatedAt: $updatedAt)';
 }
 
 
@@ -45,7 +48,7 @@ abstract mixin class $CompartmentCopyWith<$Res>  {
   factory $CompartmentCopyWith(Compartment value, $Res Function(Compartment) _then) = _$CompartmentCopyWithImpl;
 @useResult
 $Res call({
- int id, int vehicleId, String label, int position, int? gridRow, int? gridCol, int gridColSpan, DateTime updatedAt
+ int id, int vehicleId, String label, int position, int? gridRow, int? gridCol, int gridColSpan, String? seite, DateTime updatedAt
 });
 
 
@@ -62,7 +65,7 @@ class _$CompartmentCopyWithImpl<$Res>
 
 /// Create a copy of Compartment
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? vehicleId = null,Object? label = null,Object? position = null,Object? gridRow = freezed,Object? gridCol = freezed,Object? gridColSpan = null,Object? updatedAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? vehicleId = null,Object? label = null,Object? position = null,Object? gridRow = freezed,Object? gridCol = freezed,Object? gridColSpan = null,Object? seite = freezed,Object? updatedAt = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,vehicleId: null == vehicleId ? _self.vehicleId : vehicleId // ignore: cast_nullable_to_non_nullable
@@ -71,7 +74,8 @@ as String,position: null == position ? _self.position : position // ignore: cast
 as int,gridRow: freezed == gridRow ? _self.gridRow : gridRow // ignore: cast_nullable_to_non_nullable
 as int?,gridCol: freezed == gridCol ? _self.gridCol : gridCol // ignore: cast_nullable_to_non_nullable
 as int?,gridColSpan: null == gridColSpan ? _self.gridColSpan : gridColSpan // ignore: cast_nullable_to_non_nullable
-as int,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
+as int,seite: freezed == seite ? _self.seite : seite // ignore: cast_nullable_to_non_nullable
+as String?,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));
 }
@@ -157,10 +161,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  int vehicleId,  String label,  int position,  int? gridRow,  int? gridCol,  int gridColSpan,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  int vehicleId,  String label,  int position,  int? gridRow,  int? gridCol,  int gridColSpan,  String? seite,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Compartment() when $default != null:
-return $default(_that.id,_that.vehicleId,_that.label,_that.position,_that.gridRow,_that.gridCol,_that.gridColSpan,_that.updatedAt);case _:
+return $default(_that.id,_that.vehicleId,_that.label,_that.position,_that.gridRow,_that.gridCol,_that.gridColSpan,_that.seite,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -178,10 +182,10 @@ return $default(_that.id,_that.vehicleId,_that.label,_that.position,_that.gridRo
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  int vehicleId,  String label,  int position,  int? gridRow,  int? gridCol,  int gridColSpan,  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  int vehicleId,  String label,  int position,  int? gridRow,  int? gridCol,  int gridColSpan,  String? seite,  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _Compartment():
-return $default(_that.id,_that.vehicleId,_that.label,_that.position,_that.gridRow,_that.gridCol,_that.gridColSpan,_that.updatedAt);case _:
+return $default(_that.id,_that.vehicleId,_that.label,_that.position,_that.gridRow,_that.gridCol,_that.gridColSpan,_that.seite,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -198,10 +202,10 @@ return $default(_that.id,_that.vehicleId,_that.label,_that.position,_that.gridRo
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  int vehicleId,  String label,  int position,  int? gridRow,  int? gridCol,  int gridColSpan,  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  int vehicleId,  String label,  int position,  int? gridRow,  int? gridCol,  int gridColSpan,  String? seite,  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _Compartment() when $default != null:
-return $default(_that.id,_that.vehicleId,_that.label,_that.position,_that.gridRow,_that.gridCol,_that.gridColSpan,_that.updatedAt);case _:
+return $default(_that.id,_that.vehicleId,_that.label,_that.position,_that.gridRow,_that.gridCol,_that.gridColSpan,_that.seite,_that.updatedAt);case _:
   return null;
 
 }
@@ -213,7 +217,7 @@ return $default(_that.id,_that.vehicleId,_that.label,_that.position,_that.gridRo
 
 
 class _Compartment implements Compartment {
-  const _Compartment({required this.id, required this.vehicleId, required this.label, required this.position, this.gridRow, this.gridCol, required this.gridColSpan, required this.updatedAt});
+  const _Compartment({required this.id, required this.vehicleId, required this.label, required this.position, this.gridRow, this.gridCol, required this.gridColSpan, this.seite, required this.updatedAt});
   
 
 @override final  int id;
@@ -223,6 +227,10 @@ class _Compartment implements Compartment {
 @override final  int? gridRow;
 @override final  int? gridCol;
 @override final  int gridColSpan;
+/// Fahrzeugseite für das Aufklappbild (Issue #126); `null` = noch nicht
+/// zugeordnet. Werte: fahrerseite | beifahrerseite | heck | dach | front
+/// (fahrzeug_seiten.dart).
+@override final  String? seite;
 @override final  DateTime updatedAt;
 
 /// Create a copy of Compartment
@@ -235,16 +243,16 @@ _$CompartmentCopyWith<_Compartment> get copyWith => __$CompartmentCopyWithImpl<_
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Compartment&&(identical(other.id, id) || other.id == id)&&(identical(other.vehicleId, vehicleId) || other.vehicleId == vehicleId)&&(identical(other.label, label) || other.label == label)&&(identical(other.position, position) || other.position == position)&&(identical(other.gridRow, gridRow) || other.gridRow == gridRow)&&(identical(other.gridCol, gridCol) || other.gridCol == gridCol)&&(identical(other.gridColSpan, gridColSpan) || other.gridColSpan == gridColSpan)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Compartment&&(identical(other.id, id) || other.id == id)&&(identical(other.vehicleId, vehicleId) || other.vehicleId == vehicleId)&&(identical(other.label, label) || other.label == label)&&(identical(other.position, position) || other.position == position)&&(identical(other.gridRow, gridRow) || other.gridRow == gridRow)&&(identical(other.gridCol, gridCol) || other.gridCol == gridCol)&&(identical(other.gridColSpan, gridColSpan) || other.gridColSpan == gridColSpan)&&(identical(other.seite, seite) || other.seite == seite)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,vehicleId,label,position,gridRow,gridCol,gridColSpan,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,vehicleId,label,position,gridRow,gridCol,gridColSpan,seite,updatedAt);
 
 @override
 String toString() {
-  return 'Compartment(id: $id, vehicleId: $vehicleId, label: $label, position: $position, gridRow: $gridRow, gridCol: $gridCol, gridColSpan: $gridColSpan, updatedAt: $updatedAt)';
+  return 'Compartment(id: $id, vehicleId: $vehicleId, label: $label, position: $position, gridRow: $gridRow, gridCol: $gridCol, gridColSpan: $gridColSpan, seite: $seite, updatedAt: $updatedAt)';
 }
 
 
@@ -255,7 +263,7 @@ abstract mixin class _$CompartmentCopyWith<$Res> implements $CompartmentCopyWith
   factory _$CompartmentCopyWith(_Compartment value, $Res Function(_Compartment) _then) = __$CompartmentCopyWithImpl;
 @override @useResult
 $Res call({
- int id, int vehicleId, String label, int position, int? gridRow, int? gridCol, int gridColSpan, DateTime updatedAt
+ int id, int vehicleId, String label, int position, int? gridRow, int? gridCol, int gridColSpan, String? seite, DateTime updatedAt
 });
 
 
@@ -272,7 +280,7 @@ class __$CompartmentCopyWithImpl<$Res>
 
 /// Create a copy of Compartment
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? vehicleId = null,Object? label = null,Object? position = null,Object? gridRow = freezed,Object? gridCol = freezed,Object? gridColSpan = null,Object? updatedAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? vehicleId = null,Object? label = null,Object? position = null,Object? gridRow = freezed,Object? gridCol = freezed,Object? gridColSpan = null,Object? seite = freezed,Object? updatedAt = null,}) {
   return _then(_Compartment(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,vehicleId: null == vehicleId ? _self.vehicleId : vehicleId // ignore: cast_nullable_to_non_nullable
@@ -281,7 +289,8 @@ as String,position: null == position ? _self.position : position // ignore: cast
 as int,gridRow: freezed == gridRow ? _self.gridRow : gridRow // ignore: cast_nullable_to_non_nullable
 as int?,gridCol: freezed == gridCol ? _self.gridCol : gridCol // ignore: cast_nullable_to_non_nullable
 as int?,gridColSpan: null == gridColSpan ? _self.gridColSpan : gridColSpan // ignore: cast_nullable_to_non_nullable
-as int,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
+as int,seite: freezed == seite ? _self.seite : seite // ignore: cast_nullable_to_non_nullable
+as String?,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));
 }

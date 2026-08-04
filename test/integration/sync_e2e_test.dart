@@ -112,7 +112,10 @@ Future<void> main() async {
     final vehicleId = await adminDb.vehicleDao.insertVehicle(
         VehiclesCompanion.insert(name: 'LF 10 E2E', type: 'LF'));
     final compartmentId = await adminDb.compartmentDao.insertCompartment(
-        CompartmentsCompanion.insert(vehicleId: vehicleId, label: 'G1'));
+        CompartmentsCompanion.insert(
+            vehicleId: vehicleId,
+            label: 'G1',
+            seite: const Value('fahrerseite')));
     final equipmentId = await adminDb.equipmentDao.insertEquipment(
         EquipmentItemsCompanion.insert(name: 'Pressluftatmer E2E'));
     await adminDb.assignmentDao.insertAssignment(
@@ -148,6 +151,15 @@ Future<void> main() async {
     final assignments =
         await memberDb.assignmentDao.getByCompartment(compartmentId);
     expect(assignments.single.quantity, 4);
+
+    // Die Fahrzeugseite (Issue #126) muss den Weg über den Schnappschuss
+    // mitgehen — sonst sieht der Beladeplan auf jedem zweiten Gerät anders
+    // aus als auf dem, an dem er gepflegt wurde. Die Publish-Funktion füllt
+    // per `jsonb_populate_recordset` und zählt keine Spalten auf; genau
+    // deshalb gehört das hier geprüft und nicht angenommen.
+    final faecher = await memberDb.compartmentDao.getByVehicle(vehicleId);
+    expect(faecher.single.label, 'G1');
+    expect(faecher.single.seite, 'fahrerseite');
 
     final due = await memberDb.inspectionDao.watchDueSoon(
         withinDays: 10000).first;

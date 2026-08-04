@@ -16,7 +16,9 @@ import 'package:fwapp/core/sync/rollen.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/sync/sync_service.dart';
 import 'package:fwapp/core/widgets/abteilung_switcher.dart';
+import 'package:fwapp/features/home/presentation/providers/dashboard_providers.dart';
 import 'package:fwapp/features/profil/domain/avatar_konfiguration.dart';
+import 'package:fwapp/features/profil/domain/leistungsabzeichen.dart';
 import 'package:fwapp/features/profil/presentation/providers/profil_providers.dart';
 import 'package:fwapp/features/profil/presentation/widgets/fw_avatar.dart';
 import 'package:fwapp/features/settings/presentation/providers/settings_providers.dart';
@@ -399,10 +401,14 @@ class _ProfilTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final profil = ref.watch(meinProfilProvider).value;
     final name = profil?.name;
+    // Das Abzeichen kommt aus den Lernzahlen dieses Geräts (Issue #135).
+    // Fehlen sie noch, bleibt es weg — eine leere Stufe ist kein Fehler.
+    final level = ref.watch(lernLevelProvider);
     return ListTile(
       leading: FwAvatar(
         konfiguration: profil?.avatar ?? const AvatarKonfiguration(),
         groesse: 40,
+        abzeichen: level == null ? null : abzeichenFuerLevel(level),
       ),
       title: const Text('Mein Profil'),
       subtitle: Text(name == null

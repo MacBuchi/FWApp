@@ -16,8 +16,11 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
+import 'package:fwapp/features/home/presentation/providers/dashboard_providers.dart';
 import 'package:fwapp/features/profil/domain/avatar_konfiguration.dart';
+import 'package:fwapp/features/profil/domain/leistungsabzeichen.dart';
 import 'package:fwapp/features/profil/presentation/providers/profil_providers.dart';
+import 'package:fwapp/features/profil/presentation/widgets/abzeichen_zeile.dart';
 import 'package:fwapp/features/profil/presentation/widgets/fw_avatar.dart';
 
 class ProfilScreen extends ConsumerStatefulWidget {
@@ -81,6 +84,9 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
     _uebernimm(profilAsync.value);
     final profil = profilAsync.value;
     final email = ref.watch(sessionStreamProvider).value?.user.email;
+    // Lernzahlen dieses Geräts (Issue #135). Bevor sie geladen sind, steht
+    // hier nichts — kein Platzhalter, der später etwas anderes behauptet.
+    final level = ref.watch(lernLevelProvider);
     final theme = Theme.of(context);
     final kannSpeichern = profil?.serverKenntProfil ?? false;
 
@@ -92,7 +98,11 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
           Center(
             child: Column(
               children: [
-                FwAvatar(konfiguration: _avatar, groesse: 132),
+                FwAvatar(
+                  konfiguration: _avatar,
+                  groesse: 132,
+                  abzeichen: level == null ? null : abzeichenFuerLevel(level),
+                ),
                 const SizedBox(height: 8),
                 Text(
                   _name.text.trim().isEmpty
@@ -106,6 +116,11 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
                     'Angemeldet als $email',
                     style: theme.textTheme.bodySmall,
                     textAlign: TextAlign.center,
+                  ),
+                if (level != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: AbzeichenZeile(level: level),
                   ),
               ],
             ),

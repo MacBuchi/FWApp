@@ -37,6 +37,15 @@ Drei Festlegungen dazu:
 - **Truppführer/Truppmann** unterscheidet technisch „hat ein Konto" von
   „ist Gast" — nicht den realen Dienstgrad. Ein echter Truppführer, der den
   Gastzugang nutzt, erscheint als Truppmann; das ist Absicht und kein Bug.
+- **Erlerntes ist kein Dienstgrad** (Issue #135). Wer viel übt, bekommt ein
+  **Leistungsabzeichen in Bronze, Silber oder Gold** an den Avatar —
+  ausdrücklich *keine* Schulterklappen mit Sternen und Balken. Die
+  bezeichnen ein Amt mit echter Weisungsbefugnis; ein Truppmann, der sich
+  drei Sterne erspielt, sähe auf einem Bildschirm in der Fahrzeughalle aus
+  wie ein Brandmeister. Dieselbe Grenze wie beim Kunstnamen oben und beim
+  weggelassenen „AGT" am Avatar. Die Stufe ist **rein lokal** — sie entsteht
+  aus den Lernergebnissen dieses Geräts und steht deshalb nur am eigenen
+  Kopf, nicht in der Nutzerverwaltung.
 
 ## 3. Grundsätze
 

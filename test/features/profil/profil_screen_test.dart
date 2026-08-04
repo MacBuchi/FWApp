@@ -10,7 +10,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
+import 'package:fwapp/features/home/presentation/providers/dashboard_providers.dart';
 import 'package:fwapp/features/profil/domain/avatar_konfiguration.dart';
+import 'package:fwapp/features/profil/domain/leistungsabzeichen.dart';
 import 'package:fwapp/features/profil/presentation/providers/profil_providers.dart';
 import 'package:fwapp/features/profil/presentation/screens/profil_screen.dart';
 import 'package:fwapp/features/profil/presentation/widgets/fw_avatar.dart';
@@ -63,7 +65,11 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Widget host({MeinProfil? profil}) => buildTestApp(
+  /// [level] setzt das Lern-Level fest (Issue #135). Ohne Angabe `null` =
+  /// „noch nicht geladen" — dann verhält sich der Screen wie vor dem
+  /// Abzeichen, und die übrigen Prüfungen hier bleiben von der Lern-Datenbank
+  /// unabhängig.
+  Widget host({MeinProfil? profil, int? level}) => buildTestApp(
         db: db,
         home: const ProfilScreen(),
         overrides: [
@@ -73,6 +79,7 @@ void main() {
               profil ??
               const MeinProfil(username: 'wart.stadt', serverKenntProfil: true)),
           profilServiceProvider.overrideWithValue(service),
+          lernLevelProvider.overrideWithValue(level),
         ],
       );
 
@@ -97,6 +104,38 @@ void main() {
     expect(_vorschau(tester), kopf);
     // Zweimal: als Überschrift über dem Kopf und im Eingabefeld.
     expect(find.text('Marcus B.'), findsNWidgets(2));
+  });
+
+  testWidgets('das erlernte Abzeichen hängt am eigenen Kopf — und nur dort',
+      (tester) async {
+    // Issue #135. Die 36 Vorlagen darunter sind ein Katalog, kein Mensch, der
+    // etwas geleistet hätte — ein Abzeichen an ihnen wäre schlicht falsch.
+    await zeige(tester, host(level: 8));
+
+    final koepfe = tester.widgetList<FwAvatar>(find.byType(FwAvatar));
+    final eigener = koepfe.firstWhere((a) => a.groesse > 100);
+    expect(eigener.abzeichen, Leistungsabzeichen.silber);
+    expect(
+      koepfe.where((a) => a.groesse <= 100).map((a) => a.abzeichen).toSet(),
+      {null},
+    );
+
+    // Und darunter steht im Klartext, was die Marke bedeutet.
+    expect(find.text('Leistungsabzeichen in Silber'), findsOneWidget);
+    expect(find.text('Noch 7 Level bis Gold.'), findsOneWidget);
+  });
+
+  testWidgets('ohne geladene Lernzahlen bleibt der Kopf ohne Marke',
+      (tester) async {
+    await zeige(tester, host());
+    expect(
+      tester
+          .widgetList<FwAvatar>(find.byType(FwAvatar))
+          .map((a) => a.abzeichen)
+          .toSet(),
+      {null},
+    );
+    expect(find.textContaining('Leistungsabzeichen'), findsNothing);
   });
 
   testWidgets('eine Vorlage antippen übernimmt den Kopf — aber NICHT den Namen',

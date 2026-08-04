@@ -12,6 +12,30 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.20.0] – 2026-08-04
+
+### Neu
+
+- **Eigener Anzeigename und eigener Avatar.** Unter *Einstellungen → Mein
+  Profil* legst du fest, wie du in der Nutzerverwaltung stehst: mit deinem
+  Namen statt mit der Kennung vom Zugangszettel, und mit einem Kopf, den du
+  dir aussuchst. 36 fertige Köpfe stehen bereit — vom Atemschutzgeräteträger
+  über den Maschinisten bis zum Dalmatiner — und wer mag, stellt sich im
+  Baukasten seinen eigenen zusammen: Helm, Augen, Mund, Bart, Hautton,
+  Haarfarbe, Hintergrund. „Zufällig würfeln" geht auch.
+
+### Gut zu wissen
+
+- **Der Kopf ist gezeichnet, kein Foto.** Gespeichert werden acht Werte, kein
+  Bild. Das lädt nichts hoch, braucht kein Netz zum Anzeigen und legt kein
+  Gesicht einer echten Person in der Datenbank ab.
+- **Dein Nutzername bleibt, wie er ist.** Er ist die Anmeldung und wird
+  weiterhin vom Kommandanten vergeben; in der Nutzerverwaltung steht er
+  neben deinem Anzeigenamen, damit beim Passwort-Zurücksetzen klar bleibt,
+  wer gemeint ist.
+- **Beides gehört dir.** Anzeigename und Avatar kann nur das Konto selbst
+  setzen — auch der Kommandant nicht.
+
 ## [1.19.0] – 2026-08-04
 
 ### Neu

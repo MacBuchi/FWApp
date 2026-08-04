@@ -14,6 +14,7 @@ import 'package:go_router/go_router.dart';
 import 'package:fwapp/features/auth/presentation/screens/change_password_screen.dart';
 import 'package:fwapp/features/auth/presentation/screens/login_screen.dart';
 import 'package:fwapp/features/auth/presentation/screens/zwei_faktor_screen.dart';
+import 'package:fwapp/features/profil/presentation/screens/profil_screen.dart';
 import 'package:fwapp/features/settings/presentation/screens/server_settings_screen.dart';
 import 'package:fwapp/features/home/presentation/screens/home_screen.dart';
 import 'package:fwapp/features/home/presentation/screens/more_screen.dart';
@@ -115,6 +116,9 @@ String? guardRedirect({
   if (_editRoutePattern.hasMatch(path) && !canEdit) return '/';
   // Nutzerverwaltung braucht wie die Mehr-Kachel Admin UND Serververbindung.
   if (path == '/user-management' && !(isAdmin && supabaseReady)) return '/';
+  // Mein Profil (#100) hängt am Konto, nicht an einer Rolle — aber ohne
+  // Server gibt es kein Konto und damit nichts zu pflegen.
+  if (path == '/profil' && !supabaseReady) return '/';
   // Abteilung & Gesamtwehr (#57 Phase 3): Server UND Schreibrecht. Bewusst
   // canEdit statt isAdmin — den Anschluss beantragt auch der Gerätewart, nur
   // entscheiden darf er nicht (das prüft der Server).
@@ -303,6 +307,10 @@ final _routes = [
         GoRoute(
           path: '/user-management',
           builder: (_, _) => const UserManagementScreen(),
+        ),
+        GoRoute(
+          path: '/profil',
+          builder: (_, _) => const ProfilScreen(),
         ),
         GoRoute(
           path: '/gesamtwehr',

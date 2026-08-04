@@ -16,6 +16,7 @@ import 'package:fwapp/core/sync/membership_providers.dart';
 import 'package:fwapp/core/sync/rollen.dart';
 import 'package:fwapp/core/sync/temp_rechte_providers.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
+import 'package:fwapp/features/profil/presentation/widgets/fw_avatar.dart';
 import 'package:fwapp/features/settings/presentation/providers/einladung_providers.dart';
 import 'package:fwapp/features/settings/presentation/providers/user_admin_providers.dart';
 
@@ -516,6 +517,54 @@ class _EinladungenAbschnitt extends ConsumerWidget {
   }
 }
 
+/// Der Kopf des Kontos mit der Rolle als kleinem Abzeichen (Issue #100).
+///
+/// Beides zusammen, weil beides gebraucht wird: Das Gesicht macht die Liste
+/// im Gerätehaus lesbar, das Abzeichen beantwortet die Frage, für die man in
+/// die Nutzerverwaltung geht. Der Kopf allein wäre hübsch und nutzlos.
+class _KontoAvatar extends StatelessWidget {
+  const _KontoAvatar({required this.user, required this.rollenIcon});
+
+  final ManagedUser user;
+  final IconData rollenIcon;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return SizedBox(
+      width: 40,
+      height: 40,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          // Gesperrte Konten verlieren die Farbe: Die Zeile ist ohnehin
+          // durchgestrichen, ein fröhlicher Kopf daneben widerspricht dem.
+          Opacity(
+            opacity: user.banned ? 0.4 : 1,
+            child: FwAvatar(konfiguration: user.avatarKopf, groesse: 40),
+          ),
+          Positioned(
+            right: -2,
+            bottom: -2,
+            child: Container(
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                color: scheme.surface,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                rollenIcon,
+                size: 14,
+                color: user.banned ? Colors.red : scheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _UserTile extends ConsumerWidget {
   final ManagedUser user;
   const _UserTile({required this.user});
@@ -569,6 +618,11 @@ class _UserTile extends ConsumerWidget {
         if (abteilungen.isNotEmpty)
           abteilungsName(user.abteilungId, abteilungen),
       ],
+      // Der Nutzername ist die ANMELDUNG. Sobald jemand einen eigenen
+      // Anzeigenamen gewählt hat, steht oben dieser — dann gehört der
+      // Nutzername sichtbar daneben, sonst weiss der Kommandant beim
+      // Zurücksetzen nicht mehr, wem er den Zettel gibt.
+      if (user.anzeige != user.username) user.username,
       if (echteMail) user.email,
       if (laufendesRecht != null)
         'Übungsrechte bis ${_fmtUhr(laufendesRecht.laeuftAb)}',
@@ -585,8 +639,9 @@ class _UserTile extends ConsumerWidget {
     final kommandantZiel = _kommandantZiel(meineKommandos, abteilungen);
 
     return ListTile(
-      leading: Icon(
-        user.banned
+      leading: _KontoAvatar(
+        user: user,
+        rollenIcon: user.banned
             ? Icons.block
             : istKommandant
                 ? Icons.local_fire_department
@@ -595,9 +650,8 @@ class _UserTile extends ConsumerWidget {
                     'geraetewart' => Icons.build_circle,
                     _ => Icons.person,
                   },
-        color: user.banned ? Colors.red : null,
       ),
-      title: Text(user.username,
+      title: Text(user.anzeige,
           style: user.banned
               ? const TextStyle(decoration: TextDecoration.lineThrough)
               : null),

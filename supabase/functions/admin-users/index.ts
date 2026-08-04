@@ -388,7 +388,7 @@ async function listUsers(caller: Caller): Promise<unknown[]> {
   const [authResp, profResp, memResp, komResp, abtResp] = await Promise.all([
     serviceFetch("/auth/v1/admin/users?per_page=200"),
     serviceFetch(
-      "/rest/v1/profiles?select=id,role,must_change_password,abteilung_id,username",
+      "/rest/v1/profiles?select=id,role,must_change_password,abteilung_id,username,anzeigename,avatar",
     ),
     serviceFetch("/rest/v1/memberships?select=user_id,abteilung_id,role"),
     serviceFetch("/rest/v1/gesamtwehr_kommandanten?select=user_id,gesamtwehr_id"),
@@ -412,6 +412,8 @@ async function listUsers(caller: Caller): Promise<unknown[]> {
         must_change_password: boolean;
         abteilung_id: string | null;
         username: string | null;
+        anzeigename: string | null;
+        avatar: string | null;
       },
     ) => [p.id, p]),
   );
@@ -481,6 +483,8 @@ async function listUsers(caller: Caller): Promise<unknown[]> {
           must_change_password: boolean;
           abteilung_id: string | null;
           username: string | null;
+          anzeigename: string | null;
+          avatar: string | null;
         }
         | undefined;
       const bannedUntil = u.banned_until as string | undefined;
@@ -501,6 +505,10 @@ async function listUsers(caller: Caller): Promise<unknown[]> {
         banned: bannedUntil != null && new Date(bannedUntil) > new Date(),
         last_sign_in_at: u.last_sign_in_at ?? null,
         abteilung_id: p?.abteilung_id ?? null,
+        // Selbst gewählt (Issue #100), deshalb hier nur mitgelesen: Setzen
+        // kann sie ausschliesslich das Konto selbst über mein_profil_setzen.
+        anzeigename: p?.anzeigename ?? null,
+        avatar: p?.avatar ?? null,
         memberships: membershipsByUser.get(u.id as string) ?? [],
         kommandant_gesamtwehren: kommandantByUser.get(u.id as string) ?? [],
       };

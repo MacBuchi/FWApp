@@ -14,6 +14,8 @@ library;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/logging/app_logger.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
+import 'package:fwapp/features/settings/domain/zustellung.dart';
+import 'package:fwapp/features/settings/presentation/providers/user_admin_providers.dart';
 
 /// Eine noch offene Einladung.
 class Einladung {
@@ -76,5 +78,82 @@ final offeneEinladungenProvider =
   } catch (e) {
     appLog.i('Einladungen nicht ladbar (Server ohne Stufe 3?)', error: e);
     return const [];
+  }
+});
+
+/// Was der Server über die Zustellung der offenen Einladungen weiß
+/// (Issue #121).
+class Zustellstand {
+  /// `false`, wenn der Server gar nicht fragen konnte — kein Brevo-Schlüssel
+  /// hinterlegt, Brevo nicht erreichbar, Schlüssel abgelehnt. Dann steht in
+  /// der Liste „nicht prüfbar" und ausdrücklich nicht „alles in Ordnung".
+  final bool verfuegbar;
+  final String? grund;
+
+  /// Wie viele Einladungen der Server nicht mehr abgefragt hat (Obergrenze
+  /// je Aufruf). Wird angezeigt statt verschwiegen.
+  final int gekuerzt;
+
+  final Map<String, Zustellung> proEinladung;
+
+  const Zustellstand({
+    required this.verfuegbar,
+    required this.gekuerzt,
+    required this.proEinladung,
+    this.grund,
+  });
+
+  static const leer =
+      Zustellstand(verfuegbar: false, gekuerzt: 0, proEinladung: {});
+
+  Zustellung fuer(String einladungId) =>
+      proEinladung[einladungId] ?? Zustellung.unbekannt;
+}
+
+/// Fragt die Edge Function nach den Brevo-Ereignissen der offenen
+/// Einladungen und ordnet sie ein.
+///
+/// Getrennt von [offeneEinladungenProvider], weil die Liste aus der Tabelle
+/// sofort da ist und der Umweg über Brevo Sekunden dauern kann: Die
+/// Einladungen sollen nicht auf die Zustellung warten. Solange nichts
+/// geladen ist, steht schlicht keine Zustellzeile da.
+final einladungZustellungProvider =
+    FutureProvider.autoDispose<Zustellstand>((ref) async {
+  final client = ref.watch(supabaseClientProvider);
+  final session = ref.watch(sessionStreamProvider).value;
+  // Hängt an der Liste: Nach jedem Einladen, Zurückziehen oder erneuten
+  // Senden ist der alte Zustellstand hinfällig.
+  final einladungen = ref.watch(offeneEinladungenProvider).value ?? const [];
+  if (client == null || session == null || einladungen.isEmpty) {
+    return Zustellstand.leer;
+  }
+  try {
+    final daten =
+        await invokeAdminUsers(client, {'action': 'invite_status'});
+    final roh = (daten['zustellungen'] as Map?) ?? const {};
+    return Zustellstand(
+      verfuegbar: daten['verfuegbar'] == true,
+      grund: daten['grund'] as String?,
+      gekuerzt: (daten['gekuerzt'] as num?)?.toInt() ?? 0,
+      proEinladung: {
+        for (final eintrag in roh.entries)
+          eintrag.key as String: zustellungAus([
+            for (final e in (eintrag.value as List? ?? const []))
+              if (DateTime.tryParse(
+                      (e as Map)['zeit'] as String? ?? '') !=
+                  null)
+                Zustellereignis(
+                  art: e['art'] as String? ?? '',
+                  zeit: DateTime.parse(e['zeit'] as String),
+                  grund: e['grund'] as String?,
+                ),
+          ]),
+      },
+    );
+  } catch (e) {
+    // Ein alter Server kennt die Aktion nicht — genau derselbe Umgang wie
+    // bei der Liste selbst: kein Fehlerbildschirm, nur keine Auskunft.
+    appLog.i('Zustellung nicht abfragbar (Server ohne Issue #121?)', error: e);
+    return Zustellstand.leer;
   }
 });

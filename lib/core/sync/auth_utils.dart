@@ -25,6 +25,27 @@ final _usernameRe = RegExp(r'^[a-z0-9](?:[a-z0-9._-]{1,30})[a-z0-9]$');
 bool isValidUsername(String username) =>
     _usernameRe.hasMatch(username.trim().toLowerCase());
 
+/// Ein Nutzername-Vorschlag aus einer E-Mail-Adresse (Issue #121).
+///
+/// Gebraucht, wenn eine Einladung nicht zugestellt werden konnte und
+/// stattdessen ein Zettel-Konto entsteht: Der lokale Teil der Adresse ist
+/// die bessere Quelle als der Anzeigename — ihn hat die Person selbst
+/// gewählt, und er bringt keine Umlaute und Leerzeichen mit.
+///
+/// Bleibt nichts Gültiges übrig, kommt der leere Text zurück. Ein
+/// zurechtgebogener Vorschlag wäre schlimmer als ein leeres Feld: Der
+/// Nutzername steht auf dem Zettel, den jemand abtippen muss.
+String zugangsnameVorschlag(String email) {
+  final sauber = email
+      .split('@')
+      .first
+      .toLowerCase()
+      .replaceAll(RegExp(r'[^a-z0-9._-]'), '')
+      // Rand alphanumerisch, siehe _usernameRe.
+      .replaceAll(RegExp(r'^[._-]+|[._-]+$'), '');
+  return isValidUsername(sauber) ? sauber : '';
+}
+
 /// Ist das eine echte, zustellbare Adresse — oder die interne Zettel-Form?
 ///
 /// `<name>@fw.local` existiert nur, weil GoTrue eine E-Mail als Kennung

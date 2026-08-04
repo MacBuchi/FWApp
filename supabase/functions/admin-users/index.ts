@@ -30,6 +30,9 @@
 //   invite        {email, anzeigename?, abteilung_id, role, als_kommandant?}
 //   invite_resend {einladung_id}
 //   invite_revoke {einladung_id}
+//   invite_status                     → {verfuegbar, grund?, gekuerzt,
+//                                        zustellungen: {<einladung_id>:
+//                                          [{art, zeit, grund}]}}
 // Selbst-Schutz: eigene Rollen/Mitgliedschaften/Sperre/Löschung sind tabu.
 //
 // Rechte-Hierarchie (docs/NUTZERKONZEPT.md §2):
@@ -58,6 +61,20 @@
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
+// Zustellauskunft (Issue #121) — die Adresse der Mail-Brücke, NICHT die von
+// Brevo.
+//
+// ⚠️ Zwei Gründe, warum hier kein Brevo-Schlüssel steht:
+// 1. **Es ginge gar nicht.** Diese VM hat kein IPv4, api.brevo.com hat IPv6
+//    — aber Docker-Bridge-Netze auf ihr haben keinen IPv6-Ausgang (gemessen
+//    2026-08-01: Bridge-Netz 000, Host-Netz 401). Genau deshalb existiert
+//    die Mail-Brücke auf dem Host; die Auskunft nimmt denselben Weg.
+// 2. Der Schlüssel bleibt damit, wo er ohnehin schon liegt
+//    (`~/brevo-api-key.txt`, chmod 600) und kommt nie in einen Container.
+//
+// Bewusst KEIN `!`: Der lokale Stack hat die Brücke nie, und ein Absturz
+// beim Start wäre eine schlechte Art, das mitzuteilen.
+const BREVO_EVENTS_URL = Deno.env.get("BREVO_EVENTS_URL") ?? "";
 
 const CORS: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
@@ -371,6 +388,108 @@ async function einladungVersenden(
       body: JSON.stringify({ ziel: einladungId, konto: angelegt.id }),
     });
   }
+}
+
+// ── Zustellung: was Brevo über die Einladungsmails weiss (Issue #121) ─────
+//
+// Der Anlass: Eine Einladung wurde von Brevo verworfen (`softBounces`,
+// „Internal Error: DKIM Bad request"), die andere kam an — in der App sahen
+// beide gleich aus. Wer wartet, wartet damit auf etwas, das nie kommt.
+//
+// ⚠️ Die Adressen kommen aus `einladungen`, gelesen mit dem JWT des
+// Aufrufers, und NICHT aus dem Aufruf-Body. Nähme diese Aktion eine
+// Adressliste entgegen, könnte jeder Verwalter Brevo nach beliebigen
+// fremden Adressen fragen — ob dort etwas geprellt ist, geht ihn nichts an.
+//
+// ⚠️ Das URTEIL fällt hier nicht. Diese Funktion liefert nur die
+// eingedampften Ereignisse; ob daraus „zugestellt" oder „unzustellbar"
+// wird, entscheidet `lib/features/settings/domain/zustellung.dart` — dort
+// lässt es sich prüfen, hier nicht.
+
+/// Ereignisarten, die etwas über die ZUSTELLUNG sagen.
+///
+/// ⚠️ `opened` und `clicks` fehlen mit Absicht. Gemessen: acht Sekunden
+/// nach dem Versand meldete Brevo `opened`, während der Empfänger
+/// nachweislich nicht las — der Scanner des Postfachs. Weitergereicht würde
+/// daraus früher oder später ein „gelesen" auf dem Bildschirm, und das wäre
+/// schlicht falsch.
+const ZUSTELL_ARTEN = new Set([
+  "requests",
+  "delivered",
+  "deferred",
+  "softBounces",
+  "hardBounces",
+  "blocked",
+  "invalid",
+  "spam",
+  "error",
+]);
+
+/// Obergrenze je Aufruf. Mehr offene Einladungen bedeuten mehr Anfragen an
+/// Brevo; was wegfällt, wird gemeldet (`gekuerzt`) und nicht verschwiegen.
+const MAX_ZUSTELL_ABFRAGEN = 25;
+
+/// Zeitliche Toleranz beim Zuschneiden auf „seit der Einladung": Die
+/// Zeilenzeit kommt von Postgres, die Ereigniszeit von Brevo. Ohne den
+/// Vorlauf fiele das `requests`-Ereignis bei minimal auseinanderlaufenden
+/// Uhren aus dem Fenster.
+const ZUSTELL_VORLAUF_MS = 60_000;
+
+async function offeneEinladungen(
+  req: Request,
+): Promise<{ id: string; email: string; created_at: string }[]> {
+  const resp = await fetch(
+    `${SUPABASE_URL}/rest/v1/einladungen` +
+      `?select=id,email,created_at` +
+      `&angenommen_am=is.null&zurueckgezogen_am=is.null&order=created_at`,
+    {
+      headers: {
+        apikey: ANON_KEY,
+        Authorization: req.headers.get("Authorization") ?? "",
+      },
+    },
+  );
+  if (!resp.ok) {
+    throw new Error(`Einladungen lesen fehlgeschlagen: ${resp.status}`);
+  }
+  return await resp.json();
+}
+
+/// Brevos Ereignisse zu einer Adresse — geholt über die Mail-Brücke —,
+/// zugeschnitten auf das Fenster seit der Einladung.
+///
+/// ⚠️ Das Fenster ist die einzige Zuordnung, die wir haben: Brevo vergibt
+/// die Message-Id, GoTrue verschickt über SMTP, wir sehen sie nie. Zu einer
+/// Adresse, die noch kein Konto hat, geht in diesem Fenster praktisch nur
+/// die Einladung — aber wer hier später etwas anderes hinschickt, muss
+/// wissen, dass dessen Ereignisse mitzählen.
+async function brevoEreignisse(
+  email: string,
+  seit: string,
+): Promise<{ art: string; zeit: string; grund: string | null }[]> {
+  const grenze = Date.parse(seit) - ZUSTELL_VORLAUF_MS;
+  const tage = Math.min(
+    30,
+    Math.max(1, Math.ceil((Date.now() - grenze) / 86_400_000) + 1),
+  );
+  const resp = await fetch(
+    `${BREVO_EVENTS_URL}?email=${encodeURIComponent(email)}&days=${tage}`,
+    { headers: { accept: "application/json" } },
+  );
+  if (!resp.ok) throw new Error(`Mail-Brücke antwortete ${resp.status}`);
+  const daten = await resp.json() as {
+    events?: { event?: string; date?: string; reason?: string }[];
+  };
+  return (daten.events ?? [])
+    .filter((ev) =>
+      typeof ev.event === "string" && ZUSTELL_ARTEN.has(ev.event) &&
+      typeof ev.date === "string" && Date.parse(ev.date) >= grenze
+    )
+    .map((ev) => ({
+      art: ev.event!,
+      zeit: ev.date!,
+      grund: ev.reason ?? null,
+    }));
 }
 
 async function upsertMembership(
@@ -914,6 +1033,42 @@ Deno.serve(async (req: Request) => {
           });
         }
         return json({ ok: true });
+      }
+
+      case "invite_status": {
+        const alle = await offeneEinladungen(req);
+        const liste = alle.slice(0, MAX_ZUSTELL_ABFRAGEN);
+        const gekuerzt = alle.length - liste.length;
+        if (BREVO_EVENTS_URL === "") {
+          // Keine Brücke ist kein Fehler: Der lokale Stack hat nie eine,
+          // und eine Nutzerverwaltung, die deshalb rot wird, hilft niemandem.
+          return json({
+            verfuegbar: false,
+            grund: "keine BREVO_EVENTS_URL auf dem Server",
+            zustellungen: {},
+            gekuerzt,
+          });
+        }
+        try {
+          const paare = await Promise.all(
+            liste.map(async (e) =>
+              [e.id, await brevoEreignisse(e.email, e.created_at)] as const
+            ),
+          );
+          const zustellungen: Record<string, unknown> = {};
+          for (const [id, ereignisse] of paare) zustellungen[id] = ereignisse;
+          return json({ verfuegbar: true, zustellungen, gekuerzt });
+        } catch (e) {
+          // Brücke nicht erreichbar, Brevo abweisend, Schlüssel abgelehnt.
+          // Auch das ist kein Grund, den Bildschirm scheitern zu lassen — es
+          // ist ein Grund, „nicht prüfbar" zu sagen statt „alles in Ordnung".
+          return json({
+            verfuegbar: false,
+            grund: String(e),
+            zustellungen: {},
+            gekuerzt,
+          });
+        }
       }
 
       default:

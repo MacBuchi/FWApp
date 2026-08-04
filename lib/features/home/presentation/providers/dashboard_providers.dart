@@ -12,6 +12,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// XP needed per level; deliberately simple and transparent.
 const kXpPerLevel = 500;
 
+/// Die Lern-Rechnung, an genau einer Stelle: zehn XP je richtiger Antwort,
+/// 500 XP je Level. Seit Issue #135 hängt daran auch das Leistungsabzeichen —
+/// hätte das seine eigene Rechnung, stünden zwei Zahlen in der App, die sich
+/// widersprechen können.
+int xpAusErgebnissen(Iterable<QuizResultData> results) =>
+    results.fold<int>(0, (sum, r) => sum + r.score * 10);
+
+int levelFuerXp(int xp) => xp ~/ kXpPerLevel + 1;
+
 class LearnSuggestion {
   final int vehicleId;
   final String vehicleName;
@@ -51,6 +60,22 @@ class DashboardStats {
     required this.recentResults,
   });
 }
+
+/// Nur das Lern-Level — für alles, was bloß das Leistungsabzeichen zeigen
+/// will (Issue #135).
+///
+/// ⚠️ **Nicht [dashboardStatsProvider] dafür benutzen.** Der durchsucht für
+/// seine „Weiterlernen"-Empfehlung jedes Fahrzeug, jedes Fach und jede
+/// Zuordnung. Das ist auf der Startseite richtig und in einer
+/// Einstellungs-Kachel Verschwendung — und es zog den Profil-Screen, der
+/// vorher ohne Datenbank auskam, in die halbe App hinein.
+///
+/// `null` heißt „noch nicht geladen", nicht „Level 0": Ein Platzhalter, der
+/// gleich etwas anderes behauptet, ist schlimmer als eine kurze Lücke.
+final lernLevelProvider = Provider<int?>((ref) {
+  final results = ref.watch(quizResultsStreamProvider).value;
+  return results == null ? null : levelFuerXp(xpAusErgebnissen(results));
+});
 
 final quizResultsStreamProvider = StreamProvider<List<QuizResultData>>(
     (ref) => ref.watch(quizDaoProvider).watchAll());
@@ -104,8 +129,8 @@ final dashboardStatsProvider = FutureProvider<DashboardStats>((ref) async {
   }
 
   // ── XP & Level ──
-  final xp = results.fold<int>(0, (sum, r) => sum + r.score * 10);
-  final level = xp ~/ kXpPerLevel + 1;
+  final xp = xpAusErgebnissen(results);
+  final level = levelFuerXp(xp);
   final levelProgress = (xp % kXpPerLevel) / kXpPerLevel;
 
   // ── Weekly goal (week starts Monday) ──

@@ -522,6 +522,14 @@ class _EinladungenAbschnitt extends ConsumerWidget {
 /// Beides zusammen, weil beides gebraucht wird: Das Gesicht macht die Liste
 /// im Gerätehaus lesbar, das Abzeichen beantwortet die Frage, für die man in
 /// die Nutzerverwaltung geht. Der Kopf allein wäre hübsch und nutzlos.
+///
+/// ⚠️ **Hier steht bewusst KEIN Leistungsabzeichen** (Issue #135), obwohl
+/// überall sonst der Kopf eines trägt: Die Stufe entsteht aus Lernergebnissen,
+/// und die liegen ausschließlich auf dem jeweils eigenen Gerät — `kSyncedTables`
+/// deckt nur den Bestand ab. Für fremde Konten gäbe es die Zahl also gar
+/// nicht; sichtbar wäre entweder eine Lücke bei allen außer einem oder eine
+/// erfundene Stufe. Wer das ändern will, ändert zuerst, welche Daten das
+/// Gerät verlassen — dafür gibt es Issue #136.
 class _KontoAvatar extends StatelessWidget {
   const _KontoAvatar({required this.user, required this.rollenIcon});
 

@@ -13,6 +13,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:fwapp/features/profil/domain/avatar_konfiguration.dart';
+import 'package:fwapp/features/profil/domain/leistungsabzeichen.dart';
 
 /// Zeichnet [konfiguration] als runden Kopf mit Kantenlänge [groesse].
 class FwAvatar extends StatelessWidget {
@@ -21,6 +22,7 @@ class FwAvatar extends StatelessWidget {
     required this.konfiguration,
     this.groesse = 40,
     this.semantikLabel,
+    this.abzeichen,
   });
 
   final AvatarKonfiguration konfiguration;
@@ -31,15 +33,78 @@ class FwAvatar extends StatelessWidget {
   /// niemandem.
   final String? semantikLabel;
 
+  /// Das erlernte Leistungsabzeichen (Issue #135), oder `null`.
+  ///
+  /// ⚠️ Nur setzen, wo der Kopf **die eigene Person** meint. Die Stufe
+  /// entsteht aus Lernergebnissen, und die liegen ausschließlich auf dem
+  /// eigenen Gerät — für andere Konten gibt es die Zahl schlicht nicht.
+  /// Ebenso wenig für die Vorlagen im Baukasten: Das sind Katalogköpfe,
+  /// kein Mensch, der etwas geleistet hätte.
+  final Leistungsabzeichen? abzeichen;
+
   @override
   Widget build(BuildContext context) {
     final bild = SizedBox.square(
       dimension: groesse,
       child: CustomPaint(painter: AvatarPainter(konfiguration)),
     );
-    return semantikLabel == null
+    final kopf = semantikLabel == null
         ? ExcludeSemantics(child: bild)
         : Semantics(label: semantikLabel, image: true, child: bild);
+
+    final stufe = abzeichen;
+    if (stufe == null) return kopf;
+    return SizedBox.square(
+      dimension: groesse,
+      // Links unten, weil rechts unten in der Nutzerverwaltung schon das
+      // Rollen-Abzeichen sitzt (`_KontoAvatar`). Zwei Marken übereinander
+      // wären beide unlesbar.
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          kopf,
+          Positioned(
+            left: -1,
+            bottom: -1,
+            child: _AbzeichenMarke(stufe: stufe, kopfGroesse: groesse),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Die Marke am Kopf: dasselbe Symbol wie die Level-Karte auf der Startseite
+/// (`Icons.military_tech`) — so ist sichtbar, dass beides dieselbe Zahl
+/// meint. Der Ring in Flächenfarbe trennt sie vom Kopf darunter, genauso wie
+/// beim Rollen-Abzeichen in der Nutzerverwaltung.
+class _AbzeichenMarke extends StatelessWidget {
+  const _AbzeichenMarke({required this.stufe, required this.kopfGroesse});
+
+  final Leistungsabzeichen stufe;
+  final double kopfGroesse;
+
+  @override
+  Widget build(BuildContext context) {
+    // Eigene Beschriftung, immer: Die Stufe steht sonst nirgends im Text
+    // daneben — ohne sie bliebe das Abzeichen für einen Screenreader
+    // unsichtbar.
+    return Semantics(
+      label: abzeichenText(stufe),
+      image: true,
+      child: Container(
+        padding: EdgeInsets.all(kopfGroesse * 0.04),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          shape: BoxShape.circle,
+        ),
+        child: Icon(
+          Icons.military_tech,
+          size: kopfGroesse * 0.34,
+          color: kAbzeichenFarben[stufe],
+        ),
+      ),
+    );
   }
 }
 

@@ -12,6 +12,29 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.26.0] – 2026-08-05
+
+### Neu
+
+- **Du siehst jetzt, ob eine Einladung angekommen ist.** Bisher stand an
+  jeder offenen Einladung dasselbe — „wartet auf Bestätigung", auch wenn die
+  Mail längst verworfen worden war. In der Nutzerverwaltung steht jetzt
+  darunter, ob sie zugestellt wurde, noch unterwegs ist oder **unzustellbar**
+  war; im letzten Fall mit Grund und Zeitpunkt.
+- **Der Ausweg steht direkt an der Einladung.** Über das Menü der Zeile legst
+  du stattdessen ein Konto mit Zugangszettel an — Nutzername, Rolle und
+  Abteilung sind schon ausgefüllt, und die tote Einladung wird dabei
+  zurückgezogen.
+
+### Gut zu wissen
+
+- **„Zustellung nicht prüfbar" heißt genau das.** Kann der Server die
+  Auskunft nicht einholen, steht das da — und ausdrücklich nicht „alles in
+  Ordnung". Genau diese Verwechslung war das Problem.
+- **Ob jemand die Mail geöffnet hat, steht nirgends.** Postfach-Scanner
+  melden ein „geöffnet" wenige Sekunden nach dem Versand, ohne dass ein
+  Mensch die Mail gesehen hat. Das wäre keine Auskunft, sondern eine falsche.
+
 ## [1.25.0] – 2026-08-04
 
 ### Neu

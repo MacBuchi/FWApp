@@ -12,6 +12,26 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.21.0] – 2026-08-04
+
+### Neu
+
+- **Fahrzeuge lassen sich wieder entfernen.** Auf der Fahrzeugseite steht im
+  ⋮-Menü jetzt *Fahrzeug entfernen*. Bisher blieb ein einmal angelegtes
+  Fahrzeug für immer stehen — auch ein Vertipper beim Erfassen. Vor dem
+  Entfernen steht, was mitgeht: die Fächer und die Beladeliste. Die Geräte
+  selbst bleiben im Bestand, nur ihre Zuordnung zu diesem Fahrzeug entfällt;
+  prüfpflichtige Exemplare behalten ihre Prüfhistorie und verlieren nur den
+  Standort.
+
+### Gut zu wissen
+
+- **Entfernen darf, wer bearbeiten darf.** Wer nur lesen kann, sieht den
+  Menüpunkt nicht.
+- **Rückgängig machen geht nicht.** Deshalb die Rückfrage mit den Zahlen —
+  und deshalb steht die Aktion im Menü statt als eigenes Symbol neben
+  „Bearbeiten".
+
 ## [1.20.0] – 2026-08-04
 
 ### Neu

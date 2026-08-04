@@ -10,6 +10,7 @@ import 'package:fwapp/features/home/presentation/providers/dashboard_providers.d
 import 'package:fwapp/features/home/presentation/widgets/gesamtwehr_header.dart';
 import 'package:fwapp/features/home/presentation/widgets/home_banners.dart';
 import 'package:fwapp/features/inspection/presentation/providers/inspection_providers.dart';
+import 'package:fwapp/features/profil/presentation/widgets/abzeichen_zeile.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -166,6 +167,11 @@ class _LevelCard extends StatelessWidget {
                 style: Theme.of(context).textTheme.bodySmall),
             const SizedBox(height: 8),
             LinearProgressIndicator(value: stats.levelProgress, minHeight: 8),
+            // Hier steht, woher die Marke am eigenen Kopf kommt (Issue #135):
+            // dieselbe Zahl, dasselbe Symbol. Ohne diese Zeile wäre nirgends
+            // erklärt, wofür das Abzeichen im Profil steht.
+            const SizedBox(height: 8),
+            AbzeichenZeile(level: stats.level, kompakt: true),
           ],
         ),
       ),

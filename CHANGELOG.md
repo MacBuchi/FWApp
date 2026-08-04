@@ -12,6 +12,29 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.25.0] – 2026-08-04
+
+### Neu
+
+- **Leistungsabzeichen fürs Lernen.** Wer übt, steigt im Level — und ab
+  Level 3 hängt ein Leistungsabzeichen in **Bronze** am eigenen Avatar, ab
+  Level 8 in **Silber**, ab Level 15 in **Gold**. Es steht in „Mein Profil",
+  in der Einstellungs-Kachel und auf der Level-Karte der Startseite, jeweils
+  mit der Angabe, wie weit es bis zur nächsten Stufe ist.
+
+### Gut zu wissen
+
+- **Einmal verliehen, bleibt verliehen.** Ein Abzeichen verschwindet nicht
+  wieder, wenn du zwei Wochen nicht übst.
+- **Bewusst kein Dienstgrad.** Schulterklappen mit Sternen und Balken stehen
+  für ein Amt mit echter Weisungsbefugnis — die gibt es nicht fürs Quiz. Das
+  Leistungsabzeichen wird dagegen für gezeigtes Können verliehen, und genau
+  das ist hier gemeint.
+- **Die Stufe bleibt auf deinem Gerät.** Sie entsteht aus deinen
+  Lernergebnissen, und die verlassen das Handy nicht. Deshalb steht das
+  Abzeichen auch nur an deinem eigenen Kopf und nicht in der
+  Nutzerverwaltung.
+
 ## [1.24.0] – 2026-08-04
 
 ### Neu

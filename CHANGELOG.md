@@ -12,6 +12,22 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.22.0] – 2026-08-04
+
+### Neu
+
+- **Die App begrüßt dich beim Start.** Eine kurze Animation: die Flamme geht
+  auf, ein Wasserstrahl löscht sie, daraus wird das Logo. Sie läuft in voller
+  Länge nur nach der Installation und nach einem Update — sonst siehst du
+  bloß kurz das Logo, damit das zweite Öffnen im Gerätehaus nicht wartet.
+
+### Gut zu wissen
+
+- **Sie hält nichts auf.** Die App baut darunter schon auf; wenn die
+  Animation endet, ist sie sofort da. Ein Tipp auf den Bildschirm bricht ab.
+- **Wer Animationen abgeschaltet hat** (Bedienungshilfen des Geräts), bekommt
+  immer die kurze Fassung.
+
 ## [1.21.0] – 2026-08-04
 
 ### Neu

@@ -6,6 +6,7 @@
 library;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
+import 'package:fwapp/features/profil/domain/avatar_konfiguration.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'
     show FunctionException, SupabaseClient;
 
@@ -34,6 +35,12 @@ class ManagedUser {
   /// Verwaltungs-Dialoge die UI anbietet.
   final bool hatMitgliedschaften;
 
+  /// Selbst gewählter Anzeigename und Avatar (Issue #100). Beides gehört dem
+  /// Konto: Die Verwaltung liest es mit, setzen kann es nur die Person
+  /// selbst — deshalb gibt es hier keine Aktion dazu.
+  final String? anzeigename;
+  final String? avatar;
+
   const ManagedUser({
     required this.id,
     required this.username,
@@ -46,7 +53,18 @@ class ManagedUser {
     this.memberships = const {},
     this.kommandantGesamtwehren = const [],
     this.hatMitgliedschaften = false,
+    this.anzeigename,
+    this.avatar,
   });
+
+  /// Was in der Liste steht: der selbst gewählte Name, sonst der Nutzername.
+  String get anzeige {
+    final a = anzeigename?.trim();
+    return a == null || a.isEmpty ? username : a;
+  }
+
+  /// Der Kopf für die Liste — ohne gespeicherten Wert der Standardkopf.
+  AvatarKonfiguration get avatarKopf => AvatarKonfiguration.dekodiert(avatar);
 
   factory ManagedUser.fromJson(Map<String, dynamic> json) {
     final role = json['role'] as String? ?? 'member';
@@ -74,6 +92,8 @@ class ManagedUser {
           g as String,
       ],
       hatMitgliedschaften: rawMemberships != null,
+      anzeigename: json['anzeigename'] as String?,
+      avatar: json['avatar'] as String?,
     );
   }
 }
@@ -107,6 +127,10 @@ final managedUsersProvider =
   final users = (data['users'] as List? ?? [])
       .map((u) => ManagedUser.fromJson((u as Map).cast<String, dynamic>()))
       .toList();
-  users.sort((a, b) => a.username.compareTo(b.username));
+  // Nach dem ANGEZEIGTEN Namen sortieren, nicht nach dem technischen:
+  // Sonst steht die Liste in einer Reihenfolge, die auf dem Bildschirm
+  // niemand nachvollziehen kann.
+  users.sort(
+      (a, b) => a.anzeige.toLowerCase().compareTo(b.anzeige.toLowerCase()));
   return users;
 });

@@ -16,6 +16,9 @@ import 'package:fwapp/core/sync/rollen.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/sync/sync_service.dart';
 import 'package:fwapp/core/widgets/abteilung_switcher.dart';
+import 'package:fwapp/features/profil/domain/avatar_konfiguration.dart';
+import 'package:fwapp/features/profil/presentation/providers/profil_providers.dart';
+import 'package:fwapp/features/profil/presentation/widgets/fw_avatar.dart';
 import 'package:fwapp/features/settings/presentation/providers/settings_providers.dart';
 import 'package:fwapp/features/settings/presentation/widgets/abteilung_picker.dart';
 import 'package:fwapp/features/settings/presentation/widgets/palette_picker.dart';
@@ -247,6 +250,10 @@ class _ConnectionSection extends ConsumerWidget {
             child: const Text('Abmelden'),
           ),
         ),
+        // Anzeigename und Avatar gehören dem Konto, nicht der Verwaltung
+        // (Issue #100) — deshalb eine eigene Kachel direkt unter dem Konto
+        // und nicht in der Nutzerverwaltung.
+        const _ProfilTile(),
         // Abteilungswahl (Issue #57 Phase 2) — erscheint nur, wenn der
         // Server Abteilungen kennt.
         const AbteilungTile(),
@@ -380,6 +387,33 @@ class _ConnectionSection extends ConsumerWidget {
 
 /// Offline availability of the central photos: shows precache progress and
 /// lets the user re-run the download (e.g. after a failed first attempt).
+/// „Mein Profil": Anzeigename und Avatar (Issue #100).
+///
+/// Zeigt den Kopf schon in der Kachel — er ist die Antwort auf die Frage,
+/// die hinter dem Tippen steht („wie sehe ich aus?"), und ein Standardkopf
+/// steht auch dann da, wenn noch nie jemand etwas gewählt hat.
+class _ProfilTile extends ConsumerWidget {
+  const _ProfilTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final profil = ref.watch(meinProfilProvider).value;
+    final name = profil?.name;
+    return ListTile(
+      leading: FwAvatar(
+        konfiguration: profil?.avatar ?? const AvatarKonfiguration(),
+        groesse: 40,
+      ),
+      title: const Text('Mein Profil'),
+      subtitle: Text(name == null
+          ? 'Anzeigename und Avatar wählen'
+          : '$name — Anzeigename und Avatar'),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () => context.push('/profil'),
+    );
+  }
+}
+
 class _ImageCacheTile extends ConsumerWidget {
   const _ImageCacheTile();
 

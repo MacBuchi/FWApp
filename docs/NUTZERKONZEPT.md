@@ -147,7 +147,7 @@ des Einsenders (braucht dessen GitHub-Konto, keinen Token).
 |---|---|---|
 | ① | Mitgliedschaften + expliziter Feuerwehrkommandant + Anzeigenamen. Backfill: bestehende Admins werden Kommandanten ihrer Gesamtwehr (Ist-Verhalten bleibt; Zurückstufen geht danach in der App) | **Umgesetzt (v1.11.0)** |
 | ② | Gerätetypen auf Gesamtwehr-Ebene mit eigenem Sync (der größte Brocken) | **Umgesetzt (v1.15.0)** |
-| ③ | Einladungen per Mail, temporäre Rechte, Anzeigename + Avatar | **Einladungen umgesetzt (v1.17.0)**, Rest Zielbild |
+| ③ | Einladungen per Mail, temporäre Rechte, Anzeigename + Avatar | **Umgesetzt** (Einladungen v1.17.0, temporäre Rechte v1.19.0, Anzeigename + Avatar v1.20.0) |
 | ④ | KreisDatenMeister-Konsole + Freigabe neuer Gesamtwehren — erst, wenn eine zweite Wehr real absehbar ist; das Schema aus ① trägt sie schon | Zielbild |
 
 Daneben, unabhängig und klein: Katalog-Picker im Geräteformular,

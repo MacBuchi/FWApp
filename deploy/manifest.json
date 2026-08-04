@@ -76,10 +76,14 @@
     {
       "name": "20260804090000_temporaere_rechte.sql",
       "sha256": "fd8a702587759400cb83d30e2b96070702145283bbb56dac4855324b079cdf6c"
+    },
+    {
+      "name": "20260804140000_profil_anzeigename_avatar.sql",
+      "sha256": "4d0556240f5c2e5f40abc0cfe2412be8878112f5c33c115e35ded0e253786e0f"
     }
   ],
   "functions": {
-    "admin-users/index.ts": "fc904281f87a99e761bfc8672193c5f9ca851035c8ed5a707c9348de5c699ddc",
+    "admin-users/index.ts": "c403310c4ccdd54f02978968856df2b25557a8142dfec6d8d3c5cbc48a4d843e",
     "main/index.ts": "e35427a3f30635ba6db7742870e377dfb978786a07f99efb1644b1714be614c5"
   }
 }

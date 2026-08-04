@@ -17,7 +17,11 @@
 ###      auf postgres einspielen + NOTIFY pgrst + Ledger fortschreiben.
 ###   3. Functions: SHA-256 der Manifest-Dateien gegen die ausgerollten
 ###      vergleichen; bei Abweichung sichern, ersetzen, Container neu starten.
-###   4. Web-App: VERSION auf dem web-dist-Branch (füllt der Release-Lauf)
+###   4. Server-Einstellungen: die nicht-geheimen GoTrue-Variablen aus dem
+###      Manifest (auth_env) gegen `docker exec supabase-auth env` halten.
+###      Nur MELDEN — Log plus ~/autodeploy.auth-drift; nichts wird
+###      geschrieben und nichts blockiert (Issue #118).
+###   5. Web-App: VERSION auf dem web-dist-Branch (füllt der Release-Lauf)
 ###      mit der ausgerollten version.json vergleichen; bei Abweichung das
 ###      Bundle laden, SHA-256 prüfen und per rsync --delete IN das
 ###      html-Verzeichnis rollen — bewusst kein Verzeichnis-Tausch: nginx
@@ -39,6 +43,8 @@ RAW=${RAW:-https://raw.githubusercontent.com/MacBuchi/FWApp/main}
 DB_CONTAINER=${DB_CONTAINER:-supabase-db}
 BACKUP_DIR=${BACKUP_DIR:-$HOME/backups}
 FUNCTIONS_DIR=${FUNCTIONS_DIR:-$HOME/supabase/volumes/functions}
+AUTH_CONTAINER=${AUTH_CONTAINER:-supabase-auth}
+AUTH_DRIFT=$HOME/autodeploy.auth-drift
 COMPOSE_DIR=${COMPOSE_DIR:-$HOME/supabase}
 BLOCKED=$HOME/autodeploy.blocked
 LOCK=$HOME/autodeploy.lock
@@ -231,7 +237,75 @@ elif [ "$geaendert" = "0" ]; then
   log "Functions: nichts zu tun."
 fi
 
-# ── 5) Web-App abgleichen (web-dist-Branch, füllt der Release-Lauf) ───────
+# ── 5) Server-Einstellungen abgleichen (Issue #118) ───────────────────────
+#
+# Drei Funktionen hängen an GoTrue-Variablen, die nur in
+# ~/supabase/docker-compose.override.yml stehen — zwei scheitern LAUTLOS
+# (englische Standardmail mit Link, ohne dass am Aufruf etwas fehlschlägt).
+# Das Manifest trägt jetzt den Soll-Zustand; hier wird er gegen den
+# laufenden Container gehalten.
+#
+# ⚠️ GEMELDET, NICHT ANGEWENDET — und ausdrücklich OHNE blockiere(): Eine
+# fehlende Mail-Betreffzeile darf nicht dazu führen, dass Migrationen und
+# Web-Rollout zehn Minuten später immer noch stehen. Der Befund landet im
+# Log und in $AUTH_DRIFT; stimmt wieder alles, verschwindet die Datei.
+python3 - "$WORK/manifest.json" <<'AUTHSOLL' > "$WORK/auth_soll.txt" || blockiere "Manifest unlesbar (auth_env)"
+import json, sys
+m = json.load(open(sys.argv[1]))
+for k, v in (m.get("auth_env") or {}).items():
+    # Tabulator als Trenner: In den Werten kommt er nicht vor, Leerzeichen
+    # und Doppelpunkte dagegen sehr wohl (URLs, Betreffzeilen).
+    print(k + "\t" + v)
+AUTHSOLL
+
+if [ ! -s "$WORK/auth_soll.txt" ]; then
+  log "Server-Einstellungen: nichts im Manifest — übersprungen."
+elif ! sudo docker exec "$AUTH_CONTAINER" env > "$WORK/auth_ist.txt" 2>/dev/null; then
+  # Kein Grund zu blockieren: Vielleicht startet der Container gerade neu.
+  log "Server-Einstellungen: $AUTH_CONTAINER nicht erreichbar — übersprungen."
+else
+  abweichungen=$(python3 - "$WORK/auth_soll.txt" "$WORK/auth_ist.txt" <<'AUTHDIFF'
+import sys
+
+soll = {}
+for zeile in open(sys.argv[1], encoding="utf-8"):
+    zeile = zeile.rstrip("\n")
+    if not zeile:
+        continue
+    k, _, v = zeile.partition("\t")
+    soll[k] = v
+
+ist = {}
+for zeile in open(sys.argv[2], encoding="utf-8"):
+    k, _, v = zeile.rstrip("\n").partition("=")
+    ist[k] = v
+
+for k, erwartet in soll.items():
+    gefunden = ist.get(k)
+    if gefunden is None:
+        print(k + ": FEHLT (erwartet »" + erwartet + "«)")
+    elif gefunden != erwartet:
+        print(k + ": »" + gefunden + "« statt »" + erwartet + "«")
+AUTHDIFF
+)
+  if [ -n "$abweichungen" ]; then
+    {
+      date '+%Y-%m-%d %H:%M:%S'
+      echo "Server-Einstellungen weichen vom Manifest ab (Issue #118)."
+      echo "$abweichungen"
+      echo
+      echo "Beheben: ~/supabase/docker-compose.override.yml anpassen, dann:"
+      echo "  cd ~/supabase && sudo docker compose up -d auth"
+    } > "$AUTH_DRIFT"
+    log "AUTH-DRIFT (Einzelheiten in $AUTH_DRIFT):"
+    echo "$abweichungen" | while read -r zeile; do log "   $zeile"; done
+  else
+    rm -f "$AUTH_DRIFT"
+    log "Server-Einstellungen: stimmen mit dem Manifest überein."
+  fi
+fi
+
+# ── 6) Web-App abgleichen (web-dist-Branch, füllt der Release-Lauf) ───────
 WEB_RAW=${WEB_RAW:-https://raw.githubusercontent.com/MacBuchi/FWApp/web-dist}
 WEB_DIR=${WEB_DIR:-$HOME/fwapp-web/html}
 

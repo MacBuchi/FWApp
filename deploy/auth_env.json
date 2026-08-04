@@ -1,0 +1,30 @@
+{
+  "_comment": [
+    "Server-Einstellungen, die FEATURES TRAGEN und nur auf der VM leben",
+    "(Issue #118). Von Hand gepflegt — im Unterschied zu manifest.json, das",
+    "daraus erzeugt wird.",
+    "",
+    "Warum es diese Datei gibt: Drei Funktionen hingen an GoTrue-Variablen,",
+    "die ausschliesslich in ~/supabase/docker-compose.override.yml standen.",
+    "Zwei davon scheitern LAUTLOS — die englische Standardmail geht mit Link",
+    "raus, ohne dass am Aufruf etwas fehlschlägt. Dokumentation ist eine",
+    "Erinnerung, keine Prüfung; hier steht der Soll-Zustand, den der",
+    "Autodeploy gegen den laufenden Container hält.",
+    "",
+    "⚠️ NUR NICHT-GEHEIMES. Brevo-Schlüssel, SMTP-Zugang und der",
+    "Service-Role-Key bleiben auf der VM und gehören NIE hierher — diese",
+    "Datei liegt öffentlich im Repo.",
+    "",
+    "⚠️ Gemeldet, nicht angewendet: Der Autodeploy schreibt die",
+    "compose-Datei nicht selbst. Melden hätte alle drei Fälle gefangen und",
+    "kann nichts kaputtmachen; automatisch schreiben und auth neu starten",
+    "ist der viel grössere Hammer und kann folgen, wenn sich das Melden",
+    "bewährt hat."
+  ],
+  "GOTRUE_MAILER_TEMPLATES_RECOVERY": "http://fwapp-web/mail/recovery.html",
+  "GOTRUE_MAILER_SUBJECTS_RECOVERY": "FWApp: Passwort zurücksetzen",
+  "GOTRUE_MAILER_TEMPLATES_INVITE": "http://fwapp-web/mail/invite.html",
+  "GOTRUE_MAILER_SUBJECTS_INVITE": "{{ .Data.titel }}: Einladung",
+  "GOTRUE_MFA_TOTP_ENROLL_ENABLED": "true",
+  "GOTRUE_MFA_TOTP_VERIFY_ENABLED": "true"
+}

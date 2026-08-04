@@ -4,6 +4,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/features/compartment/domain/entities/compartment.dart';
+import 'package:fwapp/features/compartment/domain/fahrzeug_seiten.dart';
 import 'package:fwapp/features/compartment/presentation/providers/compartment_providers.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';
 import 'package:fwapp/features/vehicle/presentation/widgets/vehicle_cutaway_view.dart';
@@ -33,6 +34,14 @@ class CompartmentManagerScreen extends ConsumerWidget {
               tooltip: 'Fach hinzufügen',
               onPressed: () => _showAddDialog(context, ref),
             ),
+            // Nur anbieten, wenn es etwas vorzuschlagen gibt (Issue #126).
+            if (_vorschlaege(compartmentsAsync.value ?? const []).isNotEmpty)
+              IconButton(
+                icon: const Icon(Icons.auto_fix_high),
+                tooltip: 'Seiten aus den Namen vorschlagen',
+                onPressed: () => _seitenVorschlagen(
+                    context, ref, compartmentsAsync.value ?? const []),
+              ),
           ],
           bottom: const TabBar(tabs: [
             Tab(text: 'Liste', icon: Icon(Icons.list)),
@@ -86,7 +95,8 @@ class CompartmentManagerScreen extends ConsumerWidget {
                 child: ListTile(
                   leading: const Icon(Icons.drag_handle),
                   title: Text(c.label),
-                  subtitle: Text('Position ${c.position + 1}'),
+                  subtitle: Text(
+                      '${seiteAnzeigename(c.seite)} · Position ${c.position + 1}'),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -112,51 +122,98 @@ class CompartmentManagerScreen extends ConsumerWidget {
   }
 
   Future<void> _showAddDialog(BuildContext context, WidgetRef ref) async {
-    final ctrl = TextEditingController();
-    final ok = await showDialog<bool>(
+    final eingabe = await showDialog<_FachEingabe>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Fach hinzufügen'),
-        content: TextField(
-          controller: ctrl,
-          decoration: const InputDecoration(labelText: 'Bezeichnung (z.B. G1)'),
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Abbrechen')),
-          FilledButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Hinzufügen')),
-        ],
-      ),
+      builder: (_) => const _FachDialog(titel: 'Fach hinzufügen',
+          knopf: 'Hinzufügen'),
     );
-    if (ok == true && ctrl.text.trim().isNotEmpty) {
-      final repo = ref.read(compartmentRepositoryProvider);
-      final existing = await repo.getByVehicle(vehicleId);
-      await repo.insert(Compartment(
-        id: 0,
-        vehicleId: vehicleId,
-        label: ctrl.text.trim(),
-        position: existing.length,
-        gridColSpan: 1,
-        updatedAt: DateTime.now(),
-      ));
-    }
+    if (eingabe == null) return;
+    final repo = ref.read(compartmentRepositoryProvider);
+    final existing = await repo.getByVehicle(vehicleId);
+    await repo.insert(Compartment(
+      id: 0,
+      vehicleId: vehicleId,
+      label: eingabe.label,
+      position: existing.length,
+      gridColSpan: 1,
+      seite: eingabe.seite,
+      updatedAt: DateTime.now(),
+    ));
   }
 
   Future<void> _showEditDialog(
       BuildContext context, WidgetRef ref, Compartment c) async {
-    final ctrl = TextEditingController(text: c.label);
+    final eingabe = await showDialog<_FachEingabe>(
+      context: context,
+      builder: (_) => _FachDialog(
+        titel: 'Fach bearbeiten',
+        knopf: 'Speichern',
+        label: c.label,
+        seite: c.seite,
+      ),
+    );
+    if (eingabe == null) return;
+    await ref.read(compartmentRepositoryProvider).update(
+          c.copyWith(label: eingabe.label, seite: eingabe.seite),
+        );
+  }
+
+  /// Fächer ohne Seite, für die der Name einen Vorschlag hergibt.
+  ///
+  /// Bereits zugeordnete Fächer bleiben ausdrücklich unberührt: Ein
+  /// Vorschlag darf nichts überschreiben, was jemand von Hand gesetzt hat.
+  static List<({Compartment fach, String seite})> _vorschlaege(
+      List<Compartment> compartments) {
+    final out = <({Compartment fach, String seite})>[];
+    for (final c in compartments) {
+      if (c.seite != null) continue;
+      final seite = seiteAusName(c.label);
+      if (seite != null) out.add((fach: c, seite: seite));
+    }
+    return out;
+  }
+
+  /// Zeigt den Vorschlag Fach für Fach und übernimmt ihn erst nach Bestätigung.
+  ///
+  /// ⚠️ Bewusst mit Rückfrage und Auflistung: „Ungerade Nummer =
+  /// Fahrerseite" ist die verbreitete Konvention, aber keine Naturkonstante.
+  /// Ein still gesetzter falscher Wert wäre schlimmer als gar keiner — im
+  /// Einsatz greift jemand ins falsche Fach.
+  Future<void> _seitenVorschlagen(BuildContext context, WidgetRef ref,
+      List<Compartment> compartments) async {
+    final vorschlaege = _vorschlaege(compartments);
+    if (vorschlaege.isEmpty) return;
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Fach bearbeiten'),
-        content: TextField(
-          controller: ctrl,
-          decoration: const InputDecoration(labelText: 'Bezeichnung'),
-          autofocus: true,
+        title: const Text('Seiten vorschlagen?'),
+        content: SizedBox(
+          width: 320,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Nach der verbreiteten Nummerierung: ungerade Geräteräume '
+                'auf der Fahrerseite, gerade auf der Beifahrerseite. Prüfe '
+                'es an eurem Fahrzeug — ändern kannst du jedes Fach danach '
+                'einzeln.',
+              ),
+              const SizedBox(height: 12),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      for (final v in vorschlaege)
+                        Text('${v.fach.label} → '
+                            '${seiteAnzeigename(v.seite)}'),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -164,14 +221,14 @@ class CompartmentManagerScreen extends ConsumerWidget {
               child: const Text('Abbrechen')),
           FilledButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Speichern')),
+              child: Text('${vorschlaege.length} übernehmen')),
         ],
       ),
     );
-    if (ok == true && ctrl.text.trim().isNotEmpty) {
-      await ref.read(compartmentRepositoryProvider).update(
-            c.copyWith(label: ctrl.text.trim()),
-          );
+    if (ok != true) return;
+    final repo = ref.read(compartmentRepositoryProvider);
+    for (final v in vorschlaege) {
+      await repo.update(v.fach.copyWith(seite: v.seite));
     }
   }
 
@@ -386,6 +443,104 @@ class _Stepper extends StatelessWidget {
         IconButton(
           icon: const Icon(Icons.add_circle_outline),
           onPressed: () => onChanged(value + 1),
+        ),
+      ],
+    );
+  }
+}
+
+/// Ergebnis des Fach-Dialogs.
+typedef _FachEingabe = ({String label, String? seite});
+
+/// Bezeichnung UND Seite in einem Dialog (Issue #126).
+///
+/// Beides zusammen, weil beides beim Anlegen feststeht: Wer „G3" tippt,
+/// weiß in dem Moment auch, wo G3 sitzt. Ein zweiter Weg dafür wäre ein
+/// zweiter Weg, den niemand geht.
+class _FachDialog extends StatefulWidget {
+  const _FachDialog({
+    required this.titel,
+    required this.knopf,
+    this.label,
+    this.seite,
+  });
+
+  final String titel;
+  final String knopf;
+  final String? label;
+  final String? seite;
+
+  @override
+  State<_FachDialog> createState() => _FachDialogState();
+}
+
+class _FachDialogState extends State<_FachDialog> {
+  late final TextEditingController _ctrl =
+      TextEditingController(text: widget.label ?? '');
+  late String? _seite = widget.seite;
+
+  /// Beim Anlegen folgt die Seite dem Namen, solange niemand sie angefasst
+  /// hat — „G3" tippen und die Fahrerseite steht da. Ab dem ersten
+  /// Handgriff gewinnt der Mensch.
+  bool _seiteVonHand = false;
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  void _nameGeaendert(String text) {
+    if (_seiteVonHand || widget.label != null) return;
+    final vorschlag = seiteAusName(text);
+    if (vorschlag != _seite) setState(() => _seite = vorschlag);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(widget.titel),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _ctrl,
+            decoration: const InputDecoration(
+                labelText: 'Bezeichnung (z.B. G1)'),
+            autofocus: true,
+            onChanged: _nameGeaendert,
+          ),
+          const SizedBox(height: 16),
+          DropdownButtonFormField<String?>(
+            initialValue: _seite,
+            decoration: const InputDecoration(
+              labelText: 'Seite am Fahrzeug',
+              helperText: 'Bestimmt, wo das Fach im Aufklappbild steht.',
+              helperMaxLines: 2,
+            ),
+            items: [
+              const DropdownMenuItem(value: null, child: Text('Ohne Seite')),
+              for (final s in kFahrzeugSeiten)
+                DropdownMenuItem(value: s, child: Text(seiteAnzeigename(s))),
+            ],
+            onChanged: (v) => setState(() {
+              _seite = v;
+              _seiteVonHand = true;
+            }),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Abbrechen')),
+        FilledButton(
+          onPressed: () {
+            final label = _ctrl.text.trim();
+            if (label.isEmpty) return;
+            Navigator.pop(context, (label: label, seite: _seite));
+          },
+          child: Text(widget.knopf),
         ),
       ],
     );

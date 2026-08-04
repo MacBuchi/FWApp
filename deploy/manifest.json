@@ -80,6 +80,10 @@
     {
       "name": "20260804140000_profil_anzeigename_avatar.sql",
       "sha256": "4d0556240f5c2e5f40abc0cfe2412be8878112f5c33c115e35ded0e253786e0f"
+    },
+    {
+      "name": "20260804180000_fach_seiten.sql",
+      "sha256": "2ba80a328b6b5446927322a1769616bd3350bf6862e0f01ab1fe8813c1b90fdc"
     }
   ],
   "functions": {

@@ -12,6 +12,28 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.24.0] – 2026-08-04
+
+### Neu
+
+- **Der Beladeplan sieht jetzt aus wie das Fahrzeug.** Jedes Fach bekommt
+  eine Seite — Dach, Front, Fahrerseite, Heck oder Beifahrerseite — und die
+  Schnittdarstellung klappt das Fahrzeug entsprechend auf: Dach oben, dann
+  einmal herum. Wer davorsteht, findet das Fach an derselben Stelle wieder.
+- **Seiten für den Bestand vorschlagen lassen.** In der Fächerverwaltung
+  ordnet ein Knopf alle Fächer auf einmal zu, abgeleitet aus ihren Namen
+  (ungerade Geräteräume Fahrerseite, gerade Beifahrerseite, GR ans Heck).
+  Der Vorschlag wird vorher vollständig angezeigt und erst nach deinem Ja
+  übernommen.
+
+### Gut zu wissen
+
+- **Nichts wird still verschoben.** Fächer ohne Seite bleiben sichtbar, in
+  einem eigenen Bereich am Ende. Und der Vorschlag rührt kein Fach an, dem
+  du selbst schon eine Seite gegeben hast.
+- **Fahrerseite statt links** — „links" hängt davon ab, ob man vor oder
+  hinter dem Fahrzeug steht.
+
 ## [1.23.0] – 2026-08-04
 
 ### Geändert

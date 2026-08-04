@@ -14,6 +14,8 @@ import 'package:fwapp/features/compartment/presentation/providers/compartment_pr
 import 'package:fwapp/features/equipment/presentation/providers/equipment_providers.dart';
 import 'package:fwapp/features/equipment/presentation/widgets/equipment_avatar.dart';
 import 'package:fwapp/features/inspection/presentation/providers/inspection_providers.dart';
+import 'package:fwapp/features/vehicle/domain/entities/vehicle.dart';
+import 'package:fwapp/features/vehicle/domain/loesch_umfang.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';
 import 'package:fwapp/features/vehicle/presentation/widgets/vehicle_cutaway_view.dart';
 
@@ -51,6 +53,18 @@ class VehicleDetailScreen extends ConsumerWidget {
                   tooltip: 'Beladefächer verwalten',
                   onPressed: () =>
                       context.push('/vehicles/$vehicleId/compartments'),
+                ),
+                // Entfernen liegt im Menü, nicht als eigenes Symbol: Es ist
+                // die einzige Aktion hier, die nichts wiederherstellen kann
+                // (Issue #127).
+                PopupMenuButton<String>(
+                  onSelected: (_) => _entfernen(context, ref, vehicle),
+                  itemBuilder: (_) => const [
+                    PopupMenuItem(
+                      value: 'entfernen',
+                      child: Text('Fahrzeug entfernen'),
+                    ),
+                  ],
                 ),
               ],
               const AbteilungAction(),
@@ -147,6 +161,63 @@ class VehicleDetailScreen extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+
+  /// Fahrzeug entfernen (Issue #127).
+  ///
+  /// Die Zahlen werden VOR der Rückfrage geholt, nicht danach: Sie sind der
+  /// Inhalt der Frage. Ein Dialog, der erst nach dem Ja nachzählt, fragt
+  /// nach nichts.
+  Future<void> _entfernen(
+      BuildContext context, WidgetRef ref, Vehicle vehicle) async {
+    final faecher =
+        await ref.read(compartmentRepositoryProvider).getByVehicle(vehicle.id);
+    final beladung =
+        await ref.read(assignmentRepositoryProvider).getByVehicle(vehicle.id);
+    if (!context.mounted) return;
+
+    final ok = await showDialog<bool>(
+      context: context,
+      // PFLICHT in der ShellRoute: Ohne den Wurzel-Navigator liegt der Dialog
+      // im verschachtelten Navigator und die Navigationsleiste darüber
+      // (#79/#96).
+      useRootNavigator: true,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Fahrzeug entfernen?'),
+        content: Text(fahrzeugEntfernenText(
+          name: vehicle.name,
+          faecher: faecher.length,
+          beladung: beladung.length,
+        )),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Abbrechen'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(ctx).colorScheme.error),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Entfernen'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !context.mounted) return;
+
+    await ref.read(vehicleRepositoryProvider).delete(vehicle.id);
+    if (!context.mounted) return;
+    // Zurück zur Liste, BEVOR die Meldung kommt: Der Detail-Screen steht
+    // sonst auf einem Fahrzeug, das es nicht mehr gibt, und zeigt
+    // „Fahrzeug nicht gefunden".
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go('/vehicles');
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('„${vehicle.name}" wurde entfernt.')),
     );
   }
 }

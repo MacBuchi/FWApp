@@ -21,6 +21,7 @@ import 'package:fwapp/core/theme/app_theme.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
 import 'package:fwapp/core/logging/app_logger.dart';
 import 'package:fwapp/features/settings/presentation/providers/settings_providers.dart';
+import 'package:fwapp/features/splash/presentation/splash_gate.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -115,6 +116,27 @@ Future<void> main() async {
     selectedAbteilung = prefs.getString(kSelectedAbteilungPref);
   }
 
+  // Startanimation (Issue #129): die volle Fassung läuft nach Installation
+  // und nach jedem Update, sonst die Kurzform. Der Merker wird SOFORT
+  // geschrieben, nicht erst nach dem Abspielen — sonst bekäme jemand, dessen
+  // App währenddessen abstürzt, die lange Fassung bei jedem Start wieder.
+  var vollerSplash = false;
+  try {
+    // Ohne bekannte Version (PackageInfo oben fehlgeschlagen) bleibt es bei
+    // der Kurzform — raten hieße hier, die lange Fassung bei jedem Start zu
+    // zeigen.
+    final version = currentAppVersion;
+    final prefs = await SharedPreferences.getInstance();
+    vollerSplash =
+        version != null && prefs.getString(kSplashVersionPref) != version;
+    if (vollerSplash) {
+      await prefs.setString(kSplashVersionPref, version);
+    }
+  } catch (e) {
+    // Eine Verzierung darf den Start nicht kosten: im Zweifel die Kurzform.
+    appLog.i('Splash-Merker nicht lesbar', error: e);
+  }
+
   runApp(
     ProviderScope(
       overrides: [
@@ -122,13 +144,16 @@ Future<void> main() async {
         selectedAbteilungIdProvider
             .overrideWith((ref) => selectedAbteilung),
       ],
-      child: const FWApp(),
+      child: FWApp(vollerSplash: vollerSplash),
     ),
   );
 }
 
 class FWApp extends ConsumerStatefulWidget {
-  const FWApp({super.key});
+  const FWApp({super.key, this.vollerSplash = false});
+
+  /// Startanimation in voller Länge zeigen (Issue #129).
+  final bool vollerSplash;
 
   @override
   ConsumerState<FWApp> createState() => _FWAppState();
@@ -185,6 +210,12 @@ class _FWAppState extends ConsumerState<FWApp> {
       // Standard: Systemeinstellung; in den Settings überschreibbar.
       themeMode: themeModeAsync.value ?? ThemeMode.system,
       routerConfig: ref.watch(routerProvider),
+      // Die Animation liegt ÜBER der App, nicht davor: Der Router baut
+      // darunter schon auf, es geht keine Startzeit verloren.
+      builder: (context, child) => SplashGate(
+        voll: widget.vollerSplash,
+        child: child ?? const SizedBox.shrink(),
+      ),
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,

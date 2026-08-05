@@ -7,6 +7,7 @@ import 'dart:io';
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/core/database/app_database.dart';
+import 'package:fwapp/features/compartment/domain/fahrzeug_seiten.dart';
 import 'package:fwapp/features/vehicle/data/vehicle_template.dart';
 import 'package:fwapp/features/vehicle/data/vehicle_template_service.dart';
 
@@ -111,6 +112,52 @@ void main() {
       expect(parseVehicleTemplate('[]'), isNull);
       // Pflichtangaben fehlen.
       expect(parseVehicleTemplate('{"name":"X"}'), isNull);
+    });
+
+    test('liest die Verortung (Issue #144)', () {
+      final t = parseVehicleTemplate(jsonEncode({
+        'id': 'x',
+        'name': 'X',
+        'type': 'X',
+        'compartments': [
+          {
+            'label': 'G1',
+            'position': 0,
+            'seite': 'fahrerseite',
+            'laengsposition': 'vorne',
+          },
+          {'label': 'GR', 'position': 1, 'seite': 'heck'},
+          {'label': 'Ablage', 'position': 2},
+        ],
+      }))!;
+      expect(t.compartments[0].seite, 'fahrerseite');
+      expect(t.compartments[0].laengsposition, 'vorne');
+      expect(t.compartments[1].seite, 'heck');
+      expect(t.compartments[1].laengsposition, isNull);
+      expect(t.compartments[2].seite, isNull);
+    });
+
+    test('eine ungültige Verortung fällt auf null zurück', () {
+      // Ein Tippfehler in einer Vorlage darf nicht bis zum Veröffentlichen
+      // schlummern (dort prüft der Server per CHECK — und lehnt dann den
+      // ganzen Schnappschuss ab). Lieber ein Fach unter „Ohne Seite".
+      final t = parseVehicleTemplate(jsonEncode({
+        'id': 'x',
+        'name': 'X',
+        'type': 'X',
+        'compartments': [
+          {'label': 'G1', 'position': 0, 'seite': 'links'},
+          {
+            'label': 'G2',
+            'position': 1,
+            'seite': 'beifahrerseite',
+            'laengsposition': 'achtern',
+          },
+        ],
+      }))!;
+      expect(t.compartments[0].seite, isNull);
+      expect(t.compartments[1].seite, 'beifahrerseite');
+      expect(t.compartments[1].laengsposition, isNull);
     });
   });
 
@@ -217,6 +264,74 @@ void main() {
             reason: '${t.id} sollte erklären, warum keine Beladung dabei ist');
       }
     });
+
+    test('jedes Fach jeder Vorlage ist verortet (Issue #144)', () {
+      // Der Sinn der Übung: Ein Fahrzeug aus der Vorlage startet mit
+      // fertiger Draufsicht, nicht mit „Ohne Seite" quer über den Schirm.
+      for (final t in templates.values) {
+        for (final c in t.compartments) {
+          expect(c.seite, isNotNull, reason: '${t.id}/${c.label} ohne Seite');
+        }
+      }
+    });
+
+    test('die Verortung im JSON ist wörtlich gültig — kein stiller '
+        'Rückfall', () {
+      // Der Parser lässt Tippfehler auf null zurückfallen; dieser Test
+      // benennt sie stattdessen. Deshalb wird hier das ROHE JSON geprüft,
+      // nicht das geparste Ergebnis.
+      for (final id in kBundledVehicleTemplateIds) {
+        final raw = jsonDecode(
+                File('$kVehicleTemplateDir/$id/template.json')
+                    .readAsStringSync())
+            as Map<String, dynamic>;
+        for (final c in raw['compartments'] as List) {
+          final fach = c as Map;
+          expect(istGueltigeSeite(fach['seite'] as String?), isTrue,
+              reason: '$id/${fach['label']}: ${fach['seite']}');
+          expect(
+              istGueltigeLaengsposition(fach['laengsposition'] as String?),
+              isTrue,
+              reason: '$id/${fach['label']}: ${fach['laengsposition']}');
+        }
+      }
+    });
+
+    test('die Verortung folgt der Konvention der App', () {
+      // Ungerade = Fahrerseite, G1/G2 vorne … — dieselbe Regel wie der
+      // Vorschlag in der Fächerverwaltung. Eine Vorlage, die anders zählt
+      // als der eigene Vorschlags-Knopf, wäre ein Widerspruch im Produkt.
+      final hlf = templates['hlf20']!;
+      for (final c in hlf.compartments) {
+        final seite = seiteAusName(c.label);
+        if (seite != null) {
+          expect(c.seite, seite, reason: 'hlf20/${c.label}');
+        }
+        final laengs = laengspositionAusName(c.label);
+        if (laengs != null) {
+          expect(c.laengsposition, laengs, reason: 'hlf20/${c.label}');
+        }
+      }
+    });
+
+    test('jede Vorlage sagt, dass die Verortung vorbelegt ist', () {
+      // Vorbelegt heißt Konvention, nicht Tatsache — der Hinweis gehört
+      // in jede Vorlage, damit niemand die Draufsicht für gemessen hält.
+      for (final t in templates.values) {
+        expect(t.note, contains('vorbelegt'), reason: t.id);
+      }
+    });
+
+    test('die TLF-Vorlagen bringen die Trupp-Aufteilung mit', () {
+      for (final id in ['tlf3000', 'tlf4000']) {
+        final t = templates[id]!;
+        expect(t.compartments.map((c) => c.label),
+            ['G1', 'G2', 'G3', 'G4', 'Heck (GR)', 'Dach'],
+            reason: id);
+        expect(t.hasLoading, isFalse,
+            reason: '$id: keine belegbare Beladeliste — nur Geräteräume');
+      }
+    });
   });
 
   group('VehicleTemplateService', () {
@@ -243,6 +358,34 @@ void main() {
               ? null
               : TemplateLoading(source: 'DIN Test', items: items),
         );
+
+    test('legt die Verortung aus der Vorlage an (Issue #144)', () async {
+      final result = await service.apply(
+        const VehicleTemplate(
+          id: 'test',
+          name: 'Testfahrzeug',
+          type: 'TLF 3000',
+          note: '',
+          compartments: [
+            TemplateCompartment(
+                label: 'G1',
+                position: 0,
+                seite: 'fahrerseite',
+                laengsposition: 'vorne'),
+            TemplateCompartment(label: 'GR', position: 1, seite: 'heck'),
+          ],
+        ),
+        name: 'X',
+        withLoading: false,
+      );
+      final comps = await db.compartmentDao.getByVehicle(result.vehicleId);
+      final g1 = comps.firstWhere((c) => c.label == 'G1');
+      expect(g1.seite, 'fahrerseite');
+      expect(g1.laengsposition, 'vorne');
+      final gr = comps.firstWhere((c) => c.label == 'GR');
+      expect(gr.seite, 'heck');
+      expect(gr.laengsposition, isNull);
+    });
 
     test('legt Fahrzeug und Geräteräume an', () async {
       final result = await service.apply(

@@ -1,8 +1,8 @@
 {
-  "id": "dlk23_12",
-  "name": "DLK 23/12",
-  "type": "DLK 23/12",
-  "note": "Drehleiter mit Korb nach DIN EN 14043. Für diesen Typ liegt keine öffentliche Beladeliste vor — nur Geräteräume. Seiten und Positionen sind nach der verbreiteten Konvention vorbelegt — am eigenen Fahrzeug prüfen, jedes Fach lässt sich einzeln ändern.",
+  "id": "tlf4000",
+  "name": "TLF 4000",
+  "type": "TLF 4000",
+  "note": "Tanklöschfahrzeug nach DIN 14530-24 (Trupp-Kabine, 4000 l Löschwasser). Für diesen Typ liegt keine öffentliche Beladeliste vor — nur Geräteräume. Seiten und Positionen sind nach der verbreiteten Konvention vorbelegt — am eigenen Fahrzeug prüfen, jedes Fach lässt sich einzeln ändern.",
   "compartments": [
     {
       "label": "G1",
@@ -29,12 +29,12 @@
       "laengsposition": "hinten"
     },
     {
-      "label": "Rettungskorb",
+      "label": "Heck (GR)",
       "position": 4,
-      "seite": "front"
+      "seite": "heck"
     },
     {
-      "label": "Podium",
+      "label": "Dach",
       "position": 5,
       "seite": "dach"
     }

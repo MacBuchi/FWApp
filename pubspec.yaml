@@ -142,6 +142,8 @@ flutter:
     - assets/vehicle_templates/lf20/template.json
     - assets/vehicle_templates/hlf20/template.json
     - assets/vehicle_templates/tsf_w/template.json
+    - assets/vehicle_templates/tlf3000/template.json
+    - assets/vehicle_templates/tlf4000/template.json
     - assets/vehicle_templates/dlk23_12/template.json
     - assets/vehicle_templates/rw/template.json
     - assets/vehicle_templates/gw_l/template.json

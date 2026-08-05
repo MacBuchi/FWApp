@@ -2,31 +2,41 @@
   "id": "gw_l",
   "name": "GW-L",
   "type": "GW-L",
-  "note": "Gerätewagen Logistik nach DIN 14555-21/-22. Für diesen Typ liegt keine öffentliche Beladeliste vor — nur Geräteräume.",
+  "note": "Gerätewagen Logistik nach DIN 14555-21/-22. Für diesen Typ liegt keine öffentliche Beladeliste vor — nur Geräteräume. Seiten und Positionen sind nach der verbreiteten Konvention vorbelegt — am eigenen Fahrzeug prüfen, jedes Fach lässt sich einzeln ändern.",
   "compartments": [
     {
       "label": "G1",
-      "position": 0
+      "position": 0,
+      "seite": "fahrerseite",
+      "laengsposition": "vorne"
     },
     {
       "label": "G2",
-      "position": 1
+      "position": 1,
+      "seite": "beifahrerseite",
+      "laengsposition": "vorne"
     },
     {
       "label": "G3",
-      "position": 2
+      "position": 2,
+      "seite": "fahrerseite",
+      "laengsposition": "hinten"
     },
     {
       "label": "G4",
-      "position": 3
+      "position": 3,
+      "seite": "beifahrerseite",
+      "laengsposition": "hinten"
     },
     {
       "label": "Ladefläche",
-      "position": 4
+      "position": 4,
+      "seite": "heck"
     },
     {
       "label": "Heck (GR)",
-      "position": 5
+      "position": 5,
+      "seite": "heck"
     }
   ]
 }

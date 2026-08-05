@@ -2,39 +2,53 @@
   "id": "rw",
   "name": "RW",
   "type": "RW",
-  "note": "Rüstwagen nach DIN 14555-3. Für diesen Typ liegt keine öffentliche Beladeliste vor — nur Geräteräume.",
+  "note": "Rüstwagen nach DIN 14555-3. Für diesen Typ liegt keine öffentliche Beladeliste vor — nur Geräteräume. Seiten und Positionen sind nach der verbreiteten Konvention vorbelegt — am eigenen Fahrzeug prüfen, jedes Fach lässt sich einzeln ändern.",
   "compartments": [
     {
       "label": "G1",
-      "position": 0
+      "position": 0,
+      "seite": "fahrerseite",
+      "laengsposition": "vorne"
     },
     {
       "label": "G2",
-      "position": 1
+      "position": 1,
+      "seite": "beifahrerseite",
+      "laengsposition": "vorne"
     },
     {
       "label": "G3",
-      "position": 2
+      "position": 2,
+      "seite": "fahrerseite",
+      "laengsposition": "mitte"
     },
     {
       "label": "G4",
-      "position": 3
+      "position": 3,
+      "seite": "beifahrerseite",
+      "laengsposition": "mitte"
     },
     {
       "label": "G5",
-      "position": 4
+      "position": 4,
+      "seite": "fahrerseite",
+      "laengsposition": "hinten"
     },
     {
       "label": "G6",
-      "position": 5
+      "position": 5,
+      "seite": "beifahrerseite",
+      "laengsposition": "hinten"
     },
     {
       "label": "Heck (GR)",
-      "position": 6
+      "position": 6,
+      "seite": "heck"
     },
     {
       "label": "Dach",
-      "position": 7
+      "position": 7,
+      "seite": "dach"
     }
   ]
 }

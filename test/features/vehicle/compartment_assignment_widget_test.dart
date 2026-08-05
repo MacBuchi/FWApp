@@ -48,7 +48,12 @@ void main() {
 
     await tester.tap(find.text('Gerät zuweisen'));
     await tester.pumpAndSettle();
+    // Seit Issue #149 wählt der Tipp aus, statt sofort zu schreiben — der
+    // Knopf schließt ab. Für ein einzelnes Gerät ist das ein Tipp mehr, für
+    // ein ganzes Fahrzeug sind es hunderte weniger.
     await tester.tap(find.text('Leitkegel'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('1 Gerät zuweisen'));
     await tester.pumpAndSettle();
 
     final zuweisungen = await db.assignmentDao.getByCompartment(compartmentId);

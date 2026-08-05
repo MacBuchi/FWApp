@@ -426,6 +426,82 @@ class AssignmentDao extends DatabaseAccessor<AppDatabase>
   Future<int> insertAssignment(EquipmentAssignmentsCompanion a) =>
       into(equipmentAssignments).insertOnConflictUpdate(a);
 
+  /// Legt mehrere Zuweisungen in EINER Transaktion an (Issue #149) und
+  /// liefert, wie viele wirklich geschrieben wurden.
+  ///
+  /// Geräte, die schon im Fach liegen, werden übersprungen statt ein zweites
+  /// Mal eingetragen — die Menge ändert man bewusst einzeln. Dasselbe gilt für
+  /// Doppelte in [equipmentIds] selbst.
+  Future<int> assignMany(int compartmentId, List<int> equipmentIds) =>
+      transaction(() async {
+        final gesehen = (await getByCompartment(compartmentId))
+            .map((a) => a.equipmentId)
+            .toSet();
+        var geschrieben = 0;
+        for (final id in equipmentIds) {
+          if (!gesehen.add(id)) continue;
+          await into(equipmentAssignments).insert(
+            EquipmentAssignmentsCompanion.insert(
+              compartmentId: compartmentId,
+              equipmentId: id,
+            ),
+          );
+          geschrieben++;
+        }
+        return geschrieben;
+      });
+
+  /// Verschiebt Zuweisungen in ein anderes Fach (Issue #149).
+  ///
+  /// ⚠️ Liegt dasselbe Gerät im Ziel schon, werden die Zeilen
+  /// **zusammengeführt** und die Mengen addiert. Es gibt keinen
+  /// Unique-Schlüssel auf (compartmentId, equipmentId) — ein schlichtes
+  /// Umschreiben erzeugte also eine zweite Zeile für dasselbe Gerät im selben
+  /// Fach, die in der Oberfläche doppelt erscheint und die niemand mehr
+  /// auseinanderhält.
+  Future<int> moveMany(List<int> assignmentIds, int zielCompartmentId) =>
+      transaction(() async {
+        final imZiel = {
+          for (final a in await getByCompartment(zielCompartmentId))
+            a.equipmentId: a,
+        };
+        var bewegt = 0;
+        for (final id in assignmentIds) {
+          final zeile = await (select(equipmentAssignments)
+                ..where((t) => t.id.equals(id)))
+              .getSingleOrNull();
+          if (zeile == null || zeile.compartmentId == zielCompartmentId) {
+            continue;
+          }
+          final vorhanden = imZiel[zeile.equipmentId];
+          if (vorhanden == null) {
+            await (update(equipmentAssignments)..where((t) => t.id.equals(id)))
+                .write(EquipmentAssignmentsCompanion(
+              compartmentId: Value(zielCompartmentId),
+              updatedAt: Value(DateTime.now()),
+            ));
+            imZiel[zeile.equipmentId] =
+                zeile.copyWith(compartmentId: zielCompartmentId);
+          } else {
+            final summe = vorhanden.quantity + zeile.quantity;
+            await (update(equipmentAssignments)
+                  ..where((t) => t.id.equals(vorhanden.id)))
+                .write(EquipmentAssignmentsCompanion(
+              quantity: Value(summe),
+              updatedAt: Value(DateTime.now()),
+            ));
+            await (delete(equipmentAssignments)..where((t) => t.id.equals(id)))
+                .go();
+            imZiel[zeile.equipmentId] = vorhanden.copyWith(quantity: summe);
+          }
+          bewegt++;
+        }
+        return bewegt;
+      });
+
+  Future<int> deleteAssignments(List<int> ids) =>
+      (delete(equipmentAssignments)..where((t) => t.id.isIn(ids))).go();
+
   Future<bool> updateAssignment(EquipmentAssignmentsCompanion a) =>
       update(equipmentAssignments).replace(a);
 

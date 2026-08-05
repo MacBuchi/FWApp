@@ -12,6 +12,24 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.28.0] – 2026-08-05
+
+### Neu
+
+- **Fahrzeug-Vorlagen kommen fertig verortet.** Wer ein Fahrzeug aus einer
+  Vorlage anlegt, bekommt Seiten und Positionen gleich mit — die Draufsicht
+  steht ab der ersten Sekunde. Vorbelegt ist die verbreitete Konvention;
+  der Hinweis der Vorlage sagt es dazu, und jedes Fach lässt sich einzeln
+  ändern.
+- **Zwei neue Vorlagen: TLF 3000 und TLF 4000.** Beide mit der üblichen
+  Trupp-Aufteilung (G1–G4, Heck, Dach), ohne Beladeliste — für die gibt es
+  keine öffentlich belegbare Quelle.
+- **Der Feedback-Dialog kennt jetzt vier Arten.** Neben Wunsch und Fehler
+  kannst du eine fehlende Fahrzeug-Vorlage 🚒 oder ein fehlendes
+  Standard-Gerät 🧰 vorschlagen. Die erste Zeile deiner Nachricht wird
+  dabei die Überschrift beim Entwickler — der Hinweis im Dialog erinnert
+  daran.
+
 ## [1.27.0] – 2026-08-05
 
 ### Neu

@@ -12,6 +12,31 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.29.0] – 2026-08-06
+
+### Neu
+
+- **Mehrere Geräte auf einmal einsortieren.** Im Geräte-Wähler hakt ein Tipp
+  jetzt an, statt sofort zuzuweisen und zu schließen — angehakt wird, was ins
+  Fach gehört, und ein Knopf legt alles gemeinsam hinein. Die Auswahl bleibt
+  auch dann bestehen, wenn zwischendurch neu gesucht wird: erst „Schlauch"
+  suchen und drei anhaken, dann „Strahlrohr" und zwei.
+- **Geräte lassen sich gemeinsam in ein anderes Fach schieben.** Ein langer
+  Druck auf ein Gerät im Fach öffnet die Auswahl; danach reicht ein Tipp je
+  weiterem Gerät. Über *Verschieben* wandern sie zusammen ins gewählte Fach,
+  über das Papierkorb-Symbol gemeinsam heraus.
+
+  Damit lässt sich vor allem das Sammelfach „Normbeladung (ungeprüft) – noch
+  zuzuordnen" auflösen, das eine Fahrzeug-Vorlage anlegt: am Fahrzeug stehen,
+  die Geräte eines Faches markieren, verschieben, weiter zum nächsten. Vorher
+  war das ein Handgriff je Gerät — bei einer vollständigen Beladung mehrere
+  hundert.
+
+### Behoben
+
+- Ein Gerät, das in ein Fach verschoben wird, in dem es bereits liegt, taucht
+  dort nicht mehr doppelt auf: Die Stückzahlen werden zusammengezählt.
+
 ## [1.28.0] – 2026-08-05
 
 ### Neu

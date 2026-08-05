@@ -337,8 +337,6 @@ class _CompartmentSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final assignmentsAsync =
-        ref.watch(assignmentListStreamProvider(compartment.id));
     return SafeArea(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -347,29 +345,209 @@ class _CompartmentSheet extends ConsumerWidget {
           _SheetVerortungsKopf(compartment: compartment),
           const SizedBox(height: 8),
           Flexible(
-            child: assignmentsAsync.when(
-              loading: () => const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: LinearProgressIndicator()),
-              error: (e, _) => Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text('Fehler: $e')),
-              data: (assignments) => ListView(
-                shrinkWrap: true,
+            child: SingleChildScrollView(
+              child: _ZuweisungsListe(compartment: compartment),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Die Geräteliste eines Fachs samt Sammelauswahl (Issue #149).
+///
+/// ⚠️ **Geteilt von beiden Wegen ins Fach:** der aufklappbaren Karte in der
+/// Fächerliste und dem Fach-Blatt der Draufsicht. Sie zweimal zu bauen hätte
+/// bedeutet, dass das Einsortieren je nach Ansicht anders geht — und die
+/// Karte ist ausgerechnet der Weg, den ein Fahrzeug ohne Verortung zeigt,
+/// also genau der, auf dem heute niemand einsortiert.
+class _ZuweisungsListe extends ConsumerStatefulWidget {
+  final Compartment compartment;
+  const _ZuweisungsListe({required this.compartment});
+
+  @override
+  ConsumerState<_ZuweisungsListe> createState() => _ZuweisungsListeState();
+}
+
+class _ZuweisungsListeState extends ConsumerState<_ZuweisungsListe> {
+  /// Ausgewählte ZUWEISUNGS-IDs (nicht Geräte-IDs) — verschoben und entfernt
+  /// wird die Zeile, nicht das Gerät.
+  final Set<int> _auswahl = {};
+
+  /// Es gibt keinen eigenen Schalter für den Auswahlmodus: Langes Tippen
+  /// beginnt ihn, das Abwählen des letzten Eintrags beendet ihn. Ein
+  /// zusätzlicher Modus-Knopf wäre ein Zustand mehr, den man erklären müsste.
+  bool get _auswahlModus => _auswahl.isNotEmpty;
+
+  void _umschalten(int assignmentId) => setState(() {
+        if (!_auswahl.add(assignmentId)) _auswahl.remove(assignmentId);
+      });
+
+  Future<void> _verschieben() async {
+    final alle = ref
+            .read(compartmentListStreamProvider(widget.compartment.vehicleId))
+            .value ??
+        const <Compartment>[];
+    final ziele =
+        alle.where((c) => c.id != widget.compartment.id).toList()
+          ..sort((a, b) => a.position.compareTo(b.position));
+    if (ziele.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Das Fahrzeug hat kein zweites Fach.')));
+      return;
+    }
+    final anzahl = _auswahl.length;
+    final ziel = await showDialog<Compartment>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: Text(anzahl == 1
+            ? 'Gerät verschieben nach …'
+            : '$anzahl Geräte verschieben nach …'),
+        children: [
+          for (final c in ziele)
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(ctx, c),
+              child: Row(
                 children: [
-                  if (assignments.isEmpty)
-                    const Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Text('Kein Gerät zugewiesen.',
-                            style: TextStyle(color: Colors.grey))),
-                  for (final a in assignments)
-                    _AssignmentRow(
-                        assignment: a, vehicleId: compartment.vehicleId),
-                  if (ref.watch(canEditProvider))
-                    _AssignTile(compartment: compartment),
+                  // Derselbe Farbpunkt wie in der Draufsicht — beim
+                  // Einsortieren am Fahrzeug denkt man in Seiten, nicht in
+                  // Fachnamen.
+                  Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: seitenFarbe(c.seite)?.akzent ??
+                          Theme.of(ctx).colorScheme.outlineVariant,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(child: Text(c.label)),
                 ],
               ),
             ),
+        ],
+      ),
+    );
+    if (ziel == null) return;
+    final bewegt = await ref
+        .read(assignmentRepositoryProvider)
+        .moveMany(_auswahl.toList(), ziel.id);
+    ref.invalidate(
+        assignmentsByVehicleProvider(widget.compartment.vehicleId));
+    if (!mounted) return;
+    setState(_auswahl.clear);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(bewegt == 1
+            ? '1 Gerät liegt jetzt in ${ziel.label}.'
+            : '$bewegt Geräte liegen jetzt in ${ziel.label}.')));
+  }
+
+  Future<void> _entfernen() async {
+    final anzahl = _auswahl.length;
+    await ref.read(assignmentRepositoryProvider).deleteMany(_auswahl.toList());
+    ref.invalidate(
+        assignmentsByVehicleProvider(widget.compartment.vehicleId));
+    if (!mounted) return;
+    setState(_auswahl.clear);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(anzahl == 1
+            ? '1 Gerät aus dem Fach entfernt.'
+            : '$anzahl Geräte aus dem Fach entfernt.')));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final assignmentsAsync =
+        ref.watch(assignmentListStreamProvider(widget.compartment.id));
+    final canEdit = ref.watch(canEditProvider);
+    return assignmentsAsync.when(
+      loading: () => const Padding(
+          padding: EdgeInsets.all(16), child: LinearProgressIndicator()),
+      error: (e, _) =>
+          Padding(padding: const EdgeInsets.all(16), child: Text('Fehler: $e')),
+      data: (assignments) => Column(
+        children: [
+          if (_auswahlModus)
+            _AuswahlLeiste(
+              anzahl: _auswahl.length,
+              onVerschieben: _verschieben,
+              onEntfernen: _entfernen,
+              onAbbrechen: () => setState(_auswahl.clear),
+            ),
+          if (assignments.isEmpty)
+            const Padding(
+                padding: EdgeInsets.all(16),
+                child: Text('Kein Gerät zugewiesen.',
+                    style: TextStyle(color: Colors.grey))),
+          for (final a in assignments)
+            _AssignmentRow(
+              assignment: a,
+              vehicleId: widget.compartment.vehicleId,
+              ausgewaehlt: _auswahl.contains(a.id),
+              auswahlModus: _auswahlModus,
+              // Ohne Schreibrecht gibt es nichts zu verschieben — dann
+              // bleibt die Zeile die Verknüpfung von früher.
+              onAuswahl: canEdit ? () => _umschalten(a.id) : null,
+            ),
+          // Der bisher einzige Weg, ein Gerät in ein Fach zu bekommen, waren
+          // Import und Vorlage — von Hand ging es schlicht nicht (Issue #86).
+          // Deshalb hier, wo man das Fach vor sich hat.
+          if (canEdit && !_auswahlModus)
+            _AssignTile(compartment: widget.compartment),
+        ],
+      ),
+    );
+  }
+}
+
+/// Kopfleiste im Auswahlmodus: wie viele ausgewählt sind und was damit geht.
+class _AuswahlLeiste extends StatelessWidget {
+  final int anzahl;
+  final VoidCallback onVerschieben;
+  final VoidCallback onEntfernen;
+  final VoidCallback onAbbrechen;
+
+  const _AuswahlLeiste({
+    required this.anzahl,
+    required this.onVerschieben,
+    required this.onEntfernen,
+    required this.onAbbrechen,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+      padding: const EdgeInsets.fromLTRB(12, 4, 4, 4),
+      decoration: BoxDecoration(
+        color: scheme.secondaryContainer,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text('$anzahl ausgewählt',
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: scheme.onSecondaryContainer)),
+          ),
+          TextButton.icon(
+            onPressed: onVerschieben,
+            icon: const Icon(Icons.drive_file_move_outlined, size: 20),
+            label: const Text('Verschieben'),
+          ),
+          IconButton(
+            onPressed: onEntfernen,
+            icon: const Icon(Icons.delete_outline),
+            tooltip: 'Aus dem Fach entfernen',
+          ),
+          IconButton(
+            onPressed: onAbbrechen,
+            icon: const Icon(Icons.close),
+            tooltip: 'Auswahl aufheben',
           ),
         ],
       ),
@@ -555,34 +733,7 @@ class _CompartmentTile extends ConsumerWidget {
           error: (_, _) => const Text('Fehler'),
           data: (a) => Text(untertitel(a.length)),
         ),
-        children: [
-          assignmentsAsync.when(
-            loading: () =>
-                const Padding(padding: EdgeInsets.all(8), child: LinearProgressIndicator()),
-            error: (e, _) => Padding(
-              padding: const EdgeInsets.all(8),
-              child: Text('Fehler: $e'),
-            ),
-            data: (assignments) => Column(
-              children: [
-                if (assignments.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.all(12),
-                    child: Text('Kein Gerät zugewiesen.',
-                        style: TextStyle(color: Colors.grey)),
-                  ),
-                for (final a in assignments)
-                  _AssignmentRow(
-                      assignment: a, vehicleId: compartment.vehicleId),
-                // Der bisher einzige Weg, ein Gerät in ein Fach zu bekommen,
-                // waren Import und Vorlage — von Hand ging es schlicht nicht
-                // (Issue #86). Deshalb hier, wo man das Fach vor sich hat.
-                if (ref.watch(canEditProvider))
-                  _AssignTile(compartment: compartment),
-              ],
-            ),
-          ),
-        ],
+        children: [_ZuweisungsListe(compartment: compartment)],
       ),
     );
   }
@@ -591,7 +742,20 @@ class _CompartmentTile extends ConsumerWidget {
 class _AssignmentRow extends ConsumerWidget {
   final EquipmentAssignment assignment;
   final int vehicleId;
-  const _AssignmentRow({required this.assignment, required this.vehicleId});
+
+  /// Auswahl für Sammelaktionen (Issue #149). [onAuswahl] ist null, wenn
+  /// niemand schreiben darf — dann bleibt die Zeile die reine Verknüpfung.
+  final bool ausgewaehlt;
+  final bool auswahlModus;
+  final VoidCallback? onAuswahl;
+
+  const _AssignmentRow({
+    required this.assignment,
+    required this.vehicleId,
+    this.ausgewaehlt = false,
+    this.auswahlModus = false,
+    this.onAuswahl,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -603,18 +767,26 @@ class _AssignmentRow extends ConsumerWidget {
       error: (_, _) => const ListTile(title: Text('Fehler')),
       data: (item) => ListTile(
         dense: true,
-        leading: EquipmentAvatar(
-          imagePath: item?.imagePath,
-          functions: item?.equipmentFunctions ?? const [],
-          size: 40,
-        ),
+        selected: ausgewaehlt,
+        leading: auswahlModus
+            ? Checkbox(
+                value: ausgewaehlt,
+                onChanged: onAuswahl == null ? null : (_) => onAuswahl!(),
+              )
+            : EquipmentAvatar(
+                imagePath: item?.imagePath,
+                functions: item?.equipmentFunctions ?? const [],
+                size: 40,
+              ),
         title: Text(item?.name ?? '?'),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text('× ${assignment.quantity}',
                 style: const TextStyle(fontWeight: FontWeight.bold)),
-            if (canEdit)
+            // Im Auswahlmodus verschwindet das Einzel-Menü: Was gerade für
+            // mehrere gilt, soll nicht danebenstehen und für eines gelten.
+            if (canEdit && !auswahlModus)
               PopupMenuButton<String>(
                 onSelected: (action) => switch (action) {
                   'menge' => _changeQuantity(context, ref),
@@ -629,9 +801,16 @@ class _AssignmentRow extends ConsumerWidget {
               ),
           ],
         ),
-        onTap: item != null
-            ? () => context.push('/equipment/${item.id}')
-            : null,
+        // Langes Tippen beginnt die Auswahl — die im Android-Alltag gelernte
+        // Geste. Ist sie einmal offen, wählt auch der kurze Tipp aus, statt
+        // zum Gerät zu springen: Sonst verliert man die Auswahl an einem
+        // Fehlgriff.
+        onLongPress: onAuswahl,
+        onTap: auswahlModus
+            ? onAuswahl
+            : (item != null
+                ? () => context.push('/equipment/${item.id}')
+                : null),
       ),
     );
   }
@@ -732,6 +911,13 @@ class _AssignTile extends ConsumerWidget {
 /// Durchsuchbare Geräteliste; bereits zugewiesene Geräte sind ausgegraut.
 /// Neue Geräte entstehen weiterhin unter „Mehr → Geräte" — hier wird nur
 /// zugeordnet, was es schon gibt (Bibliothek, Katalog oder eigene).
+///
+/// **Mehrfachauswahl (Issue #149):** Ein Tipp wählt aus, statt sofort
+/// zuzuweisen und das Blatt zu schließen. Ein Fahrzeug hat rund 60 Geräte —
+/// mit „auswählen und schließen" war das Einsortieren rund 250 Handgriffe, und
+/// genau daran ist es im Feld gescheitert. ⚠️ Die Auswahl überlebt das Ändern
+/// der Suche: Man sucht „Schlauch", hakt drei an, sucht „Strahlrohr", hakt
+/// zwei an. Ginge sie beim Tippen verloren, wäre die Mehrfachauswahl keine.
 class _EquipmentPickerSheet extends ConsumerStatefulWidget {
   final Compartment compartment;
   const _EquipmentPickerSheet({required this.compartment});
@@ -748,19 +934,36 @@ class _EquipmentPickerSheetState extends ConsumerState<_EquipmentPickerSheet> {
   /// Kleingeschrieben, nur zum Filtern.
   String get _suche => _eingabe.toLowerCase();
 
-  Future<void> _assign(int equipmentId, String name) async {
-    await ref.read(assignmentRepositoryProvider).insert(EquipmentAssignment(
-          id: 0, // vergibt die Datenbank
-          compartmentId: widget.compartment.id,
-          equipmentId: equipmentId,
-          quantity: 1,
-          updatedAt: DateTime.now(),
-        ));
+  /// Angehakte Geräte-IDs. Lebt am Zustand des Blattes, nicht an der
+  /// Trefferliste — deshalb übersteht sie jede Sucheingabe.
+  final Set<int> _auswahl = {};
+
+  /// Namen der angehakten Geräte, nur für die Rückmeldung nach dem Zuweisen.
+  final Map<int, String> _namen = {};
+
+  void _umschalten(int id, String name) => setState(() {
+        if (!_auswahl.add(id)) {
+          _auswahl.remove(id);
+        } else {
+          _namen[id] = name;
+        }
+      });
+
+  Future<void> _assignSelected() async {
+    final geschrieben = await ref
+        .read(assignmentRepositoryProvider)
+        .assignMany(widget.compartment.id, _auswahl.toList());
     ref.invalidate(assignmentsByVehicleProvider(widget.compartment.vehicleId));
     if (!mounted) return;
+    // Bei genau einem Gerät ist sein Name die hilfreichere Rückmeldung als
+    // „1 Gerät" — man hat gerade nach ihm gesucht.
+    final was = geschrieben == 1
+        ? '„${_namen[_auswahl.first] ?? 'Gerät'}“'
+        : '$geschrieben Geräte';
     Navigator.of(context).pop();
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('„$name“ liegt jetzt in ${widget.compartment.label}.')));
+        content: Text(
+            '$was ${geschrieben == 1 ? 'liegt' : 'liegen'} jetzt in ${widget.compartment.label}.')));
   }
 
   @override
@@ -830,8 +1033,10 @@ class _EquipmentPickerSheetState extends ConsumerState<_EquipmentPickerSheet> {
                       itemBuilder: (context, i) {
                         final e = treffer[i];
                         final schonDa = zugewiesen.contains(e.id);
+                        final gewaehlt = _auswahl.contains(e.id);
                         return ListTile(
                           enabled: !schonDa,
+                          selected: gewaehlt,
                           leading: EquipmentAvatar(
                             imagePath: e.imagePath,
                             functions: e.equipmentFunctions,
@@ -842,13 +1047,35 @@ class _EquipmentPickerSheetState extends ConsumerState<_EquipmentPickerSheet> {
                               ? const Text(
                                   'Bereits im Fach — Menge über das Menü')
                               : null,
-                          onTap: () => _assign(e.id, e.name),
+                          trailing: schonDa
+                              ? null
+                              : Checkbox(
+                                  value: gewaehlt,
+                                  onChanged: (_) => _umschalten(e.id, e.name),
+                                ),
+                          onTap: schonDa
+                              ? null
+                              : () => _umschalten(e.id, e.name),
                         );
                       },
                     );
                   },
                 ),
               ),
+              // Die Leiste erscheint erst mit der ersten Auswahl — solange
+              // nichts angehakt ist, wäre sie ein toter Knopf, der Platz von
+              // der Trefferliste nimmt.
+              if (_auswahl.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                  child: FilledButton.icon(
+                    onPressed: _assignSelected,
+                    icon: const Icon(Icons.playlist_add_check),
+                    label: Text(_auswahl.length == 1
+                        ? '1 Gerät zuweisen'
+                        : '${_auswahl.length} Geräte zuweisen'),
+                  ),
+                ),
             ],
           ),
         ),

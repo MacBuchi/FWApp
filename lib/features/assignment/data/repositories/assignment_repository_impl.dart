@@ -50,6 +50,18 @@ class AssignmentRepositoryImpl implements AssignmentRepository {
   @override
   Future<void> delete(int id) => _dao.deleteAssignment(id);
 
+  @override
+  Future<int> assignMany(int compartmentId, List<int> equipmentIds) =>
+      _dao.assignMany(compartmentId, equipmentIds);
+
+  @override
+  Future<int> moveMany(List<int> assignmentIds, int zielCompartmentId) =>
+      _dao.moveMany(assignmentIds, zielCompartmentId);
+
+  @override
+  Future<void> deleteMany(List<int> assignmentIds) =>
+      _dao.deleteAssignments(assignmentIds);
+
   EquipmentAssignment _toEntity(AssignmentData row) => EquipmentAssignment(
         id: row.id,
         compartmentId: row.compartmentId,

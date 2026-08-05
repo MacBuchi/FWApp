@@ -12,6 +12,38 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.27.0] – 2026-08-05
+
+### Neu
+
+- **Die Fahrzeugübersicht zeigt jetzt eine Draufsicht.** Fahrtrichtung nach
+  oben: Front oben, Fahrerseite links, Dach in der Mitte, Beifahrerseite
+  rechts, Heck unten — ein Blick aufs Schema statt einer Liste im Kopf.
+  Das Aufklappbild bleibt als zweite Ansicht erreichbar, und ohne
+  Seitenangaben sieht alles aus wie bisher.
+- **Jede Seite hat ihre feste Farbe.** Beifahrerseite warm, Fahrerseite
+  kühl, Heck grün, Dach ocker, Front violett — im Schema, in der
+  Fächerliste und im Fach. Die Farben bleiben gleich, egal welche
+  Farbpalette du wählst: Sie sind die Merkhilfe, kein Schmuck.
+- **Fächer haben jetzt eine Position an der Seite: vorne, Mitte oder
+  hinten.** Sie wird wie die Seite aus dem Namen vorgeschlagen (G1/G2
+  vorne, G3/G4 Mitte, G5/G6 hinten) und erst übernommen, wenn du
+  bestätigst. Der Knopf in der Fächerverwaltung heißt jetzt „Verortung
+  aus den Namen vorschlagen" und füllt auch bei schon zugewiesenen Seiten
+  die fehlenden Positionen nach.
+- **Das Fach beantwortet „wo finde ich das?".** Beim Antippen zeigt sein
+  Kopf Seite und Position in der Seitenfarbe, dazu die Leiste
+  Front · vorne · Mitte · hinten · Heck und ein Mini-Schema mit dem
+  markierten Fach.
+- **„Wo liegt's?" fragt auf demselben Bild ab.** Sobald ein Fahrzeug
+  verortet ist, tippst du im Quiz auf die Draufsicht — gelernt wird am
+  gleichen Schema, das auch die Übersicht zeigt.
+
+### Behoben
+
+- **Das Quiz und Drag & Drop kannten die Seiten nicht.** Beide zeigten das
+  Fahrzeug ohne Bereiche, auch wenn Seiten längst zugewiesen waren.
+
 ## [1.26.0] – 2026-08-05
 
 ### Neu

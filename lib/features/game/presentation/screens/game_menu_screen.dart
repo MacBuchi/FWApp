@@ -45,7 +45,7 @@ class GameMenuScreen extends StatelessWidget {
           _GameCard(
             icon: Icons.grid_view,
             title: 'Wo liegt\'s?',
-            subtitle: 'Tippe das richtige Fach in der Schnittdarstellung',
+            subtitle: 'Tippe das richtige Fach im Fahrzeugschema',
             color: Colors.blue.shade800,
             onTap: () => context.push('/game/cutaway-quiz'),
           ),

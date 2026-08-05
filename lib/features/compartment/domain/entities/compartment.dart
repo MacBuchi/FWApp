@@ -1,5 +1,6 @@
 /// compartment.dart – Compartment domain entity.
 library;
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'compartment.freezed.dart';
@@ -19,6 +20,12 @@ abstract class Compartment with _$Compartment {
     /// zugeordnet. Werte: fahrerseite | beifahrerseite | heck | dach | front
     /// (fahrzeug_seiten.dart).
     String? seite,
+
+    /// Position entlang der Fahrzeuglängsachse (Issue #141); `null` = keine.
+    /// Werte: vorne | mitte | hinten (fahrzeug_seiten.dart). Nur auf
+    /// Fahrer-/Beifahrerseite sinnvoll — Heck, Dach und Front tragen ihren
+    /// Ort schon in der Seite.
+    String? laengsposition,
     required DateTime updatedAt,
   }) = _Compartment;
 }

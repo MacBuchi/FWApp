@@ -751,6 +751,17 @@ class $CompartmentsTable extends Compartments
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _laengspositionMeta = const VerificationMeta(
+    'laengsposition',
+  );
+  @override
+  late final GeneratedColumn<String> laengsposition = GeneratedColumn<String>(
+    'laengsposition',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _updatedAtMeta = const VerificationMeta(
     'updatedAt',
   );
@@ -773,6 +784,7 @@ class $CompartmentsTable extends Compartments
     gridCol,
     gridColSpan,
     seite,
+    laengsposition,
     updatedAt,
   ];
   @override
@@ -839,6 +851,15 @@ class $CompartmentsTable extends Compartments
         seite.isAcceptableOrUnknown(data['seite']!, _seiteMeta),
       );
     }
+    if (data.containsKey('laengsposition')) {
+      context.handle(
+        _laengspositionMeta,
+        laengsposition.isAcceptableOrUnknown(
+          data['laengsposition']!,
+          _laengspositionMeta,
+        ),
+      );
+    }
     if (data.containsKey('updated_at')) {
       context.handle(
         _updatedAtMeta,
@@ -891,6 +912,10 @@ class $CompartmentsTable extends Compartments
         DriftSqlType.string,
         data['${effectivePrefix}seite'],
       ),
+      laengsposition: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}laengsposition'],
+      ),
       updatedAt:
           attachedDatabase.typeMapping.read(
             DriftSqlType.dateTime,
@@ -918,6 +943,12 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
   /// Seite bestehender Fächer niemand kennt — sie wird in der App
   /// vorgeschlagen und bestätigt, nicht geraten.
   final String? seite;
+
+  /// Position entlang der Fahrzeuglängsachse (Issue #141):
+  /// vorne | mitte | hinten. Nur auf Fahrer-/Beifahrerseite sinnvoll und wie
+  /// [seite] nullable ohne Backfill — vorgeschlagen und bestätigt, nicht
+  /// geraten.
+  final String? laengsposition;
   final DateTime updatedAt;
   const CompartmentData({
     required this.id,
@@ -928,6 +959,7 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
     this.gridCol,
     required this.gridColSpan,
     this.seite,
+    this.laengsposition,
     required this.updatedAt,
   });
   @override
@@ -946,6 +978,9 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
     map['grid_col_span'] = Variable<int>(gridColSpan);
     if (!nullToAbsent || seite != null) {
       map['seite'] = Variable<String>(seite);
+    }
+    if (!nullToAbsent || laengsposition != null) {
+      map['laengsposition'] = Variable<String>(laengsposition);
     }
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
@@ -968,6 +1003,10 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
       gridColSpan: Value(gridColSpan),
       seite:
           seite == null && nullToAbsent ? const Value.absent() : Value(seite),
+      laengsposition:
+          laengsposition == null && nullToAbsent
+              ? const Value.absent()
+              : Value(laengsposition),
       updatedAt: Value(updatedAt),
     );
   }
@@ -986,6 +1025,7 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
       gridCol: serializer.fromJson<int?>(json['gridCol']),
       gridColSpan: serializer.fromJson<int>(json['gridColSpan']),
       seite: serializer.fromJson<String?>(json['seite']),
+      laengsposition: serializer.fromJson<String?>(json['laengsposition']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
   }
@@ -1001,6 +1041,7 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
       'gridCol': serializer.toJson<int?>(gridCol),
       'gridColSpan': serializer.toJson<int>(gridColSpan),
       'seite': serializer.toJson<String?>(seite),
+      'laengsposition': serializer.toJson<String?>(laengsposition),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
   }
@@ -1014,6 +1055,7 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
     Value<int?> gridCol = const Value.absent(),
     int? gridColSpan,
     Value<String?> seite = const Value.absent(),
+    Value<String?> laengsposition = const Value.absent(),
     DateTime? updatedAt,
   }) => CompartmentData(
     id: id ?? this.id,
@@ -1024,6 +1066,8 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
     gridCol: gridCol.present ? gridCol.value : this.gridCol,
     gridColSpan: gridColSpan ?? this.gridColSpan,
     seite: seite.present ? seite.value : this.seite,
+    laengsposition:
+        laengsposition.present ? laengsposition.value : this.laengsposition,
     updatedAt: updatedAt ?? this.updatedAt,
   );
   CompartmentData copyWithCompanion(CompartmentsCompanion data) {
@@ -1037,6 +1081,10 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
       gridColSpan:
           data.gridColSpan.present ? data.gridColSpan.value : this.gridColSpan,
       seite: data.seite.present ? data.seite.value : this.seite,
+      laengsposition:
+          data.laengsposition.present
+              ? data.laengsposition.value
+              : this.laengsposition,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
   }
@@ -1052,6 +1100,7 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
           ..write('gridCol: $gridCol, ')
           ..write('gridColSpan: $gridColSpan, ')
           ..write('seite: $seite, ')
+          ..write('laengsposition: $laengsposition, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
         .toString();
@@ -1067,6 +1116,7 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
     gridCol,
     gridColSpan,
     seite,
+    laengsposition,
     updatedAt,
   );
   @override
@@ -1081,6 +1131,7 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
           other.gridCol == this.gridCol &&
           other.gridColSpan == this.gridColSpan &&
           other.seite == this.seite &&
+          other.laengsposition == this.laengsposition &&
           other.updatedAt == this.updatedAt);
 }
 
@@ -1093,6 +1144,7 @@ class CompartmentsCompanion extends UpdateCompanion<CompartmentData> {
   final Value<int?> gridCol;
   final Value<int> gridColSpan;
   final Value<String?> seite;
+  final Value<String?> laengsposition;
   final Value<DateTime> updatedAt;
   const CompartmentsCompanion({
     this.id = const Value.absent(),
@@ -1103,6 +1155,7 @@ class CompartmentsCompanion extends UpdateCompanion<CompartmentData> {
     this.gridCol = const Value.absent(),
     this.gridColSpan = const Value.absent(),
     this.seite = const Value.absent(),
+    this.laengsposition = const Value.absent(),
     this.updatedAt = const Value.absent(),
   });
   CompartmentsCompanion.insert({
@@ -1114,6 +1167,7 @@ class CompartmentsCompanion extends UpdateCompanion<CompartmentData> {
     this.gridCol = const Value.absent(),
     this.gridColSpan = const Value.absent(),
     this.seite = const Value.absent(),
+    this.laengsposition = const Value.absent(),
     this.updatedAt = const Value.absent(),
   }) : vehicleId = Value(vehicleId),
        label = Value(label);
@@ -1126,6 +1180,7 @@ class CompartmentsCompanion extends UpdateCompanion<CompartmentData> {
     Expression<int>? gridCol,
     Expression<int>? gridColSpan,
     Expression<String>? seite,
+    Expression<String>? laengsposition,
     Expression<DateTime>? updatedAt,
   }) {
     return RawValuesInsertable({
@@ -1137,6 +1192,7 @@ class CompartmentsCompanion extends UpdateCompanion<CompartmentData> {
       if (gridCol != null) 'grid_col': gridCol,
       if (gridColSpan != null) 'grid_col_span': gridColSpan,
       if (seite != null) 'seite': seite,
+      if (laengsposition != null) 'laengsposition': laengsposition,
       if (updatedAt != null) 'updated_at': updatedAt,
     });
   }
@@ -1150,6 +1206,7 @@ class CompartmentsCompanion extends UpdateCompanion<CompartmentData> {
     Value<int?>? gridCol,
     Value<int>? gridColSpan,
     Value<String?>? seite,
+    Value<String?>? laengsposition,
     Value<DateTime>? updatedAt,
   }) {
     return CompartmentsCompanion(
@@ -1161,6 +1218,7 @@ class CompartmentsCompanion extends UpdateCompanion<CompartmentData> {
       gridCol: gridCol ?? this.gridCol,
       gridColSpan: gridColSpan ?? this.gridColSpan,
       seite: seite ?? this.seite,
+      laengsposition: laengsposition ?? this.laengsposition,
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
@@ -1192,6 +1250,9 @@ class CompartmentsCompanion extends UpdateCompanion<CompartmentData> {
     if (seite.present) {
       map['seite'] = Variable<String>(seite.value);
     }
+    if (laengsposition.present) {
+      map['laengsposition'] = Variable<String>(laengsposition.value);
+    }
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
@@ -1209,6 +1270,7 @@ class CompartmentsCompanion extends UpdateCompanion<CompartmentData> {
           ..write('gridCol: $gridCol, ')
           ..write('gridColSpan: $gridColSpan, ')
           ..write('seite: $seite, ')
+          ..write('laengsposition: $laengsposition, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
         .toString();
@@ -7377,6 +7439,7 @@ typedef $$CompartmentsTableCreateCompanionBuilder =
       Value<int?> gridCol,
       Value<int> gridColSpan,
       Value<String?> seite,
+      Value<String?> laengsposition,
       Value<DateTime> updatedAt,
     });
 typedef $$CompartmentsTableUpdateCompanionBuilder =
@@ -7389,6 +7452,7 @@ typedef $$CompartmentsTableUpdateCompanionBuilder =
       Value<int?> gridCol,
       Value<int> gridColSpan,
       Value<String?> seite,
+      Value<String?> laengsposition,
       Value<DateTime> updatedAt,
     });
 
@@ -7501,6 +7565,11 @@ class $$CompartmentsTableFilterComposer
 
   ColumnFilters<String> get seite => $composableBuilder(
     column: $table.seite,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get laengsposition => $composableBuilder(
+    column: $table.laengsposition,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -7627,6 +7696,11 @@ class $$CompartmentsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get laengsposition => $composableBuilder(
+    column: $table.laengsposition,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
     column: $table.updatedAt,
     builder: (column) => ColumnOrderings(column),
@@ -7687,6 +7761,11 @@ class $$CompartmentsTableAnnotationComposer
 
   GeneratedColumn<String> get seite =>
       $composableBuilder(column: $table.seite, builder: (column) => column);
+
+  GeneratedColumn<String> get laengsposition => $composableBuilder(
+    column: $table.laengsposition,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
@@ -7808,6 +7887,7 @@ class $$CompartmentsTableTableManager
                 Value<int?> gridCol = const Value.absent(),
                 Value<int> gridColSpan = const Value.absent(),
                 Value<String?> seite = const Value.absent(),
+                Value<String?> laengsposition = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => CompartmentsCompanion(
                 id: id,
@@ -7818,6 +7898,7 @@ class $$CompartmentsTableTableManager
                 gridCol: gridCol,
                 gridColSpan: gridColSpan,
                 seite: seite,
+                laengsposition: laengsposition,
                 updatedAt: updatedAt,
               ),
           createCompanionCallback:
@@ -7830,6 +7911,7 @@ class $$CompartmentsTableTableManager
                 Value<int?> gridCol = const Value.absent(),
                 Value<int> gridColSpan = const Value.absent(),
                 Value<String?> seite = const Value.absent(),
+                Value<String?> laengsposition = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => CompartmentsCompanion.insert(
                 id: id,
@@ -7840,6 +7922,7 @@ class $$CompartmentsTableTableManager
                 gridCol: gridCol,
                 gridColSpan: gridColSpan,
                 seite: seite,
+                laengsposition: laengsposition,
                 updatedAt: updatedAt,
               ),
           withReferenceMapper:

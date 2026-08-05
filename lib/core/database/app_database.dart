@@ -38,6 +38,12 @@ class Compartments extends Table {
   /// Seite bestehender Fächer niemand kennt — sie wird in der App
   /// vorgeschlagen und bestätigt, nicht geraten.
   TextColumn get seite => text().nullable()();
+
+  /// Position entlang der Fahrzeuglängsachse (Issue #141):
+  /// vorne | mitte | hinten. Nur auf Fahrer-/Beifahrerseite sinnvoll und wie
+  /// [seite] nullable ohne Backfill — vorgeschlagen und bestätigt, nicht
+  /// geraten.
+  TextColumn get laengsposition => text().nullable()();
   DateTimeColumn get updatedAt =>
       dateTime().withDefault(currentDateAndTime)();
 }
@@ -688,7 +694,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -735,6 +741,11 @@ class AppDatabase extends _$AppDatabase {
             // bestehende Fächer laufen unverändert weiter und landen in der
             // Ansicht im Bereich „Ohne Seite", bis jemand sie zuordnet.
             await m.addColumn(compartments, compartments.seite);
+          }
+          if (from < 7) {
+            // Längsposition je Fach (Issue #141) — dieselbe Choreografie
+            // wie die Seite: nullable, kein Backfill, Vorschlag in der App.
+            await m.addColumn(compartments, compartments.laengsposition);
           }
         },
         beforeOpen: (details) async {

@@ -79,6 +79,9 @@ class VehicleTemplateService {
             vehicleId: vehicleId,
             label: c.label,
             position: Value(c.position),
+            // Verortung aus der Vorlage (Issue #144) — je Fach änderbar.
+            seite: Value(c.seite),
+            laengsposition: Value(c.laengsposition),
           ),
         );
       }

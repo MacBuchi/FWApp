@@ -18,6 +18,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/logging/app_logger.dart';
+import 'package:fwapp/features/compartment/domain/fahrzeug_seiten.dart';
 
 /// Verzeichnis der mitgelieferten Vorlagen.
 const kVehicleTemplateDir = 'assets/vehicle_templates';
@@ -34,7 +35,21 @@ class TemplateCompartment {
   final String label;
   final int position;
 
-  const TemplateCompartment({required this.label, required this.position});
+  /// Verortung (Issue #144): Seite und Längsposition, vorbelegt nach der
+  /// verbreiteten Konvention. Anders als beim Bestand (#126/#141) ist das
+  /// KEIN stilles Setzen: Wer eine Vorlage wählt, wählt ausdrücklich ein
+  /// Konventions-Gerüst — auch die Fachnamen sind Konvention — und jedes
+  /// Fach bleibt danach einzeln korrigierbar. Der Hinweis der Vorlage
+  /// sagt es dazu.
+  final String? seite;
+  final String? laengsposition;
+
+  const TemplateCompartment({
+    required this.label,
+    required this.position,
+    this.seite,
+    this.laengsposition,
+  });
 }
 
 /// Eine Beladungsposition der Vorlage.
@@ -103,9 +118,18 @@ VehicleTemplate? parseVehicleTemplate(String raw) {
       if (c is! Map) continue;
       final label = c['label'] as String?;
       if (label == null || label.isEmpty) continue;
+      final seite = c['seite'] as String?;
+      final laengsposition = c['laengsposition'] as String?;
       compartments.add(TemplateCompartment(
         label: label,
         position: (c['position'] as num?)?.toInt() ?? index,
+        // Nur Werte, die auch der Server annimmt (CHECK-Zwilling in
+        // fahrzeug_seiten.dart): Ein Tippfehler in einer Vorlage fiele
+        // sonst erst beim Veröffentlichen auf — und dann mit dem ganzen
+        // Schnappschuss. Lieber ein Fach unter „Ohne Seite".
+        seite: istGueltigeSeite(seite) ? seite : null,
+        laengsposition:
+            istGueltigeLaengsposition(laengsposition) ? laengsposition : null,
       ));
       index++;
     }
@@ -156,6 +180,8 @@ const kBundledVehicleTemplateIds = [
   'lf20',
   'hlf20',
   'tsf_w',
+  'tlf3000',
+  'tlf4000',
   'dlk23_12',
   'rw',
   'gw_l',

@@ -2,23 +2,27 @@
   "id": "elw1",
   "name": "ELW 1",
   "type": "ELW 1",
-  "note": "Einsatzleitwagen nach DIN 14507-2. Für diesen Typ liegt keine öffentliche Beladeliste vor — nur Geräteräume.",
+  "note": "Einsatzleitwagen nach DIN 14507-2. Für diesen Typ liegt keine öffentliche Beladeliste vor — nur Geräteräume. Seiten und Positionen sind nach der verbreiteten Konvention vorbelegt — am eigenen Fahrzeug prüfen, jedes Fach lässt sich einzeln ändern.",
   "compartments": [
     {
       "label": "G1",
-      "position": 0
+      "position": 0,
+      "seite": "fahrerseite"
     },
     {
       "label": "G2",
-      "position": 1
+      "position": 1,
+      "seite": "beifahrerseite"
     },
     {
       "label": "Heck",
-      "position": 2
+      "position": 2,
+      "seite": "heck"
     },
     {
       "label": "Arbeitsraum",
-      "position": 3
+      "position": 3,
+      "seite": "front"
     }
   ]
 }

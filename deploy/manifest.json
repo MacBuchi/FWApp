@@ -88,6 +88,10 @@
     {
       "name": "20260805090000_fach_laengsposition.sql",
       "sha256": "a4e241cbf9f37267addce7e465ac769cac2eab9973aff36ec2e256b8e49e00b0"
+    },
+    {
+      "name": "20260805130000_feedback_fahrzeug_vorschlag.sql",
+      "sha256": "97fb42d67acac7a5c0a4184d5888a7b930023e4231c8f2751fb36fd2379e65b9"
     }
   ],
   "functions": {

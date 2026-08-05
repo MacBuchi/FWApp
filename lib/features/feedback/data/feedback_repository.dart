@@ -4,12 +4,14 @@
 library;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// `katalog` ist der Vorschlag für den GLOBALEN Gerätekatalog (Issue #103) —
-/// derselbe Weg wie Wunsch und Fehler, nur mit eigenem Label im Issue. Der
-/// Server prüft die drei Werte per Check-Constraint; ein vierter braucht
-/// deshalb IMMER eine Migration, sonst scheitert das Insert stumm mit
-/// „Senden fehlgeschlagen".
-enum FeedbackType { feature, bug, katalog }
+/// `katalog` ist der Vorschlag für den GLOBALEN Gerätekatalog (Issue #103),
+/// `fahrzeug` der für eine fehlende Fahrzeug-Vorlage (Issue #145) — derselbe
+/// Weg wie Wunsch und Fehler, nur mit eigenem Label im Issue. Bei beiden
+/// Vorschlägen trägt die ERSTE ZEILE den Namen: Daraus baut der Bot die
+/// Überschrift. Der Server prüft die vier Werte per Check-Constraint; ein
+/// fünfter braucht deshalb IMMER eine Migration, sonst scheitert das Insert
+/// stumm mit „Senden fehlgeschlagen".
+enum FeedbackType { feature, bug, katalog, fahrzeug }
 
 /// Server-Constraint der `feedback`-Tabelle:
 /// `check (char_length(message) between 3 and 2000)`.

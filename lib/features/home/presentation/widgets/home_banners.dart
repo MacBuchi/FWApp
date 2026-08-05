@@ -51,9 +51,13 @@ Future<void> showFeedbackDialog(BuildContext context, WidgetRef ref) async {
     ref.read(feedbackBannerDismissedProvider.notifier).state = true;
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(result.type == FeedbackType.bug
-              ? 'Danke für die Meldung — wir schauen uns das an! 🐛'
-              : 'Danke für deinen Wunsch! 💡')));
+          content: Text(switch (result.type) {
+        FeedbackType.bug =>
+          'Danke für die Meldung — wir schauen uns das an! 🐛',
+        FeedbackType.feature => 'Danke für deinen Wunsch! 💡',
+        FeedbackType.fahrzeug => 'Danke für den Fahrzeug-Vorschlag! 🚒',
+        FeedbackType.katalog => 'Danke für den Geräte-Vorschlag! 🧰',
+      })));
     }
   } catch (_) {
     if (context.mounted) {
@@ -499,6 +503,58 @@ class _FeedbackDialogState extends State<_FeedbackDialog> {
   FeedbackType _type = FeedbackType.feature;
   final _textController = TextEditingController();
 
+  /// Anzeige-Reihenfolge: erst die zwei klassischen Meldungen, dann die
+  /// beiden Inhalts-Vorschläge (Issue #145) — Chips statt SegmentedButton,
+  /// weil vier Segmente auf Telefonbreite nicht nebeneinander passen.
+  static const _arten = [
+    FeedbackType.feature,
+    FeedbackType.bug,
+    FeedbackType.fahrzeug,
+    FeedbackType.katalog,
+  ];
+
+  String _chipText(FeedbackType t) => switch (t) {
+        FeedbackType.feature => '💡 Wunsch',
+        FeedbackType.bug => '🐛 Fehler',
+        FeedbackType.fahrzeug => '🚒 Fahrzeug-Vorlage',
+        FeedbackType.katalog => '🧰 Standard-Gerät',
+      };
+
+  /// Bei den Vorschlägen ist die ERSTE ZEILE der Name — der Bot baut daraus
+  /// die Issue-Überschrift (tool/feedback_bot.py). Der Hinweis muss das
+  /// sagen, sonst steht die Überschrift mitten im Fließtext.
+  String get _hinweis => switch (_type) {
+        FeedbackType.bug =>
+          'Was funktioniert nicht? Beschreibe kurz, was du gemacht '
+              'hast und was stattdessen passiert ist.',
+        FeedbackType.feature =>
+          'Was fehlt dir, was nervt, was wäre praktisch? Jede Idee '
+              'landet direkt beim Entwickler.',
+        FeedbackType.fahrzeug =>
+          'Welcher Fahrzeugtyp fehlt als Vorlage? Die erste Zeile ist '
+              'der Typ — sie wird die Überschrift. Darunter: welche '
+              'Geräteräume das Fahrzeug hat.',
+        FeedbackType.katalog =>
+          'Welches Gerät fehlt im mitgelieferten Katalog? Die erste '
+              'Zeile ist der Gerätename — sie wird die Überschrift.',
+      };
+
+  String get _feldLabel => switch (_type) {
+        FeedbackType.bug => 'Was ist passiert?',
+        FeedbackType.feature => 'Dein Wunsch',
+        FeedbackType.fahrzeug => 'Fahrzeugtyp und Geräteräume',
+        FeedbackType.katalog => 'Gerätename und Details',
+      };
+
+  String get _feldHint => switch (_type) {
+        FeedbackType.bug => 'z. B. „Beim Quiz bleibt das Bild schwarz“',
+        FeedbackType.feature =>
+          'z. B. „Eine Suche über alle Fahrzeuge wäre toll!“',
+        FeedbackType.fahrzeug => 'z. B. „GW-T“ — darunter die Fächer',
+        FeedbackType.katalog =>
+          'z. B. „Akku-Rettungsschere“ — Details darunter',
+      };
+
   @override
   void dispose() {
     _textController.dispose();
@@ -524,23 +580,20 @@ class _FeedbackDialogState extends State<_FeedbackDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            SegmentedButton<FeedbackType>(
-              segments: const [
-                ButtonSegment(
-                    value: FeedbackType.feature, label: Text('💡 Feature')),
-                ButtonSegment(value: FeedbackType.bug, label: Text('🐛 Bug')),
+            Wrap(
+              spacing: 8,
+              children: [
+                for (final t in _arten)
+                  ChoiceChip(
+                    label: Text(_chipText(t)),
+                    selected: _type == t,
+                    onSelected: (_) => setState(() => _type = t),
+                  ),
               ],
-              selected: {_type},
-              onSelectionChanged: (selection) =>
-                  setState(() => _type = selection.first),
             ),
             const SizedBox(height: 12),
             Text(
-              _type == FeedbackType.bug
-                  ? 'Was funktioniert nicht? Beschreibe kurz, was du gemacht '
-                      'hast und was stattdessen passiert ist.'
-                  : 'Was fehlt dir, was nervt, was wäre praktisch? Jede Idee '
-                      'landet direkt beim Entwickler.',
+              _hinweis,
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: 12),
@@ -551,12 +604,8 @@ class _FeedbackDialogState extends State<_FeedbackDialog> {
               maxLength: 2000,
               textCapitalization: TextCapitalization.sentences,
               decoration: InputDecoration(
-                labelText: _type == FeedbackType.bug
-                    ? 'Was ist passiert?'
-                    : 'Dein Wunsch',
-                hintText: _type == FeedbackType.bug
-                    ? 'z. B. „Beim Quiz bleibt das Bild schwarz“'
-                    : 'z. B. „Eine Suche über alle Fahrzeuge wäre toll!“',
+                labelText: _feldLabel,
+                hintText: _feldHint,
                 border: const OutlineInputBorder(),
               ),
             ),

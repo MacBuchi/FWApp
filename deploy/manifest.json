@@ -84,6 +84,10 @@
     {
       "name": "20260804180000_fach_seiten.sql",
       "sha256": "2ba80a328b6b5446927322a1769616bd3350bf6862e0f01ab1fe8813c1b90fdc"
+    },
+    {
+      "name": "20260805090000_fach_laengsposition.sql",
+      "sha256": "a4e241cbf9f37267addce7e465ac769cac2eab9973aff36ec2e256b8e49e00b0"
     }
   ],
   "functions": {

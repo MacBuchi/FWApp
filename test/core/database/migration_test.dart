@@ -14,14 +14,14 @@ void main() {
     verifier = SchemaVerifier(GeneratedHelper());
   });
 
-  test('migrates from v1 to v6 without schema errors', () async {
+  test('migrates from v1 to v7 without schema errors', () async {
     final connection = await verifier.startAt(1);
     final db = AppDatabase(connection);
-    await verifier.migrateAndValidate(db, 6);
+    await verifier.migrateAndValidate(db, 7);
     await db.close();
   });
 
-  test('v1 data survives the migration to v6', () async {
+  test('v1 data survives the migration to v7', () async {
     final schema = await verifier.schemaAt(1);
 
     schema.rawDatabase
@@ -40,7 +40,7 @@ void main() {
           "VALUES (1, 1, 1, 2, 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 6);
+    await verifier.migrateAndValidate(db, 7);
 
     final vehicle = await db.vehicleDao.getById(1);
     expect(vehicle?.name, 'AB-G');
@@ -63,7 +63,7 @@ void main() {
       () async {
     final connection = await verifier.startAt(2);
     final db = AppDatabase(connection);
-    await verifier.migrateAndValidate(db, 6);
+    await verifier.migrateAndValidate(db, 7);
 
     final equipmentId = await db.equipmentDao
         .insertEquipment(EquipmentItemsCompanion.insert(name: 'Spineboard'));
@@ -81,7 +81,7 @@ void main() {
   test('new v2 tables are usable after migration', () async {
     final connection = await verifier.startAt(1);
     final db = AppDatabase(connection);
-    await verifier.migrateAndValidate(db, 6);
+    await verifier.migrateAndValidate(db, 7);
 
     final vehicleId = await db.vehicleDao.insertVehicle(
         VehiclesCompanion.insert(name: 'LF 10', type: 'LF'));
@@ -132,7 +132,7 @@ void main() {
         "'{}', '[]', '[]', 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 6);
+    await verifier.migrateAndValidate(db, 7);
 
     final geraet = await db.equipmentDao.getById(1);
     expect(geraet?.name, 'Feuerwehraxt');
@@ -165,7 +165,7 @@ void main() {
           "VALUES (1, 1, 'G1', 0, 2, 1, 3, 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 6);
+    await verifier.migrateAndValidate(db, 7);
 
     final fach = await db.compartmentDao.getById(1);
     expect(fach?.label, 'G1');
@@ -175,6 +175,31 @@ void main() {
     expect(fach?.gridRow, 2);
     expect(fach?.gridCol, 1);
     expect(fach?.gridColSpan, 3);
+
+    await db.close();
+  });
+
+  test('v6→v7: bestehende Fächer behalten die Seite und bekommen KEINE '
+      'Längsposition', () async {
+    // Issue #141 — dieselbe Zurückhaltung wie bei der Seite: „G1 liegt
+    // vorne" ist die verbreitete Konvention, keine Tatsache. Die Migration
+    // setzt nichts; die App schlägt vor, ein Mensch bestätigt.
+    final schema = await verifier.schemaAt(6);
+    schema.rawDatabase
+      ..execute("INSERT INTO vehicles (id, name, type, created_at, updated_at) "
+          "VALUES (1, 'HLF 20', 'HLF 20', 0, 0)")
+      ..execute("INSERT INTO compartments (id, vehicle_id, label, position, "
+          "grid_col_span, seite, updated_at) "
+          "VALUES (1, 1, 'G1', 0, 1, 'fahrerseite', 0)");
+
+    final db = AppDatabase(schema.newConnection());
+    await verifier.migrateAndValidate(db, 7);
+
+    final fach = await db.compartmentDao.getById(1);
+    expect(fach?.label, 'G1');
+    // Die bestätigte Seite ist der Bestand, an dem hier nichts wackeln darf.
+    expect(fach?.seite, 'fahrerseite');
+    expect(fach?.laengsposition, isNull, reason: 'kein stiller Backfill');
 
     await db.close();
   });

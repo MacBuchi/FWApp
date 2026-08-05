@@ -1,5 +1,6 @@
-/// cutaway_quiz_screen.dart – "Wo liegt's?": tap the correct compartment on
-/// the vehicle cutaway (Schnittdarstellung) for a shown piece of equipment.
+/// cutaway_quiz_screen.dart – "Wo liegt's?": tap the correct compartment for
+/// a shown piece of equipment — on the top view (Draufsicht) once the vehicle
+/// is located (Issue #141), otherwise on the cutaway (Schnittdarstellung).
 library;
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
@@ -12,6 +13,7 @@ import 'package:fwapp/features/compartment/domain/entities/compartment.dart';
 import 'package:fwapp/features/vehicle/domain/entities/vehicle.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';
 import 'package:fwapp/features/vehicle/presentation/widgets/vehicle_cutaway_view.dart';
+import 'package:fwapp/features/vehicle/presentation/widgets/vehicle_top_view.dart';
 
 class CutawayQuizScreen extends ConsumerStatefulWidget {
   const CutawayQuizScreen({super.key});
@@ -48,7 +50,7 @@ class _CutawayQuizScreenState extends ConsumerState<CutawayQuizScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text(
-                'Tippe in der Schnittdarstellung auf das Fach, in dem das '
+                'Tippe im Fahrzeugschema auf das Fach, in dem das '
                 'gezeigte Gerät verlastet ist.',
                 style: TextStyle(fontSize: 16)),
             const SizedBox(height: 16),
@@ -97,6 +99,11 @@ class _CutawayQuizScreenState extends ConsumerState<CutawayQuizScreen> {
               gridRow: c.gridRow,
               gridCol: c.gridCol,
               gridColSpan: c.gridColSpan,
+              // Ohne Seite und Längsposition wüsste das Quiz nichts von der
+              // Verortung — dann fragte es auf einem anderen Bild ab, als
+              // die Übersicht zeigt (Issue #141).
+              seite: c.seite,
+              laengsposition: c.laengsposition,
               updatedAt: c.updatedAt,
             ))
         .toList();
@@ -174,11 +181,21 @@ class _CutawayQuizScreenState extends ConsumerState<CutawayQuizScreen> {
               style: TextStyle(color: Colors.grey),
               textAlign: TextAlign.center),
           const SizedBox(height: 16),
-          VehicleCutawayView(
-            compartments: _compartments,
-            tileStates: tileStates,
-            onTapCompartment: _answered ? null : (c) => _answer(c, q),
-          ),
+          // Gelernt wird am selben Bild wie in der Übersicht (Issue #141):
+          // Draufsicht, sobald das Fahrzeug verortet ist; sonst wie bisher
+          // das Aufklappbild.
+          if (VehicleTopView.hatVerortung(_compartments))
+            VehicleTopView(
+              compartments: _compartments,
+              tileStates: tileStates,
+              onTapCompartment: _answered ? null : (c) => _answer(c, q),
+            )
+          else
+            VehicleCutawayView(
+              compartments: _compartments,
+              tileStates: tileStates,
+              onTapCompartment: _answered ? null : (c) => _answer(c, q),
+            ),
           if (_answered) ...[
             const SizedBox(height: 16),
             FilledButton(

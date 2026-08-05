@@ -151,6 +151,12 @@ pauschales Formatieren in Feature-PRs.
   zieht seine Farbe aus derselben Konstante. Bewusste Abweichung von der
   Theming-Guideline — für die Projektgröße reicht das Theme, eine Umstellung
   wäre reine Churn. (Issue #58 könnte das ändern.)
+  **Ausnahme mit Absicht:** die festen Seitenfarben in
+  [seiten_farben.dart](lib/features/compartment/presentation/seiten_farben.dart)
+  (Issue #141) und die Grün/Rot-Zustände der Lernmodi. Beides ist Lernstoff,
+  kein Schmuck — „Beifahrerseite = warm, Fahrerseite = kühl" muss jeden
+  Palettenwechsel überleben, sonst verliert die Mannschaft ihren Farb-Anker.
+  Nicht auf `colorScheme` „aufräumen".
 - **Lints:** nur `flutter_lints`. `strict-casts`, `strict-raw-types` und
   `unawaited_futures` sind bewusst offen — eigener PR, potenziell breite Churn.
 - **Dependencies** gepinnt (`^x.y.z`), **nie `any`**.

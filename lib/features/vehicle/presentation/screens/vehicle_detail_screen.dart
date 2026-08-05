@@ -10,7 +10,9 @@ import 'package:fwapp/core/widgets/abteilung_switcher.dart';
 import 'package:fwapp/features/assignment/domain/entities/equipment_assignment.dart';
 import 'package:fwapp/features/assignment/presentation/providers/assignment_providers.dart';
 import 'package:fwapp/features/compartment/domain/entities/compartment.dart';
+import 'package:fwapp/features/compartment/domain/fahrzeug_seiten.dart';
 import 'package:fwapp/features/compartment/presentation/providers/compartment_providers.dart';
+import 'package:fwapp/features/compartment/presentation/seiten_farben.dart';
 import 'package:fwapp/features/equipment/presentation/providers/equipment_providers.dart';
 import 'package:fwapp/features/equipment/presentation/widgets/equipment_avatar.dart';
 import 'package:fwapp/features/inspection/presentation/providers/inspection_providers.dart';
@@ -18,6 +20,7 @@ import 'package:fwapp/features/vehicle/domain/entities/vehicle.dart';
 import 'package:fwapp/features/vehicle/domain/loesch_umfang.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';
 import 'package:fwapp/features/vehicle/presentation/widgets/vehicle_cutaway_view.dart';
+import 'package:fwapp/features/vehicle/presentation/widgets/vehicle_top_view.dart';
 
 class VehicleDetailScreen extends ConsumerWidget {
   final int vehicleId;
@@ -222,18 +225,31 @@ class VehicleDetailScreen extends ConsumerWidget {
   }
 }
 
-/// Cutaway with per-compartment item counts and inspection due badges;
-/// tapping a tile opens its contents as a bottom sheet.
-class _VehicleCutaway extends ConsumerWidget {
+/// Fahrzeugschema mit Geräte-Zählern und Prüf-Badges je Fach; Tippen öffnet
+/// den Fach-Inhalt als Bottom Sheet.
+///
+/// Zwei Ansichten, ein Bild (Issue #141): Sobald mindestens ein Fach eine
+/// Seite trägt, ist die **Draufsicht** der Standard — ein Blick = ganzes
+/// Fahrzeug. Das Aufklappbild bleibt als zweite Ansicht erreichbar. Ohne
+/// jede Seitenangabe bleibt alles wie vorher.
+class _VehicleCutaway extends ConsumerStatefulWidget {
   final int vehicleId;
   final List<Compartment> compartments;
   const _VehicleCutaway(
       {required this.vehicleId, required this.compartments});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_VehicleCutaway> createState() => _VehicleCutawayState();
+}
+
+class _VehicleCutawayState extends ConsumerState<_VehicleCutaway> {
+  bool _draufsicht = true;
+
+  @override
+  Widget build(BuildContext context) {
     final assignments =
-        ref.watch(assignmentsByVehicleProvider(vehicleId)).value ?? const [];
+        ref.watch(assignmentsByVehicleProvider(widget.vehicleId)).value ??
+            const [];
     final dues = ref.watch(dueInspectionsStreamProvider()).value ?? const [];
 
     final itemCounts = <int, int>{};
@@ -250,26 +266,71 @@ class _VehicleCutaway extends ConsumerWidget {
       if (due.isOverdue(now)) overdueByCompartment[compartmentId] = true;
     }
 
-    return VehicleCutawayView(
-      compartments: compartments,
-      tileStates: {
-        for (final c in compartments)
-          c.id: CutawayTileState(
-            itemCount: itemCounts[c.id] ?? 0,
-            dueBadgeCount: dueCounts[c.id] ?? 0,
-            dueBadgeIsOverdue: overdueByCompartment[c.id] ?? false,
+    final tileStates = {
+      for (final c in widget.compartments)
+        c.id: CutawayTileState(
+          itemCount: itemCounts[c.id] ?? 0,
+          dueBadgeCount: dueCounts[c.id] ?? 0,
+          dueBadgeIsOverdue: overdueByCompartment[c.id] ?? false,
+        ),
+    };
+    void oeffneFach(Compartment c) => showModalBottomSheet(
+          context: context,
+          showDragHandle: true,
+          builder: (_) => _CompartmentSheet(compartment: c),
+        );
+
+    if (!VehicleTopView.hatVerortung(widget.compartments)) {
+      return VehicleCutawayView(
+        compartments: widget.compartments,
+        tileStates: tileStates,
+        onTapCompartment: oeffneFach,
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Align(
+          alignment: Alignment.centerRight,
+          child: SegmentedButton<bool>(
+            segments: const [
+              ButtonSegment(value: true, label: Text('Draufsicht')),
+              ButtonSegment(value: false, label: Text('Aufgeklappt')),
+            ],
+            selected: {_draufsicht},
+            onSelectionChanged: (s) => setState(() => _draufsicht = s.first),
+            style: const ButtonStyle(
+              visualDensity: VisualDensity.compact,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
           ),
-      },
-      onTapCompartment: (c) => showModalBottomSheet(
-        context: context,
-        showDragHandle: true,
-        builder: (_) => _CompartmentSheet(compartment: c),
-      ),
+        ),
+        const SizedBox(height: 8),
+        if (_draufsicht) ...[
+          VehicleTopView(
+            compartments: widget.compartments,
+            tileStates: tileStates,
+            onTapCompartment: oeffneFach,
+          ),
+          const SizedBox(height: 8),
+          SeitenLegende(compartments: widget.compartments),
+        ] else
+          VehicleCutawayView(
+            compartments: widget.compartments,
+            tileStates: tileStates,
+            onTapCompartment: oeffneFach,
+          ),
+      ],
     );
   }
 }
 
 /// Bottom sheet listing the equipment of one compartment.
+///
+/// Der Kopf ist die Antwort auf „wo finde ich das?" (Issue #141): Seite als
+/// Farbe, Verortung als Text, daneben das Mini-Schema mit dem markierten
+/// Fach — dasselbe Bild wie in der Übersicht, nur kleiner.
 class _CompartmentSheet extends ConsumerWidget {
   final Compartment compartment;
   const _CompartmentSheet({required this.compartment});
@@ -283,11 +344,7 @@ class _CompartmentSheet extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(compartment.label,
-                style: Theme.of(context).textTheme.titleLarge),
-          ),
+          _SheetVerortungsKopf(compartment: compartment),
           const SizedBox(height: 8),
           Flexible(
             child: assignmentsAsync.when(
@@ -320,6 +377,129 @@ class _CompartmentSheet extends ConsumerWidget {
   }
 }
 
+/// Kopfzeile des Fach-Sheets: eingefärbt in die Seitenfarbe, mit Verortung
+/// in Worten, der Längs-Leiste und dem Mini-Schema. Ohne Seite bleibt es
+/// die schlichte Überschrift von früher.
+class _SheetVerortungsKopf extends ConsumerWidget {
+  final Compartment compartment;
+  const _SheetVerortungsKopf({required this.compartment});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final farbe = seitenFarbe(compartment.seite);
+    if (farbe == null) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Text(compartment.label,
+            style: Theme.of(context).textTheme.titleLarge),
+      );
+    }
+
+    final alle = ref
+            .watch(compartmentListStreamProvider(compartment.vehicleId))
+            .value ??
+        const <Compartment>[];
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: farbe.akzent,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(compartment.label,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: Colors.white, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 2),
+                Text(
+                  verortungAnzeigename(
+                      compartment.seite, compartment.laengsposition),
+                  style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.92),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500),
+                ),
+                if (compartment.laengsposition != null) ...[
+                  const SizedBox(height: 10),
+                  _VerortungsLeiste(
+                      laengsposition: compartment.laengsposition!,
+                      farbe: farbe),
+                ],
+              ],
+            ),
+          ),
+          if (alle.isNotEmpty && VehicleTopView.hatVerortung(alle)) ...[
+            const SizedBox(width: 12),
+            SizedBox(
+              width: 104,
+              child: VehicleTopView(
+                compartments: alle,
+                kompakt: true,
+                tileStates: {
+                  compartment.id: const CutawayTileState(
+                      status: CutawayTileStatus.selected),
+                },
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Die Längsachse als Leiste: Front · vorne · Mitte · hinten · Heck, der
+/// Platz des Fachs hervorgehoben — dieselbe Achse, die auch die Draufsicht
+/// von oben nach unten zeigt.
+class _VerortungsLeiste extends StatelessWidget {
+  final String laengsposition;
+  final SeitenFarbe farbe;
+  const _VerortungsLeiste(
+      {required this.laengsposition, required this.farbe});
+
+  @override
+  Widget build(BuildContext context) {
+    final zellen = ['Front', ...kLaengspositionen, 'Heck'];
+    return Row(
+      children: [
+        for (final z in zellen) ...[
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              decoration: BoxDecoration(
+                color: z == laengsposition
+                    ? Colors.white
+                    : Colors.white.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                kLaengspositionLabels[z] ?? z,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 10.5,
+                  fontWeight:
+                      z == laengsposition ? FontWeight.w900 : FontWeight.w500,
+                  color: z == laengsposition
+                      ? farbe.akzent
+                      : Colors.white.withValues(alpha: 0.85),
+                ),
+              ),
+            ),
+          ),
+          if (z != zellen.last) const SizedBox(width: 4),
+        ],
+      ],
+    );
+  }
+}
+
 class _InfoRow extends StatelessWidget {
   final String label;
   final String value;
@@ -346,16 +526,34 @@ class _CompartmentTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final assignmentsAsync =
         ref.watch(assignmentListStreamProvider(compartment.id));
+    final farbe = seitenFarbe(compartment.seite);
+
+    // Die Verortung steht vor der Stückzahl: Sie ist es, was man beim
+    // Überfliegen der Liste sucht (Issue #141).
+    String untertitel(int anzahl) => compartment.seite == null
+        ? '$anzahl Gerät(e)'
+        : '${verortungAnzeigename(compartment.seite, compartment.laengsposition)}'
+            ' · $anzahl Gerät(e)';
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       child: ExpansionTile(
+        leading: farbe == null
+            ? null
+            : Container(
+                width: 14,
+                height: 14,
+                decoration: BoxDecoration(
+                  color: farbe.akzent,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
         title: Text(compartment.label,
             style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: assignmentsAsync.when(
           loading: () => const Text('Lade...'),
           error: (_, _) => const Text('Fehler'),
-          data: (a) => Text('${a.length} Gerät(e)'),
+          data: (a) => Text(untertitel(a.length)),
         ),
         children: [
           assignmentsAsync.when(

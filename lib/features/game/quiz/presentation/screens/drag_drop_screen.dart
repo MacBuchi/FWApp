@@ -92,6 +92,10 @@ class _DragDropScreenState extends ConsumerState<DragDropScreen> {
               gridRow: c.gridRow,
               gridCol: c.gridCol,
               gridColSpan: c.gridColSpan,
+              // Ohne die Seite fiele das Aufklappbild hier in die Ansicht
+              // ohne Bereiche zurück — anders als überall sonst (#126/#141).
+              seite: c.seite,
+              laengsposition: c.laengsposition,
               updatedAt: c.updatedAt,
             ))
         .toList();

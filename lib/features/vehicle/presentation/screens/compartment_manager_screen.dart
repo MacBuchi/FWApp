@@ -38,7 +38,7 @@ class CompartmentManagerScreen extends ConsumerWidget {
             if (_vorschlaege(compartmentsAsync.value ?? const []).isNotEmpty)
               IconButton(
                 icon: const Icon(Icons.auto_fix_high),
-                tooltip: 'Seiten aus den Namen vorschlagen',
+                tooltip: 'Verortung aus den Namen vorschlagen',
                 onPressed: () => _seitenVorschlagen(
                     context, ref, compartmentsAsync.value ?? const []),
               ),
@@ -95,8 +95,12 @@ class CompartmentManagerScreen extends ConsumerWidget {
                 child: ListTile(
                   leading: const Icon(Icons.drag_handle),
                   title: Text(c.label),
+                  // „Reihenfolge", nicht mehr „Position": Das Wort Position
+                  // gehört seit Issue #141 der Längsachse (vorne/Mitte/
+                  // hinten), die Zahl hier ist nur die Sortierung.
                   subtitle: Text(
-                      '${seiteAnzeigename(c.seite)} · Position ${c.position + 1}'),
+                      '${verortungAnzeigename(c.seite, c.laengsposition)}'
+                      ' · Reihenfolge ${c.position + 1}'),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -137,6 +141,7 @@ class CompartmentManagerScreen extends ConsumerWidget {
       position: existing.length,
       gridColSpan: 1,
       seite: eingabe.seite,
+      laengsposition: eingabe.laengsposition,
       updatedAt: DateTime.now(),
     ));
   }
@@ -150,25 +155,42 @@ class CompartmentManagerScreen extends ConsumerWidget {
         knopf: 'Speichern',
         label: c.label,
         seite: c.seite,
+        laengsposition: c.laengsposition,
       ),
     );
     if (eingabe == null) return;
     await ref.read(compartmentRepositoryProvider).update(
-          c.copyWith(label: eingabe.label, seite: eingabe.seite),
+          c.copyWith(
+            label: eingabe.label,
+            seite: eingabe.seite,
+            laengsposition: eingabe.laengsposition,
+          ),
         );
   }
 
-  /// Fächer ohne Seite, für die der Name einen Vorschlag hergibt.
+  /// Fächer, für die der Name noch etwas hergibt: eine Seite (wenn keine
+  /// gesetzt ist) und/oder eine Längsposition (Issue #141).
   ///
-  /// Bereits zugeordnete Fächer bleiben ausdrücklich unberührt: Ein
+  /// Bereits zugeordnete Werte bleiben ausdrücklich unberührt: Ein
   /// Vorschlag darf nichts überschreiben, was jemand von Hand gesetzt hat.
-  static List<({Compartment fach, String seite})> _vorschlaege(
-      List<Compartment> compartments) {
-    final out = <({Compartment fach, String seite})>[];
+  /// Und eine Längsposition wird nur vorgeschlagen, wenn die Seite des
+  /// Fachs zu der aus dem Namen passt — wer G3 von Hand auf die
+  /// Beifahrerseite gelegt hat, hat der Nummern-Konvention widersprochen,
+  /// dann darf auch „G3 = Mitte" nicht mehr als gesichert gelten.
+  static List<({Compartment fach, String? seite, String? laengsposition})>
+      _vorschlaege(List<Compartment> compartments) {
+    final out =
+        <({Compartment fach, String? seite, String? laengsposition})>[];
     for (final c in compartments) {
-      if (c.seite != null) continue;
-      final seite = seiteAusName(c.label);
-      if (seite != null) out.add((fach: c, seite: seite));
+      final ausName = seiteAusName(c.label);
+      final seite = c.seite == null ? ausName : null;
+      final passtZurKonvention = (c.seite ?? ausName) == ausName;
+      final laengsposition = c.laengsposition == null && passtZurKonvention
+          ? laengspositionAusName(c.label)
+          : null;
+      if (seite != null || laengsposition != null) {
+        out.add((fach: c, seite: seite, laengsposition: laengsposition));
+      }
     }
     return out;
   }
@@ -186,7 +208,7 @@ class CompartmentManagerScreen extends ConsumerWidget {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Seiten vorschlagen?'),
+        title: const Text('Verortung vorschlagen?'),
         content: SizedBox(
           width: 320,
           child: Column(
@@ -195,8 +217,9 @@ class CompartmentManagerScreen extends ConsumerWidget {
             children: [
               const Text(
                 'Nach der verbreiteten Nummerierung: ungerade Geräteräume '
-                'auf der Fahrerseite, gerade auf der Beifahrerseite. Prüfe '
-                'es an eurem Fahrzeug — ändern kannst du jedes Fach danach '
+                'auf der Fahrerseite, gerade auf der Beifahrerseite — und '
+                'G1/G2 vorne, G3/G4 in der Mitte, G5/G6 hinten. Prüfe es '
+                'an eurem Fahrzeug — ändern kannst du jedes Fach danach '
                 'einzeln.',
               ),
               const SizedBox(height: 12),
@@ -207,7 +230,10 @@ class CompartmentManagerScreen extends ConsumerWidget {
                     children: [
                       for (final v in vorschlaege)
                         Text('${v.fach.label} → '
-                            '${seiteAnzeigename(v.seite)}'),
+                            '${verortungAnzeigename(
+                          v.seite ?? v.fach.seite,
+                          v.laengsposition ?? v.fach.laengsposition,
+                        )}'),
                     ],
                   ),
                 ),
@@ -228,7 +254,10 @@ class CompartmentManagerScreen extends ConsumerWidget {
     if (ok != true) return;
     final repo = ref.read(compartmentRepositoryProvider);
     for (final v in vorschlaege) {
-      await repo.update(v.fach.copyWith(seite: v.seite));
+      await repo.update(v.fach.copyWith(
+        seite: v.seite ?? v.fach.seite,
+        laengsposition: v.laengsposition ?? v.fach.laengsposition,
+      ));
     }
   }
 
@@ -450,11 +479,11 @@ class _Stepper extends StatelessWidget {
 }
 
 /// Ergebnis des Fach-Dialogs.
-typedef _FachEingabe = ({String label, String? seite});
+typedef _FachEingabe = ({String label, String? seite, String? laengsposition});
 
-/// Bezeichnung UND Seite in einem Dialog (Issue #126).
+/// Bezeichnung, Seite UND Längsposition in einem Dialog (Issue #126/#141).
 ///
-/// Beides zusammen, weil beides beim Anlegen feststeht: Wer „G3" tippt,
+/// Alles zusammen, weil alles beim Anlegen feststeht: Wer „G3" tippt,
 /// weiß in dem Moment auch, wo G3 sitzt. Ein zweiter Weg dafür wäre ein
 /// zweiter Weg, den niemand geht.
 class _FachDialog extends StatefulWidget {
@@ -463,12 +492,14 @@ class _FachDialog extends StatefulWidget {
     required this.knopf,
     this.label,
     this.seite,
+    this.laengsposition,
   });
 
   final String titel;
   final String knopf;
   final String? label;
   final String? seite;
+  final String? laengsposition;
 
   @override
   State<_FachDialog> createState() => _FachDialogState();
@@ -478,11 +509,19 @@ class _FachDialogState extends State<_FachDialog> {
   late final TextEditingController _ctrl =
       TextEditingController(text: widget.label ?? '');
   late String? _seite = widget.seite;
+  late String? _laengsposition = widget.laengsposition;
 
-  /// Beim Anlegen folgt die Seite dem Namen, solange niemand sie angefasst
-  /// hat — „G3" tippen und die Fahrerseite steht da. Ab dem ersten
-  /// Handgriff gewinnt der Mensch.
+  /// Beim Anlegen folgt die Verortung dem Namen, solange niemand sie
+  /// angefasst hat — „G3" tippen und Fahrerseite · Mitte steht da. Ab dem
+  /// ersten Handgriff gewinnt der Mensch.
   bool _seiteVonHand = false;
+  bool _laengsVonHand = false;
+
+  /// Nur auf den Längsseiten hat vorne/Mitte/hinten einen Sinn — ein
+  /// Heckfach IST hinten. Für alle anderen Seiten verschwindet das Feld
+  /// und der Wert wird genullt.
+  bool get _laengsSinnvoll =>
+      _seite == 'fahrerseite' || _seite == 'beifahrerseite';
 
   @override
   void dispose() {
@@ -491,9 +530,11 @@ class _FachDialogState extends State<_FachDialog> {
   }
 
   void _nameGeaendert(String text) {
-    if (_seiteVonHand || widget.label != null) return;
-    final vorschlag = seiteAusName(text);
-    if (vorschlag != _seite) setState(() => _seite = vorschlag);
+    if (widget.label != null) return;
+    setState(() {
+      if (!_seiteVonHand) _seite = seiteAusName(text);
+      if (!_laengsVonHand) _laengsposition = laengspositionAusName(text);
+    });
   }
 
   @override
@@ -515,7 +556,7 @@ class _FachDialogState extends State<_FachDialog> {
             initialValue: _seite,
             decoration: const InputDecoration(
               labelText: 'Seite am Fahrzeug',
-              helperText: 'Bestimmt, wo das Fach im Aufklappbild steht.',
+              helperText: 'Bestimmt, wo das Fach im Fahrzeugschema steht.',
               helperMaxLines: 2,
             ),
             items: [
@@ -528,6 +569,28 @@ class _FachDialogState extends State<_FachDialog> {
               _seiteVonHand = true;
             }),
           ),
+          if (_laengsSinnvoll) ...[
+            const SizedBox(height: 16),
+            DropdownButtonFormField<String?>(
+              initialValue: _laengsposition,
+              decoration: const InputDecoration(
+                labelText: 'Position an der Seite',
+                helperText: 'Vorne, Mitte oder hinten — in Fahrtrichtung.',
+                helperMaxLines: 2,
+              ),
+              items: [
+                const DropdownMenuItem(
+                    value: null, child: Text('Ohne Position')),
+                for (final p in kLaengspositionen)
+                  DropdownMenuItem(
+                      value: p, child: Text(kLaengspositionLabels[p]!)),
+              ],
+              onChanged: (v) => setState(() {
+                _laengsposition = v;
+                _laengsVonHand = true;
+              }),
+            ),
+          ],
         ],
       ),
       actions: [
@@ -538,7 +601,11 @@ class _FachDialogState extends State<_FachDialog> {
           onPressed: () {
             final label = _ctrl.text.trim();
             if (label.isEmpty) return;
-            Navigator.pop(context, (label: label, seite: _seite));
+            Navigator.pop(context, (
+              label: label,
+              seite: _seite,
+              laengsposition: _laengsSinnvoll ? _laengsposition : null,
+            ));
           },
           child: Text(widget.knopf),
         ),

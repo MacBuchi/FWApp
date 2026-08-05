@@ -107,7 +107,7 @@ void main() {
     expect(find.text('Jetzt aktualisieren'), findsNothing);
   });
 
-  testWidgets('Angemeldet: Feedback-Banner öffnet Dialog mit Feature/Bug',
+  testWidgets('Angemeldet: Feedback-Banner öffnet Dialog mit vier Arten',
       (tester) async {
     await tester.pumpWidget(app(signedIn: true));
     await tester.pumpAndSettle();
@@ -118,10 +118,33 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Wünsch dir was!'), findsOneWidget);
-    expect(find.text('💡 Feature'), findsOneWidget);
-    expect(find.text('🐛 Bug'), findsOneWidget);
+    expect(find.text('💡 Wunsch'), findsOneWidget);
+    expect(find.text('🐛 Fehler'), findsOneWidget);
+    // Die beiden Inhalts-Vorschläge (Issue #145).
+    expect(find.text('🚒 Fahrzeug-Vorlage'), findsOneWidget);
+    expect(find.text('🧰 Standard-Gerät'), findsOneWidget);
     // Öffentlichkeits-Hinweis (Feedback wird GitHub-Issue).
     expect(find.textContaining('öffentlich'), findsOneWidget);
+  });
+
+  testWidgets('der Fahrzeug-Vorschlag erklärt die Erste-Zeile-Regel',
+      (tester) async {
+    // Der Bot baut die Issue-Überschrift aus der ersten Zeile — wer das
+    // nicht weiß, schreibt die Überschrift mitten in den Fließtext.
+    await tester.pumpWidget(app(signedIn: true));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Wunsch oder Fehler melden'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('🚒 Fahrzeug-Vorlage'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('erste Zeile ist der Typ'), findsOneWidget);
+    expect(find.text('Fahrzeugtyp und Geräteräume'), findsOneWidget);
+
+    await tester.tap(find.text('🧰 Standard-Gerät'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('erste Zeile ist der Gerätename'),
+        findsOneWidget);
   });
 
   testWidgets('Feedback-Dialog verlangt mindestens 3 Zeichen',

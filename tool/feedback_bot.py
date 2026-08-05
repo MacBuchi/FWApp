@@ -17,13 +17,19 @@ from datetime import datetime, timezone
 
 
 # Meldungsart -> (Titel-Präfix, GitHub-Label). `katalog` ist der Vorschlag
-# für den mitgelieferten Gerätekatalog (Issue #103); das Label muss im Repo
+# für den mitgelieferten Gerätekatalog (Issue #103), `fahrzeug` der für eine
+# fehlende Fahrzeug-Vorlage (Issue #145); die Labels müssen im Repo
 # existieren, sonst lehnt `gh issue create` den Aufruf ab.
 KINDS = {
     "feature": ("Feature request: ", "enhancement"),
     "bug": ("Bug report: ", "bug"),
     "katalog": ("Katalog-Vorschlag: ", "katalog-vorschlag"),
+    "fahrzeug": ("Fahrzeug-Vorschlag: ", "fahrzeug-vorschlag"),
 }
+
+# Bei diesen Arten trägt die ERSTE ZEILE den Namen und sonst nichts (siehe
+# die Hinweise im Feedback-Dialog) — daraus wird die Issue-Überschrift.
+FIRST_LINE_TITLE = ("katalog", "fahrzeug")
 
 
 def run(*cmd: str) -> str:
@@ -86,12 +92,12 @@ def main() -> None:
         username = row.get("user_name") or "unbekannt"
         kind = row["type"]
         prefix, label = KINDS.get(kind, KINDS["feature"])
-        # Beim Katalog-Vorschlag trägt die ERSTE ZEILE den Gerätenamen und
-        # sonst nichts (siehe katalogVorschlagText in der App) — daraus wird
-        # die Überschrift. Bei Wunsch und Fehler ist die ganze Meldung ein
-        # Fließtext, dort werden die Zeilenumbrüche flachgeklopft.
+        # Bei den Vorschlägen (Katalog, Fahrzeug) trägt die ERSTE ZEILE den
+        # Namen und sonst nichts — daraus wird die Überschrift. Bei Wunsch
+        # und Fehler ist die ganze Meldung ein Fließtext, dort werden die
+        # Zeilenumbrüche flachgeklopft.
         source = row["message"].strip()
-        title = (source.split("\n", 1)[0] if kind == "katalog"
+        title = (source.split("\n", 1)[0] if kind in FIRST_LINE_TITLE
                  else source.replace("\n", " ")).strip()
         title = prefix + title[:60] + ("…" if len(title) > 60 else "")
         if issue_exists(title):

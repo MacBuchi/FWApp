@@ -6,10 +6,23 @@
 /// „Internetverbindung prüfen?". Die Kürzung passiert clientseitig,
 /// damit auch alte Server-Stände bediente Berichte annehmen.
 library;
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/features/feedback/data/feedback_repository.dart';
 
 void main() {
+  test('jeder Feedback-Typ hat sein Gegenstück im Bot', () {
+    // Zwilling über die Sprachgrenze: Ein Typ, den tool/feedback_bot.py
+    // nicht kennt, fiele auf das feature-Label zurück — der Vorschlag
+    // käme als „Feature request" an und ginge in der Liste unter.
+    final bot = File('tool/feedback_bot.py').readAsStringSync();
+    for (final t in FeedbackType.values) {
+      expect(bot, contains('"${t.name}":'),
+          reason: '${t.name} fehlt in KINDS von tool/feedback_bot.py');
+    }
+  });
+
   test('kurze Meldungen bleiben unangetastet (nur getrimmt)', () {
     expect(clampFeedbackMessage('  Kaputt.  '), 'Kaputt.');
   });

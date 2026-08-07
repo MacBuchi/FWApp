@@ -59,7 +59,7 @@ jobs:
           echo "count=$(wc -l < /tmp/new_migrations.txt | tr -d ' ')" >> "$GITHUB_OUTPUT"
           cat /tmp/new_migrations.txt
 
-      - uses: supabase/setup-cli@v3
+      - uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v3
         if: steps.classify.outputs.count != '0'
         with:
           version: latest

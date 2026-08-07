@@ -1,0 +1,69 @@
+# Lizenzregeln für den Gesamtbestand (`license_checker`, siehe
+# .github/workflows/security.yml → Job „Lizenzen (Gesamtbestand)").
+#
+# Das Werkzeug liest die ECHTEN LICENSE-Dateien aus dem pub-Cache, nicht
+# irgendwelche Metadaten Dritter. Das ist der Unterschied zu
+# `dependency-review`: Der sieht nur, was ein PR neu hinzufügt, und würde
+# einen Lizenzwechsel in einer bestehenden transitiven Abhängigkeit nie
+# bemerken.
+#
+# Die Liste ist gegen den echten Baum abgestimmt (199 Pakete, Stand
+# 2026-08-07): 125× BSD-3-Clause, 42× MIT, 15× Apache-2.0, 6× BSD-2-Clause,
+# 2× MPL-2.0, 1× Zlib, 1× MIT-Modern-Variant, dazu 6 SDK-Pseudopakete ohne
+# eigene Datei. Kein GPL/LGPL im Baum — die Verbotsliste unten ist damit
+# heute leerlaufend, und genau so soll sie bleiben.
+
+permittedLicenses:
+  # Der Normalfall: freizügig, Namensnennung genügt, keine Rückwirkung auf
+  # die Lizenz der App.
+  - MIT
+  - BSD-3-Clause
+  - BSD-2-Clause
+  - Apache-2.0
+  - ISC
+  - Zlib # vector_math
+  - Unlicense
+  - CC0-1.0
+  # `sky_engine` — das ist der MIT-Text in der Fassung ohne die
+  # „no advertising"-Klausel, kein Sonderfall in der Sache.
+  - MIT-Modern-Variant
+  # `dbus` und `gtk`. MPL-2.0 ist DATEIWEISES Copyleft: Wer eine
+  # MPL-Datei ändert, muss diese Datei offenlegen — wir ändern keine,
+  # wir binden ein. Auf die App als Ganzes wirkt sie nicht, anders als
+  # GPL/LGPL. Beide sind ohnehin Linux-Desktop-Plugins und landen in
+  # keinem der ausgelieferten Builds (Android, Web).
+  - MPL-2.0
+
+rejectedLicenses:
+  # Starkes Copyleft: Verlinken zwingt die App unter dieselbe Lizenz. Das
+  # ist mit einer Auslieferung als APK nicht vereinbar.
+  - GPL-2.0
+  - GPL-3.0
+  - AGPL-3.0
+  - SSPL-1.0
+  # LGPL ist schwächer, verlangt aber die Möglichkeit zum RELINKEN — bei
+  # einem statisch gelinkten Flutter-Build praktisch nicht erfüllbar.
+  # Deshalb hier und nicht in der Grauzone.
+  - LGPL-2.0
+  - LGPL-2.1
+  - LGPL-3.0
+  # Nicht-kommerziell: kein Problem für dieses Projekt, aber eine
+  # Einschränkung, die eine bewusste Entscheidung verdient statt eines
+  # stillen Durchlaufs.
+  - CC-BY-NC-4.0
+  - CC-BY-NC-SA-4.0
+
+# Pakete, die KEINE eigene LICENSE-Datei mitbringen. Das sind die
+# Pseudopakete des Flutter-SDK: Sie liegen im SDK-Verzeichnis und stehen
+# unter dessen BSD-3-Clause (die `flutter`-Zeile daneben weist sie aus).
+# Sie einzeln freizugeben ist ehrlicher als das Werkzeug pauschal
+# „no-file" durchwinken zu lassen — so fällt ein NEUES Paket ohne Lizenz
+# auf, statt in derselben Ausnahme zu verschwinden.
+approvedPackages:
+  no-file:
+    - flutter_driver
+    - flutter_localizations
+    - flutter_test
+    - flutter_web_plugins
+    - fuchsia_remote_debug_protocol
+    - integration_test

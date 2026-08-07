@@ -1,0 +1,67 @@
+# Konfiguration für die Geheimnis-Suche (.github/workflows/security.yml →
+# Job „Secrets").
+#
+# Die Standardregeln bleiben vollständig in Kraft (`useDefault = true`) —
+# hier stehen nur Ausnahmen, und jede einzelne ist begründet. Eine
+# Ausnahmeliste, die man nicht mehr liest, ist eine abgeschaltete Prüfung.
+#
+# **Warum die Datei nötig ist.** Ohne sie meldet der Lauf 18 Funde, alle
+# falsch. Achtzehn falsche Funde sind schlimmer als keine Prüfung: Beim
+# ersten Mal sieht man sie durch, beim zweiten überfliegt man sie, beim
+# dritten schaltet man den Job ab — und dann fällt der eine echte nicht
+# mehr auf.
+#
+# **Ausgenommen werden EXAKTE WERTE, keine Pfade und kein JWT-Muster.**
+# Beides Naheliegende ist nachgemessen und fällt durch:
+#
+#   · Ein Pfad-Allowlisting (`paths = ['^test/integration/.*\.dart$']`)
+#     macht die ganze Datei blind. Ein echter service_role-Key, versehentlich
+#     dort abgelegt, wird dann NICHT mehr gemeldet — lokal so nachgestellt
+#     (19 Funde ohne Konfiguration, 0 mit ihr, der echte Schlüssel darunter).
+#     `condition = "AND"` rettet das nicht: gitleaks 8.30 wertet es an dieser
+#     Stelle nicht aus, der Pfad allein schaltet weiterhin stumm.
+#   · Ein Inhalts-Muster auf den Aussteller (`supabase-demo`) trifft nie:
+#     Der Aussteller steht im base64-kodierten Payload, im Klartext der Zeile
+#     kommt er nicht vor. Gemessen: 19 Funde, kein einziger unterdrückt.
+#
+# Übrig bleibt der Weg, der als einziger fail-closed ist: die drei Werte im
+# Wortlaut. Jedes ANDERE Token — auch in derselben Zeile derselben Datei —
+# wird weiterhin gemeldet.
+
+title = "FWApp"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = """
+Die öffentlichen Demo-Schlüssel des LOKALEN Supabase-Stacks. Sie stehen \
+identisch in jedem Supabase-Projekt der Welt (`iss: supabase-demo`, \
+`exp` 2032), sind Teil der Supabase-Dokumentation und öffnen nichts außer \
+einem Container auf localhost. Die Produktions-Schlüssel stehen nirgends \
+im Repo — sie liegen in den GitHub-Secrets.
+
+Wortlaut statt Muster, siehe Kopf. Wer die lokalen Schlüssel des Stacks \
+austauscht, trägt sie hier nach; das ist der gewollte Aufwand.
+"""
+stopwords = [
+  # anon
+  "CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0",
+  # service_role
+  "EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU",
+]
+
+[[allowlists]]
+description = """
+Ein sichtbar erfundener Platzhalter in der Testsuite \
+(`FAKE_ACCESS_TOKEN` als Payload) und die Testpasswörter der E2E-Suite. \
+Letztere gehören Konten, die dieselben Tests im lokalen Stack anlegen und \
+wieder wegwerfen; außerhalb dieses Containers existieren sie nicht.
+"""
+regexTarget = "line"
+regexes = [
+  '''FAKE_ACCESS_TOKEN''',
+  # Bewusst eng: genau das Präfix, das der Einladungstest vergibt — kein
+  # Blankett-Muster auf „password".
+  '''password: 'einladung-''',
+]

@@ -12,6 +12,22 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.30.0] – 2026-08-17
+
+### Neu
+
+- **Fahrzeug aus Vorlage: Beladung auf Wunsch gleich in die Geräteräume.**
+  Beim LF 20 und HLF 20 lässt sich die Normbeladung jetzt beim Anlegen nach
+  der verbreiteten Konvention auf die Fächer verteilen — Atemschutz in den
+  Mannschaftsraum, Stromerzeuger in G1, Schläuche in G3, der
+  Rettungssatz in G2 … Wer den Schalter nicht setzt, bekommt wie bisher
+  alles gesammelt in ein Fach. Die Verteilung ist eine ungeprüfte
+  Vorbelegung: bitte am eigenen Fahrzeug prüfen, jede Position bleibt
+  einzeln änderbar.
+- Die Vorlagen für LF 20 und HLF 20 bringen dafür ein neues Fach
+  **„Mannschaftsraum"** mit — dort liegen Pressluftatmer, Masken,
+  Feuerwehrleinen und Funkgeräte.
+
 ## [1.29.0] – 2026-08-06
 
 ### Neu

@@ -49,6 +49,11 @@
       "label": "Dach",
       "position": 7,
       "seite": "dach"
+    },
+    {
+      "label": "Mannschaftsraum",
+      "position": 8,
+      "seite": "front"
     }
   ],
   "loading": {
@@ -57,295 +62,368 @@
     "items": [
       {
         "equipment_id": "std_warnweste",
-        "quantity": 9
+        "quantity": 9,
+        "compartment": "Mannschaftsraum"
       },
       {
         "equipment_id": "std_pressluftatmer",
-        "quantity": 4
+        "quantity": 4,
+        "compartment": "Mannschaftsraum"
       },
       {
         "equipment_id": "std_atemschutzmaske",
-        "quantity": 4
+        "quantity": 4,
+        "compartment": "Mannschaftsraum"
       },
       {
         "equipment_id": "std_fluchthaube",
-        "quantity": 4
+        "quantity": 4,
+        "compartment": "Mannschaftsraum"
       },
       {
         "equipment_id": "std_schutzhandschuhe",
-        "quantity": 4
+        "quantity": 4,
+        "compartment": "Mannschaftsraum"
       },
       {
         "equipment_id": "std_schnittschutz",
-        "quantity": 2
+        "quantity": 2,
+        "compartment": "G4"
       },
       {
         "equipment_id": "std_atemschutzueberwachung",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "Mannschaftsraum"
       },
       {
         "equipment_id": "std_kuebelspritze",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G6"
       },
       {
         "equipment_id": "std_feuerloescher_pg6",
-        "quantity": 2
+        "quantity": 2,
+        "compartment": "G6"
       },
       {
         "equipment_id": "std_feuerloescher_co2",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G6"
       },
       {
         "equipment_id": "std_zumischer_z2",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G6"
       },
       {
         "equipment_id": "std_schaummittel_kanister",
-        "quantity": 6
+        "quantity": 6,
+        "compartment": "G6"
       },
       {
         "equipment_id": "std_b_druckschlauch_20m",
-        "quantity": 14
+        "quantity": 14,
+        "compartment": "G3"
       },
       {
         "equipment_id": "std_c_druckschlauch_15m",
-        "quantity": 12
+        "quantity": 12,
+        "compartment": "G3"
       },
       {
         "equipment_id": "std_d_druckschlauch_15m",
-        "quantity": 2
+        "quantity": 2,
+        "compartment": "G3"
       },
       {
         "equipment_id": "std_a_saugschlauch_1_6m",
-        "quantity": 4
+        "quantity": 4,
+        "compartment": "Heck (GR)"
       },
       {
         "equipment_id": "std_standrohr",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G5"
       },
       {
         "equipment_id": "std_sammelstueck",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "Heck (GR)"
       },
       {
         "equipment_id": "std_verteiler_bv",
-        "quantity": 2
+        "quantity": 2,
+        "compartment": "G5"
       },
       {
         "equipment_id": "std_uebergangsstueck_ba",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G5"
       },
       {
         "equipment_id": "std_uebergangsstueck_cb",
-        "quantity": 2
+        "quantity": 2,
+        "compartment": "G5"
       },
       {
         "equipment_id": "std_uebergangsstueck_dc",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G5"
       },
       {
         "equipment_id": "std_druckbegrenzungsventil",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G5"
       },
       {
         "equipment_id": "std_bm_strahlrohr",
-        "quantity": 2
+        "quantity": 2,
+        "compartment": "G5"
       },
       {
         "equipment_id": "std_stuetzkruemmer",
-        "quantity": 2
+        "quantity": 2,
+        "compartment": "G5"
       },
       {
         "equipment_id": "std_cm_strahlrohr",
-        "quantity": 3
+        "quantity": 3,
+        "compartment": "G5"
       },
       {
         "equipment_id": "std_schlauchhalter",
-        "quantity": 3
+        "quantity": 3,
+        "compartment": "G3"
       },
       {
         "equipment_id": "std_schlauchbruecken",
-        "quantity": 3
+        "quantity": 3,
+        "compartment": "G3"
       },
       {
         "equipment_id": "std_kupplungsschluessel",
-        "quantity": 3
+        "quantity": 3,
+        "compartment": "G3"
       },
       {
         "equipment_id": "std_oberflurhydrantenschluessel",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G5"
       },
       {
         "equipment_id": "std_unterflurhydrantenschluessel",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G5"
       },
       {
         "equipment_id": "std_steckleiter",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "Dach"
       },
       {
         "equipment_id": "std_schiebleiter",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "Dach"
       },
       {
         "equipment_id": "std_klappleiter",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "Dach"
       },
       {
         "equipment_id": "std_feuerwehrleine",
-        "quantity": 4
+        "quantity": 4,
+        "compartment": "Mannschaftsraum"
       },
       {
         "equipment_id": "std_sprungretter",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "Heck (GR)"
       },
       {
         "equipment_id": "std_krankentrage",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "Heck (GR)"
       },
       {
         "equipment_id": "std_verbandkasten",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "Mannschaftsraum"
       },
       {
         "equipment_id": "std_handscheinwerfer",
-        "quantity": 2
+        "quantity": 2,
+        "compartment": "Mannschaftsraum"
       },
       {
         "equipment_id": "std_leitkegel",
-        "quantity": 4
+        "quantity": 4,
+        "compartment": "G6"
       },
       {
         "equipment_id": "std_warnleuchte",
-        "quantity": 2
+        "quantity": 2,
+        "compartment": "G6"
       },
       {
         "equipment_id": "std_hrt_funkgeraet",
-        "quantity": 4
+        "quantity": 4,
+        "compartment": "Mannschaftsraum"
       },
       {
         "equipment_id": "std_flutlichtstrahler",
-        "quantity": 2
+        "quantity": 2,
+        "compartment": "G1"
       },
       {
         "equipment_id": "std_stativ",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G1"
       },
       {
         "equipment_id": "std_abzweigstueck_strom",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G1"
       },
       {
         "equipment_id": "std_kabeltrommel_50m",
-        "quantity": 2
+        "quantity": 2,
+        "compartment": "G1"
       },
       {
         "equipment_id": "std_tauchpumpe_tp4",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G1"
       },
       {
         "equipment_id": "std_einreisshaken",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "Dach"
       },
       {
         "equipment_id": "std_anschlagmittel",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G2"
       },
       {
         "equipment_id": "std_stromerzeuger_5kva",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G1"
       },
       {
         "equipment_id": "std_motorkettensaege",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G4"
       },
       {
         "equipment_id": "std_saebelsaege",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G4"
       },
       {
         "equipment_id": "std_druckbeluefter",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G1"
       },
       {
         "equipment_id": "std_brechstange",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G4"
       },
       {
         "equipment_id": "std_werkzeugkasten",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G4"
       },
       {
         "equipment_id": "std_feuerwehraxt",
-        "quantity": 2
+        "quantity": 2,
+        "compartment": "G4"
       },
       {
         "equipment_id": "std_bolzenschneider",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G4"
       },
       {
         "equipment_id": "std_spaten",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G4"
       },
       {
         "equipment_id": "std_schaufel",
-        "quantity": 2
+        "quantity": 2,
+        "compartment": "G4"
       },
       {
         "equipment_id": "std_besen",
-        "quantity": 2
+        "quantity": 2,
+        "compartment": "G4"
       },
       {
         "equipment_id": "std_oelbindemittel",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G4"
       },
       {
         "equipment_id": "std_abschleppseil",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G2"
       },
       {
         "equipment_id": "std_kanister_kraftstoff",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G4"
       },
       {
         "equipment_id": "std_mehrzweckzug",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G2"
       },
       {
         "equipment_id": "std_trennschleifer",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G2"
       },
       {
         "equipment_id": "std_spreizer",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G2"
       },
       {
         "equipment_id": "std_schneidgeraet",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G2"
       },
       {
         "equipment_id": "std_rettungszylinder",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G2"
       },
       {
         "equipment_id": "std_hebekissen",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G2"
       },
       {
         "equipment_id": "std_unterbaumaterial",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G2"
       },
       {
         "equipment_id": "std_glasmanagement",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G2"
       },
       {
         "equipment_id": "std_hydraulikaggregat",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G2"
       },
       {
         "equipment_id": "std_spineboard",
-        "quantity": 1
+        "quantity": 1,
+        "compartment": "G2"
       }
     ]
   }

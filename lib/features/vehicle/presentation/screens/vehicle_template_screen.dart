@@ -83,14 +83,23 @@ class VehicleTemplateScreen extends ConsumerWidget {
         licensePlate: options.plate.isEmpty ? null : options.plate,
         imagePath: options.imagePath,
         withLoading: options.withLoading,
+        withPlacement: options.withPlacement,
       );
       ref.invalidate(vehicleListProvider);
       if (!context.mounted) return;
 
-      var message = result.itemCount > 0
-          ? '${options.name} angelegt: ${result.compartmentCount} Geräteräume, '
-              '${result.itemCount} Positionen im Sammelfach.'
-          : '${options.name} angelegt: ${result.compartmentCount} Geräteräume.';
+      var message = '${options.name} angelegt: '
+          '${result.compartmentCount} Geräteräume.';
+      if (result.itemCount > 0) {
+        final verteilt = result.itemCount - result.unassignedCount;
+        message = verteilt > 0
+            ? '${options.name} angelegt: $verteilt Positionen nach Konvention '
+                'verteilt'
+                '${result.unassignedCount > 0 ? ', ${result.unassignedCount} im Sammelfach' : ''}'
+                ' — bitte am Fahrzeug prüfen.'
+            : '${options.name} angelegt: ${result.compartmentCount} '
+                'Geräteräume, ${result.itemCount} Positionen im Sammelfach.';
+      }
       // Fehlende Positionen laut sagen: Wer „mit Normbeladung" wählt und
       // still ein Drittel weniger bekommt, merkt es sonst erst am Fahrzeug
       // (Issue #86 entstand genau so).
@@ -123,10 +132,15 @@ class _TemplateOptions {
   final String? imagePath;
   final bool withLoading;
 
+  /// Beladung nach der Konvention der Vorlage verteilen (Issue #157) —
+  /// nur relevant, wenn [withLoading] gewählt ist.
+  final bool withPlacement;
+
   const _TemplateOptions({
     required this.name,
     required this.plate,
     required this.withLoading,
+    this.withPlacement = false,
     this.imagePath,
   });
 }
@@ -145,6 +159,7 @@ class _TemplateOptionsSheetState extends State<_TemplateOptionsSheet> {
   final _plateCtrl = TextEditingController();
   String? _imagePath;
   var _withLoading = false;
+  var _withPlacement = false;
 
   @override
   void dispose() {
@@ -208,6 +223,9 @@ class _TemplateOptionsSheetState extends State<_TemplateOptionsSheet> {
                   template: t,
                   withLoading: _withLoading,
                   onChanged: (v) => setState(() => _withLoading = v),
+                  withPlacement: _withPlacement,
+                  onPlacementChanged: (v) =>
+                      setState(() => _withPlacement = v),
                 )
               else
                 _NoLoadingHint(compartments: t.compartments.length),
@@ -245,6 +263,10 @@ class _TemplateOptionsSheetState extends State<_TemplateOptionsSheet> {
                             plate: _plateCtrl.text.trim(),
                             imagePath: _imagePath,
                             withLoading: _withLoading,
+                            // Nur wirksam mit Beladung — wer erst verteilt
+                            // wählt und dann auf „nur Geräteräume" wechselt,
+                            // bekommt keine stille Überraschung.
+                            withPlacement: _withLoading && _withPlacement,
                           ),
                         );
                       },
@@ -268,15 +290,20 @@ class _LoadingChoice extends StatelessWidget {
     required this.template,
     required this.withLoading,
     required this.onChanged,
+    required this.withPlacement,
+    required this.onPlacementChanged,
   });
 
   final VehicleTemplate template;
   final bool withLoading;
   final ValueChanged<bool> onChanged;
+  final bool withPlacement;
+  final ValueChanged<bool> onPlacementChanged;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final verteilen = withPlacement && template.hasPlacement;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -302,6 +329,19 @@ class _LoadingChoice extends StatelessWidget {
             ],
           ),
         ),
+        // Verteilen ist ein Opt-in UNTER „mit Beladung" (Issue #157): ohne
+        // die Wahl bleibt das Sammelfach der Weg — die Konvention soll
+        // niemand für den geprüften Stand der eigenen Wehr halten.
+        if (withLoading && template.hasPlacement)
+          SwitchListTile(
+            value: withPlacement,
+            onChanged: onPlacementChanged,
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Auf die Geräteräume verteilen'),
+            subtitle: const Text(
+                'Nach verbreiteter Konvention vorbelegen — ungeprüft, '
+                'jede Position bleibt änderbar'),
+          ),
         if (withLoading) ...[
           const SizedBox(height: 8),
           Container(
@@ -321,10 +361,18 @@ class _LoadingChoice extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Die Norm schreibt vor, WAS an Bord ist — nicht, in welchem '
-                  'Geräteraum. Die Positionen landen deshalb gesammelt in '
-                  'einem Fach, das ihr selbst auf eure Räume verteilt.\n\n'
-                  'Quelle: ${template.loading!.source}',
+                  verteilen
+                      ? 'Die Norm schreibt vor, WAS an Bord ist — nicht, in '
+                          'welchem Geräteraum. Die Verteilung folgt der '
+                          'verbreiteten Konvention und ist am eigenen '
+                          'Fahrzeug zu prüfen — bei euch kann jedes Gerät '
+                          'woanders liegen.\n\n'
+                          'Quelle: ${template.loading!.source}'
+                      : 'Die Norm schreibt vor, WAS an Bord ist — nicht, in '
+                          'welchem Geräteraum. Die Positionen landen deshalb '
+                          'gesammelt in einem Fach, das ihr selbst auf eure '
+                          'Räume verteilt.\n\n'
+                          'Quelle: ${template.loading!.source}',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onErrorContainer,
                   ),

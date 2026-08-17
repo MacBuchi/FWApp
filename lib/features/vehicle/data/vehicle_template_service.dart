@@ -21,6 +21,10 @@ class TemplateApplyResult {
   /// Angelegte Beladungspositionen.
   final int itemCount;
 
+  /// Davon im Sammelfach gelandet (Issue #157): beim Verteilen nach
+  /// Konvention der Rest ohne Verortung, sonst alle.
+  final int unassignedCount;
+
   /// Katalog-IDs, zu denen kein Gerät gefunden wurde.
   ///
   /// Sollte leer sein — ein Test prüft die Vorlagen gegen den Katalog. Wenn
@@ -32,6 +36,7 @@ class TemplateApplyResult {
     required this.vehicleId,
     required this.compartmentCount,
     required this.itemCount,
+    this.unassignedCount = 0,
     this.missingEquipment = const [],
   });
 }
@@ -51,12 +56,19 @@ class VehicleTemplateService {
   /// verteilt auf G1…G6: Die Raumzuordnung ist nicht genormt und unterscheidet
   /// sich je Wehr — sie zu erfinden wäre genau an der Stelle falsch, um die es
   /// beim Lernen geht.
+  ///
+  /// Ausnahme auf ausdrücklichen Wunsch (Issue #157): Mit [withPlacement]
+  /// wandern Positionen mit Default-Verortung in ihren Geräteraum — als
+  /// gewählte Konvention, nicht als stille Vorgabe. Der Rest (und alles bei
+  /// unbekanntem Label) landet weiter im Sammelfach, das dann nur noch bei
+  /// Bedarf entsteht.
   Future<TemplateApplyResult> apply(
     VehicleTemplate template, {
     required String name,
     String? licensePlate,
     String? imagePath,
     required bool withLoading,
+    bool withPlacement = false,
   }) async {
     // Katalog VOR der Transaktion laden: rootBundle ist ein async-Spalt,
     // der nicht in eine DB-Transaktion gehört.
@@ -73,8 +85,9 @@ class VehicleTemplateService {
         ),
       );
 
+      final fachIdNachLabel = <String, int>{};
       for (final c in template.compartments) {
-        await db.compartmentDao.insertCompartment(
+        fachIdNachLabel[c.label] = await db.compartmentDao.insertCompartment(
           CompartmentsCompanion.insert(
             vehicleId: vehicleId,
             label: c.label,
@@ -94,17 +107,23 @@ class VehicleTemplateService {
         );
       }
 
-      // Sammelfach ans Ende, damit es die gewohnte G-Reihenfolge nicht stört.
-      final unassignedId = await db.compartmentDao.insertCompartment(
-        CompartmentsCompanion.insert(
-          vehicleId: vehicleId,
-          label: kUnassignedCompartmentLabel,
-          position: Value(template.compartments.length),
-        ),
-      );
+      // Das Sammelfach entsteht erst, wenn etwas hineingehört (Issue #157):
+      // Beim Verteilen nach Konvention wäre ein leeres „ungeprüft"-Fach nur
+      // Aufräumarbeit ohne Inhalt. Ans Ende, damit es die gewohnte
+      // G-Reihenfolge nicht stört.
+      int? unassignedId;
+      Future<int> sammelfach() async =>
+          unassignedId ??= await db.compartmentDao.insertCompartment(
+            CompartmentsCompanion.insert(
+              vehicleId: vehicleId,
+              label: kUnassignedCompartmentLabel,
+              position: Value(template.compartments.length),
+            ),
+          );
 
       final missing = <String>[];
       var placed = 0;
+      var unassigned = 0;
       for (final item in template.loading!.items) {
         final existing =
             await db.equipmentDao.getByLibraryId(item.equipmentId);
@@ -119,9 +138,16 @@ class VehicleTemplateService {
           missing.add(item.equipmentId);
           continue;
         }
+        // Verteilen nur auf Wunsch; ein unbekanntes Label fällt ins
+        // Sammelfach statt Position zu verlieren (der Parser lässt so etwas
+        // gar nicht erst durch, der Vorlagen-Test benennt es).
+        final zielFachId = withPlacement && item.compartment != null
+            ? fachIdNachLabel[item.compartment]
+            : null;
+        if (zielFachId == null) unassigned++;
         await db.assignmentDao.insertAssignment(
           EquipmentAssignmentsCompanion.insert(
-            compartmentId: unassignedId,
+            compartmentId: zielFachId ?? await sammelfach(),
             equipmentId: equipmentId,
             quantity: Value(item.quantity),
           ),
@@ -137,8 +163,10 @@ class VehicleTemplateService {
 
       return TemplateApplyResult(
         vehicleId: vehicleId,
-        compartmentCount: template.compartments.length + 1,
+        compartmentCount:
+            template.compartments.length + (unassignedId == null ? 0 : 1),
         itemCount: placed,
+        unassignedCount: unassigned,
         missingEquipment: missing,
       );
     });

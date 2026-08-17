@@ -137,6 +137,51 @@ void main() {
       expect(t.compartments[2].seite, isNull);
     });
 
+    test('liest die Default-Verortung der Positionen (Issue #157)', () {
+      final t = parseVehicleTemplate(jsonEncode({
+        'id': 'x',
+        'name': 'X',
+        'type': 'X',
+        'compartments': [
+          {'label': 'G1', 'position': 0},
+          {'label': 'G2', 'position': 1},
+        ],
+        'loading': {
+          'source': 's',
+          'items': [
+            {'equipment_id': 'std_a', 'quantity': 1, 'compartment': 'G1'},
+            {'equipment_id': 'std_b', 'quantity': 2},
+            // Tippfehler: Das Label gibt es in der Vorlage nicht. Fällt auf
+            // null zurück (→ Sammelfach) statt still ein Fach zu erfinden.
+            {'equipment_id': 'std_c', 'quantity': 3, 'compartment': 'G9'},
+          ],
+        },
+      }))!;
+      expect(t.hasPlacement, isTrue);
+      expect(t.loading!.items[0].compartment, 'G1');
+      expect(t.loading!.items[1].compartment, isNull);
+      expect(t.loading!.items[2].compartment, isNull);
+    });
+
+    test('ohne Verortungen meldet die Vorlage hasPlacement = false', () {
+      // Sonst zeigte die UI einen Verteilen-Schalter, der nichts verteilt.
+      final t = parseVehicleTemplate(jsonEncode({
+        'id': 'x',
+        'name': 'X',
+        'type': 'X',
+        'compartments': [
+          {'label': 'G1', 'position': 0},
+        ],
+        'loading': {
+          'source': 's',
+          'items': [
+            {'equipment_id': 'std_a', 'quantity': 1},
+          ],
+        },
+      }))!;
+      expect(t.hasPlacement, isFalse);
+    });
+
     test('eine ungültige Verortung fällt auf null zurück', () {
       // Ein Tippfehler in einer Vorlage darf nicht bis zum Veröffentlichen
       // schlummern (dort prüft der Server per CHECK — und lehnt dann den
@@ -319,6 +364,53 @@ void main() {
       // in jede Vorlage, damit niemand die Draufsicht für gemessen hält.
       for (final t in templates.values) {
         expect(t.note, contains('vorbelegt'), reason: t.id);
+      }
+    });
+
+    test('hlf20 und lf20 verorten jede Position auf ein echtes Fach '
+        '(Issue #157)', () {
+      // Wie bei der Fach-Verortung wird das ROHE JSON geprüft: Der Parser
+      // lässt einen Tippfehler still ins Sammelfach zurückfallen — dieser
+      // Test benennt ihn stattdessen. Und JEDE Position trägt ein Fach,
+      // damit „verteilen" nicht heißt „verteilen, bis auf drei".
+      for (final id in ['hlf20', 'lf20']) {
+        final raw = jsonDecode(
+                File('$kVehicleTemplateDir/$id/template.json')
+                    .readAsStringSync())
+            as Map<String, dynamic>;
+        final labels = (raw['compartments'] as List)
+            .map((c) => (c as Map)['label'] as String)
+            .toSet();
+        for (final i in (raw['loading'] as Map)['items'] as List) {
+          final item = i as Map;
+          expect(labels, contains(item['compartment']),
+              reason: '$id: ${item['equipment_id']} → '
+                  '${item['compartment']}');
+        }
+      }
+    });
+
+    test('beim Verteilen bleibt kein Geräteraum leer (Issue #157)', () {
+      // Ein leeres Fach nach „verteilen" sähe aus wie ein Fehler im
+      // Fahrzeug — die Konvention muss jeden Raum begründen können.
+      for (final id in ['hlf20', 'lf20']) {
+        final t = templates[id]!;
+        final belegt =
+            t.loading!.items.map((i) => i.compartment).toSet();
+        for (final c in t.compartments) {
+          expect(belegt, contains(c.label), reason: '$id/${c.label} leer');
+        }
+      }
+    });
+
+    test('der Mannschaftsraum gehört zu den Vorlagen mit Beladung '
+        '(Issue #157)', () {
+      // PA, Masken und Leinen liegen in der Kabine — ohne dieses Fach
+      // müsste die Konvention den halben Atemschutz in einen G-Raum
+      // erfinden.
+      for (final id in ['hlf20', 'lf20']) {
+        final labels = templates[id]!.compartments.map((c) => c.label);
+        expect(labels, contains('Mannschaftsraum'), reason: id);
       }
     });
 
@@ -505,6 +597,85 @@ void main() {
           await db.assignmentDao.getByCompartment(unassigned.id);
       expect(assignments.single.equipmentId, nachgelegt.id);
       expect(assignments.single.quantity, 14);
+    });
+
+    test('verteilt auf Wunsch nach der Default-Verortung (Issue #157)',
+        () async {
+      final result = await service.apply(
+        template(items: const [
+          TemplateItem(
+              equipmentId: 'std_b_druckschlauch_20m',
+              quantity: 14,
+              compartment: 'G1'),
+          // Ohne Verortung → Sammelfach, auch beim Verteilen.
+          TemplateItem(equipmentId: 'std_verteiler_bv', quantity: 2),
+        ]),
+        name: 'X',
+        withLoading: true,
+        withPlacement: true,
+      );
+
+      expect(result.itemCount, 2);
+      expect(result.unassignedCount, 1);
+      expect(result.compartmentCount, 3,
+          reason: 'zwei Räume plus Sammelfach für den Rest');
+
+      final comps = await db.compartmentDao.getByVehicle(result.vehicleId);
+      final g1 = comps.firstWhere((c) => c.label == 'G1');
+      final schlauch =
+          (await db.equipmentDao.getByLibraryId('std_b_druckschlauch_20m'))!;
+      final inG1 = await db.assignmentDao.getByCompartment(g1.id);
+      expect(inG1.single.equipmentId, schlauch.id);
+      expect(inG1.single.quantity, 14);
+
+      final unassigned =
+          comps.firstWhere((c) => c.label == kUnassignedCompartmentLabel);
+      final imSammelfach =
+          await db.assignmentDao.getByCompartment(unassigned.id);
+      expect(imSammelfach, hasLength(1));
+    });
+
+    test('ohne die Wahl bleibt die Default-Verortung wirkungslos', () async {
+      // Das Opt-in ist der Kern von Issue #157: Verortung in der Vorlage
+      // allein darf das Sammelfach-Verhalten nicht ändern.
+      final result = await service.apply(
+        template(items: const [
+          TemplateItem(
+              equipmentId: 'std_b_druckschlauch_20m',
+              quantity: 14,
+              compartment: 'G1'),
+        ]),
+        name: 'X',
+        withLoading: true,
+      );
+      expect(result.unassignedCount, 1);
+      final comps = await db.compartmentDao.getByVehicle(result.vehicleId);
+      final g1 = comps.firstWhere((c) => c.label == 'G1');
+      expect(await db.assignmentDao.getByCompartment(g1.id), isEmpty);
+    });
+
+    test('lässt das Sammelfach weg, wenn alles verortet ist', () async {
+      final result = await service.apply(
+        template(items: const [
+          TemplateItem(
+              equipmentId: 'std_b_druckschlauch_20m',
+              quantity: 14,
+              compartment: 'G1'),
+          TemplateItem(
+              equipmentId: 'std_verteiler_bv',
+              quantity: 2,
+              compartment: 'G2'),
+        ]),
+        name: 'X',
+        withLoading: true,
+        withPlacement: true,
+      );
+      expect(result.itemCount, 2);
+      expect(result.unassignedCount, 0);
+      expect(result.compartmentCount, 2, reason: 'kein leeres Sammelfach');
+      final comps = await db.compartmentDao.getByVehicle(result.vehicleId);
+      expect(comps.map((c) => c.label),
+          isNot(contains(kUnassignedCompartmentLabel)));
     });
 
     test('meldet Geräte, die nicht im Katalog stehen', () async {

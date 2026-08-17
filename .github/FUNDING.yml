@@ -1,0 +1,9 @@
+# Eine Ko-fi-Seite und ein GitHub-Sponsors-Profil für alle Apps des
+# Portfolios — Spender können in der Ko-fi-Nachricht nennen, aus welcher
+# App sie kommen.
+#
+# ⚠️ Nicht in die App verlinken, falls FWApp je über Google Play verteilt
+# wird: Spenden an Privatpersonen fallen nicht unter die Ausnahme für
+# gemeinnützige Organisationen in Plays Payments-Policy. Repo und Web only.
+ko_fi: macbuchi
+github: [MacBuchi]

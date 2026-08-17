@@ -56,6 +56,20 @@ können.
 
 ---
 
+## Unterstützen
+
+FWApp ist kostenlos und ohne Werbung — und soll es bleiben. Wer das Projekt
+trotzdem unterstützen möchte, kann das freiwillig hier tun; die App bleibt für
+alle gleich, Spenden schalten nichts frei:
+
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-Kaffee%20spendieren-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/macbuchi)
+[![GitHub Sponsors](https://img.shields.io/badge/GitHub-Sponsor%20werden-EA4AAA?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/MacBuchi)
+
+Es ist eine Ko-fi-Seite für alle Apps — gern in der Nachricht dazuschreiben,
+aus welcher App man kommt.
+
+---
+
 ## Architektur in 60 Sekunden
 
 - **Local-first:** Alle Daten liegen lokal in SQLite ([Drift](https://drift.simonbinder.eu/));

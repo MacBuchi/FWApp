@@ -8,6 +8,13 @@
 /// darauf ankommt. Deshalb landet die Beladung in einem eigenen Sammelfach,
 /// aus dem der Gerätewart sie auf die echten Räume verteilt.
 ///
+/// Seit Issue #157 gibt es dazu ein **Opt-in**: Positionen können eine
+/// Default-Verortung nach der verbreiteten Konvention tragen, und wer beim
+/// Anlegen ausdrücklich das Verteilen wählt, bekommt sie in die Fächer statt
+/// ins Sammelfach — derselbe Zug wie bei der Fach-Verortung (#144): Wer eine
+/// Vorlage wählt, wählt ein Konventions-Gerüst, und alles bleibt einzeln
+/// korrigierbar. Ohne die Wahl ändert sich nichts am Sammelfach-Weg.
+///
 /// Vorlagen ohne öffentlich belegbare Liste bringen nur die Geräteräume mit.
 /// Nachtragen heißt: eine `template.json` um den `loading`-Block ergänzen —
 /// kein Code.
@@ -58,7 +65,17 @@ class TemplateItem {
   final String equipmentId;
   final int quantity;
 
-  const TemplateItem({required this.equipmentId, required this.quantity});
+  /// Default-Verortung (Issue #157): Label eines Geräteraums DERSELBEN
+  /// Vorlage, oder `null` für das Sammelfach. Lebt bewusst hier und nicht
+  /// am Katalog: Dasselbe Standrohr liegt auf einem LF 10 woanders als auf
+  /// einem HLF 20, und die Fächerschnitte unterscheiden sich je Typ.
+  final String? compartment;
+
+  const TemplateItem({
+    required this.equipmentId,
+    required this.quantity,
+    this.compartment,
+  });
 }
 
 /// Die Beladung einer Vorlage samt Herkunftsangabe.
@@ -97,6 +114,11 @@ class VehicleTemplate {
   });
 
   bool get hasLoading => loading != null && loading!.items.isNotEmpty;
+
+  /// Bringt die Vorlage eine Default-Verortung mit (Issue #157)? Nur dann
+  /// bietet die Oberfläche das Verteilen überhaupt an.
+  bool get hasPlacement =>
+      loading?.items.any((i) => i.compartment != null) ?? false;
 }
 
 /// Liest eine Vorlage aus ihrem JSON. Rein, damit der Test sie direkt füttern
@@ -137,14 +159,21 @@ VehicleTemplate? parseVehicleTemplate(String raw) {
     TemplateLoading? loading;
     final loadingJson = json['loading'];
     if (loadingJson is Map<String, dynamic>) {
+      // Nur Labels, die es in DIESER Vorlage gibt: Ein Tippfehler fiele
+      // sonst erst am fertigen Fahrzeug auf — als Position, die wortlos in
+      // einem falschen Fach fehlt. So landet sie im Sammelfach, und der
+      // Vorlagen-Test benennt den Tippfehler laut (Issue #157).
+      final labels = compartments.map((c) => c.label).toSet();
       final items = <TemplateItem>[];
       for (final i in (loadingJson['items'] as List?) ?? const []) {
         if (i is! Map) continue;
         final equipmentId = i['equipment_id'] as String?;
         if (equipmentId == null || equipmentId.isEmpty) continue;
+        final compartment = i['compartment'] as String?;
         items.add(TemplateItem(
           equipmentId: equipmentId,
           quantity: (i['quantity'] as num?)?.toInt() ?? 1,
+          compartment: labels.contains(compartment) ? compartment : null,
         ));
       }
       if (items.isNotEmpty) {

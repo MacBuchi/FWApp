@@ -203,6 +203,16 @@ pauschales Formatieren in Feature-PRs.
   (der Bot setzt `fwapp-feedback-bot/1.0`).
 - **Der Demo-Datenbestand ist fiktiv.** Die echte AB-G-Beladeliste ist bewusst
   aus dem Arbeitsstand entfernt; der Seeder legt Katalog **vor** Fahrzeug an.
+- **Die Demo-Gesamtwehr ist ein Skript, kein Handbetrieb** (Issue #158):
+  [tool/seed_demo_wehr.py](tool/seed_demo_wehr.py) legt „Feuerwehr
+  Freiwilligen“ mit zwei Abteilungen, vier Rollen-Konten und dem Bestand
+  aus den Vorlagen an — wiederholbar, weil `sync_e2e_test` auf dem lokalen
+  Stack zwischen seinen Tests **alle** Gesamtwehren löscht. Stammdaten in
+  [tool/demo_wehr.py](tool/demo_wehr.py), Bedienung in
+  [docs/BETRIEB.md](docs/BETRIEB.md).
+  ⚠️ `handle_new_user()` steckt jedes Konto **ohne** `abteilung_id` in den
+  Signup-Metadaten in die `legacy_mirror`-Abteilung — auf Prod die ECHTE
+  Wehr. Wer Demo-Konten anlegt, gibt die Abteilung mit.
 
 ## Tests
 

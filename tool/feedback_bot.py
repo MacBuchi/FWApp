@@ -5,6 +5,10 @@ Liest unverarbeitete Zeilen aus der Supabase-Tabelle `feedback` (über das
 öffentliche API-Gateway) und erzeugt für jede Meldung ein GitHub-Issue
 (feature -> enhancement, bug -> bug); danach stempelt er processed_at.
 
+Meldungen von Konten, die ausschliesslich zur Demo-Gesamtwehr gehoeren
+(tool/demo_wehr.py, Issue #158), werden nur abgestempelt: Eine Vorfuehrung
+soll den Dialog zeigen duerfen, ohne ein oeffentliches Issue zu erzeugen.
+
 Benötigte Umgebung: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, GH_TOKEN
 (liefert der Workflow .github/workflows/feedback.yml).
 """
@@ -14,6 +18,8 @@ import subprocess
 import sys
 import urllib.request
 from datetime import datetime, timezone
+
+from demo_wehr import GESAMTWEHR_SLUG
 
 
 # Meldungsart -> (Titel-Präfix, GitHub-Label). `katalog` ist der Vorschlag
@@ -78,17 +84,60 @@ def mark_processed(row_ids: list[str]) -> None:
         {"processed_at": now})
 
 
+def demo_konten(user_ids: list[str]) -> set[str]:
+    """Die Konten aus [user_ids], die ausschliesslich zur Demo-Wehr gehoeren.
+
+    Der Feedback-Dialog bleibt in der Demo bedienbar — er soll ja vorfuehrbar
+    sein —, aber eine Vorfuehrung darf kein oeffentliches Issue erzeugen
+    (Issue #158). Gefiltert wird ueber die Mitgliedschaften, nicht ueber
+    `profiles.abteilung_id`: Die Spalte ist nur der Alt-Client-Spiegel.
+
+    ⚠️ Bewusst nur, wer NUR in der Demo-Wehr Mitglied ist. Wer sich zum
+    Vorfuehren zusaetzlich in die Demo-Wehr setzt, soll sein echtes Feedback
+    nicht verlieren — ein still verschlucktes Anliegen faellt niemandem auf.
+    """
+    if not user_ids:
+        return set()
+    gesamtwehr = api("GET", f"/rest/v1/gesamtwehren?slug=eq.{GESAMTWEHR_SLUG}"
+                            "&select=id")
+    if not gesamtwehr:
+        return set()  # Keine Demo-Wehr eingerichtet — nichts zu filtern.
+    demo_abteilungen = {
+        row["id"] for row in api(
+            "GET", f"/rest/v1/abteilungen?gesamtwehr_id=eq.{gesamtwehr[0]['id']}"
+                   "&select=id")
+    }
+    if not demo_abteilungen:
+        return set()
+    liste = ",".join(user_ids)
+    mitgliedschaften: dict[str, set[str]] = {}
+    for row in api("GET", f"/rest/v1/memberships?user_id=in.({liste})"
+                          "&select=user_id,abteilung_id"):
+        mitgliedschaften.setdefault(row["user_id"], set()).add(
+            row["abteilung_id"])
+    return {uid for uid, abteilungen in mitgliedschaften.items()
+            if abteilungen and abteilungen <= demo_abteilungen}
+
+
 def main() -> None:
     rows = api(
         "GET",
         "/rest/v1/feedback?processed_at=is.null&order=created_at"
-        "&select=id,type,message,user_name,created_at",
+        "&select=id,type,message,user_name,created_at,user_id",
     )
     if not rows:
         print("No unprocessed feedback.")
         return
 
+    aus_der_demo = demo_konten([row["user_id"] for row in rows])
+
     for row in rows:
+        if row["user_id"] in aus_der_demo:
+            # Abstempeln statt ueberspringen: Eine ungestempelte Zeile laege
+            # bei jedem Lauf wieder oben auf dem Stapel.
+            print(f"Skip (Demo-Wehr): {row['message'][:40]}")
+            mark_processed([row["id"]])
+            continue
         username = row.get("user_name") or "unbekannt"
         kind = row["type"]
         prefix, label = KINDS.get(kind, KINDS["feature"])

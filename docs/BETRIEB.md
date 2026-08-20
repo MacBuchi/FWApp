@@ -313,6 +313,10 @@ Gerätefotos, die dort aus demselben Grund leer blieben.)
   automatisch (alle 6 Std.) als **öffentliches GitHub-Issue** im
   App-Projekt angelegt — inklusive Nutzername. Deshalb zeigt der Dialog
   den Hinweis: **keine persönlichen Daten in den Text schreiben.**
+- **Aus der Demo-Wehr entsteht kein Issue.** Der Dialog bleibt dort
+  bedienbar — er soll ja vorführbar sein —, aber der Bot stempelt
+  Meldungen von Konten, die ausschließlich zur Demo-Wehr gehören, nur ab
+  (siehe unten).
 
 ### App-Updates
 
@@ -377,6 +381,48 @@ Update-Banner erreichbar. OTA-Download, Android-Installer und Neustart
 liefen durch; Sitzung, Datenbestand und Lernstand blieben erhalten, und
 derselbe vorher abgewiesene Publish ging nach dem Update sofort durch.
 Es musste zu keinem Zeitpunkt etwas gelöscht werden.
+
+---
+
+## Demo-Wehr „Feuerwehr Freiwilligen“
+
+Für Vorführungen, Screenshots und Tests gibt es eine **erfundene Gesamtwehr** —
+die Feuerwehr der ebenso erfundenen Stadt Freiwilligen. Sie liegt auf demselben
+Server wie die echte Wehr; getrennt hält sie dieselbe RLS, die ohnehin jede
+Abteilung von jeder anderen trennt. Es steckt keine Zeile echter Wehrdaten
+darin — kein Screenshot muss mehr geschwärzt werden.
+
+| | |
+| --- | --- |
+| Gesamtwehr | Feuerwehr Freiwilligen |
+| Abteilungen | Abteilung Freiwilligen · Abteilung Ehrenberg |
+| Konten | `demo.kommandant` (Feuerwehrkommandant), `demo.abteilungskommandant`, `demo.geraetewart`, `demo.mitglied` — alle `@fw.local` |
+| Fahrzeuge | HLF 20 (FRW-FW 20) und MTW in Freiwilligen, LF 20 (FRW-FW 21) in Ehrenberg |
+| Beladung | Normbeladung aus den Vorlagen, fachgenau auf die Geräteräume verteilt (73 bzw. 63 Positionen) |
+
+Einrichten oder auffrischen — die Stammdaten stehen in `tool/demo_wehr.py`:
+
+```bash
+export SUPABASE_URL=…             # lokal: http://127.0.0.1:54321 (Vorgabe)
+export SUPABASE_SERVICE_ROLE_KEY=…
+export FWAPP_DEMO_PASSWORD=…      # ausserhalb localhost Pflicht
+python3 tool/seed_demo_wehr.py
+```
+
+Das Skript ist **wiederholbar**: Ein zweiter Lauf legt nichts doppelt an und
+setzt den Bestand beider Abteilungen auf den Stand der Vorlagen zurück. So ist
+die Demo gedacht — kaputt vorführen ist erlaubt, Aufräumen ist ein Befehl.
+
+- ⚠️ **Das Demo-Passwort gehört nach `docs/private/`**, nicht ins Repo: Das
+  Repo ist öffentlich und der Server öffentlich erreichbar. Gegen einen
+  Nicht-Localhost startet das Skript ohne gesetztes Passwort gar nicht erst.
+- ⚠️ **Auf dem lokalen Stack nicht vorführen, während Tests laufen:**
+  `sync_e2e_test` löscht zwischen seinen Tests alle Gesamtwehren — die Demo
+  ist danach weg (und mit einem Skriptlauf wieder da).
+- ⚠️ Neue Konten landen ohne Abteilungs-Metadatum in der **echten** Wehr (so
+  ist der Trigger `handle_new_user()` gebaut). Deshalb legt das Skript erst
+  die Demo-Abteilungen an und gibt deren ID beim Anlegen mit; Demo-Konten
+  also **nie von Hand** in der Nutzerverwaltung anlegen.
 
 ---
 

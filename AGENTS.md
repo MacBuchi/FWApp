@@ -89,10 +89,21 @@ Es gilt die GitHub-Guideline des DocuHub. FWApp-spezifisch bzw. betont:
   (`lib android ios macos web assets pubspec.*`); im PR warnt er nur, auf
   `main` schlägt er fehl. Den Bump setzt der Maintainer bis zum Merge —
   externe Beiträge fassen die Version nicht an.
-- ⚠️ **Die Required Checks hängen an den `name:`-Feldern der CI-Jobs**
-  („Analyze & Test", „Build Web", „Build Android APK", „Version Guard"). Wird
-  ein Job umbenannt, greift die Branch Protection stillschweigend nicht mehr —
-  Umbenennung immer zusammen mit den Repo-Einstellungen.
+- ⚠️ **Die Required Checks hängen an den `name:`-Feldern der Jobs.** Pflicht
+  sind acht: „Analyze & Test", „Build Web", „Build Android APK",
+  „Version Guard" (aus `ci.yml`) sowie „OSV (PR) / osv-scan",
+  „Dependency Review", „Secrets" und „Lizenzen (Gesamtbestand)" (aus
+  `security.yml`, seit #152). Wird ein Job umbenannt, greift die Branch
+  Protection stillschweigend nicht mehr — Umbenennung immer zusammen mit den
+  Repo-Einstellungen.
+  ⚠️ **Ein aufgerufener Workflow meldet unter `<Job> / <Job der Zieldatei>`.**
+  Der OSV-PR-Lauf heißt deshalb `OSV (PR) / osv-scan`, nicht `OSV (PR)`. Wer
+  den kurzen Namen einträgt, macht ihn zu einer Bedingung, die **nie**
+  gemeldet wird — jeder PR hängt dann dauerhaft in „Waiting for status".
+  Namen immer aus einem echten Lauf abschreiben:
+  `gh api repos/<owner>/<repo>/commits/<sha>/check-runs --jq '.check_runs[].name'`.
+  Rettungsanker, falls es doch passiert: `enforce_admins` steht auf `false`,
+  der Maintainer kann also vorbei.
 - ⚠️ **`GITHUB_TOKEN`-Regel:** Ein mit `GITHUB_TOKEN` ausgelöster Vorgang
   triggert **keine** Folge-Workflows. Gewollt beim Tag-Push in `release.yml`
   (kein Doppel-Lauf) — Falle, sobald ein Bot-Issue eine Triage anstoßen soll.

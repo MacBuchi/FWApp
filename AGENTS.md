@@ -104,6 +104,17 @@ Es gilt die GitHub-Guideline des DocuHub. FWApp-spezifisch bzw. betont:
   `gh api repos/<owner>/<repo>/commits/<sha>/check-runs --jq '.check_runs[].name'`.
   Rettungsanker, falls es doch passiert: `enforce_admins` steht auf `false`,
   der Maintainer kann also vorbei.
+- **Zwei Release-Kanäle seit #154:** Jeder Merge mit Bump veröffentlicht ein
+  **Prerelease** (`prerelease: true` UND `make_latest: false` — eine Zeile
+  allein genügt nicht), sichtbar wird es erst über den Workflow `promote.yml`.
+  `test/release_workflow_test.dart` hält beide Riegel fest.
+  ⚠️ **Der Web-Deploy bleibt bewusst beim Merge** (`web-dist`-Branch): Im
+  Browser gibt es keinen Update-Banner, die Trennung löst ein
+  Android-Problem. Das ist die bewusste Abweichung von MitFahrBar, wo die
+  Beförderung auch Pages deployt — nicht „nachziehen".
+  ⚠️ **`minimum_supported_version` nie über den freigegebenen Stand heben:**
+  Ein Prerelease erscheint im Update-Banner nicht, der Gerätewart fände
+  nichts, womit er die Sperre auflösen könnte.
 - ⚠️ **`GITHUB_TOKEN`-Regel:** Ein mit `GITHUB_TOKEN` ausgelöster Vorgang
   triggert **keine** Folge-Workflows. Gewollt beim Tag-Push in `release.yml`
   (kein Doppel-Lauf) — Falle, sobald ein Bot-Issue eine Triage anstoßen soll.

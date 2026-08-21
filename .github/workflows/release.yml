@@ -204,8 +204,29 @@ jobs:
       - uses: actions/download-artifact@v8
         with:
           merge-multiple: true
+      # ── Zwei Kanäle (Issue #154) ────────────────────────────────────
+      # Jeder Merge mit Bump veröffentlicht ein **Prerelease**. Die App
+      # fragt in `lib/core/update/update_check.dart` den Endpunkt
+      # `/releases/latest` ab, und der liefert grundsätzlich keine
+      # Prereleases — weder Version noch Anhänge. Auf den Geräten meldet
+      # sich also nichts, bis `promote.yml` einen Stand freigibt.
+      #
+      # ⚠️ **Beide Zeilen sind nötig.** `prerelease: true` allein genügt
+      # nicht: GitHub markiert das neueste Release trotzdem als „latest",
+      # solange `make_latest` nicht ausdrücklich widerspricht. Fehlt eine
+      # von beiden, bekommen die Nutzer wieder an jedem Arbeitstag
+      # Update-Hinweise — und es fällt niemandem auf, bis sie sich melden.
+      # `test/release_workflow_test.dart` hält beide Zeilen fest.
+      #
+      # Der Web-Build oben bleibt bewusst hier und wandert NICHT in die
+      # Beförderung: Im Web gibt es keine Update-Hinweise (`ota_update` und
+      # der Update-Check sind Android-Wege), die PWA lädt beim nächsten
+      # Aufruf ohnehin das neue Bündel. Die Kanaltrennung löst ein
+      # Android-Problem, also gilt sie für Android.
       - uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3
         with:
           tag_name: ${{ needs.version.outputs.tag }}
           generate_release_notes: true
+          prerelease: true
+          make_latest: false
           files: fwapp-*.apk

@@ -197,10 +197,27 @@ def rollen_setzen(benutzer_id, konto, abteilung_id, gesamtwehr_id):
          {"user_id": benutzer_id, "abteilung_id": abteilung_id,
           "role": konto["rolle"]},
          prefer="resolution=merge-duplicates,return=minimal")
+    # ⚠️ Fremde Mitgliedschaften dieses Kontos wegräumen. Klingt nach
+    # Übereifer, ist aber der Unterschied zwischen „wiederholbar" und
+    # „erreicht den Sollzustand": Löscht der E2E-Lauf auf dem lokalen Stack
+    # die Demo-Abteilungen, hängen die vier Konten danach in der
+    # Alt-Abteilung — und ein zweiter Lauf legte die Demo-Mitgliedschaft nur
+    # DANEBEN. Zwei Folgen: Die App zeigt dem Demo-Konto eine fremde
+    # Abteilung zur Auswahl, und der Feedback-Filter greift nicht mehr (er
+    # verschont bewusst jeden, der auch ausserhalb der Demo Mitglied ist).
+    # Gilt ausschliesslich für die vier Konten aus demo_wehr.py.
+    rest("DELETE", f"/memberships?user_id=eq.{benutzer_id}"
+                   f"&abteilung_id=neq.{abteilung_id}",
+         prefer="return=minimal")
     if konto["feuerwehrkommandant"]:
         rest("POST", "/gesamtwehr_kommandanten",
              {"user_id": benutzer_id, "gesamtwehr_id": gesamtwehr_id},
              prefer="resolution=merge-duplicates,return=minimal")
+    # Aus demselben Grund: Kommandant der Demo-Gesamtwehr ja, einer fremden nie.
+    rest("DELETE", f"/gesamtwehr_kommandanten?user_id=eq.{benutzer_id}"
+                   + (f"&gesamtwehr_id=neq.{gesamtwehr_id}"
+                      if konto["feuerwehrkommandant"] else ""),
+         prefer="return=minimal")
     # Anzeigename direkt, nicht über mein_profil_setzen(): die RPC schreibt
     # ausschließlich auf auth.uid() — das ist ihre Absicherung, kein Umweg,
     # den man mit dem Service-Key nehmen sollte. Der Avatar bleibt leer; ihn

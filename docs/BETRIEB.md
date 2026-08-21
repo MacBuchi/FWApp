@@ -419,6 +419,10 @@ die Demo gedacht — kaputt vorführen ist erlaubt, Aufräumen ist ein Befehl.
 - ⚠️ **Auf dem lokalen Stack nicht vorführen, während Tests laufen:**
   `sync_e2e_test` löscht zwischen seinen Tests alle Gesamtwehren — die Demo
   ist danach weg (und mit einem Skriptlauf wieder da).
+- Der Lauf räumt fremde Mitgliedschaften der vier Demo-Konten ab. Nötig, weil
+  ein E2E-Lauf die Demo-Abteilungen löscht und die Konten danach in der
+  Alt-Abteilung hängen — sonst stünde die Demo-Mitgliedschaft nur daneben,
+  und der Feedback-Filter griffe nicht mehr.
 - ⚠️ Neue Konten landen ohne Abteilungs-Metadatum in der **echten** Wehr (so
   ist der Trigger `handle_new_user()` gebaut). Deshalb legt das Skript erst
   die Demo-Abteilungen an und gibt deren ID beim Anlegen mit; Demo-Konten

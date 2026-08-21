@@ -14,10 +14,11 @@ können.
 
 | Beladefächer | Lernmodi | Gerätekatalog |
 | --- | --- | --- |
-| ![Fahrzeugdetail mit den neun Beladefächern eines HLF 20 und der Zahl der Geräte je Fach](docs/screenshots/01-beladefaecher.png) | ![Übersicht der sechs Lernmodi: Fach-Quiz, Drag & Drop, Bild-Erkennung, Wo liegt's, Karteikarten und Fahrzeugkunde](docs/screenshots/02-lernen.png) | ![Durchsuchbarer Gerätekatalog mit Piktogrammen, Filtern nach Funktion und Einsatz](docs/screenshots/03-geraetekatalog.png) |
+| ![Draufsicht eines HLF 20: die Geräteräume sitzen auf ihrer Seite des Fahrzeugs, jedes Fach mit der Zahl seiner Geräte](docs/screenshots/01-beladefaecher.png) | ![Übersicht der sechs Lernmodi: Fach-Quiz, Drag & Drop, Bild-Erkennung, Wo liegt's, Geräte-Wissen und Einsatzplanung](docs/screenshots/02-lernen.png) | ![Durchsuchbarer Gerätekatalog mit Piktogrammen, Filtern nach Funktion und Einsatz](docs/screenshots/03-geraetekatalog.png) |
 
-*Screenshots vom Demo-Datenbestand, der der App beiliegt (fiktives HLF 20 +
-110 Normgeräte) – keine echten Wehrdaten.*
+*Screenshots aus der Demo-Wehr „Feuerwehr Freiwilligen“ – einer erfundenen
+Gesamtwehr mit erfundenen Fahrzeugen und der Normbeladung aus den Vorlagen.
+Keine echten Wehrdaten.*
 
 ---
 

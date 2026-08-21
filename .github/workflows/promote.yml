@@ -1,0 +1,170 @@
+# Ein Prerelease zum stabilen Release befördern (Issue #154).
+#
+# **Warum es diesen Workflow gibt.** Jeder Merge mit Versions-Bump erzeugt
+# ein Release. Solange jedes davon „latest" war, meldete sich die App auf
+# jedem Gerät — an einem fleißigen Tag mehrfach. Seit `release.yml` als
+# *Prerelease* veröffentlicht, sehen die Kameraden davon nichts:
+# `lib/core/update/update_check.dart` fragt `/releases/latest` ab, und dort
+# liefert GitHub keine Prereleases. Dieser Workflow ist der bewusste
+# Handgriff, der einen Stand für alle freigibt.
+#
+# **Zwei Dinge passieren hier zusammen, und keines ist optional:**
+#
+# 1. Das Release verliert die Prerelease-Markierung und wird „latest" —
+#    erst dadurch meldet sich die App auf den Geräten.
+# 2. Die Release-Notizen werden aus ALLEN CHANGELOG-Abschnitten seit dem
+#    letzten stabilen Release zusammengesetzt. Ohne das stünde dort nur der
+#    Abschnitt der einen beförderten Version, und alles dazwischen fehlte.
+#
+# **Was hier bewusst NICHT passiert: der Web-Deploy.** Das Web-Bündel geht
+# weiterhin bei jedem Merge auf den `web-dist`-Branch, von dem der
+# Autodeploy der VM es zieht. Im Web gibt es keine Update-Hinweise
+# (`ota_update` und der Update-Check sind Android-Wege), die PWA lädt beim
+# nächsten Aufruf ohnehin das neue Bündel — die Kanaltrennung löst ein
+# Android-Problem und gilt deshalb für Android. Entschieden am 2026-08-21
+# (Marcus), festgehalten in `test/release_workflow_test.dart`, damit es
+# niemand für ein Versehen hält und „nachzieht".
+#
+# ⚠️ **Mindestversion niemals über den stabilen Stand heben.**
+# `dataset_meta.minimum_supported_version` sperrt Clients unterhalb des
+# Wertes vom Veröffentlichen aus. Zeigt er auf eine Version, die es nur als
+# Prerelease gibt, findet der Gerätewart im Update-Hinweis nichts, womit er
+# die Sperre auflösen könnte. Reihenfolge bleibt: befördern, dann heben.
+name: Promote
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version ohne v, z. B. 1.31.0 (leer = neuestes Prerelease)"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  promote:
+    name: Promote to stable
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Version bestimmen
+        id: pick
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Über env: statt direkt interpoliert — eine Eingabe, die im
+          # `run:`-Block landet, ist der klassische Weg für eine
+          # Template-Injection (zizmor, workflow-lint.yml).
+          WANTED: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          if [ -n "$WANTED" ]; then
+            version="${WANTED#v}"
+          else
+            # Neuestes Prerelease. `--exclude-drafts` lässt Entwürfe außen
+            # vor; GitHub sortiert nach Erstellzeit, was bei monoton
+            # steigenden Versionen dasselbe ist wie nach SemVer.
+            version=$(gh release list --limit 30 --exclude-drafts \
+              --json tagName,isPrerelease \
+              --jq '[.[] | select(.isPrerelease)] | .[0].tagName // ""')
+            version="${version#v}"
+          fi
+          if [ -z "$version" ]; then
+            echo "::error::Kein Prerelease gefunden und keine Version angegeben."
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+          echo "Befördere v$version"
+
+      - name: Letztes stabiles Release finden
+        id: previous
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: v${{ steps.pick.outputs.version }}
+        run: |
+          set -euo pipefail
+          # ⚠️ **Der zu befördernde Stand fällt ausdrücklich heraus.** Ohne
+          # diese Bedingung findet ein WIEDERHOLTER Lauf sich selbst: Beim
+          # ersten Durchgang wurde das Release ja stabil geschaltet, der
+          # „letzte stabile Stand" wäre also die eigene Version, und die
+          # Notizen sammelten zwischen ihr und ihr — also nichts. In
+          # MitFahrBar genau so passiert (11.08.2026): Unter „Was ist neu"
+          # stand nur der Fallback-Link, obwohl fünf Versionen dazwischen
+          # lagen.
+          #
+          # ⚠️ **Gefiltert wird in der Shell, nicht in jq.** `gh --jq` nimmt
+          # nur einen Ausdruck und kennt jq's `--arg` nicht; gh liest es als
+          # eigenes Wort und bricht mit `unknown command` ab. Auch das ist
+          # in MitFahrBar passiert (13.08.2026), beim ersten Lauf, der die
+          # Zeile überhaupt benutzt hat.
+          stable=$(gh release list --limit 60 --exclude-drafts \
+            --json tagName,isPrerelease \
+            --jq '[.[] | select(.isPrerelease | not)] | .[].tagName')
+          prev=""
+          while IFS= read -r candidate; do
+            [ -n "$candidate" ] || continue
+            if [ "$candidate" != "$TAG" ]; then
+              prev="$candidate"
+              break
+            fi
+          done <<< "$stable"
+          echo "tag=$prev" >> "$GITHUB_OUTPUT"
+          echo "Vorheriger stabiler Stand: ${prev:-<keiner>}"
+
+      - name: Notizen seit dem letzten stabilen Stand sammeln
+        env:
+          VERSION: ${{ steps.pick.outputs.version }}
+          PREV: ${{ steps.previous.outputs.tag }}
+        run: |
+          set -euo pipefail
+          prev="${PREV#v}"
+          # CHANGELOG.md steht neueste Version zuerst. Gesammelt wird ab dem
+          # Abschnitt der beförderten Version bis AUSSCHLIESSLICH dem des
+          # letzten stabilen — dazwischen liegt genau das, was die Wehr noch
+          # nicht gesehen hat.
+          #
+          # Die Verweisliste am Dateiende (`[1.30.0]: https://…`) beendet die
+          # Sammlung ebenfalls. Nötig für den Fall, dass es noch gar keinen
+          # stabilen Stand gibt: Ohne Untergrenze liefe awk sonst bis zum
+          # Dateiende und hängte die ganze Linkliste an die Notizen.
+          awk -v ver="$VERSION" -v prev="$prev" '
+            $0 ~ "^## \\[" ver "\\]" { hit = 1 }
+            hit && prev != "" && $0 ~ "^## \\[" prev "\\]" { exit }
+            hit && /^\[[0-9]+\.[0-9]+\.[0-9]+\]: / { exit }
+            hit { print }
+          ' CHANGELOG.md | sed -e '/./,$!d' > release-body.md
+          if [ ! -s release-body.md ]; then
+            echo "::warning::Kein CHANGELOG-Abschnitt für $VERSION — Fallback-Link."
+            echo "Details: https://github.com/${GITHUB_REPOSITORY}/blob/main/CHANGELOG.md" > release-body.md
+          fi
+          echo "--- Release-Notizen ---"
+          cat release-body.md
+
+      - name: Release stabil schalten
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.pick.outputs.tag }}
+        run: |
+          set -euo pipefail
+          gh release edit "$TAG" \
+            --prerelease=false \
+            --latest \
+            --notes-file release-body.md
+          # **Gegenprüfung an genau der Stelle, die die App abfragt**
+          # (`update_check.dart` → /releases/latest) — nicht über
+          # `gh release view --json isLatest`: Das Feld gibt es in neueren
+          # gh-Fassungen nicht mehr, und in MitFahrBar riss der Lauf am
+          # 11.08.2026 genau daran ab, NACH dem Umschalten.
+          latest=$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq .tag_name)
+          echo "Als latest meldet GitHub: $latest"
+          if [ "$latest" != "$TAG" ]; then
+            echo "::error::$TAG ist nicht latest (dort steht $latest)"
+            exit 1
+          fi
+          echo "Die App bietet ab jetzt $TAG als Update an."

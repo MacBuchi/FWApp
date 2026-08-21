@@ -336,6 +336,33 @@ Gerätefotos, die dort aus demselben Grund leer blieben.)
   einmal „Jetzt aktualisieren" tippen, der zweite Anlauf läuft ohne Umweg
   durch. (Beobachtet beim verifizierten Testlauf, s. u.)
 
+### Zwei Kanäle: was der Merge tut und was du freigibst (seit #154)
+
+Jeder gemergte PR mit Versions-Bump baut und veröffentlicht wie bisher —
+aber als **Prerelease**. Auf den Geräten passiert dabei nichts: Die App
+fragt `…/releases/latest` ab, und dort liefert GitHub keine Prereleases.
+Damit ist Schluss mit mehreren Update-Hinweisen an einem Arbeitstag.
+
+**Freigeben tust du**, wenn ein Stand die Wehr erreichen soll:
+
+> GitHub → Actions → **Promote** → *Run workflow*. Feld leer lassen =
+> neuestes Prerelease; sonst die Version ohne `v` eintippen (z. B. `1.31.0`).
+
+Der Lauf schaltet das Release stabil, macht es zu „latest" und setzt die
+Release-Notizen aus **allen** CHANGELOG-Abschnitten seit der letzten
+Freigabe zusammen — nicht nur aus dem der einen Version. Zum Schluss prüft
+er an genau dem Endpunkt nach, den die App abfragt; meldet der etwas
+anderes, schlägt der Lauf fehl.
+
+- **Die Web-App folgt dem nicht** und bleibt bei jedem Merge aktuell. Das
+  ist Absicht: Im Browser gibt es keinen Update-Banner, die PWA lädt beim
+  nächsten Öffnen ohnehin das neue Bündel. Die Trennung löst ein
+  Android-Problem.
+- **Migrationen laufen weiter beim Merge.** Die Datenbank ist damit dem
+  freigegebenen Client voraus — Minuten davor, notfalls Wochen. Schema-
+  Änderungen deshalb zweistufig: erst erweitern, ausrollen, freigeben, dann
+  aufräumen. Nie eine Spalte entfernen, die der stabile Client noch liest.
+
 ### Mindestversion scharf schalten (Checkliste)
 
 Das Mindestversions-Gate (seit v1.5.2) weist zu alte Apps **nur beim
@@ -349,6 +376,10 @@ Reihenfolge, damit niemand in einer Sackgasse landet:
 2. **Minimum nie über das neueste Release setzen.** Empfehlung: eine
    Version unter dem aktuellsten Release lassen (Puffer für Geräte, die
    das Banner noch nicht gesehen haben).
+   ⚠️ Seit #154 heißt „das neueste Release" das neueste **freigegebene**.
+   Ein Prerelease taugt nicht als Untergrenze: Es erscheint im
+   Update-Banner nicht, der Gerätewart fände also nichts, womit er die
+   Sperre auflösen könnte. Reihenfolge: erst befördern, dann heben.
 3. Setzen per `psql` auf der VM (bewusst KEIN Teil des Auto-Deploys aus
    #74 — das Gate ist Betriebszustand, keine Schema-Änderung, und bleibt
    eine bewusste Einzelentscheidung):

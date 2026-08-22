@@ -301,44 +301,16 @@ class _TopTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final brightness = Theme.of(context).brightness;
-    final farbe = seitenFarbe(compartment.seite);
+    final theme = Theme.of(context);
 
-    // Grün/Richtig und Rot/Falsch wie im Aufklappbild — der Lernmodus soll
-    // in beiden Ansichten dieselbe Sprache sprechen.
-    final (Color fill, Color border, Color fg) = switch (state.status) {
-      CutawayTileStatus.normal =>
-        farbe == null
-            ? (
-              scheme.surfaceContainerHighest,
-              scheme.outlineVariant,
-              scheme.onSurface,
-            )
-            : (
-              farbe.flaeche(brightness),
-              farbe.rand(brightness),
-              farbe.text(brightness),
-            ),
-      CutawayTileStatus.selected =>
-        farbe == null
-            ? (
-              scheme.primaryContainer,
-              scheme.primary,
-              scheme.onPrimaryContainer,
-            )
-            : (farbe.akzent, farbe.akzent, Colors.white),
-      CutawayTileStatus.correct => (
-        Colors.green.shade100,
-        Colors.green.shade700,
-        Colors.green.shade900,
-      ),
-      CutawayTileStatus.wrong => (
-        Colors.red.shade100,
-        Colors.red.shade700,
-        Colors.red.shade900,
-      ),
-    };
+    // Farben wie im Aufklappbild — dieselbe Funktion, damit dasselbe Fach in
+    // beiden Ansichten dieselbe Farbe trägt (Issue #167).
+    final (:fill, :border, :fg) = fachKachelFarben(
+      seite: compartment.seite,
+      status: state.status,
+      scheme: theme.colorScheme,
+      brightness: theme.brightness,
+    );
 
     final radius = BorderRadius.circular(kompakt ? 6 : 10);
     return Material(
@@ -394,6 +366,15 @@ class _TopTile extends StatelessWidget {
                         ),
                     ],
                   ),
+                ),
+              ),
+              Positioned(
+                top: kompakt ? 2 : 4,
+                left: kompakt ? 2 : 4,
+                child: FachStatusZeichen(
+                  status: state.status,
+                  farbe: fg,
+                  size: kompakt ? 11 : 16,
                 ),
               ),
               if (!kompakt && state.dueBadgeCount > 0)

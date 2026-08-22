@@ -4,6 +4,8 @@
     {
       "label": "G1 – Löschangriff",
       "position": 0,
+      "seite": "fahrerseite",
+      "laengsposition": "vorne",
       "items": [
         {
           "equipment_id": "std_b_druckschlauch_20m",
@@ -70,6 +72,8 @@
     {
       "label": "G2 – Schaum & Kleinlöschgeräte",
       "position": 1,
+      "seite": "beifahrerseite",
+      "laengsposition": "vorne",
       "items": [
         {
           "equipment_id": "std_zumischer_z2",
@@ -112,6 +116,8 @@
     {
       "label": "G3 – Technische Hilfe",
       "position": 2,
+      "seite": "fahrerseite",
+      "laengsposition": "mitte",
       "items": [
         {
           "equipment_id": "std_spreizer",
@@ -166,6 +172,8 @@
     {
       "label": "G4 – Strom & Licht",
       "position": 3,
+      "seite": "beifahrerseite",
+      "laengsposition": "mitte",
       "items": [
         {
           "equipment_id": "std_stromerzeuger_5kva",
@@ -216,6 +224,8 @@
     {
       "label": "G5 – Atemschutz & Rettung",
       "position": 4,
+      "seite": "fahrerseite",
+      "laengsposition": "hinten",
       "items": [
         {
           "equipment_id": "std_ersatzflasche_300bar",
@@ -270,6 +280,8 @@
     {
       "label": "G6 – Werkzeug & Sonstiges",
       "position": 5,
+      "seite": "beifahrerseite",
+      "laengsposition": "hinten",
       "items": [
         {
           "equipment_id": "std_werkzeugkasten",
@@ -336,6 +348,7 @@
     {
       "label": "GR – Pumpe & Wasser (Heck)",
       "position": 6,
+      "seite": "heck",
       "items": [
         {
           "equipment_id": "std_tragkraftspritze",
@@ -382,6 +395,7 @@
     {
       "label": "Dach",
       "position": 7,
+      "seite": "dach",
       "items": [
         {
           "equipment_id": "std_steckleiter",
@@ -408,6 +422,7 @@
     {
       "label": "Mannschaftsraum",
       "position": 8,
+      "seite": "front",
       "items": [
         {
           "equipment_id": "std_pressluftatmer",

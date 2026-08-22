@@ -215,4 +215,95 @@ void main() {
       expect(items.length, _expectedEquipmentItems);
     });
   });
+
+  // ── Verortung des Demo-Fahrzeugs (Issue #167) ────────────────────────────
+
+  /// Ohne Seite ist die Draufsicht nicht einmal erreichbar — die App
+  /// begrüßte jeden neuen Nutzer mit grauen Kacheln, obwohl die Farbe der
+  /// Seite das ist, was gelernt werden soll.
+  group('Verortung', () {
+    /// Ein Demo-Fahrzeug aus der Zeit VOR #167: Fächer ohne Seite, plus eine
+    /// Bibliothekszeile, damit der Seeder sich für „schon geseedet" hält.
+    Future<int> alteInstallation() async {
+      final vehicleId = await db.vehicleDao.insertVehicle(
+          VehiclesCompanion.insert(name: 'HLF 20 (Demo)', type: 'HLF 20'));
+      for (final label in ['G1 – Löschangriff', 'Dach', 'Mannschaftsraum']) {
+        await db.compartmentDao.insertCompartment(
+            CompartmentsCompanion.insert(
+                vehicleId: vehicleId, label: label));
+      }
+      await db.equipmentDao.insertEquipment(EquipmentItemsCompanion.insert(
+        name: 'Bereits geseedet',
+        libraryEquipmentId: const Value('sentinel_library_id'),
+      ));
+      return vehicleId;
+    }
+
+    Future<Map<String, ({String? seite, String? laengsposition})>> faecherVon(
+        int vehicleId) async {
+      final rows = await db.compartmentDao.getByVehicle(vehicleId);
+      return {
+        for (final c in rows)
+          c.label: (seite: c.seite, laengsposition: c.laengsposition),
+      };
+    }
+
+    test('der frische Seed verortet jedes Fach', () async {
+      await seeder.seedIfNeeded();
+      final vehicle = (await db.vehicleDao.getAll()).single;
+      final faecher = await faecherVon(vehicle.id);
+
+      expect(faecher, hasLength(_expectedCompartments));
+      expect(faecher.values.where((f) => f.seite == null), isEmpty,
+          reason: 'Ohne Seite bliebe das Demo-Fahrzeug grau');
+      // Dieselbe Konvention wie in den Vorlagen (#144): ungerade Nummern
+      // Fahrerseite, gerade Beifahrerseite, G1/G2 vorne … G5/G6 hinten.
+      expect(faecher['G1 – Löschangriff'],
+          (seite: 'fahrerseite', laengsposition: 'vorne'));
+      expect(faecher['G6 – Werkzeug & Sonstiges'],
+          (seite: 'beifahrerseite', laengsposition: 'hinten'));
+      expect(faecher['GR – Pumpe & Wasser (Heck)'],
+          (seite: 'heck', laengsposition: null));
+      expect(faecher['Dach'], (seite: 'dach', laengsposition: null));
+      expect(faecher['Mannschaftsraum'], (seite: 'front', laengsposition: null));
+    });
+
+    test('trägt die Verortung auf einer alten Installation nach', () async {
+      final vehicleId = await alteInstallation();
+
+      await seeder.seedIfNeeded();
+
+      final faecher = await faecherVon(vehicleId);
+      expect(faecher['G1 – Löschangriff'],
+          (seite: 'fahrerseite', laengsposition: 'vorne'));
+      expect(faecher['Dach'], (seite: 'dach', laengsposition: null));
+    });
+
+    test('überschreibt keine selbst gesetzte Seite', () async {
+      final vehicleId = await alteInstallation();
+      final dach = (await db.compartmentDao.getByVehicle(vehicleId))
+          .firstWhere((c) => c.label == 'Dach');
+      await (db.update(db.compartments)..where((t) => t.id.equals(dach.id)))
+          .write(const CompartmentsCompanion(seite: Value('heck')));
+
+      await seeder.seedIfNeeded();
+
+      // Wer sein Demo-Fahrzeug selbst verortet hat, behält seine Zuordnung.
+      expect((await faecherVon(vehicleId))['Dach']?.seite, 'heck');
+    });
+
+    test('fasst gleichnamige Fächer anderer Fahrzeuge nicht an', () async {
+      await alteInstallation();
+      final echtes = await db.vehicleDao.insertVehicle(
+          VehiclesCompanion.insert(name: 'LF 20', type: 'LF 20'));
+      // „Dach" heißt an fast jedem Fahrzeug so — der Nachtrag darf nur das
+      // Demo-Fahrzeug aus vehicle.json betreffen.
+      await db.compartmentDao.insertCompartment(
+          CompartmentsCompanion.insert(vehicleId: echtes, label: 'Dach'));
+
+      await seeder.seedIfNeeded();
+
+      expect((await faecherVon(echtes))['Dach']?.seite, isNull);
+    });
+  });
 }

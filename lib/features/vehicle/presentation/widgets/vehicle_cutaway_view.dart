@@ -12,8 +12,88 @@ library;
 import 'package:flutter/material.dart';
 import 'package:fwapp/features/compartment/domain/entities/compartment.dart';
 import 'package:fwapp/features/compartment/domain/fahrzeug_seiten.dart';
+import 'package:fwapp/features/compartment/presentation/seiten_farben.dart';
 
 enum CutawayTileStatus { normal, selected, correct, wrong }
+
+/// Kachelfarben eines Fachs — die EINE Entscheidung für beide Ansichten.
+///
+/// Die Seite ist die Farbe (seiten_farben.dart), im Aufklappbild genauso wie
+/// in der Draufsicht. Bis Issue #167 hatte nur die Draufsicht sie: derselbe
+/// Geräteraum war im Fahrzeugmenü blau und im Drag&Drop grau, obwohl die
+/// Mannschaft genau an dieser Farbe lernt. Zwei Kopien desselben `switch`
+/// waren der Grund, deshalb steht er jetzt einmal hier.
+///
+/// Grün/Richtig und Rot/Falsch stechen die Seitenfarbe: Im Lernmodus zählt
+/// die Rückmeldung mehr als der Ort. Ohne Seite bleibt alles Theme-neutral —
+/// ein unverortetes Fahrzeug soll sich nicht plötzlich anders anfühlen.
+({Color fill, Color border, Color fg}) fachKachelFarben({
+  required String? seite,
+  required CutawayTileStatus status,
+  required ColorScheme scheme,
+  required Brightness brightness,
+}) {
+  final farbe = seitenFarbe(seite);
+  return switch (status) {
+    CutawayTileStatus.normal => farbe == null
+        ? (
+            fill: scheme.surfaceContainerHighest,
+            border: scheme.outlineVariant,
+            fg: scheme.onSurface,
+          )
+        : (
+            fill: farbe.flaeche(brightness),
+            border: farbe.rand(brightness),
+            fg: farbe.text(brightness),
+          ),
+    CutawayTileStatus.selected => farbe == null
+        ? (
+            fill: scheme.primaryContainer,
+            border: scheme.primary,
+            fg: scheme.onPrimaryContainer,
+          )
+        : (fill: farbe.akzent, border: farbe.akzent, fg: Colors.white),
+    CutawayTileStatus.correct => (
+        fill: Colors.green.shade100,
+        border: Colors.green.shade700,
+        fg: Colors.green.shade900,
+      ),
+    CutawayTileStatus.wrong => (
+        fill: Colors.red.shade100,
+        border: Colors.red.shade700,
+        fg: Colors.red.shade900,
+      ),
+  };
+}
+
+/// Häkchen oder Kreuz in der Ecke einer Kachel — die Rückmeldung, die ohne
+/// Farbe auskommt. Bei `normal`/`selected` bleibt die Ecke leer.
+///
+/// Nötig geworden mit den Seitenfarben im Aufklappbild (Issue #167): Das Grün
+/// des Hecks und das Grün für „richtig" liegen dicht beieinander, ebenso das
+/// Rostrot der Beifahrerseite und das Rot für „falsch". Wer nur auf die
+/// Fläche sieht, weiß dann nicht, ob er getroffen hat — und wer Rot und Grün
+/// schlecht auseinanderhält, wusste es noch nie.
+class FachStatusZeichen extends StatelessWidget {
+  final CutawayTileStatus status;
+  final Color farbe;
+  final double size;
+
+  const FachStatusZeichen({
+    super.key,
+    required this.status,
+    required this.farbe,
+    this.size = 16,
+  });
+
+  @override
+  Widget build(BuildContext context) => switch (status) {
+        CutawayTileStatus.correct =>
+          Icon(Icons.check_circle, size: size, color: farbe),
+        CutawayTileStatus.wrong => Icon(Icons.cancel, size: size, color: farbe),
+        _ => const SizedBox.shrink(),
+      };
+}
 
 class CutawayTileState {
   final CutawayTileStatus status;
@@ -189,29 +269,13 @@ class _CutawayTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final (Color fill, Color border, Color fg) = switch (state.status) {
-      CutawayTileStatus.normal => (
-          scheme.surfaceContainerHighest,
-          scheme.outlineVariant,
-          scheme.onSurface,
-        ),
-      CutawayTileStatus.selected => (
-          scheme.primaryContainer,
-          scheme.primary,
-          scheme.onPrimaryContainer,
-        ),
-      CutawayTileStatus.correct => (
-          Colors.green.shade100,
-          Colors.green.shade700,
-          Colors.green.shade900,
-        ),
-      CutawayTileStatus.wrong => (
-          Colors.red.shade100,
-          Colors.red.shade700,
-          Colors.red.shade900,
-        ),
-    };
+    final theme = Theme.of(context);
+    final (:fill, :border, :fg) = fachKachelFarben(
+      seite: compartment.seite,
+      status: state.status,
+      scheme: theme.colorScheme,
+      brightness: theme.brightness,
+    );
 
     return Material(
       color: fill,
@@ -256,6 +320,11 @@ class _CutawayTile extends StatelessWidget {
                     ],
                   ),
                 ),
+              ),
+              Positioned(
+                top: 4,
+                left: 4,
+                child: FachStatusZeichen(status: state.status, farbe: fg),
               ),
               if (state.dueBadgeCount > 0)
                 Positioned(

@@ -179,6 +179,12 @@ pauschales Formatieren in Feature-PRs.
   kein Schmuck — „Beifahrerseite = warm, Fahrerseite = kühl" muss jeden
   Palettenwechsel überleben, sonst verliert die Mannschaft ihren Farb-Anker.
   Nicht auf `colorScheme` „aufräumen".
+  ⚠️ **Fach-Kacheln färbt ausschließlich `fachKachelFarben()`** (in
+  [vehicle_cutaway_view.dart](lib/features/vehicle/presentation/widgets/vehicle_cutaway_view.dart)).
+  Vor Issue #167 stand dieselbe Farbentscheidung zweimal da, und nur die
+  Kopie in der Draufsicht kannte die Seitenfarben: Derselbe Geräteraum war
+  im Fahrzeugmenü blau und im Drag&Drop grau. Wer eine dritte Ansicht baut,
+  ruft die Funktion auf, statt den `switch` erneut abzuschreiben.
 - **Lints:** nur `flutter_lints`. `strict-casts`, `strict-raw-types` und
   `unawaited_futures` sind bewusst offen — eigener PR, potenziell breite Churn.
 - **Dependencies** gepinnt (`^x.y.z`), **nie `any`**.

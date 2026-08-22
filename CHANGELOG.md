@@ -12,6 +12,31 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.32.0] – 2026-08-22
+
+### Geändert
+
+- **Die Farben der Fahrzeugseiten gelten jetzt überall.** Bisher war das
+  Fahrzeug nur in der Draufsicht bunt — im aufgeklappten Bild, beim
+  Drag & Drop, in der Inventur, in der Einsatzplanung und in der
+  Fächerverwaltung blieben dieselben Fächer grau. Jetzt trägt jedes Fach
+  seine Seitenfarbe in jeder Ansicht: Fahrerseite blau, Beifahrerseite
+  rostrot, Heck grün, Dach ocker, Front violett. Beim Üben stechen Grün und
+  Rot die Seitenfarbe weiterhin — die Rückmeldung bleibt eindeutig.
+- **Das Fach-Quiz sagt, wo die Fächer liegen.** Die Antworten hießen bisher
+  nur „G5" oder „Dach". Jetzt steht der Farbpunkt davor und die Ortsangabe
+  darunter („Fahrerseite · hinten") — bei allen vier Antworten, es ist also
+  kein Hinweis auf die richtige, sondern die Gelegenheit, die Konvention
+  nebenbei zu lernen.
+
+### Neu
+
+- **Das mitgelieferte Demo-Fahrzeug ist verortet.** Direkt nach der
+  Installation — also bevor die eigenen Daten da sind — zeigt die App die
+  Draufsicht mit farbigen Geräteräumen statt einer grauen Kachelreihe. Auf
+  Geräten, die schon vorher installiert waren, wird die Verortung
+  nachgetragen; selbst gesetzte Seiten bleiben unangetastet.
+
 ## [1.31.0] – 2026-08-21
 
 ### Neu

@@ -22,6 +22,18 @@ ABTEILUNGEN = [
     {"slug": "abteilung-ehrenberg", "name": "Abteilung Ehrenberg"},
 ]
 
+# ⚠️ **Dieses eine Passwort ist mit Absicht öffentlich.** Es steckt in jedem
+# verteilten Build (lib/features/settings/domain/zugang_teilen.dart) und ist
+# damit aus einem APK lesbar. Genau deshalb gehört es ausschließlich dem
+# LESENDEN Konto: `demo.mitglied` veröffentlicht nie, und hinter der
+# Demo-Wehr liegt kein echtes Wehrdatum. Die drei arbeitenden Konten behalten
+# das geheime Passwort aus FWAPP_DEMO_PASSWORD (docs/private/).
+#
+# Wer sich damit anmeldet, kann es auch ändern und die nächsten aussperren.
+# Das ist kein Versehen, sondern der Preis: Ein Lauf dieses Skripts setzt es
+# zurück (siehe docs/BETRIEB.md).
+MITGLIED_PASSWORT = "demo-freiwilligen"
+
 # Je Rolle ein Konto — erst damit ist vorführbar, was die Rollen unterscheidet
 # (Nutzerverwaltung, Veröffentlichen, Nur-Lesen). Der Localpart ist die
 # Anmeldung UND der Nutzername in der Verwaltung, deshalb das `demo.`-Präfix:
@@ -55,6 +67,8 @@ KONTEN = [
         "abteilung": "abteilung-freiwilligen",
         "rolle": "member",
         "feuerwehrkommandant": False,
+        # Das geteilte Konto: bekommt MITGLIED_PASSWORT statt des geheimen.
+        "oeffentlich": True,
     },
 ]
 

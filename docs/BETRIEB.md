@@ -94,6 +94,14 @@ Prüfhistorie oder Instanzen – die hängen an den physischen Geräten.
 
 ### Nutzerverwaltung (nur Kommandanten)
 
+> **Zugang weitergeben (seit v1.31.0).** Der Dialog mit den Zugangsdaten hat
+> neben „Kopieren" einen **Teilen**-Knopf — die Daten wandern als fertige
+> Nachricht in WhatsApp, Signal oder SMS. Das ist gefahrlos, weil das
+> Initialpasswort ein Einmal-Schlüssel ist: Beim ersten Anmelden wählt die
+> Person ein eigenes, danach ist die verschickte Nachricht wertlos. Wer nur
+> mal schauen will, bekommt stattdessen **Demo-Zugang teilen** (das Auge
+> neben „Einladen") — erfundene Wehr, nur Lesen, beliebig oft teilbar.
+
 Seit v1.11.0 heißen die Rollen wie im Feuerwehrwesen und gelten **je
 Abteilung** (Zielbild in [NUTZERKONZEPT.md](NUTZERKONZEPT.md)):
 **Truppmann/Truppführer** (liest), **Gerätewart** (bearbeitet),
@@ -428,6 +436,7 @@ darin — kein Screenshot muss mehr geschwärzt werden.
 | Gesamtwehr | Feuerwehr Freiwilligen |
 | Abteilungen | Abteilung Freiwilligen · Abteilung Ehrenberg |
 | Konten | `demo.kommandant` (Feuerwehrkommandant), `demo.abteilungskommandant`, `demo.geraetewart`, `demo.mitglied` — alle `@fw.local` |
+| Zum Weitergeben | `demo.mitglied` mit einem **absichtlich öffentlichen** Passwort (`tool/demo_wehr.py`, steckt auch in der App) |
 | Fahrzeuge | HLF 20 (FRW-FW 20) und MTW in Freiwilligen, LF 20 (FRW-FW 21) in Ehrenberg |
 | Beladung | Normbeladung aus den Vorlagen, fachgenau auf die Geräteräume verteilt (73 bzw. 63 Positionen) |
 
@@ -447,6 +456,13 @@ die Demo gedacht — kaputt vorführen ist erlaubt, Aufräumen ist ein Befehl.
 - ⚠️ **Das Demo-Passwort gehört nach `docs/private/`**, nicht ins Repo: Das
   Repo ist öffentlich und der Server öffentlich erreichbar. Gegen einen
   Nicht-Localhost startet das Skript ohne gesetztes Passwort gar nicht erst.
+  Das gilt für die **drei arbeitenden** Konten. Das lesende `demo.mitglied`
+  hat bewusst ein öffentliches Passwort — es steckt in jedem verteilten Build
+  und wird über *Nutzerverwaltung → Demo-Zugang teilen* verschickt.
+- **Wenn der Demo-Zugang plötzlich nicht mehr geht:** Wer sich damit
+  anmeldet, darf das Passwort auch ändern und die nächsten aussperren. Das
+  ist kein Fehler, sondern der Preis für einen offen geteilten Zugang —
+  ein erneuter Lauf des Skripts setzt ihn zurück.
 - ⚠️ **Auf dem lokalen Stack nicht vorführen, während Tests laufen:**
   `sync_e2e_test` löscht zwischen seinen Tests alle Gesamtwehren — die Demo
   ist danach weg (und mit einem Skriptlauf wieder da).

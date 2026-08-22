@@ -36,7 +36,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 from demo_wehr import (ABTEILUNGEN, FAHRZEUGE, GESAMTWEHR_NAME,
-                       GESAMTWEHR_SLUG, KONTEN)
+                       GESAMTWEHR_SLUG, KONTEN, MITGLIED_PASSWORT)
 
 REPO = Path(__file__).resolve().parent.parent
 
@@ -412,7 +412,11 @@ def main():
     kommandant_email = None
     for konto in KONTEN:
         abteilung_id = abteilung_ids[konto["abteilung"]]
-        benutzer_id = konto_anlegen(konto, abteilung_id, passwort)
+        # Das geteilte Konto bekommt das öffentliche Passwort, die drei
+        # arbeitenden das geheime — siehe die Begründung in demo_wehr.py.
+        konto_passwort = (MITGLIED_PASSWORT if konto.get("oeffentlich")
+                          else passwort)
+        benutzer_id = konto_anlegen(konto, abteilung_id, konto_passwort)
         rollen_setzen(benutzer_id, konto, abteilung_id, gesamtwehr_id)
         if konto["feuerwehrkommandant"]:
             kommandant_email = konto["email"]

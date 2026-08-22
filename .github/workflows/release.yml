@@ -12,6 +12,11 @@ name: Release
 # Keystore-Ablage siehe docs/private/) und bekommt Server-URL + Anon-Key als
 # --dart-define eingebacken, damit nach der Installation nur noch der Login
 # fehlt. Der Anon-Key ist clientseitig-öffentlich, Datenzugriff schützt RLS.
+#
+# `FWAPP_WEB_URL` ist eine Repo-VARIABLE, kein Secret — die Adresse der
+# Web-App ist öffentlich. Sie steht in den geteilten Zugangs-Nachrichten
+# (Issue #165). Ist sie nicht gesetzt, bleibt sie leer und die Nachricht
+# kommt ohne Link: Eine nachnutzende Wehr soll nicht unsere Adresse erben.
 
 on:
   push:
@@ -140,7 +145,8 @@ jobs:
         run: |
           flutter build apk --release --target-platform android-arm64 \
             --dart-define=FWAPP_SUPABASE_URL='${{ secrets.FWAPP_SUPABASE_URL }}' \
-            --dart-define=FWAPP_SUPABASE_ANON_KEY='${{ secrets.FWAPP_SUPABASE_ANON_KEY }}'
+            --dart-define=FWAPP_SUPABASE_ANON_KEY='${{ secrets.FWAPP_SUPABASE_ANON_KEY }}' \
+            --dart-define=FWAPP_WEB_URL='${{ vars.FWAPP_WEB_URL }}'
 
       - run: cp build/app/outputs/flutter-apk/app-release.apk fwapp-${{ needs.version.outputs.tag }}.apk
 
@@ -172,7 +178,8 @@ jobs:
         run: |
           flutter build web --release \
             --dart-define=FWAPP_SUPABASE_URL='${{ secrets.FWAPP_SUPABASE_URL }}' \
-            --dart-define=FWAPP_SUPABASE_ANON_KEY='${{ secrets.FWAPP_SUPABASE_ANON_KEY }}'
+            --dart-define=FWAPP_SUPABASE_ANON_KEY='${{ secrets.FWAPP_SUPABASE_ANON_KEY }}' \
+            --dart-define=FWAPP_WEB_URL='${{ vars.FWAPP_WEB_URL }}'
 
       # Warum ein Branch statt eines Release-Assets: Die VM ist IPv6-only,
       # und github.com/api.github.com/objects.githubusercontent.com sind

@@ -1,6 +1,7 @@
 /// settings_screen_widget_test.dart – Settings states: sync section and the
 /// restart hint when credentials are configured but not yet active.
 library;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/core/database/app_database.dart';
@@ -127,4 +128,69 @@ void main() {
     expect(find.textContaining('Internetverbindung'), findsOneWidget);
   });
 
+  // ── Vorab-Kanal (Issue #169) ────────────────────────────────────────────
+
+  testWidgets('Vorabversionen: Schalter ist da und ab Werk aus',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester
+        .pumpWidget(buildTestApp(db: db, home: const SettingsScreen()));
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+        find.text('Vorabversionen erhalten'), 200,
+        scrollable: find.byType(Scrollable).first);
+
+    final schalter = tester.widget<SwitchListTile>(find.ancestor(
+        of: find.text('Vorabversionen erhalten'),
+        matching: find.byType(SwitchListTile)));
+    expect(schalter.value, isFalse);
+    // Der Untertitel ist die halbe Funktion: Wer ihn kürzt, verspricht der
+    // Wehr etwas, das der Schalter nicht hält.
+    expect(find.textContaining('Gilt nur für dieses Gerät'), findsOneWidget);
+  });
+
+  testWidgets('Vorabversionen: Umlegen merkt sich die Wahl', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester
+        .pumpWidget(buildTestApp(db: db, home: const SettingsScreen()));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+        find.text('Vorabversionen erhalten'), 200,
+        scrollable: find.byType(Scrollable).first);
+
+    await tester.tap(find.text('Vorabversionen erhalten'));
+    await tester.pumpAndSettle();
+
+    expect(
+        tester
+            .widget<SwitchListTile>(find.ancestor(
+                of: find.text('Vorabversionen erhalten'),
+                matching: find.byType(SwitchListTile)))
+            .value,
+        isTrue);
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getBool('prerelease_updates'), isTrue);
+  });
+
+  testWidgets('Vorabversionen: kein Schalter, wo es keine Updates gibt',
+      (tester) async {
+    // Ein Schalter ohne Wirkung wäre ein Versprechen, das niemand einlöst.
+    //
+    // ⚠️ Das Zurücksetzen gehört in den Testrumpf, NICHT in addTearDown:
+    // testWidgets prüft die Foundation-Debug-Variablen am Ende des Rumpfes,
+    // also bevor tearDown läuft — der Test scheitert sonst mit „The value of
+    // a foundation debug variable was changed by the test".
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    SharedPreferences.setMockInitialValues({});
+    try {
+      await tester
+          .pumpWidget(buildTestApp(db: db, home: const SettingsScreen()));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Vorabversionen erhalten'), findsNothing);
+    } finally {
+      debugDefaultTargetPlatformOverride = null;
+    }
+  });
 }

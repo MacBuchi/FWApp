@@ -12,6 +12,21 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.33.0] – 2026-08-22
+
+### Neu
+
+- **Vorabversionen erhalten.** In den Einstellungen unter „App-Information"
+  gibt es einen neuen Schalter. Ist er an, bietet die App auch Stände an,
+  die noch nicht freigegeben sind — gedacht zum Ausprobieren, bevor eine
+  Version an die ganze Wehr geht. Der Schalter ist ab Werk aus und **gilt
+  nur für das Gerät, auf dem er umgelegt wird**; niemand sonst bekommt
+  dadurch Vorabversionen angeboten. In der Web-App gibt es ihn nicht: Dort
+  ist beim nächsten Neuladen ohnehin der aktuelle Stand geladen.
+- **Das Banner sagt, was es anbietet.** Ein noch nicht freigegebener Stand
+  erscheint als „🧪 Vorabversion v… verfügbar", und im Dialog steht vor dem
+  Installieren noch einmal, dass es ein Zwischenstand ist.
+
 ## [1.32.0] – 2026-08-22
 
 ### Geändert

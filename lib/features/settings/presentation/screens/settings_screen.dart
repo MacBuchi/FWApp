@@ -15,6 +15,7 @@ import 'package:fwapp/core/sync/mfa_providers.dart';
 import 'package:fwapp/core/sync/rollen.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/sync/sync_service.dart';
+import 'package:fwapp/core/update/update_check.dart';
 import 'package:fwapp/core/widgets/abteilung_switcher.dart';
 import 'package:fwapp/features/home/presentation/providers/dashboard_providers.dart';
 import 'package:fwapp/features/profil/domain/avatar_konfiguration.dart';
@@ -120,6 +121,10 @@ class SettingsScreen extends ConsumerWidget {
                         ? '${info.version} (Build ${info.buildNumber})'
                         : '...'),
                   ),
+                  // Nur wo der Update-Weg wirklich läuft (Issue #169): Im
+                  // Browser gibt es kein Banner, ein Schalter ohne Wirkung
+                  // wäre ein Versprechen, das niemand einlöst.
+                  if (updateChecksApply) const _VorabversionenTile(),
                   ListTile(
                     leading: const Icon(Icons.history),
                     title: const Text('Was ist neu?'),
@@ -152,6 +157,29 @@ class SettingsScreen extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Schalter für den Vorab-Kanal (Issue #169).
+///
+/// „Gilt nur für dieses Gerät" steht bewusst im Untertitel: Der Kanal ist
+/// eine Entscheidung über das eigene Handy, nicht über die Wehr.
+class _VorabversionenTile extends ConsumerWidget {
+  const _VorabversionenTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final an = ref.watch(prereleaseUpdatesProvider).value ?? false;
+    return SwitchListTile(
+      secondary: const Icon(Icons.science_outlined),
+      title: const Text('Vorabversionen erhalten'),
+      subtitle: const Text(
+          'Bietet auch Stände an, die noch nicht freigegeben sind — '
+          'ungetestet und häufig. Gilt nur für dieses Gerät.'),
+      value: an,
+      onChanged: (wert) =>
+          unawaited(ref.read(prereleaseUpdatesProvider.notifier).set(wert)),
     );
   }
 }

@@ -1,7 +1,12 @@
-/// update_check_test.dart – Versionsvergleich des Update-Checks.
+/// update_check_test.dart – Versionsvergleich und Kanalwahl des
+/// Update-Checks.
 library;
+import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/core/update/update_check.dart';
+import 'package:fwapp/features/settings/presentation/providers/settings_providers.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   group('isNewerVersion', () {
@@ -72,6 +77,77 @@ void main() {
       expect(parseVersion(''), isNull);
       expect(parseVersion('1.2.3.4'), isNull);
       expect(parseVersion('-1.0.0'), isNull);
+    });
+  });
+
+  // ── Vorab-Kanal (Issue #169) ────────────────────────────────────────────
+
+  group('firstPublishedRelease', () {
+    test('nimmt den jüngsten Eintrag — auch eine Vorabversion', () {
+      final release = firstPublishedRelease([
+        {'tag_name': 'v1.33.0', 'prerelease': true},
+        {'tag_name': 'v1.32.0', 'prerelease': false},
+      ]);
+
+      expect(release?['tag_name'], 'v1.33.0');
+    });
+
+    test('überspringt Entwürfe', () {
+      // Die Dateien eines Entwurfs sind nicht öffentlich abrufbar: Der
+      // Download liefe ins Leere, das Banner nennte eine Version, die es
+      // für niemanden gibt.
+      final release = firstPublishedRelease([
+        {'tag_name': 'v1.34.0', 'draft': true},
+        {'tag_name': 'v1.33.0', 'prerelease': true},
+      ]);
+
+      expect(release?['tag_name'], 'v1.33.0');
+    });
+
+    test('liefert null, wenn nichts Veröffentlichtes übrig bleibt', () {
+      expect(firstPublishedRelease([]), isNull);
+      expect(firstPublishedRelease([{'draft': true}]), isNull);
+      expect(firstPublishedRelease(['unsinn']), isNull);
+    });
+  });
+
+  group('Vorab-Schalter', () {
+    Future<ProviderContainer> container({Map<String, Object> prefs = const {}}) async {
+      SharedPreferences.setMockInitialValues(prefs);
+      final c = ProviderContainer();
+      addTearDown(c.dispose);
+      await c.read(sharedPreferencesProvider.future);
+      return c;
+    }
+
+    test('ist ab Werk aus', () async {
+      final c = await container();
+      expect(await c.read(prereleaseUpdatesProvider.future), isFalse);
+    });
+
+    test('merkt sich die Wahl', () async {
+      final c = await container();
+      await c.read(prereleaseUpdatesProvider.notifier).set(true);
+
+      expect(c.read(prereleaseUpdatesProvider).value, isTrue);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getBool('prerelease_updates'), isTrue);
+    });
+
+    test('liest eine gespeicherte Wahl wieder ein', () async {
+      final c = await container(prefs: {'prerelease_updates': true});
+      expect(await c.read(prereleaseUpdatesProvider.future), isTrue);
+    });
+
+    test('bleibt aus, wo der Update-Weg gar nicht läuft', () async {
+      // Der Riegel steht im Notifier, nicht nur in der Oberfläche: Ein
+      // gespeichertes true von einem Android-Gerät darf auf einer Plattform
+      // ohne Update-Weg nichts bedeuten.
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+
+      final c = await container(prefs: {'prerelease_updates': true});
+      expect(await c.read(prereleaseUpdatesProvider.future), isFalse);
     });
   });
 }

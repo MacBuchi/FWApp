@@ -8,6 +8,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/database/standard_catalog.dart';
 import 'package:fwapp/core/logging/app_logger.dart';
+import 'package:fwapp/features/compartment/domain/fahrzeug_seiten.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
 
 class LibrarySeeder {
@@ -39,9 +40,73 @@ class LibrarySeeder {
         appLog.i('Library seed complete.');
       } else {
         appLog.i('Library already seeded – skipping full seed.');
+        // Verortung nachtragen (Issue #167): Der Demo-Beladeplan trägt erst
+        // seit 1.32.0 Seiten. Ohne diesen Nachtrag bliebe das Demo-Fahrzeug
+        // auf jedem Gerät grau, das vor dem Update installiert hat — und die
+        // Farben sind gerade dort der Sinn, wo noch keine echten Daten sind.
+        await _verorteDemoFaecher('hlf20_demo');
       }
     } catch (e, st) {
       appLog.e('Library seed failed', error: e, stackTrace: st);
+    }
+  }
+
+  /// Seite aus dem Beladeplan — ungültige Werte fallen auf `null`.
+  ///
+  /// Zwilling zur Vorlagen-Prüfung in `vehicle_template.dart`: Ein Tippfehler
+  /// im Asset soll ein Fach ohne Seite ergeben, nicht einen Wert, den der
+  /// Server beim Veröffentlichen ablehnt.
+  String? _seiteAus(Map<String, dynamic> compMap) {
+    final seite = compMap['seite'] as String?;
+    return istGueltigeSeite(seite) ? seite : null;
+  }
+
+  String? _laengspositionAus(Map<String, dynamic> compMap) {
+    final position = compMap['laengsposition'] as String?;
+    return istGueltigeLaengsposition(position) ? position : null;
+  }
+
+  /// Trägt Seite und Längsposition am Demo-Fahrzeug nach (Issue #167).
+  ///
+  /// Nur dort, wo noch KEINE Seite steht, und nur an dem Fahrzeug aus
+  /// `vehicle.json`: Wer sein Demo-Fahrzeug selbst verortet hat, behält seine
+  /// Zuordnung, und ein Fach „Dach" am echten Fahrzeug wird nicht angefasst.
+  Future<void> _verorteDemoFaecher(String vehicleId) async {
+    final vehicleJson = await _loadJson(
+        'assets/equipment_library/vehicles/$vehicleId/vehicle.json');
+    final planJson = await _loadJson(
+        'assets/equipment_library/vehicles/$vehicleId/loading_plan.json');
+    if (vehicleJson == null || planJson == null) return;
+
+    final vehicleName =
+        (vehicleJson['name'] ?? vehicleJson['vehicle_name'] ?? vehicleId)
+            as String;
+    final vehicle = (await _db.vehicleDao.getAll())
+        .where((v) => v.name == vehicleName)
+        .firstOrNull;
+    if (vehicle == null) return;
+
+    final ausPlan = <String, Map<String, dynamic>>{
+      for (final raw in (planJson['compartments'] as List<dynamic>?) ?? [])
+        (raw as Map<String, dynamic>)['label'] as String: raw,
+    };
+
+    var nachgetragen = 0;
+    for (final c in await _db.compartmentDao.getByVehicle(vehicle.id)) {
+      if (c.seite != null) continue;
+      final compMap = ausPlan[c.label];
+      if (compMap == null) continue;
+      final seite = _seiteAus(compMap);
+      if (seite == null) continue;
+      await (_db.update(_db.compartments)..where((t) => t.id.equals(c.id)))
+          .write(CompartmentsCompanion(
+        seite: Value(seite),
+        laengsposition: Value(_laengspositionAus(compMap)),
+      ));
+      nachgetragen++;
+    }
+    if (nachgetragen > 0) {
+      appLog.i('Demo-Fahrzeug verortet: $nachgetragen Fächer nachgetragen.');
     }
   }
 
@@ -106,6 +171,11 @@ class LibrarySeeder {
               vehicleId: dbVehicleId,
               label: compartmentLabel,
               position: Value(position),
+              // Der Demo-Beladeplan ist verortet wie die Vorlagen (#167) —
+              // sonst begrüßt die App jeden neuen Nutzer mit grauen Kacheln
+              // und ohne Draufsicht.
+              seite: Value(_seiteAus(compMap)),
+              laengsposition: Value(_laengspositionAus(compMap)),
             ),
           );
         }

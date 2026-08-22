@@ -12,6 +12,22 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.31.0] – 2026-08-21
+
+### Neu
+
+- **Zugangsdaten teilen statt abtippen.** Wer ein Konto mit Zugangszettel
+  anlegt, findet im Dialog jetzt neben „Kopieren" auch **„Teilen"** — die
+  Zugangsdaten wandern damit als fertige Nachricht in WhatsApp, Signal oder
+  SMS. Dass das gefahrlos geht, liegt am Pflichtwechsel: Beim ersten
+  Anmelden wählt die Person ein eigenes Passwort, danach ist die
+  verschickte Nachricht wertlos.
+- **Demo-Zugang zum Weitergeben.** In der Nutzerverwaltung teilt ein Knopf
+  einen Blick in die erfundene Wehr „Feuerwehr Freiwilligen" — für alle,
+  die erst einmal schauen wollen, ohne einen eigenen Zugang zu brauchen.
+  Dahinter liegen erfundene Fahrzeuge und kein einziges echtes Wehrdatum,
+  und der Zugang liest nur.
+
 ## [1.30.0] – 2026-08-17
 
 ### Neu

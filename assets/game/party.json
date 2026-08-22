@@ -1,0 +1,410 @@
+{
+  "version": 1,
+  "_hinweis": "Fragen und Aufgaben für den Party-Modus (Issue #160). Diese Datei darf ohne Code-Änderung erweitert werden. Regeln: 'antworten' braucht mindestens zwei Einträge, 'richtig' ist der NULLBASIERTE Index der richtigen Antwort in dieser Liste, 'kategorie' ist 'wissen' (nachprüfbar) oder 'klischee' (Spaß). test/features/game/party_inhalte_test.dart prüft das bei jedem Lauf.",
+  "fragen": [
+    {
+      "frage": "Wofür steht das „H“ im HLF 20?",
+      "antworten": [
+        "Hubrettung",
+        "Hydraulik",
+        "Hochdruck",
+        "Hilfeleistung"
+      ],
+      "richtig": 3,
+      "kategorie": "wissen",
+      "erklaerung": "Hilfeleistungslöschgruppenfahrzeug — ein LF 20 mit fest verlasteter technischer Hilfeleistung."
+    },
+    {
+      "frage": "Welchen Farbton hat ein deutsches Feuerwehrfahrzeug nach Norm?",
+      "antworten": [
+        "RAL 2002 Blutorange",
+        "RAL 3020 Verkehrsrot",
+        "RAL 3000 Feuerrot",
+        "RAL 3001 Signalrot"
+      ],
+      "richtig": 2,
+      "kategorie": "wissen",
+      "erklaerung": "RAL 3000 heißt tatsächlich „Feuerrot“ — und nicht jedes rote Fahrzeug der Welt ist rot: In den USA gibt es aus Sichtbarkeitsgründen limettengrüne Feuerwehrautos."
+    },
+    {
+      "frage": "Wer ist der Schutzpatron der Feuerwehr?",
+      "antworten": [
+        "Christophorus",
+        "Florian",
+        "Barbara",
+        "Georg"
+      ],
+      "richtig": 1,
+      "kategorie": "wissen",
+      "erklaerung": "Deshalb der Funkrufname „Florian“ — und der Florianstag am 4. Mai."
+    },
+    {
+      "frage": "Wie lang ist ein C-Druckschlauch üblicherweise?",
+      "antworten": [
+        "35 Meter",
+        "15 Meter",
+        "5 Meter",
+        "50 Meter"
+      ],
+      "richtig": 1,
+      "kategorie": "wissen",
+      "erklaerung": "15 Meter ist der Normalfall; 30-Meter-Längen gibt es ebenfalls."
+    },
+    {
+      "frage": "Welchen Durchmesser hat ein B-Druckschlauch?",
+      "antworten": [
+        "25 Millimeter",
+        "52 Millimeter",
+        "75 Millimeter",
+        "110 Millimeter"
+      ],
+      "richtig": 2,
+      "kategorie": "wissen",
+      "erklaerung": "B = 75 mm, C = 42 oder 52 mm, D = 25 mm."
+    },
+    {
+      "frage": "Was verbirgt sich hinter der Bezeichnung DLK 23/12?",
+      "antworten": [
+        "23 Meter Leiterlänge in 12 Segmenten",
+        "Baujahr 2023, Baureihe 12",
+        "23 Tonnen zulässiges Gesamtgewicht, 12 Meter lang",
+        "23 Meter Rettungshöhe bei 12 Meter Ausladung"
+      ],
+      "richtig": 3,
+      "kategorie": "wissen",
+      "erklaerung": "Die zweite Zahl ist der Abstand zum Gebäude, bei dem die Höhe noch erreicht wird."
+    },
+    {
+      "frage": "Wie viele Einsatzkräfte hat eine Löschgruppe?",
+      "antworten": [
+        "Neun",
+        "Zwölf",
+        "Sechs",
+        "Vier"
+      ],
+      "richtig": 0,
+      "kategorie": "wissen",
+      "erklaerung": "1/8/9 — ein Führer, acht Mann. Die Staffel ist 1/5/6, der Trupp besteht aus zwei."
+    },
+    {
+      "frage": "Aus wie vielen Personen besteht ein Trupp?",
+      "antworten": [
+        "Zwei",
+        "Vier",
+        "Drei",
+        "Sechs"
+      ],
+      "richtig": 0,
+      "kategorie": "wissen",
+      "erklaerung": "Truppführer und Truppmann. Der selbstständige Trupp bringt einen Maschinisten mit."
+    },
+    {
+      "frage": "Was sagt die Zahl im Namen „TLF 3000“?",
+      "antworten": [
+        "3000 Kilogramm Nutzlast",
+        "3000 Liter Löschwasser",
+        "3000 Meter Schlauch an Bord",
+        "3000 Liter Schaummittel"
+      ],
+      "richtig": 1,
+      "kategorie": "wissen",
+      "erklaerung": "Seit der Normumstellung steht bei Tanklöschfahrzeugen die Wassermenge im Namen."
+    },
+    {
+      "frage": "Blaulicht UND Martinshorn zusammen — was bedeutet das rechtlich?",
+      "antworten": [
+        "Nichts Besonderes, es ist reine Gewohnheit",
+        "Nur eine Warnung, sonst gilt die normale StVO",
+        "Der Fahrer darf jedes Tempolimit ignorieren",
+        "Wegerecht: alle anderen müssen freie Bahn schaffen"
+      ],
+      "richtig": 3,
+      "kategorie": "wissen",
+      "erklaerung": "§ 38 StVO. Blaulicht allein ist nur Warnung — das Wegerecht entsteht erst mit beidem."
+    },
+    {
+      "frage": "Wie heißt die Kupplung an deutschen Feuerwehrschläuchen?",
+      "antworten": [
+        "Camlock",
+        "Storz-Kupplung",
+        "Bajonett-Kupplung",
+        "Geka-Kupplung"
+      ],
+      "richtig": 1,
+      "kategorie": "wissen",
+      "erklaerung": "Benannt nach Guido Storz. Eine Knaggenkupplung, die in jeder Drehlage passt."
+    },
+    {
+      "frage": "Wie viele Abgänge hat ein Verteiler?",
+      "antworten": [
+        "Drei: dreimal C",
+        "Vier: dreimal C, einmal B",
+        "Drei: zweimal C, einmal B",
+        "Zwei: einmal B, einmal C"
+      ],
+      "richtig": 2,
+      "kategorie": "wissen",
+      "erklaerung": "B-Eingang, in der Mitte der B-Abgang, außen die beiden C-Abgänge."
+    },
+    {
+      "frage": "Warum löscht man einen Fettbrand niemals mit Wasser?",
+      "antworten": [
+        "Das Wasser verdampft schlagartig und schleudert brennendes Fett durch den Raum",
+        "Wasser leitet den Strom zur Fritteuse zurück",
+        "Das Fett bindet das Wasser und brennt danach heißer",
+        "Das Fett kühlt zu schnell ab und entzündet sich neu"
+      ],
+      "richtig": 0,
+      "kategorie": "wissen",
+      "erklaerung": "Brandklasse F. Aus einem Liter Wasser werden beim Verdampfen rund 1700 Liter Dampf — das ist die Fettexplosion."
+    },
+    {
+      "frage": "Woran sterben die meisten Menschen bei einem Wohnungsbrand?",
+      "antworten": [
+        "An einstürzenden Decken",
+        "An der Hitze",
+        "An den Flammen",
+        "An den Rauchgasen"
+      ],
+      "richtig": 3,
+      "kategorie": "wissen",
+      "erklaerung": "Deshalb die Rauchmelderpflicht — die gilt inzwischen in allen 16 Bundesländern."
+    },
+    {
+      "frage": "Was ist Brandklasse A?",
+      "antworten": [
+        "Brennbare Flüssigkeiten",
+        "Metallbrände",
+        "Feste Stoffe wie Holz, Papier, Textilien",
+        "Gase"
+      ],
+      "richtig": 2,
+      "kategorie": "wissen",
+      "erklaerung": "A fest, B flüssig, C gasförmig, D Metall, F Speisefett."
+    },
+    {
+      "frage": "Wie oft muss ein Atemschutzgeräteträger zur Belastungsübung?",
+      "antworten": [
+        "Nur zur Ausbildung",
+        "Einmal im Jahr",
+        "Alle drei Monate",
+        "Alle zwei Jahre"
+      ],
+      "richtig": 1,
+      "kategorie": "wissen",
+      "erklaerung": "FwDV 7. Dazu kommen der jährliche Einsatz oder die Übung unter Atemschutz und die G26.3."
+    },
+    {
+      "frage": "Was wiegt eine komplette Atemschutzausrüstung ungefähr?",
+      "antworten": [
+        "Etwa 15 Kilogramm",
+        "Etwa 5 Kilogramm",
+        "Etwa 30 Kilogramm",
+        "Etwa 50 Kilogramm"
+      ],
+      "richtig": 0,
+      "kategorie": "wissen",
+      "erklaerung": "Pressluftatmer mit Flasche und Maske — und das kommt zur Schutzkleidung noch obendrauf."
+    },
+    {
+      "frage": "Wozu rückt die Feuerwehr in Deutschland häufiger aus?",
+      "antworten": [
+        "Zu technischen Hilfeleistungen",
+        "Zu Fehlalarmen der Nachbarn",
+        "Zu Tierrettungen",
+        "Zu Bränden"
+      ],
+      "richtig": 0,
+      "kategorie": "wissen",
+      "erklaerung": "Türöffnung, Ölspur, Unwetter, Verkehrsunfall — Brände sind der kleinere Teil der Einsätze."
+    },
+    {
+      "frage": "Wie viele Feuerwehrleute in Deutschland sind ehrenamtlich?",
+      "antworten": [
+        "Etwa die Hälfte",
+        "Weniger als 10 Prozent",
+        "Rund ein Viertel",
+        "Über 90 Prozent"
+      ],
+      "richtig": 3,
+      "kategorie": "wissen",
+      "erklaerung": "Die Freiwillige Feuerwehr ist der Regelfall — Berufsfeuerwehren gibt es fast nur in großen Städten."
+    },
+    {
+      "frage": "Seit wann gilt die 112 europaweit als Notruf?",
+      "antworten": [
+        "Seit 2010",
+        "Seit 1972",
+        "Seit den 1990er Jahren",
+        "Sie gilt nur in Deutschland"
+      ],
+      "richtig": 2,
+      "kategorie": "wissen",
+      "erklaerung": "Ein EU-Beschluss von 1991. Die 112 funktioniert heute in jedem Mitgliedsstaat."
+    },
+    {
+      "frage": "Was bedeutet der Befehl „Wasser marsch“?",
+      "antworten": [
+        "Der Trupp geht zur Wasserentnahmestelle",
+        "Die Pumpe wird abgestellt",
+        "Der Maschinist gibt Wasser auf die Leitung",
+        "Die Leitung wird entleert"
+      ],
+      "richtig": 2,
+      "kategorie": "wissen",
+      "erklaerung": "Das Gegenstück heißt „Wasser halt“."
+    },
+    {
+      "frage": "Bis zu welcher Höhe darf man in ein Sprungpolster springen?",
+      "antworten": [
+        "Etwa 30 Meter",
+        "Es gibt keine Grenze",
+        "Etwa 8 Meter",
+        "Etwa 16 Meter"
+      ],
+      "richtig": 3,
+      "kategorie": "wissen",
+      "erklaerung": "SP 16 — und es ist immer das letzte Mittel, nie der geplante Rettungsweg."
+    },
+    {
+      "frage": "Wessen Aufgabe ist der Brandschutz in Deutschland?",
+      "antworten": [
+        "Der Bundeswehr",
+        "Der Versicherungen",
+        "Der Gemeinden",
+        "Des Bundes"
+      ],
+      "richtig": 2,
+      "kategorie": "wissen",
+      "erklaerung": "Feuerwehr ist kommunale Pflichtaufgabe — geregelt in den Feuerwehrgesetzen der Länder."
+    },
+    {
+      "frage": "Was ist das Erste, was nach dem Einsatz passiert?",
+      "antworten": [
+        "Der Bericht wird geschrieben",
+        "Das Fahrzeug wird gewaschen",
+        "Die Mannschaft geht nach Hause",
+        "Die Einsatzbereitschaft wird wiederhergestellt"
+      ],
+      "richtig": 3,
+      "kategorie": "wissen",
+      "erklaerung": "Schläuche tauschen, Tank füllen, Geräte prüfen. Der nächste Alarm fragt nicht, wie spät es ist."
+    },
+    {
+      "frage": "Warum war ausgerechnet der Dalmatiner der Feuerwehrhund?",
+      "antworten": [
+        "Seine Flecken waren im Ruß gut zu erkennen",
+        "Er kann Rauch besser riechen als andere Hunde",
+        "Er war das Wappentier der ersten Feuerwache",
+        "Er lief bei den Pferdegespannen mit und beruhigte die Pferde"
+      ],
+      "richtig": 3,
+      "kategorie": "wissen",
+      "erklaerung": "Aus der Zeit der Pferdespritzen in den USA. Geblieben ist er als Maskottchen."
+    },
+    {
+      "frage": "Was ist im Gerätehaus heiliger als jedes Fahrzeug?",
+      "antworten": [
+        "Der Schlauchturm",
+        "Der Spind",
+        "Das Funkgerät",
+        "Die Kaffeemaschine"
+      ],
+      "richtig": 3,
+      "kategorie": "klischee",
+      "erklaerung": "Klischee-Frage. Wer sie falsch beantwortet, war noch nie nach Mitternacht im Gerätehaus."
+    },
+    {
+      "frage": "Woran erkennt man den Maschinisten mit Sicherheit?",
+      "antworten": [
+        "Er trägt immer Handschuhe",
+        "Er sitzt hinten links",
+        "Er redet am wenigsten",
+        "Er lässt niemanden ans Steuer"
+      ],
+      "richtig": 3,
+      "kategorie": "klischee",
+      "erklaerung": "Klischee-Frage. „Das ist MEIN Fahrzeug“ ist keine Dienstvorschrift, aber es gilt trotzdem."
+    },
+    {
+      "frage": "Welcher Satz beendet in jeder Wehr jede Diskussion?",
+      "antworten": [
+        "„Steht so in der Vorschrift.“",
+        "„Frag den Kommandanten.“",
+        "„Das haben wir schon immer so gemacht.“",
+        "„Machen wir nächste Woche.“"
+      ],
+      "richtig": 2,
+      "kategorie": "klischee",
+      "erklaerung": "Klischee-Frage. Und sie beendet die Diskussion wirklich."
+    },
+    {
+      "frage": "Womit endet eine gelungene Übung traditionell?",
+      "antworten": [
+        "Mit einem Getränk im Gerätehaus",
+        "Mit dem Bericht",
+        "Mit der Fahrzeugwäsche",
+        "Mit einer Nachbesprechung"
+      ],
+      "richtig": 0,
+      "kategorie": "klischee",
+      "erklaerung": "Klischee-Frage. Die Nachbesprechung findet dann meistens gleich mit statt."
+    },
+    {
+      "frage": "Wie oft holt eine Feuerwehr wirklich eine Katze vom Baum?",
+      "antworten": [
+        "Viel seltener, als alle denken",
+        "Mehrmals pro Woche",
+        "Das ist die häufigste Einsatzart",
+        "Nur an Feiertagen"
+      ],
+      "richtig": 0,
+      "kategorie": "klischee",
+      "erklaerung": "Katzen kommen meistens allein wieder herunter. Das Klischee hält sich trotzdem hartnäckig."
+    },
+    {
+      "frage": "Was ist die zuverlässigste Alarmzeit?",
+      "antworten": [
+        "Nachts um drei",
+        "Genau dann, wenn das Essen auf dem Tisch steht",
+        "Werktags zwischen 9 und 12 Uhr",
+        "Immer am Wochenende"
+      ],
+      "richtig": 1,
+      "kategorie": "klischee",
+      "erklaerung": "Klischee-Frage — und trotzdem fragt jeder in der Runde gerade zustimmend nickend nach."
+    },
+    {
+      "frage": "Was passiert garantiert, sobald das Fahrzeug frisch gewaschen ist?",
+      "antworten": [
+        "Der nächste Alarm",
+        "Es regnet",
+        "Die Übung fällt aus",
+        "Der Kommandant kommt vorbei"
+      ],
+      "richtig": 0,
+      "kategorie": "klischee",
+      "erklaerung": "Klischee-Frage. Beweisen kann es niemand, erlebt hat es jeder."
+    }
+  ],
+  "aufgaben": [
+    "Zehn Liegestütze — der Atemschutz freut sich.",
+    "Zwanzig Sekunden Unterarmstütz, die Runde zählt mit.",
+    "Erkläre der Runde in einem Satz, was ein Verteiler macht.",
+    "Erkläre, warum man einen Fettbrand nicht mit Wasser löscht.",
+    "Nenne drei Geräte aus dem ersten Geräteraum — ohne nachzusehen.",
+    "Nenne die Mannschaftsstärke einer Gruppe, einer Staffel und eines Trupps.",
+    "Du kochst die nächste Runde Kaffee.",
+    "Setz einen Helm auf und behalte ihn bis zum Ende der Runde auf.",
+    "Beantworte die nächste Frage im Funkjargon — mit „kommen“ am Ende.",
+    "Du bist bis zur nächsten Runde Melder: Lies jede Frage laut vor.",
+    "Erzähl der Runde von deinem ersten Einsatz.",
+    "Sag drei Dinge, die in deinem Fahrzeug garantiert niemand findet.",
+    "Zeig der Runde, wie eine Storz-Kupplung richtig geschlossen wird.",
+    "Buchstabiere deinen Nachnamen im Funkalphabet.",
+    "Du räumst nach dem Spiel die Gläser weg.",
+    "Steh auf und melde dich einmal ordentlich beim Gruppenführer ab.",
+    "Nenne fünf Fahrzeugtypen mit ihrer Abkürzung.",
+    "Bis zur nächsten Runde sprichst du nur, wenn du gefragt wirst."
+  ]
+}

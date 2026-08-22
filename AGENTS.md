@@ -185,6 +185,15 @@ pauschales Formatieren in Feature-PRs.
   Kopie in der Draufsicht kannte die Seitenfarben: Derselbe Geräteraum war
   im Fahrzeugmenü blau und im Drag&Drop grau. Wer eine dritte Ansicht baut,
   ruft die Funktion auf, statt den `switch` erneut abzuschreiben.
+- ⚠️ **Nullbarer Notifier-Zustand: erst lesen, dann `!`.** Steht
+  `ref.read(xProvider)!` in einem Rumpf mit deklariertem, nicht-nullbarem
+  Rückgabetyp, leitet Dart daraus `read<T>` statt `read<T?>` ab. Riverpod 3
+  fängt den Typfehler nicht ab — der `impl`-Getter in
+  `provider_subscription.dart` ist ein nicht erschöpfendes `switch`, gibt
+  still `null` zurück, und es scheitert mit „The getter '_listenedElement'
+  was called on null", einer Meldung ohne jeden Bezug zur Ursache. Das kostete
+  bei #160 eine halbe Stunde Suche. Zwei Zeilen (`final s = ref.read(...);
+  return s!;`) und es ist weg.
 - **Lints:** nur `flutter_lints`. `strict-casts`, `strict-raw-types` und
   `unawaited_futures` sind bewusst offen — eigener PR, potenziell breite Churn.
 - **Dependencies** gepinnt (`^x.y.z`), **nie `any`**.
@@ -229,6 +238,11 @@ pauschales Formatieren in Feature-PRs.
   ⚠️ Cloudflare Bot Fight Mode blockt den UA `Python-urllib/3.x` mit 403; jeder
   Skript-Zugriff aufs öffentliche Gateway braucht einen eigenen User-Agent
   (der Bot setzt `fwapp-feedback-bot/1.0`).
+- ⚠️ **Der Party-Modus schreibt keine Lernstatistik** (Issue #160). An dem
+  Handy antworten fremde Leute; ihre Treffer gehören nicht in `QuizResults`,
+  `LearningProgress`, XP oder Serie des Besitzers. Wer dort einen
+  `recordAnswer`-Aufruf ergänzt, macht aus einem Spiel eine verfälschte
+  Lernhistorie — `test/features/game/party_spiel_test.dart` hält es fest.
 - **Der Demo-Datenbestand ist fiktiv.** Die echte AB-G-Beladeliste ist bewusst
   aus dem Arbeitsstand entfernt; der Seeder legt Katalog **vor** Fahrzeug an.
 - **Die Demo-Gesamtwehr ist ein Skript, kein Handbetrieb** (Issue #158):

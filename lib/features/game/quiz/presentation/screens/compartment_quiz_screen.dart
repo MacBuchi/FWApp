@@ -5,8 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/database/database_providers.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/utils/json_utils.dart';
-import 'package:fwapp/features/compartment/domain/fahrzeug_seiten.dart';
-import 'package:fwapp/features/compartment/presentation/seiten_farben.dart';
+import 'package:fwapp/features/compartment/presentation/fach_antwort.dart';
 import 'package:fwapp/features/equipment/presentation/widgets/equipment_avatar.dart';
 import 'package:fwapp/features/vehicle/domain/entities/vehicle.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';
@@ -101,11 +100,11 @@ class _CompartmentQuizScreenState
           // das Quiz spielt, lernt die Konvention nebenbei mit.
           final wrong = compartments
               .where((x) => x.id != c.id)
-              .map(_QuizOption.ausFach)
+              .map(FachAntwort.ausFach)
               .toList();
           if (wrong.length < 3) continue;
           wrong.shuffle();
-          final options = [_QuizOption.ausFach(c), ...wrong.take(3)]
+          final options = [FachAntwort.ausFach(c), ...wrong.take(3)]
             ..shuffle();
           questions.add(_QuizQuestion(
             equipmentId: eq.id,
@@ -202,7 +201,7 @@ class _CompartmentQuizScreenState
                       ),
                       onPressed:
                           _answered ? null : () => _answer(opt.label, q),
-                      child: _AntwortInhalt(option: opt),
+                      child: FachAntwortInhalt(antwort: opt),
                     ),
                   ),
                 )),
@@ -299,92 +298,13 @@ class _CompartmentQuizScreenState
   }
 }
 
-/// Antwortknopf-Inhalt: Farbpunkt, Fachname, Ortsangabe darunter.
-///
-/// Dasselbe Bild wie die Fach-Karten im Fahrzeugmenü (Punkt links, Verortung
-/// als Unterzeile) — wer im Quiz „G5 · Fahrerseite · hinten" liest, findet es
-/// dort genauso wieder.
-class _AntwortInhalt extends StatelessWidget {
-  final _QuizOption option;
-  const _AntwortInhalt({required this.option});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final farbe = seitenFarbe(option.seite);
-    final ort = option.verortung;
-    return Row(
-      children: [
-        if (farbe != null) ...[
-          Container(
-            width: 12,
-            height: 12,
-            decoration: BoxDecoration(
-              color: farbe.akzent,
-              borderRadius: BorderRadius.circular(3),
-            ),
-          ),
-          const SizedBox(width: 10),
-        ],
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(option.label,
-                  style: const TextStyle(fontWeight: FontWeight.bold)),
-              if (ort != null)
-                Text(ort,
-                    style: theme.textTheme.bodySmall
-                        ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// Eine Antwortmöglichkeit: der Fachname und wo das Fach liegt.
-///
-/// Verglichen wird weiter über [label] — die Antwort ist der Fachname, nicht
-/// die Verortung. Die Ortsangabe ist Beiwerk der Anzeige (Issue #167).
-class _QuizOption {
-  final String label;
-  final String? seite;
-  final String? laengsposition;
-
-  const _QuizOption({
-    required this.label,
-    this.seite,
-    this.laengsposition,
-  });
-
-  factory _QuizOption.ausFach(CompartmentData c) => _QuizOption(
-        label: c.label,
-        seite: c.seite,
-        laengsposition: c.laengsposition,
-      );
-
-  /// „Fahrerseite · hinten", oder null für ein Fach ohne Seite — dann bleibt
-  /// die Zeile weg, statt „Ohne Seite" als Antwort-Beiwerk zu behaupten.
-  ///
-  /// Auch weg, wenn sie nur den Fachnamen wiederholt: Ein Fach „Dach" mit der
-  /// Unterzeile „Dach" sieht nach Fehler aus, nicht nach Hilfe.
-  String? get verortung {
-    if (seite == null) return null;
-    final ort = verortungAnzeigename(seite, laengsposition);
-    return ort.toLowerCase() == label.trim().toLowerCase() ? null : ort;
-  }
-}
-
 class _QuizQuestion {
   final int equipmentId;
   final String equipmentName;
   final String? imagePath;
   final List<String> functions;
   final String correctAnswer;
-  final List<_QuizOption> options;
+  final List<FachAntwort> options;
 
   const _QuizQuestion({
     required this.equipmentId,

@@ -53,6 +53,7 @@ void main() {
       'assets/vehicle_templates/': 'eigene Beladepläne',
       'assets/images/': 'eigene Grafik',
       'assets/branding/': 'eigene Bildmarke',
+      'assets/game/': 'selbst geschriebene Fragen und Aufgaben (Issue #160)',
     };
 
     test('kein ausgeliefertes Asset ohne Lizenz-Entscheidung', () {

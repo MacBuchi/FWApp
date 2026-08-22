@@ -12,6 +12,36 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.34.0] – 2026-08-22
+
+### Neu
+
+- **Party-Modus.** Ein Handy, alle am Tisch: Namen eintragen, und das Gerät
+  geht reihum. Wer dran ist, bekommt einen Übergabe-Schirm zu sehen, bevor die
+  Frage erscheint — so liest der Vorgänger nicht mit. Die Fragen kommen aus
+  drei Töpfen: Wo liegt welches Gerät, was ist auf dem Bild zu sehen, und ein
+  neuer Topf mit **unerwarteten Fragen** aus Feuerwehrwissen und Klischees.
+  Der Topf funktioniert auch auf einem frisch eingerichteten Gerät, also noch
+  bevor ein Fahrzeug angelegt ist.
+- **Trinkspiel, ausdrücklich abschaltbar.** Der Schalter ist ab Werk aus. Ist
+  er an, schlägt das Spiel bei einer falschen Antwort „einen Schluck — oder"
+  eine Aufgabe vor, und zwar gleichwertig: Wer Bereitschaft hat, nimmt die
+  Aufgabe. Der Hinweis steht im Aufbau mit dabei.
+- Die Antworten des Party-Modus tragen dieselben Seitenfarben und Ortsangaben
+  wie das Fahrzeugmenü und das Fach-Quiz.
+
+### Geändert
+
+- Am Ende einer Partie steht bei Gleichstand **„Unentschieden"** statt eines
+  Siegers, der nur zufällig zuerst eingetragen wurde. Gleiche Punktzahl heißt
+  gleicher Platz.
+
+### Hinweis
+
+Der Party-Modus rührt die persönliche Lernstatistik **nicht** an: Wer an
+diesem Abend auf dem Handy mitspielt, verändert weder XP noch Serie noch die
+Ergebnisliste des Besitzers.
+
 ## [1.33.0] – 2026-08-22
 
 ### Neu

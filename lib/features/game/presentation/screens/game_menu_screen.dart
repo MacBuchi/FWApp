@@ -63,6 +63,13 @@ class GameMenuScreen extends StatelessWidget {
             color: Colors.green.shade700,
             onTap: () => context.push('/game/deployment'),
           ),
+          _GameCard(
+            icon: Icons.groups,
+            title: 'Party-Modus',
+            subtitle: 'Ein Handy, alle am Tisch — reihum',
+            color: Colors.amber.shade800,
+            onTap: () => context.push('/game/party'),
+          ),
         ],
       ),
     );

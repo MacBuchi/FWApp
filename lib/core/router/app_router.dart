@@ -34,6 +34,7 @@ import 'package:fwapp/features/game/quiz/presentation/screens/drag_drop_screen.d
 import 'package:fwapp/features/game/quiz/presentation/screens/flashcard_screen.dart';
 import 'package:fwapp/features/game/quiz/presentation/screens/image_quiz_screen.dart';
 import 'package:fwapp/features/game/deployment/presentation/screens/deployment_mode_screen.dart';
+import 'package:fwapp/features/game/party/presentation/screens/party_screen.dart';
 import 'package:fwapp/features/import/presentation/screens/import_wizard_screen.dart';
 import 'package:fwapp/features/inspection/presentation/screens/inspection_dashboard_screen.dart';
 import 'package:fwapp/features/operation/presentation/screens/operation_setup_screen.dart';
@@ -297,6 +298,10 @@ final _routes = [
             GoRoute(
               path: 'deployment',
               builder: (_, _) => const DeploymentModeScreen(),
+            ),
+            GoRoute(
+              path: 'party',
+              builder: (_, _) => const PartyScreen(),
             ),
           ],
         ),

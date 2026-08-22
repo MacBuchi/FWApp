@@ -90,6 +90,41 @@ void main() {
     expect(find.text('Update auf v9.9.9 verfügbar'), findsNothing);
   });
 
+  testWidgets('Vorabversion ist im Banner und im Dialog als solche benannt',
+      (tester) async {
+    // Ein ungeprüfter Stand darf sich nicht wie eine Freigabe anfühlen
+    // (Issue #169) — und zwar an beiden Stellen, an denen entschieden wird.
+    await tester.pumpWidget(app(
+        update: const UpdateInfo(
+      latestVersion: '9.9.9',
+      downloadUrl: 'https://example.invalid/fwapp.apk',
+      releaseNotes: 'Testnotizen',
+      isPrerelease: true,
+    )));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Vorabversion v9.9.9 verfügbar'), findsOneWidget);
+    expect(find.textContaining('Update auf'), findsNothing);
+
+    await tester.tap(find.text('Vorabversion v9.9.9 verfügbar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Vorabversion v9.9.9'), findsOneWidget);
+    expect(find.textContaining('Noch nicht freigegeben'), findsOneWidget);
+
+    await tester.tap(find.text('Später'));
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('ein freigegebener Stand bleibt ein normales Update',
+      (tester) async {
+    await tester.pumpWidget(app(update: _update));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Update auf v9.9.9 verfügbar'), findsOneWidget);
+    expect(find.textContaining('Vorabversion'), findsNothing);
+  });
+
   testWidgets('Update-Banner öffnet den Dialog mit Release-Notes',
       (tester) async {
     await tester.pumpWidget(app(update: _update));

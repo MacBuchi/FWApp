@@ -138,8 +138,12 @@ class HomeBanners extends ConsumerWidget {
           ),
         if (showUpdate)
           _BannerCard(
-            emoji: '🔄',
-            text: 'Update auf v${updateInfo.latestVersion} verfügbar',
+            // Vorabversionen sagen es dazu (Issue #169) — ein ungeprüfter
+            // Stand darf sich nicht wie eine Freigabe anfühlen.
+            emoji: updateInfo.isPrerelease ? '🧪' : '🔄',
+            text: updateInfo.isPrerelease
+                ? 'Vorabversion v${updateInfo.latestVersion} verfügbar'
+                : 'Update auf v${updateInfo.latestVersion} verfügbar',
             color: Theme.of(context).colorScheme.primaryContainer,
             onColor: Theme.of(context).colorScheme.onPrimaryContainer,
             onTap: () => showDialog<void>(
@@ -411,12 +415,26 @@ class _UpdateDialogState extends State<_UpdateDialog> {
   Widget build(BuildContext context) {
     final info = widget.info;
     return AlertDialog(
-      title: Text('Update auf v${info.latestVersion}'),
+      title: Text(info.isPrerelease
+          ? 'Vorabversion v${info.latestVersion}'
+          : 'Update auf v${info.latestVersion}'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Auch im Dialog, nicht nur im Banner (Issue #169): Wer bis
+            // hierher getippt hat, entscheidet gerade über die Installation.
+            if (info.isPrerelease && _phase == _UpdatePhase.idle) ...[
+              Text(
+                'Noch nicht freigegeben — ein Zwischenstand zum Ausprobieren.',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.tertiary,
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
             switch (_phase) {
               _UpdatePhase.idle => const Text(
                   'Das Update lädt direkt in der App und öffnet dann den '

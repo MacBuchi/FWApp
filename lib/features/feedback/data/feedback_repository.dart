@@ -2,6 +2,8 @@
 /// Supabase-Tabelle `feedback`. Ein GitHub-Actions-Bot macht daraus
 /// öffentliche Issues im Repo (siehe tool/feedback_bot.py).
 library;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// `katalog` ist der Vorschlag für den GLOBALEN Gerätekatalog (Issue #103),
@@ -79,3 +81,23 @@ Future<void> submitFeedback(
     'message': clampFeedbackMessage(message),
   });
 }
+
+/// Der Sendeweg als Naht — dieselbe Signatur wie [submitFeedback], nur ohne
+/// den Client.
+typedef FeedbackSender = Future<void> Function({
+  required FeedbackType type,
+  required String message,
+});
+
+/// Sendet über den angemeldeten Client.
+///
+/// Die Naht existiert, damit der **Erfolgsfall** prüfbar ist. Vorher ging das
+/// nicht: Im Prüfstand gibt es keinen echten Supabase-Client, `submitFeedback`
+/// wirft dort immer, und jeder Widget-Test lief still in den Fehlerzweig.
+/// Genau auf diesem ungeprüften Weg saß der Fehler aus Issue #173 — das
+/// Banner verschwand nach dem Senden, und kein Test merkte es.
+final feedbackSenderProvider = Provider<FeedbackSender>((ref) {
+  final client = ref.watch(supabaseClientProvider);
+  return ({required FeedbackType type, required String message}) =>
+      submitFeedback(client, type: type, message: message);
+});

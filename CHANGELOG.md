@@ -12,6 +12,16 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.36.0] – 2026-08-26
+
+### Behoben
+
+- **Der Feedback-Banner bleibt nach dem Senden stehen.** Wer einen Wunsch
+  abgeschickt hatte, verlor damit den Zugang zum Dialog: Das Banner
+  verschwand bis zum nächsten App-Start, und die zweite Idee musste warten.
+  Es geht jetzt erst weg, wenn du es selbst wegklickst — und auch dann nur
+  für diese Sitzung.
+
 ## [1.35.0] – 2026-08-26
 
 ### Behoben

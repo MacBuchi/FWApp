@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/features/compartment/presentation/fach_antwort.dart';
 import 'package:fwapp/features/equipment/presentation/widgets/equipment_avatar.dart';
+import 'package:fwapp/features/game/party/domain/party_frage.dart';
 import 'package:fwapp/features/game/party/presentation/providers/party_providers.dart';
 import 'package:fwapp/features/vehicle/domain/entities/vehicle.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';
@@ -148,16 +149,22 @@ class _PartyScreenState extends ConsumerState<PartyScreen> {
           fahrzeuge.when(
             loading: () => const LinearProgressIndicator(),
             error: (e, _) => Text('Fehler: $e'),
+            // `isExpanded` und `ellipsis` sind Pflicht, keine Kosmetik: Ein
+            // echter Fahrzeugname („HLF 20/16 Florian Musterstadt 1/44")
+            // ließ die Auswahl auf einem Handy um knapp 300 Pixel überlaufen
+            // — die gestreifte Fehlerfläche statt des Namens.
             data: (liste) => DropdownButtonFormField<Vehicle?>(
               initialValue: _fahrzeug,
+              isExpanded: true,
               decoration: const InputDecoration(
                   labelText: 'Fahrzeug (optional)',
                   border: OutlineInputBorder()),
               items: [
                 const DropdownMenuItem(
                     value: null, child: Text('Alle Fahrzeuge')),
-                ...liste.map(
-                    (v) => DropdownMenuItem(value: v, child: Text(v.name))),
+                ...liste.map((v) => DropdownMenuItem(
+                    value: v,
+                    child: Text(v.name, overflow: TextOverflow.ellipsis))),
               ],
               onChanged: (v) => setState(() => _fahrzeug = v),
             ),
@@ -228,7 +235,12 @@ class _PartyScreenState extends ConsumerState<PartyScreen> {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text('Runde ${stand.zugNummer}'),
+        // Die Kategorie steht mit im Titel: Seit Issue #172 bleibt eine
+        // Runde bei einer Art Frage, und was niemand sieht, ist am Tisch
+        // keine Regel, sondern Zufall. Verraten wird damit nichts —
+        // „Wo liegt was?" gilt für jedes Fach jedes Fahrzeugs.
+        title:
+            Text('Runde ${stand.zugNummer} · ${stand.frage.art.bezeichnung}'),
         automaticallyImplyLeading: false,
         actions: [
           TextButton(
@@ -312,6 +324,25 @@ class _PartyScreenState extends ConsumerState<PartyScreen> {
                 style: const TextStyle(
                     fontSize: 18, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center),
+          ],
+          // Das Fahrzeug gehört über die Antworten, nicht in die Auflösung:
+          // Zur Wahl stehen die Fächer eines bestimmten Wagens, und wer den
+          // nicht kennt, rät (Issue #172). Als eigene Zeile statt im
+          // Fragetext, weil Namen wie „HLF 20/16 Florian 1/44" den Satz
+          // sonst unlesbar machen.
+          if (frage.fahrzeug != null) ...[
+            const SizedBox(height: 10),
+            Center(
+              child: Chip(
+                avatar: Icon(Icons.fire_truck,
+                    size: 18, color: theme.colorScheme.onSecondaryContainer),
+                label: Text(frage.fahrzeug!),
+                backgroundColor: theme.colorScheme.secondaryContainer,
+                labelStyle: TextStyle(
+                    color: theme.colorScheme.onSecondaryContainer,
+                    fontWeight: FontWeight.w600),
+              ),
+            ),
           ],
           const SizedBox(height: 12),
           Text(frage.text,

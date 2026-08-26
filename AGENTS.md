@@ -243,6 +243,14 @@ pauschales Formatieren in Feature-PRs.
   `LearningProgress`, XP oder Serie des Besitzers. Wer dort einen
   `recordAnswer`-Aufruf ergänzt, macht aus einem Spiel eine verfälschte
   Lernhistorie — `test/features/game/party_spiel_test.dart` hält es fest.
+- ⚠️ **Eine Party-Runde bleibt bei einer Kategorie, und eine Fach-Frage nennt
+  ihr Fahrzeug** (Issue #172). Beides kam aus dem Spiel am Tisch zurück: Ohne
+  Fahrzeug ist „In welchem Fach liegt das?" bei mehreren Wagen nicht zu
+  beantworten, sondern zu raten, und ein Kategorienwechsel bei jeder Frage
+  lässt jeden Zug wie ein anderes Spiel wirken. Wer `mischePartie` wieder mit
+  einem abschließenden `partie.shuffle()` vereinfacht, nimmt die Rundenregel
+  zurück, ohne dass es im Code auffällt — `party_mischung_test.dart` und
+  `party_screen_test.dart` halten beides fest.
 - **Der Demo-Datenbestand ist fiktiv.** Die echte AB-G-Beladeliste ist bewusst
   aus dem Arbeitsstand entfernt; der Seeder legt Katalog **vor** Fahrzeug an.
 - **Die Demo-Gesamtwehr ist ein Skript, kein Handbetrieb** (Issue #158):

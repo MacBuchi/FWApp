@@ -173,6 +173,9 @@ Future<PartyTopf> partyTopf(Ref ref, int? vehicleId) async {
           art: PartyFrageArt.fach,
           text: 'In welchem Fach liegt das?',
           kopfzeile: eq.name,
+          // Ohne das Fahrzeug ist die Frage bei mehreren Fahrzeugen nicht zu
+          // beantworten: vier Fachnamen, aber von welchem Wagen? (Issue #172)
+          fahrzeug: v.name,
           bildPfad: eq.imagePath,
           funktionen: jsonToStringList(eq.equipmentFunctionsJson),
           antworten: antworten.map(PartyAntwort.ausFach).toList(),
@@ -246,6 +249,9 @@ class PartySpiel extends _$PartySpiel {
       unerwartet:
           inhalte.fragen.map((f) => f.zuPartyFrage(_zufall)).toList(),
       anzahl: namen.length * fragenProSpieler,
+      // Eine Runde ist ein Umlauf des Handys — dieselbe Länge, mit der
+      // `zugNummer` rechnet. Daran hängt „eine Runde, eine Kategorie".
+      proRunde: namen.length,
       zufall: _zufall,
     );
     if (fragen.isEmpty) return false;

@@ -229,6 +229,44 @@ void main() {
     expect(stand.fragen.where((f) => f.art == PartyFrageArt.fach), isNotEmpty);
   });
 
+  test('jede Fach-Frage nennt ihr Fahrzeug (Issue #172)', () async {
+    // Der gemeldete Fehler: „Es ist nicht vermerkt, um welches Fahrzeug es
+    // geht." Zur Wahl stehen vier Fachnamen — ohne den Wagen dazu ist die
+    // Frage nicht zu beantworten, sondern zu raten. Genannt wurde er nur in
+    // der Auflösung, also nach der Antwort.
+    await seedBestand();
+    final c = container();
+    final stand = await starte(c, fragenProSpieler: 8);
+    final fachFragen =
+        stand.fragen.where((f) => f.art == PartyFrageArt.fach).toList();
+    expect(fachFragen, isNotEmpty);
+    for (final f in fachFragen) {
+      expect(f.fahrzeug, 'HLF 20');
+    }
+    // Unerwartete Fragen haben kein Fahrzeug — dort wäre die Angabe falsch.
+    expect(
+        stand.fragen
+            .where((f) => f.art == PartyFrageArt.unerwartet)
+            .every((f) => f.fahrzeug == null),
+        isTrue);
+  });
+
+  test('eine Runde stellt nur eine Art Frage (Issue #172)', () async {
+    // Der zweite Punkt aus dem Issue: „sinnvoller, in einer Runde jeweils
+    // bei einer Kategorie zu bleiben." Eine Runde ist ein Umlauf des Handys
+    // — dieselbe Länge, mit der `zugNummer` rechnet.
+    await seedBestand();
+    final c = container();
+    const namen = ['Anna', 'Ben', 'Cem'];
+    final stand = await starte(c, namen: namen, fragenProSpieler: 3);
+    for (var start = 0; start < stand.fragen.length; start += namen.length) {
+      final runde = stand.fragen
+          .sublist(start, min(start + namen.length, stand.fragen.length));
+      expect(runde.map((f) => f.art).toSet(), hasLength(1),
+          reason: 'Runde ab $start ist gemischt');
+    }
+  });
+
   test('ohne Bestand und ohne Topf startet die Partie gar nicht', () async {
     // Kein Fahrzeug, kein Asset — dann ist ein Start ohne Fragen ehrlicher
     // als ein leerer Spielschirm.

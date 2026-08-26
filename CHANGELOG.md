@@ -12,6 +12,27 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.35.0] – 2026-08-26
+
+### Behoben
+
+- **Der Party-Modus nennt jetzt das Fahrzeug.** „In welchem Fach liegt das?"
+  war bei mehr als einem Fahrzeug nicht zu beantworten: Zur Wahl standen vier
+  Fachnamen, aber von welchem Wagen sie stammen, stand erst in der Auflösung —
+  also nach der Antwort. Das Fahrzeug steht jetzt über der Frage.
+- **Lange Fahrzeugnamen passen wieder in die Auswahl.** Beim Aufbau einer
+  Partie lief ein Name wie „HLF 20/16 Florian Musterstadt 1/44" auf einem
+  Handy über den Rand hinaus; zu sehen war statt des Namens eine
+  gelb-schwarze Warnfläche. Der Name wird jetzt gekürzt statt überzulaufen.
+
+### Geändert
+
+- **Eine Runde bleibt bei einer Kategorie.** Innerhalb eines Umlaufs bekommen
+  alle Spieler dieselbe Art Frage — entweder „Wo liegt was?", „Was ist das?"
+  oder Unerwartetes. Vorher wechselte die Art bei fast jeder Frage: Einer
+  durfte ein Klischee raten, während der Nächste ein Fach auswendig wissen
+  musste. Der Übergabe-Schirm sagt die Kategorie der Runde jetzt mit an.
+
 ## [1.34.0] – 2026-08-22
 
 ### Neu

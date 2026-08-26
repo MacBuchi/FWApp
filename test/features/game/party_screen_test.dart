@@ -1,11 +1,14 @@
 /// party_screen_test.dart – Der Party-Modus, wie er am Tisch bedient wird
 /// (Issue #160).
 ///
-/// Zwei Zusagen hängen allein an der Oberfläche und wären ohne diesen Test
+/// Drei Zusagen hängen allein an der Oberfläche und wären ohne diesen Test
 /// nicht abgesichert: Der Übergabe-Schirm darf die Frage **nicht** schon
-/// zeigen, und das Trinkspiel ist **ab Werk aus**.
+/// zeigen, das Trinkspiel ist **ab Werk aus**, und eine Fach-Frage nennt
+/// **sichtbar ihr Fahrzeug** (Issue #172) — im Modell zu stehen nützt am
+/// Tisch niemandem.
 library;
 
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/core/database/app_database.dart';
@@ -35,15 +38,44 @@ void main() {
   setUp(() => db = createTestDatabase());
   tearDown(() => db.close());
 
-  Future<void> pumpe(WidgetTester tester) async {
-    tester.view.physicalSize = const Size(1200, 2400);
+  /// Ein Fahrzeug mit vier Fächern und vier verorteten Geräten — genug für
+  /// mehrere Fach-Fragen.
+  Future<void> seedBestand({String fahrzeug = 'HLF 20'}) async {
+    final vehicleId = await db.vehicleDao.insertVehicle(
+        VehiclesCompanion.insert(name: fahrzeug, type: 'HLF 20'));
+    final faecher = <int>[];
+    for (final (label, seite) in const [
+      ('G1', 'fahrerseite'),
+      ('G2', 'beifahrerseite'),
+      ('G3', 'fahrerseite'),
+      ('G4', 'beifahrerseite'),
+    ]) {
+      faecher.add(await db.compartmentDao.insertCompartment(
+        CompartmentsCompanion.insert(
+            vehicleId: vehicleId, label: label, seite: Value(seite)),
+      ));
+    }
+    const geraete = ['Spreizer', 'Schere', 'Rettungszylinder', 'Pumpe'];
+    for (final (i, name) in geraete.indexed) {
+      final geraet = await db.equipmentDao
+          .insertEquipment(EquipmentItemsCompanion.insert(name: name));
+      await db.assignmentDao.insertAssignment(
+          EquipmentAssignmentsCompanion.insert(
+              compartmentId: faecher[i], equipmentId: geraet));
+    }
+  }
+
+  Future<void> pumpe(WidgetTester tester,
+      {PartyInhalte? inhalte, Size groesse = const Size(1200, 2400)}) async {
+    tester.view.physicalSize = groesse;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(buildTestApp(
       db: db,
       home: const PartyScreen(),
       overrides: [
-        partyInhalteProvider.overrideWith((ref) async => testInhalte),
+        partyInhalteProvider
+            .overrideWith((ref) async => inhalte ?? testInhalte),
       ],
     ));
     await tester.pumpAndSettle();
@@ -205,6 +237,73 @@ void main() {
     expect(find.text('Sieger: Anna'), findsOneWidget);
     expect(find.widgetWithText(ListTile, 'Anna'), findsOneWidget);
     expect(find.text('3'), findsWidgets);
+
+    await endTestApp(tester);
+  });
+
+  testWidgets('die Fach-Frage zeigt das Fahrzeug, bevor geantwortet wird',
+      (tester) async {
+    // Der leere Asset-Topf ist Absicht: Dann bleiben nur Fach-Fragen übrig,
+    // und der Test hängt nicht am Zufall der Rundenverteilung.
+    await seedBestand();
+    await pumpe(tester, inhalte: PartyInhalte.leer);
+    await starten(tester);
+
+    // Auf dem Übergabe-Schirm steht die Kategorie der Runde …
+    expect(find.textContaining('Wo liegt was?'), findsOneWidget);
+    await tester.tap(find.text('Bereit'));
+    await tester.pumpAndSettle();
+
+    // … und an der Frage das Fahrzeug, zu dem die vier Fächer gehören.
+    expect(find.widgetWithText(Chip, 'HLF 20'), findsOneWidget);
+    expect(find.text('In welchem Fach liegt das?'), findsOneWidget);
+    // Vor der Antwort, nicht erst in der Auflösung — das war der Fehler.
+    expect(find.textContaining('liegt im Fach'), findsNothing);
+
+    await endTestApp(tester);
+  });
+
+  testWidgets('unerwartete Fragen tragen kein Fahrzeug', (tester) async {
+    // Ein Klischee gehört zu keinem Wagen; ein Fahrzeug daneben wäre eine
+    // falsche Angabe und keine Hilfe.
+    await pumpe(tester);
+    await starten(tester);
+    await tester.tap(find.text('Bereit'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(Chip), findsNothing);
+
+    await endTestApp(tester);
+  });
+
+  testWidgets('der Übergabe-Schirm sagt Runde und Kategorie an',
+      (tester) async {
+    await pumpe(tester);
+    await starten(tester);
+
+    expect(find.text('Runde 1 · Unerwartetes'), findsOneWidget);
+
+    await endTestApp(tester);
+  });
+
+  testWidgets('ein langer Fahrzeugname sprengt das Handy nicht',
+      (tester) async {
+    // Die echten Namen sind lang („HLF 20/16 Florian Musterstadt 1/44"), und
+    // der Weg führt über zwei Engstellen: die Fahrzeug-Auswahl im Aufbau und
+    // die Kachel an der Frage. Beim ersten Lauf lief die Auswahl um 285
+    // Pixel über — statt des Namens stand dort die gestreifte Fehlerfläche.
+    // Der Test fällt bei jedem „RenderFlex overflowed" auf diesem Weg.
+    await seedBestand(fahrzeug: 'HLF 20/16 Florian Musterstadt 1/44');
+    await pumpe(tester,
+        inhalte: PartyInhalte.leer, groesse: const Size(360, 800));
+    await starten(tester);
+    await tester.tap(find.text('Bereit'));
+    await tester.pumpAndSettle();
+
+    expect(
+        find.widgetWithText(Chip, 'HLF 20/16 Florian Musterstadt 1/44'),
+        findsOneWidget);
+    expect(tester.takeException(), isNull);
 
     await endTestApp(tester);
   });

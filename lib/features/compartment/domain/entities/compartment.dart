@@ -26,6 +26,11 @@ abstract class Compartment with _$Compartment {
     /// Fahrer-/Beifahrerseite sinnvoll — Heck, Dach und Front tragen ihren
     /// Ort schon in der Seite.
     String? laengsposition,
+
+    /// Foto des Geräteraums (Issue #181); `null` = keins. Lokaler Pfad,
+    /// solange das Bild nur auf diesem Gerät liegt, danach ein
+    /// `supabase://`-Marker — dieselbe Form wie beim Gerätefoto.
+    String? imagePath,
     required DateTime updatedAt,
   }) = _Compartment;
 }

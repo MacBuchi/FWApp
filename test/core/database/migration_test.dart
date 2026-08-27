@@ -14,14 +14,14 @@ void main() {
     verifier = SchemaVerifier(GeneratedHelper());
   });
 
-  test('migrates from v1 to v7 without schema errors', () async {
+  test('migrates from v1 to v8 without schema errors', () async {
     final connection = await verifier.startAt(1);
     final db = AppDatabase(connection);
-    await verifier.migrateAndValidate(db, 7);
+    await verifier.migrateAndValidate(db, 8);
     await db.close();
   });
 
-  test('v1 data survives the migration to v7', () async {
+  test('v1 data survives the migration to v8', () async {
     final schema = await verifier.schemaAt(1);
 
     schema.rawDatabase
@@ -40,7 +40,7 @@ void main() {
           "VALUES (1, 1, 1, 2, 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 7);
+    await verifier.migrateAndValidate(db, 8);
 
     final vehicle = await db.vehicleDao.getById(1);
     expect(vehicle?.name, 'AB-G');
@@ -63,7 +63,7 @@ void main() {
       () async {
     final connection = await verifier.startAt(2);
     final db = AppDatabase(connection);
-    await verifier.migrateAndValidate(db, 7);
+    await verifier.migrateAndValidate(db, 8);
 
     final equipmentId = await db.equipmentDao
         .insertEquipment(EquipmentItemsCompanion.insert(name: 'Spineboard'));
@@ -81,7 +81,7 @@ void main() {
   test('new v2 tables are usable after migration', () async {
     final connection = await verifier.startAt(1);
     final db = AppDatabase(connection);
-    await verifier.migrateAndValidate(db, 7);
+    await verifier.migrateAndValidate(db, 8);
 
     final vehicleId = await db.vehicleDao.insertVehicle(
         VehiclesCompanion.insert(name: 'LF 10', type: 'LF'));
@@ -132,7 +132,7 @@ void main() {
         "'{}', '[]', '[]', 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 7);
+    await verifier.migrateAndValidate(db, 8);
 
     final geraet = await db.equipmentDao.getById(1);
     expect(geraet?.name, 'Feuerwehraxt');
@@ -165,7 +165,7 @@ void main() {
           "VALUES (1, 1, 'G1', 0, 2, 1, 3, 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 7);
+    await verifier.migrateAndValidate(db, 8);
 
     final fach = await db.compartmentDao.getById(1);
     expect(fach?.label, 'G1');
@@ -193,13 +193,45 @@ void main() {
           "VALUES (1, 1, 'G1', 0, 1, 'fahrerseite', 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 7);
+    await verifier.migrateAndValidate(db, 8);
 
     final fach = await db.compartmentDao.getById(1);
     expect(fach?.label, 'G1');
     // Die bestätigte Seite ist der Bestand, an dem hier nichts wackeln darf.
     expect(fach?.seite, 'fahrerseite');
     expect(fach?.laengsposition, isNull, reason: 'kein stiller Backfill');
+
+    await db.close();
+  });
+
+  test('v7→v8: Fächer behalten alles, bekommen KEIN Foto, und die '
+      'Anhang-Tabelle ist leer da', () async {
+    // Issues #181 und #182. Dieselbe Zurückhaltung wie bei Seite und
+    // Längsposition: Die Migration erfindet kein Foto. Und die neue Tabelle
+    // entsteht LEER — sie liegt außerhalb des Snapshots und füllt sich über
+    // ihren eigenen Sync, nicht aus Altbestand.
+    final schema = await verifier.schemaAt(7);
+    schema.rawDatabase
+      ..execute("INSERT INTO vehicles (id, name, type, created_at, updated_at) "
+          "VALUES (1, 'HLF 20', 'HLF 20', 0, 0)")
+      ..execute("INSERT INTO compartments (id, vehicle_id, label, position, "
+          "grid_col_span, seite, laengsposition, updated_at) "
+          "VALUES (1, 1, 'G1', 0, 1, 'fahrerseite', 'vorne', 0)");
+
+    final db = AppDatabase(schema.newConnection());
+    await verifier.migrateAndValidate(db, 8);
+
+    final fach = await db.compartmentDao.getById(1);
+    expect(fach?.label, 'G1');
+    expect(fach?.seite, 'fahrerseite');
+    expect(fach?.laengsposition, 'vorne');
+    expect(fach?.imagePath, isNull, reason: 'kein erfundenes Foto');
+
+    expect(await db.attachmentDao.getAll(), isEmpty);
+    // Und sie ist benutzbar, nicht nur vorhanden.
+    await db.attachmentDao.insertAttachment(VehicleAttachmentsCompanion.insert(
+        vehicleId: 1, title: 'Betriebsanleitung'));
+    expect(await db.attachmentDao.getByVehicle(1), hasLength(1));
 
     await db.close();
   });

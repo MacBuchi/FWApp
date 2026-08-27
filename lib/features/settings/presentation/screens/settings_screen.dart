@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:fwapp/features/vehicle/presentation/providers/anhang_providers.dart';
 import 'package:fwapp/core/sync/abteilung_providers.dart';
 import 'package:fwapp/core/sync/auth_utils.dart';
 import 'package:fwapp/core/sync/image_precache.dart';
@@ -338,6 +339,9 @@ class _ConnectionSection extends ConsumerWidget {
       // (Stufe ②) — „Jetzt aktualisieren" soll alles holen, nicht nur den
       // Bestand der Abteilung.
       await ref.read(equipmentTypeSyncProvider)?.sync();
+      // Dasselbe gilt für die Unterlagen am Fahrzeug (Issue #182).
+      await anhaengeSynchronisieren(ref.read(anhangSpeicherProvider),
+          ref.read(anhangAbteilungProvider));
       unawaited(ref.read(imagePrecacheProvider.notifier).run());
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(

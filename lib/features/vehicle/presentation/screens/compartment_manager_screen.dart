@@ -3,6 +3,9 @@
 library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fwapp/core/images/image_capture.dart';
+import 'package:fwapp/core/sync/sync_providers.dart';
+import 'package:fwapp/core/utils/image_utils.dart';
 import 'package:fwapp/features/compartment/domain/entities/compartment.dart';
 import 'package:fwapp/features/compartment/domain/fahrzeug_seiten.dart';
 import 'package:fwapp/features/compartment/presentation/providers/compartment_providers.dart';
@@ -93,7 +96,17 @@ class CompartmentManagerScreen extends ConsumerWidget {
               return Card(
                 key: ValueKey(c.id),
                 child: ListTile(
-                  leading: const Icon(Icons.drag_handle),
+                  // Der Griff bleibt links — er ist die Bedienung dieser
+                  // Liste. Das Foto steht daneben und ist selbst der Knopf:
+                  // Wer es sieht, tippt darauf, um es zu ersetzen.
+                  leading: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.drag_handle),
+                      const SizedBox(width: 8),
+                      _FachFoto(compartment: c),
+                    ],
+                  ),
                   title: Text(c.label),
                   // „Reihenfolge", nicht mehr „Position": Das Wort Position
                   // gehört seit Issue #141 der Längsachse (vorne/Mitte/
@@ -611,5 +624,126 @@ class _FachDialogState extends State<_FachDialog> {
         ),
       ],
     );
+  }
+}
+
+
+/// Foto eines Geräteraums (Issue #181): zeigen, aufnehmen, ersetzen.
+///
+/// **Warum ein Foto am Fach überhaupt hilft:** Eine Fachliste sagt, was drin
+/// sein soll. Ein Bild sagt, wie es aussieht, wenn es stimmt — und wer nachts
+/// nachlädt, vergleicht schneller, als er liest.
+class _FachFoto extends ConsumerStatefulWidget {
+  const _FachFoto({required this.compartment});
+
+  final Compartment compartment;
+
+  @override
+  ConsumerState<_FachFoto> createState() => _FachFotoState();
+}
+
+class _FachFotoState extends ConsumerState<_FachFoto> {
+  bool _laeuft = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final pfad = widget.compartment.imagePath;
+    final scheme = Theme.of(context).colorScheme;
+    return InkWell(
+      onTap: _laeuft ? null : _aufnehmen,
+      onLongPress: pfad == null || _laeuft ? null : _entfernen,
+      borderRadius: BorderRadius.circular(8),
+      child: SizedBox(
+        width: 44,
+        height: 44,
+        child: _laeuft
+            ? const Center(
+                child: SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2)))
+            : pfad == null
+                ? Container(
+                    decoration: BoxDecoration(
+                      color: scheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(Icons.add_a_photo_outlined,
+                        size: 20, color: scheme.onSurfaceVariant),
+                  )
+                : ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: resolveImage(
+                        path: pfad,
+                        width: 44,
+                        height: 44,
+                        fit: BoxFit.cover),
+                  ),
+      ),
+    );
+  }
+
+  Future<void> _aufnehmen() async {
+    final bild = await captureImage(context);
+    if (bild == null || !mounted) return;
+    setState(() => _laeuft = true);
+
+    // Genau wie beim Gerätefoto: Ohne Server bleibt der lokale Pfad, in der
+    // Web-App gibt es den nicht — dann ist das Bild ohne Upload nicht
+    // speicherbar.
+    var neuerPfad = bild.path;
+    final sync = ref.read(imageSyncServiceProvider);
+    if (sync != null) {
+      try {
+        neuerPfad = await sync.uploadCompartmentImageBytes(
+          compartmentId: widget.compartment.id,
+          bytes: bild.bytes,
+          previousPath: widget.compartment.imagePath,
+        );
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text('Foto nur lokal gespeichert — Upload '
+                  'fehlgeschlagen: $e')));
+        }
+      }
+    }
+
+    if (neuerPfad == null) {
+      if (mounted) {
+        setState(() => _laeuft = false);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Ohne Serververbindung lässt sich das Foto hier '
+                'nicht speichern.')));
+      }
+      return;
+    }
+    await ref
+        .read(compartmentRepositoryProvider)
+        .update(widget.compartment.copyWith(imagePath: neuerPfad));
+    if (mounted) setState(() => _laeuft = false);
+  }
+
+  Future<void> _entfernen() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Foto entfernen?'),
+        content: Text('Das Foto von „${widget.compartment.label}" wird '
+            'gelöscht. Das Fach selbst bleibt.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Abbrechen')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Entfernen')),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    await ref
+        .read(compartmentRepositoryProvider)
+        .update(widget.compartment.copyWith(imagePath: null));
   }
 }

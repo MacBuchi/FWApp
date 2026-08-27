@@ -193,6 +193,25 @@ class LearningDaoManager {
       );
 }
 
+mixin _$AttachmentDaoMixin on DatabaseAccessor<AppDatabase> {
+  $VehiclesTable get vehicles => attachedDatabase.vehicles;
+  $VehicleAttachmentsTable get vehicleAttachments =>
+      attachedDatabase.vehicleAttachments;
+  AttachmentDaoManager get managers => AttachmentDaoManager(this);
+}
+
+class AttachmentDaoManager {
+  final _$AttachmentDaoMixin _db;
+  AttachmentDaoManager(this._db);
+  $$VehiclesTableTableManager get vehicles =>
+      $$VehiclesTableTableManager(_db.attachedDatabase, _db.vehicles);
+  $$VehicleAttachmentsTableTableManager get vehicleAttachments =>
+      $$VehicleAttachmentsTableTableManager(
+        _db.attachedDatabase,
+        _db.vehicleAttachments,
+      );
+}
+
 class $VehiclesTable extends Vehicles
     with TableInfo<$VehiclesTable, VehicleData> {
   @override
@@ -762,6 +781,17 @@ class $CompartmentsTable extends Compartments
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _imagePathMeta = const VerificationMeta(
+    'imagePath',
+  );
+  @override
+  late final GeneratedColumn<String> imagePath = GeneratedColumn<String>(
+    'image_path',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _updatedAtMeta = const VerificationMeta(
     'updatedAt',
   );
@@ -785,6 +815,7 @@ class $CompartmentsTable extends Compartments
     gridColSpan,
     seite,
     laengsposition,
+    imagePath,
     updatedAt,
   ];
   @override
@@ -860,6 +891,12 @@ class $CompartmentsTable extends Compartments
         ),
       );
     }
+    if (data.containsKey('image_path')) {
+      context.handle(
+        _imagePathMeta,
+        imagePath.isAcceptableOrUnknown(data['image_path']!, _imagePathMeta),
+      );
+    }
     if (data.containsKey('updated_at')) {
       context.handle(
         _updatedAtMeta,
@@ -916,6 +953,10 @@ class $CompartmentsTable extends Compartments
         DriftSqlType.string,
         data['${effectivePrefix}laengsposition'],
       ),
+      imagePath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}image_path'],
+      ),
       updatedAt:
           attachedDatabase.typeMapping.read(
             DriftSqlType.dateTime,
@@ -949,6 +990,13 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
   /// [seite] nullable ohne Backfill — vorgeschlagen und bestätigt, nicht
   /// geraten.
   final String? laengsposition;
+
+  /// Foto des Geräteraums (Issue #181).
+  ///
+  /// Dieselbe Form wie [EquipmentItems.imagePath]: lokaler Pfad, solange das
+  /// Bild nur auf diesem Gerät liegt, danach ein `supabase://`-Marker. Auch
+  /// derselbe Bucket — das Schreibrecht ist dasselbe, es ist der Gerätewart.
+  final String? imagePath;
   final DateTime updatedAt;
   const CompartmentData({
     required this.id,
@@ -960,6 +1008,7 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
     required this.gridColSpan,
     this.seite,
     this.laengsposition,
+    this.imagePath,
     required this.updatedAt,
   });
   @override
@@ -981,6 +1030,9 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
     }
     if (!nullToAbsent || laengsposition != null) {
       map['laengsposition'] = Variable<String>(laengsposition);
+    }
+    if (!nullToAbsent || imagePath != null) {
+      map['image_path'] = Variable<String>(imagePath);
     }
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
@@ -1007,6 +1059,10 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
           laengsposition == null && nullToAbsent
               ? const Value.absent()
               : Value(laengsposition),
+      imagePath:
+          imagePath == null && nullToAbsent
+              ? const Value.absent()
+              : Value(imagePath),
       updatedAt: Value(updatedAt),
     );
   }
@@ -1026,6 +1082,7 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
       gridColSpan: serializer.fromJson<int>(json['gridColSpan']),
       seite: serializer.fromJson<String?>(json['seite']),
       laengsposition: serializer.fromJson<String?>(json['laengsposition']),
+      imagePath: serializer.fromJson<String?>(json['imagePath']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
   }
@@ -1042,6 +1099,7 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
       'gridColSpan': serializer.toJson<int>(gridColSpan),
       'seite': serializer.toJson<String?>(seite),
       'laengsposition': serializer.toJson<String?>(laengsposition),
+      'imagePath': serializer.toJson<String?>(imagePath),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
   }
@@ -1056,6 +1114,7 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
     int? gridColSpan,
     Value<String?> seite = const Value.absent(),
     Value<String?> laengsposition = const Value.absent(),
+    Value<String?> imagePath = const Value.absent(),
     DateTime? updatedAt,
   }) => CompartmentData(
     id: id ?? this.id,
@@ -1068,6 +1127,7 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
     seite: seite.present ? seite.value : this.seite,
     laengsposition:
         laengsposition.present ? laengsposition.value : this.laengsposition,
+    imagePath: imagePath.present ? imagePath.value : this.imagePath,
     updatedAt: updatedAt ?? this.updatedAt,
   );
   CompartmentData copyWithCompanion(CompartmentsCompanion data) {
@@ -1085,6 +1145,7 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
           data.laengsposition.present
               ? data.laengsposition.value
               : this.laengsposition,
+      imagePath: data.imagePath.present ? data.imagePath.value : this.imagePath,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
   }
@@ -1101,6 +1162,7 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
           ..write('gridColSpan: $gridColSpan, ')
           ..write('seite: $seite, ')
           ..write('laengsposition: $laengsposition, ')
+          ..write('imagePath: $imagePath, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
         .toString();
@@ -1117,6 +1179,7 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
     gridColSpan,
     seite,
     laengsposition,
+    imagePath,
     updatedAt,
   );
   @override
@@ -1132,6 +1195,7 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
           other.gridColSpan == this.gridColSpan &&
           other.seite == this.seite &&
           other.laengsposition == this.laengsposition &&
+          other.imagePath == this.imagePath &&
           other.updatedAt == this.updatedAt);
 }
 
@@ -1145,6 +1209,7 @@ class CompartmentsCompanion extends UpdateCompanion<CompartmentData> {
   final Value<int> gridColSpan;
   final Value<String?> seite;
   final Value<String?> laengsposition;
+  final Value<String?> imagePath;
   final Value<DateTime> updatedAt;
   const CompartmentsCompanion({
     this.id = const Value.absent(),
@@ -1156,6 +1221,7 @@ class CompartmentsCompanion extends UpdateCompanion<CompartmentData> {
     this.gridColSpan = const Value.absent(),
     this.seite = const Value.absent(),
     this.laengsposition = const Value.absent(),
+    this.imagePath = const Value.absent(),
     this.updatedAt = const Value.absent(),
   });
   CompartmentsCompanion.insert({
@@ -1168,6 +1234,7 @@ class CompartmentsCompanion extends UpdateCompanion<CompartmentData> {
     this.gridColSpan = const Value.absent(),
     this.seite = const Value.absent(),
     this.laengsposition = const Value.absent(),
+    this.imagePath = const Value.absent(),
     this.updatedAt = const Value.absent(),
   }) : vehicleId = Value(vehicleId),
        label = Value(label);
@@ -1181,6 +1248,7 @@ class CompartmentsCompanion extends UpdateCompanion<CompartmentData> {
     Expression<int>? gridColSpan,
     Expression<String>? seite,
     Expression<String>? laengsposition,
+    Expression<String>? imagePath,
     Expression<DateTime>? updatedAt,
   }) {
     return RawValuesInsertable({
@@ -1193,6 +1261,7 @@ class CompartmentsCompanion extends UpdateCompanion<CompartmentData> {
       if (gridColSpan != null) 'grid_col_span': gridColSpan,
       if (seite != null) 'seite': seite,
       if (laengsposition != null) 'laengsposition': laengsposition,
+      if (imagePath != null) 'image_path': imagePath,
       if (updatedAt != null) 'updated_at': updatedAt,
     });
   }
@@ -1207,6 +1276,7 @@ class CompartmentsCompanion extends UpdateCompanion<CompartmentData> {
     Value<int>? gridColSpan,
     Value<String?>? seite,
     Value<String?>? laengsposition,
+    Value<String?>? imagePath,
     Value<DateTime>? updatedAt,
   }) {
     return CompartmentsCompanion(
@@ -1219,6 +1289,7 @@ class CompartmentsCompanion extends UpdateCompanion<CompartmentData> {
       gridColSpan: gridColSpan ?? this.gridColSpan,
       seite: seite ?? this.seite,
       laengsposition: laengsposition ?? this.laengsposition,
+      imagePath: imagePath ?? this.imagePath,
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
@@ -1253,6 +1324,9 @@ class CompartmentsCompanion extends UpdateCompanion<CompartmentData> {
     if (laengsposition.present) {
       map['laengsposition'] = Variable<String>(laengsposition.value);
     }
+    if (imagePath.present) {
+      map['image_path'] = Variable<String>(imagePath.value);
+    }
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
@@ -1271,6 +1345,7 @@ class CompartmentsCompanion extends UpdateCompanion<CompartmentData> {
           ..write('gridColSpan: $gridColSpan, ')
           ..write('seite: $seite, ')
           ..write('laengsposition: $laengsposition, ')
+          ..write('imagePath: $imagePath, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
         .toString();
@@ -6636,6 +6711,571 @@ class InventoryChecksCompanion extends UpdateCompanion<InventoryCheckData> {
   }
 }
 
+class $VehicleAttachmentsTable extends VehicleAttachments
+    with TableInfo<$VehicleAttachmentsTable, VehicleAttachmentData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $VehicleAttachmentsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _vehicleIdMeta = const VerificationMeta(
+    'vehicleId',
+  );
+  @override
+  late final GeneratedColumn<int> vehicleId = GeneratedColumn<int>(
+    'vehicle_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES vehicles (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+    'kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('document'),
+  );
+  static const VerificationMeta _mimeTypeMeta = const VerificationMeta(
+    'mimeType',
+  );
+  @override
+  late final GeneratedColumn<String> mimeType = GeneratedColumn<String>(
+    'mime_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _storagePathMeta = const VerificationMeta(
+    'storagePath',
+  );
+  @override
+  late final GeneratedColumn<String> storagePath = GeneratedColumn<String>(
+    'storage_path',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _localPathMeta = const VerificationMeta(
+    'localPath',
+  );
+  @override
+  late final GeneratedColumn<String> localPath = GeneratedColumn<String>(
+    'local_path',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sizeBytesMeta = const VerificationMeta(
+    'sizeBytes',
+  );
+  @override
+  late final GeneratedColumn<int> sizeBytes = GeneratedColumn<int>(
+    'size_bytes',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    vehicleId,
+    title,
+    kind,
+    mimeType,
+    storagePath,
+    localPath,
+    sizeBytes,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'vehicle_attachments';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<VehicleAttachmentData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('vehicle_id')) {
+      context.handle(
+        _vehicleIdMeta,
+        vehicleId.isAcceptableOrUnknown(data['vehicle_id']!, _vehicleIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_vehicleIdMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('kind')) {
+      context.handle(
+        _kindMeta,
+        kind.isAcceptableOrUnknown(data['kind']!, _kindMeta),
+      );
+    }
+    if (data.containsKey('mime_type')) {
+      context.handle(
+        _mimeTypeMeta,
+        mimeType.isAcceptableOrUnknown(data['mime_type']!, _mimeTypeMeta),
+      );
+    }
+    if (data.containsKey('storage_path')) {
+      context.handle(
+        _storagePathMeta,
+        storagePath.isAcceptableOrUnknown(
+          data['storage_path']!,
+          _storagePathMeta,
+        ),
+      );
+    }
+    if (data.containsKey('local_path')) {
+      context.handle(
+        _localPathMeta,
+        localPath.isAcceptableOrUnknown(data['local_path']!, _localPathMeta),
+      );
+    }
+    if (data.containsKey('size_bytes')) {
+      context.handle(
+        _sizeBytesMeta,
+        sizeBytes.isAcceptableOrUnknown(data['size_bytes']!, _sizeBytesMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  VehicleAttachmentData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return VehicleAttachmentData(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}id'],
+          )!,
+      vehicleId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}vehicle_id'],
+          )!,
+      title:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}title'],
+          )!,
+      kind:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}kind'],
+          )!,
+      mimeType:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}mime_type'],
+          )!,
+      storagePath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}storage_path'],
+      ),
+      localPath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}local_path'],
+      ),
+      sizeBytes:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}size_bytes'],
+          )!,
+      updatedAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}updated_at'],
+          )!,
+    );
+  }
+
+  @override
+  $VehicleAttachmentsTable createAlias(String alias) {
+    return $VehicleAttachmentsTable(attachedDatabase, alias);
+  }
+}
+
+class VehicleAttachmentData extends DataClass
+    implements Insertable<VehicleAttachmentData> {
+  final int id;
+  final int vehicleId;
+  final String title;
+
+  /// `image` oder `document` — entscheidet, ob die App das Ding selbst zeigt
+  /// oder an den Betrachter des Geräts weiterreicht.
+  final String kind;
+  final String mimeType;
+
+  /// `supabase://vehicle-attachments/<abteilung>/<datei>`, sobald hochgeladen.
+  final String? storagePath;
+
+  /// Pfad der Kopie auf diesem Gerät, `null` = nur auf dem Server.
+  final String? localPath;
+  final int sizeBytes;
+  final DateTime updatedAt;
+  const VehicleAttachmentData({
+    required this.id,
+    required this.vehicleId,
+    required this.title,
+    required this.kind,
+    required this.mimeType,
+    this.storagePath,
+    this.localPath,
+    required this.sizeBytes,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['vehicle_id'] = Variable<int>(vehicleId);
+    map['title'] = Variable<String>(title);
+    map['kind'] = Variable<String>(kind);
+    map['mime_type'] = Variable<String>(mimeType);
+    if (!nullToAbsent || storagePath != null) {
+      map['storage_path'] = Variable<String>(storagePath);
+    }
+    if (!nullToAbsent || localPath != null) {
+      map['local_path'] = Variable<String>(localPath);
+    }
+    map['size_bytes'] = Variable<int>(sizeBytes);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  VehicleAttachmentsCompanion toCompanion(bool nullToAbsent) {
+    return VehicleAttachmentsCompanion(
+      id: Value(id),
+      vehicleId: Value(vehicleId),
+      title: Value(title),
+      kind: Value(kind),
+      mimeType: Value(mimeType),
+      storagePath:
+          storagePath == null && nullToAbsent
+              ? const Value.absent()
+              : Value(storagePath),
+      localPath:
+          localPath == null && nullToAbsent
+              ? const Value.absent()
+              : Value(localPath),
+      sizeBytes: Value(sizeBytes),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory VehicleAttachmentData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return VehicleAttachmentData(
+      id: serializer.fromJson<int>(json['id']),
+      vehicleId: serializer.fromJson<int>(json['vehicleId']),
+      title: serializer.fromJson<String>(json['title']),
+      kind: serializer.fromJson<String>(json['kind']),
+      mimeType: serializer.fromJson<String>(json['mimeType']),
+      storagePath: serializer.fromJson<String?>(json['storagePath']),
+      localPath: serializer.fromJson<String?>(json['localPath']),
+      sizeBytes: serializer.fromJson<int>(json['sizeBytes']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'vehicleId': serializer.toJson<int>(vehicleId),
+      'title': serializer.toJson<String>(title),
+      'kind': serializer.toJson<String>(kind),
+      'mimeType': serializer.toJson<String>(mimeType),
+      'storagePath': serializer.toJson<String?>(storagePath),
+      'localPath': serializer.toJson<String?>(localPath),
+      'sizeBytes': serializer.toJson<int>(sizeBytes),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  VehicleAttachmentData copyWith({
+    int? id,
+    int? vehicleId,
+    String? title,
+    String? kind,
+    String? mimeType,
+    Value<String?> storagePath = const Value.absent(),
+    Value<String?> localPath = const Value.absent(),
+    int? sizeBytes,
+    DateTime? updatedAt,
+  }) => VehicleAttachmentData(
+    id: id ?? this.id,
+    vehicleId: vehicleId ?? this.vehicleId,
+    title: title ?? this.title,
+    kind: kind ?? this.kind,
+    mimeType: mimeType ?? this.mimeType,
+    storagePath: storagePath.present ? storagePath.value : this.storagePath,
+    localPath: localPath.present ? localPath.value : this.localPath,
+    sizeBytes: sizeBytes ?? this.sizeBytes,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  VehicleAttachmentData copyWithCompanion(VehicleAttachmentsCompanion data) {
+    return VehicleAttachmentData(
+      id: data.id.present ? data.id.value : this.id,
+      vehicleId: data.vehicleId.present ? data.vehicleId.value : this.vehicleId,
+      title: data.title.present ? data.title.value : this.title,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      mimeType: data.mimeType.present ? data.mimeType.value : this.mimeType,
+      storagePath:
+          data.storagePath.present ? data.storagePath.value : this.storagePath,
+      localPath: data.localPath.present ? data.localPath.value : this.localPath,
+      sizeBytes: data.sizeBytes.present ? data.sizeBytes.value : this.sizeBytes,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('VehicleAttachmentData(')
+          ..write('id: $id, ')
+          ..write('vehicleId: $vehicleId, ')
+          ..write('title: $title, ')
+          ..write('kind: $kind, ')
+          ..write('mimeType: $mimeType, ')
+          ..write('storagePath: $storagePath, ')
+          ..write('localPath: $localPath, ')
+          ..write('sizeBytes: $sizeBytes, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    vehicleId,
+    title,
+    kind,
+    mimeType,
+    storagePath,
+    localPath,
+    sizeBytes,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is VehicleAttachmentData &&
+          other.id == this.id &&
+          other.vehicleId == this.vehicleId &&
+          other.title == this.title &&
+          other.kind == this.kind &&
+          other.mimeType == this.mimeType &&
+          other.storagePath == this.storagePath &&
+          other.localPath == this.localPath &&
+          other.sizeBytes == this.sizeBytes &&
+          other.updatedAt == this.updatedAt);
+}
+
+class VehicleAttachmentsCompanion
+    extends UpdateCompanion<VehicleAttachmentData> {
+  final Value<int> id;
+  final Value<int> vehicleId;
+  final Value<String> title;
+  final Value<String> kind;
+  final Value<String> mimeType;
+  final Value<String?> storagePath;
+  final Value<String?> localPath;
+  final Value<int> sizeBytes;
+  final Value<DateTime> updatedAt;
+  const VehicleAttachmentsCompanion({
+    this.id = const Value.absent(),
+    this.vehicleId = const Value.absent(),
+    this.title = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.mimeType = const Value.absent(),
+    this.storagePath = const Value.absent(),
+    this.localPath = const Value.absent(),
+    this.sizeBytes = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  VehicleAttachmentsCompanion.insert({
+    this.id = const Value.absent(),
+    required int vehicleId,
+    required String title,
+    this.kind = const Value.absent(),
+    this.mimeType = const Value.absent(),
+    this.storagePath = const Value.absent(),
+    this.localPath = const Value.absent(),
+    this.sizeBytes = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  }) : vehicleId = Value(vehicleId),
+       title = Value(title);
+  static Insertable<VehicleAttachmentData> custom({
+    Expression<int>? id,
+    Expression<int>? vehicleId,
+    Expression<String>? title,
+    Expression<String>? kind,
+    Expression<String>? mimeType,
+    Expression<String>? storagePath,
+    Expression<String>? localPath,
+    Expression<int>? sizeBytes,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (vehicleId != null) 'vehicle_id': vehicleId,
+      if (title != null) 'title': title,
+      if (kind != null) 'kind': kind,
+      if (mimeType != null) 'mime_type': mimeType,
+      if (storagePath != null) 'storage_path': storagePath,
+      if (localPath != null) 'local_path': localPath,
+      if (sizeBytes != null) 'size_bytes': sizeBytes,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  VehicleAttachmentsCompanion copyWith({
+    Value<int>? id,
+    Value<int>? vehicleId,
+    Value<String>? title,
+    Value<String>? kind,
+    Value<String>? mimeType,
+    Value<String?>? storagePath,
+    Value<String?>? localPath,
+    Value<int>? sizeBytes,
+    Value<DateTime>? updatedAt,
+  }) {
+    return VehicleAttachmentsCompanion(
+      id: id ?? this.id,
+      vehicleId: vehicleId ?? this.vehicleId,
+      title: title ?? this.title,
+      kind: kind ?? this.kind,
+      mimeType: mimeType ?? this.mimeType,
+      storagePath: storagePath ?? this.storagePath,
+      localPath: localPath ?? this.localPath,
+      sizeBytes: sizeBytes ?? this.sizeBytes,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (vehicleId.present) {
+      map['vehicle_id'] = Variable<int>(vehicleId.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (mimeType.present) {
+      map['mime_type'] = Variable<String>(mimeType.value);
+    }
+    if (storagePath.present) {
+      map['storage_path'] = Variable<String>(storagePath.value);
+    }
+    if (localPath.present) {
+      map['local_path'] = Variable<String>(localPath.value);
+    }
+    if (sizeBytes.present) {
+      map['size_bytes'] = Variable<int>(sizeBytes.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('VehicleAttachmentsCompanion(')
+          ..write('id: $id, ')
+          ..write('vehicleId: $vehicleId, ')
+          ..write('title: $title, ')
+          ..write('kind: $kind, ')
+          ..write('mimeType: $mimeType, ')
+          ..write('storagePath: $storagePath, ')
+          ..write('localPath: $localPath, ')
+          ..write('sizeBytes: $sizeBytes, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -6660,6 +7300,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $InventoryChecksTable inventoryChecks = $InventoryChecksTable(
     this,
   );
+  late final $VehicleAttachmentsTable vehicleAttachments =
+      $VehicleAttachmentsTable(this);
   late final VehicleDao vehicleDao = VehicleDao(this as AppDatabase);
   late final CompartmentDao compartmentDao = CompartmentDao(
     this as AppDatabase,
@@ -6670,6 +7312,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final InspectionDao inspectionDao = InspectionDao(this as AppDatabase);
   late final LearningDao learningDao = LearningDao(this as AppDatabase);
   late final InventoryDao inventoryDao = InventoryDao(this as AppDatabase);
+  late final AttachmentDao attachmentDao = AttachmentDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -6688,6 +7331,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     learningProgress,
     inventorySessions,
     inventoryChecks,
+    vehicleAttachments,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -6781,6 +7425,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('inventory_checks', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'vehicles',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('vehicle_attachments', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -6888,6 +7539,30 @@ final class $$VehiclesTableReferences
 
     final cache = $_typedResult.readTableOrNull(
       _inventorySessionsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $VehicleAttachmentsTable,
+    List<VehicleAttachmentData>
+  >
+  _vehicleAttachmentsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.vehicleAttachments,
+        aliasName: 'vehicles__id__vehicle_attachments__vehicle_id',
+      );
+
+  $$VehicleAttachmentsTableProcessedTableManager get vehicleAttachmentsRefs {
+    final manager = $$VehicleAttachmentsTableTableManager(
+      $_db,
+      $_db.vehicleAttachments,
+    ).filter((f) => f.vehicleId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _vehicleAttachmentsRefsTable($_db),
     );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
@@ -7030,6 +7705,31 @@ class $$VehiclesTableFilterComposer
           }) => $$InventorySessionsTableFilterComposer(
             $db: $db,
             $table: $db.inventorySessions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> vehicleAttachmentsRefs(
+    Expression<bool> Function($$VehicleAttachmentsTableFilterComposer f) f,
+  ) {
+    final $$VehicleAttachmentsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.vehicleAttachments,
+      getReferencedColumn: (t) => t.vehicleId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$VehicleAttachmentsTableFilterComposer(
+            $db: $db,
+            $table: $db.vehicleAttachments,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -7218,6 +7918,32 @@ class $$VehiclesTableAnnotationComposer
         );
     return f(composer);
   }
+
+  Expression<T> vehicleAttachmentsRefs<T extends Object>(
+    Expression<T> Function($$VehicleAttachmentsTableAnnotationComposer a) f,
+  ) {
+    final $$VehicleAttachmentsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.vehicleAttachments,
+          getReferencedColumn: (t) => t.vehicleId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$VehicleAttachmentsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.vehicleAttachments,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$VehiclesTableTableManager
@@ -7238,6 +7964,7 @@ class $$VehiclesTableTableManager
             bool quizResultsRefs,
             bool equipmentInstancesRefs,
             bool inventorySessionsRefs,
+            bool vehicleAttachmentsRefs,
           })
         > {
   $$VehiclesTableTableManager(_$AppDatabase db, $VehiclesTable table)
@@ -7302,6 +8029,7 @@ class $$VehiclesTableTableManager
             quizResultsRefs = false,
             equipmentInstancesRefs = false,
             inventorySessionsRefs = false,
+            vehicleAttachmentsRefs = false,
           }) {
             return PrefetchHooks(
               db: db,
@@ -7310,6 +8038,7 @@ class $$VehiclesTableTableManager
                 if (quizResultsRefs) db.quizResults,
                 if (equipmentInstancesRefs) db.equipmentInstances,
                 if (inventorySessionsRefs) db.inventorySessions,
+                if (vehicleAttachmentsRefs) db.vehicleAttachments,
               ],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
@@ -7402,6 +8131,28 @@ class $$VehiclesTableTableManager
                           ),
                       typedResults: items,
                     ),
+                  if (vehicleAttachmentsRefs)
+                    await $_getPrefetchedData<
+                      VehicleData,
+                      $VehiclesTable,
+                      VehicleAttachmentData
+                    >(
+                      currentTable: table,
+                      referencedTable: $$VehiclesTableReferences
+                          ._vehicleAttachmentsRefsTable(db),
+                      managerFromTypedResult:
+                          (p0) =>
+                              $$VehiclesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).vehicleAttachmentsRefs,
+                      referencedItemsForCurrentItem:
+                          (item, referencedItems) => referencedItems.where(
+                            (e) => e.vehicleId == item.id,
+                          ),
+                      typedResults: items,
+                    ),
                 ];
               },
             );
@@ -7427,6 +8178,7 @@ typedef $$VehiclesTableProcessedTableManager =
         bool quizResultsRefs,
         bool equipmentInstancesRefs,
         bool inventorySessionsRefs,
+        bool vehicleAttachmentsRefs,
       })
     >;
 typedef $$CompartmentsTableCreateCompanionBuilder =
@@ -7440,6 +8192,7 @@ typedef $$CompartmentsTableCreateCompanionBuilder =
       Value<int> gridColSpan,
       Value<String?> seite,
       Value<String?> laengsposition,
+      Value<String?> imagePath,
       Value<DateTime> updatedAt,
     });
 typedef $$CompartmentsTableUpdateCompanionBuilder =
@@ -7453,6 +8206,7 @@ typedef $$CompartmentsTableUpdateCompanionBuilder =
       Value<int> gridColSpan,
       Value<String?> seite,
       Value<String?> laengsposition,
+      Value<String?> imagePath,
       Value<DateTime> updatedAt,
     });
 
@@ -7570,6 +8324,11 @@ class $$CompartmentsTableFilterComposer
 
   ColumnFilters<String> get laengsposition => $composableBuilder(
     column: $table.laengsposition,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get imagePath => $composableBuilder(
+    column: $table.imagePath,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -7701,6 +8460,11 @@ class $$CompartmentsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get imagePath => $composableBuilder(
+    column: $table.imagePath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
     column: $table.updatedAt,
     builder: (column) => ColumnOrderings(column),
@@ -7766,6 +8530,9 @@ class $$CompartmentsTableAnnotationComposer
     column: $table.laengsposition,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get imagePath =>
+      $composableBuilder(column: $table.imagePath, builder: (column) => column);
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
@@ -7888,6 +8655,7 @@ class $$CompartmentsTableTableManager
                 Value<int> gridColSpan = const Value.absent(),
                 Value<String?> seite = const Value.absent(),
                 Value<String?> laengsposition = const Value.absent(),
+                Value<String?> imagePath = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => CompartmentsCompanion(
                 id: id,
@@ -7899,6 +8667,7 @@ class $$CompartmentsTableTableManager
                 gridColSpan: gridColSpan,
                 seite: seite,
                 laengsposition: laengsposition,
+                imagePath: imagePath,
                 updatedAt: updatedAt,
               ),
           createCompanionCallback:
@@ -7912,6 +8681,7 @@ class $$CompartmentsTableTableManager
                 Value<int> gridColSpan = const Value.absent(),
                 Value<String?> seite = const Value.absent(),
                 Value<String?> laengsposition = const Value.absent(),
+                Value<String?> imagePath = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => CompartmentsCompanion.insert(
                 id: id,
@@ -7923,6 +8693,7 @@ class $$CompartmentsTableTableManager
                 gridColSpan: gridColSpan,
                 seite: seite,
                 laengsposition: laengsposition,
+                imagePath: imagePath,
                 updatedAt: updatedAt,
               ),
           withReferenceMapper:
@@ -12910,6 +13681,417 @@ typedef $$InventoryChecksTableProcessedTableManager =
       InventoryCheckData,
       PrefetchHooks Function({bool sessionId})
     >;
+typedef $$VehicleAttachmentsTableCreateCompanionBuilder =
+    VehicleAttachmentsCompanion Function({
+      Value<int> id,
+      required int vehicleId,
+      required String title,
+      Value<String> kind,
+      Value<String> mimeType,
+      Value<String?> storagePath,
+      Value<String?> localPath,
+      Value<int> sizeBytes,
+      Value<DateTime> updatedAt,
+    });
+typedef $$VehicleAttachmentsTableUpdateCompanionBuilder =
+    VehicleAttachmentsCompanion Function({
+      Value<int> id,
+      Value<int> vehicleId,
+      Value<String> title,
+      Value<String> kind,
+      Value<String> mimeType,
+      Value<String?> storagePath,
+      Value<String?> localPath,
+      Value<int> sizeBytes,
+      Value<DateTime> updatedAt,
+    });
+
+final class $$VehicleAttachmentsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $VehicleAttachmentsTable,
+          VehicleAttachmentData
+        > {
+  $$VehicleAttachmentsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $VehiclesTable _vehicleIdTable(_$AppDatabase db) =>
+      db.vehicles.createAlias('vehicle_attachments__vehicle_id__vehicles__id');
+
+  $$VehiclesTableProcessedTableManager get vehicleId {
+    final $_column = $_itemColumn<int>('vehicle_id')!;
+
+    final manager = $$VehiclesTableTableManager(
+      $_db,
+      $_db.vehicles,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_vehicleIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$VehicleAttachmentsTableFilterComposer
+    extends Composer<_$AppDatabase, $VehicleAttachmentsTable> {
+  $$VehicleAttachmentsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get mimeType => $composableBuilder(
+    column: $table.mimeType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get storagePath => $composableBuilder(
+    column: $table.storagePath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get localPath => $composableBuilder(
+    column: $table.localPath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get sizeBytes => $composableBuilder(
+    column: $table.sizeBytes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$VehiclesTableFilterComposer get vehicleId {
+    final $$VehiclesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.vehicleId,
+      referencedTable: $db.vehicles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$VehiclesTableFilterComposer(
+            $db: $db,
+            $table: $db.vehicles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$VehicleAttachmentsTableOrderingComposer
+    extends Composer<_$AppDatabase, $VehicleAttachmentsTable> {
+  $$VehicleAttachmentsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get mimeType => $composableBuilder(
+    column: $table.mimeType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get storagePath => $composableBuilder(
+    column: $table.storagePath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get localPath => $composableBuilder(
+    column: $table.localPath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get sizeBytes => $composableBuilder(
+    column: $table.sizeBytes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$VehiclesTableOrderingComposer get vehicleId {
+    final $$VehiclesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.vehicleId,
+      referencedTable: $db.vehicles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$VehiclesTableOrderingComposer(
+            $db: $db,
+            $table: $db.vehicles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$VehicleAttachmentsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $VehicleAttachmentsTable> {
+  $$VehicleAttachmentsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<String> get mimeType =>
+      $composableBuilder(column: $table.mimeType, builder: (column) => column);
+
+  GeneratedColumn<String> get storagePath => $composableBuilder(
+    column: $table.storagePath,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get localPath =>
+      $composableBuilder(column: $table.localPath, builder: (column) => column);
+
+  GeneratedColumn<int> get sizeBytes =>
+      $composableBuilder(column: $table.sizeBytes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$VehiclesTableAnnotationComposer get vehicleId {
+    final $$VehiclesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.vehicleId,
+      referencedTable: $db.vehicles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$VehiclesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.vehicles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$VehicleAttachmentsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $VehicleAttachmentsTable,
+          VehicleAttachmentData,
+          $$VehicleAttachmentsTableFilterComposer,
+          $$VehicleAttachmentsTableOrderingComposer,
+          $$VehicleAttachmentsTableAnnotationComposer,
+          $$VehicleAttachmentsTableCreateCompanionBuilder,
+          $$VehicleAttachmentsTableUpdateCompanionBuilder,
+          (VehicleAttachmentData, $$VehicleAttachmentsTableReferences),
+          VehicleAttachmentData,
+          PrefetchHooks Function({bool vehicleId})
+        > {
+  $$VehicleAttachmentsTableTableManager(
+    _$AppDatabase db,
+    $VehicleAttachmentsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$VehicleAttachmentsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer:
+              () => $$VehicleAttachmentsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer:
+              () => $$VehicleAttachmentsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> vehicleId = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                Value<String> mimeType = const Value.absent(),
+                Value<String?> storagePath = const Value.absent(),
+                Value<String?> localPath = const Value.absent(),
+                Value<int> sizeBytes = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => VehicleAttachmentsCompanion(
+                id: id,
+                vehicleId: vehicleId,
+                title: title,
+                kind: kind,
+                mimeType: mimeType,
+                storagePath: storagePath,
+                localPath: localPath,
+                sizeBytes: sizeBytes,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int vehicleId,
+                required String title,
+                Value<String> kind = const Value.absent(),
+                Value<String> mimeType = const Value.absent(),
+                Value<String?> storagePath = const Value.absent(),
+                Value<String?> localPath = const Value.absent(),
+                Value<int> sizeBytes = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => VehicleAttachmentsCompanion.insert(
+                id: id,
+                vehicleId: vehicleId,
+                title: title,
+                kind: kind,
+                mimeType: mimeType,
+                storagePath: storagePath,
+                localPath: localPath,
+                sizeBytes: sizeBytes,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          $$VehicleAttachmentsTableReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: ({vehicleId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                T extends TableManagerState<
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic
+                >
+              >(state) {
+                if (vehicleId) {
+                  state =
+                      state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.vehicleId,
+                            referencedTable: $$VehicleAttachmentsTableReferences
+                                ._vehicleIdTable(db),
+                            referencedColumn:
+                                $$VehicleAttachmentsTableReferences
+                                    ._vehicleIdTable(db)
+                                    .id,
+                          )
+                          as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$VehicleAttachmentsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $VehicleAttachmentsTable,
+      VehicleAttachmentData,
+      $$VehicleAttachmentsTableFilterComposer,
+      $$VehicleAttachmentsTableOrderingComposer,
+      $$VehicleAttachmentsTableAnnotationComposer,
+      $$VehicleAttachmentsTableCreateCompanionBuilder,
+      $$VehicleAttachmentsTableUpdateCompanionBuilder,
+      (VehicleAttachmentData, $$VehicleAttachmentsTableReferences),
+      VehicleAttachmentData,
+      PrefetchHooks Function({bool vehicleId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -12940,4 +14122,6 @@ class $AppDatabaseManager {
       $$InventorySessionsTableTableManager(_db, _db.inventorySessions);
   $$InventoryChecksTableTableManager get inventoryChecks =>
       $$InventoryChecksTableTableManager(_db, _db.inventoryChecks);
+  $$VehicleAttachmentsTableTableManager get vehicleAttachments =>
+      $$VehicleAttachmentsTableTableManager(_db, _db.vehicleAttachments);
 }

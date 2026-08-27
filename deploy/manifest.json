@@ -92,6 +92,10 @@
     {
       "name": "20260805130000_feedback_fahrzeug_vorschlag.sql",
       "sha256": "97fb42d67acac7a5c0a4184d5888a7b930023e4231c8f2751fb36fd2379e65b9"
+    },
+    {
+      "name": "20260827060000_fach_foto_und_fahrzeug_anhaenge.sql",
+      "sha256": "8abfa7d0b8d875e2de6129c0eab0d74bc844a65c64eeab9362985eda38c60b39"
     }
   ],
   "functions": {

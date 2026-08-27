@@ -12,6 +12,32 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.38.0] – 2026-08-27
+
+### Neu
+
+- **Fotos für einzelne Geräteräume.** Jedes Fach kann jetzt ein Bild
+  bekommen — unter *Fächer verwalten* auf das Kästchen neben dem Fach tippen.
+  In der Fahrzeugansicht steht das Foto über der Geräteliste des Fachs: Wer
+  nachts nachlädt, vergleicht schneller ein Bild, als er eine Liste liest.
+  Langes Tippen entfernt das Foto wieder. Das gilt auch für Transportwägen
+  und Rollcontainer — die werden als Geräteraum angelegt.
+- **Unterlagen am Fahrzeug.** Betriebsanleitung, Fahrzeugschein,
+  Prüfbescheinigung: PDF oder Foto, direkt am Fahrzeug, gleich unter dem
+  Kopfbereich. Angehängt wird über *Anhängen*, geöffnet mit einem Tipp.
+- **Und zwar auch ohne Netz.** Das ist der eigentliche Punkt: Ein Fahrzeug
+  steht selten im WLAN. Jede Unterlage sagt deshalb, ob sie **auf diesem
+  Gerät** liegt oder nur auf dem Server, und ein Knopf holt alles Fehlende
+  auf einmal herunter. Was du einmal geöffnet hast, bleibt da.
+
+### Hinweis für den Gerätewart
+
+Die Fach-Fotos wandern über die normale Veröffentlichung mit. Damit sie auf
+den Geräten der Kameraden ankommen, muss dort **mindestens diese Version**
+installiert sein — eine ältere App kennt die Fotos nicht und würde sie beim
+Veröffentlichen wieder entfernen. Die Unterlagen sind davon nicht betroffen,
+die gehen einen eigenen Weg.
+
 ## [1.37.0] – 2026-08-27
 
 ### Neu

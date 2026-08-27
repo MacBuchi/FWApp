@@ -44,6 +44,50 @@ class Compartments extends Table {
   /// [seite] nullable ohne Backfill — vorgeschlagen und bestätigt, nicht
   /// geraten.
   TextColumn get laengsposition => text().nullable()();
+
+  /// Foto des Geräteraums (Issue #181).
+  ///
+  /// Dieselbe Form wie [EquipmentItems.imagePath]: lokaler Pfad, solange das
+  /// Bild nur auf diesem Gerät liegt, danach ein `supabase://`-Marker. Auch
+  /// derselbe Bucket — das Schreibrecht ist dasselbe, es ist der Gerätewart.
+  TextColumn get imagePath => text().nullable()();
+
+  DateTimeColumn get updatedAt =>
+      dateTime().withDefault(currentDateAndTime)();
+}
+
+/// Unterlagen und Bilder am Fahrzeug (Issue #182): Betriebsanleitung,
+/// Fahrzeugschein, Prüfbescheinigung.
+///
+/// ⚠️ **Diese Tabelle liegt NICHT im Snapshot** und steht deshalb auch nicht
+/// in `kSyncedTables`. `publish_snapshot` ersetzt die Zeilen der Abteilung;
+/// ein Alt-Client, der von der Tabelle nichts weiß, würde damit alle
+/// Unterlagen löschen. Sie geht denselben zeilenweisen Weg wie die
+/// Gerätetypen (`vehicle_attachment_sync.dart`).
+///
+/// [localPath] ist die Offline-Zusage: Die Datei liegt zusätzlich auf diesem
+/// Gerät. Ohne sie wäre die Betriebsanleitung ausgerechnet im Einsatz
+/// unerreichbar — und „ohne Netz vollständig nutzbar" ist die erste
+/// Architektur-Leitplanke dieser App.
+@DataClassName('VehicleAttachmentData')
+class VehicleAttachments extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get vehicleId =>
+      integer().references(Vehicles, #id, onDelete: KeyAction.cascade)();
+  TextColumn get title => text()();
+
+  /// `image` oder `document` — entscheidet, ob die App das Ding selbst zeigt
+  /// oder an den Betrachter des Geräts weiterreicht.
+  TextColumn get kind => text().withDefault(const Constant('document'))();
+  TextColumn get mimeType => text().withDefault(const Constant(''))();
+
+  /// `supabase://vehicle-attachments/<abteilung>/<datei>`, sobald hochgeladen.
+  TextColumn get storagePath => text().nullable()();
+
+  /// Pfad der Kopie auf diesem Gerät, `null` = nur auf dem Server.
+  TextColumn get localPath => text().nullable()();
+
+  IntColumn get sizeBytes => integer().withDefault(const Constant(0))();
   DateTimeColumn get updatedAt =>
       dateTime().withDefault(currentDateAndTime)();
 }
@@ -752,6 +796,46 @@ class LearningDao extends DatabaseAccessor<AppDatabase>
 // DATABASE CLASS
 // ─────────────────────────────────────────────────────────────
 
+/// Unterlagen am Fahrzeug (Issue #182).
+@DriftAccessor(tables: [VehicleAttachments])
+class AttachmentDao extends DatabaseAccessor<AppDatabase>
+    with _$AttachmentDaoMixin {
+  AttachmentDao(super.db);
+
+  Stream<List<VehicleAttachmentData>> watchByVehicle(int vehicleId) =>
+      (select(vehicleAttachments)
+            ..where((t) => t.vehicleId.equals(vehicleId))
+            ..orderBy([(t) => OrderingTerm.asc(t.title)]))
+          .watch();
+
+  Future<List<VehicleAttachmentData>> getByVehicle(int vehicleId) =>
+      (select(vehicleAttachments)
+            ..where((t) => t.vehicleId.equals(vehicleId))
+            ..orderBy([(t) => OrderingTerm.asc(t.title)]))
+          .get();
+
+  Future<List<VehicleAttachmentData>> getAll() =>
+      select(vehicleAttachments).get();
+
+  Future<VehicleAttachmentData?> getById(int id) =>
+      (select(vehicleAttachments)..where((t) => t.id.equals(id)))
+          .getSingleOrNull();
+
+  Future<int> insertAttachment(VehicleAttachmentsCompanion a) =>
+      into(vehicleAttachments).insert(a);
+
+  Future<int> upsert(VehicleAttachmentsCompanion a) =>
+      into(vehicleAttachments).insertOnConflictUpdate(a);
+
+  Future<int> deleteAttachment(int id) =>
+      (delete(vehicleAttachments)..where((t) => t.id.equals(id))).go();
+
+  /// Merkt die Kopie auf diesem Gerät — die Offline-Zusage aus #182.
+  Future<int> setLocalPath(int id, String? pfad) =>
+      (update(vehicleAttachments)..where((t) => t.id.equals(id)))
+          .write(VehicleAttachmentsCompanion(localPath: Value(pfad)));
+}
+
 @DriftDatabase(
   tables: [
     Vehicles,
@@ -767,6 +851,7 @@ class LearningDao extends DatabaseAccessor<AppDatabase>
     LearningProgress,
     InventorySessions,
     InventoryChecks,
+    VehicleAttachments,
   ],
   daos: [
     VehicleDao,
@@ -777,13 +862,14 @@ class LearningDao extends DatabaseAccessor<AppDatabase>
     InspectionDao,
     LearningDao,
     InventoryDao,
+    AttachmentDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -835,6 +921,13 @@ class AppDatabase extends _$AppDatabase {
             // Längsposition je Fach (Issue #141) — dieselbe Choreografie
             // wie die Seite: nullable, kein Backfill, Vorschlag in der App.
             await m.addColumn(compartments, compartments.laengsposition);
+          }
+          if (from < 8) {
+            // Foto je Geräteraum (#181) und Unterlagen am Fahrzeug (#182).
+            // Die Spalte ist nullable ohne Backfill wie ihre beiden
+            // Vorgängerinnen; die Tabelle entsteht leer.
+            await m.addColumn(compartments, compartments.imagePath);
+            await m.createTable(vehicleAttachments);
           }
         },
         beforeOpen: (details) async {

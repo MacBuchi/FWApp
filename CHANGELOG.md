@@ -21,7 +21,11 @@ Abschnitt „Workflow".
   stand nirgends; man klickte sich Fahrzeug für Fahrzeug durch die Fächer.
   Jetzt gibt es eine Suche, die **Fahrzeug und Fach** nennt, mit Farbpunkt und
   Ortsangabe wie im Fahrzeugmenü, und mit der Stückzahl, wenn mehrere in einem
-  Fach liegen. Zu finden über die Lupe im Fuhrpark.
+  Fach liegen.
+- **Zwei Wege hin:** eine Kachel ganz oben auf der Startseite für den
+  ganzen Fuhrpark, und die Lupe in einer Fahrzeugansicht für dieses
+  Fahrzeug. Die Kachel steht bewusst über Serie und Wochenziel — „Wo
+  liegt das?" fragt man unter Zeitdruck.
 - **Am Fahrzeug sucht sie im Fahrzeug.** Die Lupe in einer Fahrzeugansicht
   öffnet dieselbe Suche, aber auf dieses Fahrzeug eingegrenzt. Liegt das
   gesuchte Gerät nicht darin, sagt sie nicht „nichts gefunden", sondern

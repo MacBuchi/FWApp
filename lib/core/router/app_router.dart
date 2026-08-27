@@ -250,6 +250,12 @@ final _routes = [
         // das?" ist dieselbe Frage, ob für ein Fahrzeug oder den ganzen
         // Fuhrpark (Issue #180). Ein eigener Unterpfad je Fahrzeug hätte
         // zwei Schirme aus einem gemacht.
+        //
+        // Bewusst OHNE Reiter-Zuordnung (`_currentNavIndex` kennt den Pfad
+        // nicht, die Leiste bleibt also weg): Der Schirm ist von Start UND
+        // vom Fahrzeug-Reiter aus erreichbar — kein Reiter wäre der
+        // richtige, und mit offener Tastatur frisst die Leiste eine ganze
+        // Trefferzeile.
         GoRoute(
           path: '/geraetesuche',
           builder: (_, state) {
@@ -445,9 +451,7 @@ class _AppShell extends StatelessWidget {
   int _currentNavIndex(String path) {
     if (path == '/') return 0;
     if (path.startsWith('/game')) return 1;
-    if (path.startsWith('/vehicles') || path.startsWith('/geraetesuche')) {
-      return 2;
-    }
+    if (path.startsWith('/vehicles')) return 2;
     if (path.startsWith('/more') ||
         path.startsWith('/equipment') ||
         path.startsWith('/inspections')) {

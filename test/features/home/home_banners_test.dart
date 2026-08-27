@@ -1,5 +1,9 @@
 /// home_banners_test.dart – Update-/Feedback-/Absturz-Banner auf dem
 /// Dashboard: Sichtbarkeitsbedingungen, Wegklicken, Dialoge und Validierung.
+///
+/// Der Feedback-Weg wird über [feedbackSenderProvider] gefälscht. Ohne diese
+/// Naht lief jeder Test in den Fehlerzweig (kein echter Supabase-Client), und
+/// der Erfolgsfall — der mit dem Fehler aus Issue #173 — war ungeprüft.
 library;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,6 +13,7 @@ import 'package:fwapp/core/crash/crash_store.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/update/update_check.dart';
+import 'package:fwapp/features/feedback/data/feedback_repository.dart';
 import 'package:fwapp/features/home/presentation/widgets/home_banners.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -41,10 +46,16 @@ void main() {
   setUp(() => db = createTestDatabase());
   tearDown(() => db.close());
 
+  /// Was der gefälschte Sendeweg entgegengenommen hat.
+  final gesendet = <({FeedbackType type, String message})>[];
+
+  setUp(gesendet.clear);
+
   Widget app({
     UpdateInfo? update,
     bool signedIn = false,
     List<CrashReport> crashes = const [],
+    bool sendenKlappt = true,
   }) =>
       buildTestApp(
         db: db,
@@ -54,11 +65,25 @@ void main() {
           supabaseReadyProvider.overrideWithValue(signedIn),
           supabaseClientProvider.overrideWithValue(null),
           pendingCrashesProvider.overrideWith((ref) async => crashes),
+          feedbackSenderProvider.overrideWithValue(
+              ({required FeedbackType type, required String message}) async {
+            if (!sendenKlappt) throw StateError('kein Netz');
+            gesendet.add((type: type, message: message));
+          }),
           if (signedIn)
             sessionStreamProvider
                 .overrideWith((ref) => Stream.value(fakeSession())),
         ],
       );
+
+  /// Öffnet das Banner, tippt [text] ein und sendet.
+  Future<void> feedbackSenden(WidgetTester tester, String text) async {
+    await tester.tap(find.text('Wunsch oder Fehler melden'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), text);
+    await tester.tap(find.text('Senden'));
+    await tester.pumpAndSettle();
+  }
 
   CrashReport crashWith({String fingerprint = 'abc12345'}) => CrashReport(
         time: DateTime.utc(2026, 7, 31, 12),
@@ -314,5 +339,79 @@ void main() {
 
     expect(crashY, lessThan(updateY));
     expect(updateY, lessThan(feedbackY));
+  });
+
+  group('Feedback-Banner überlebt das Senden (Issue #173)', () {
+    testWidgets('nach einer gesendeten Meldung steht das Banner noch da',
+        (tester) async {
+      // Der gemeldete Fehler: „Feedback-Banner sollte nicht verschwinden,
+      // wenn man einmal Feedback sendet." Wer zwei Dinge zu sagen hatte,
+      // musste die App neu starten — das Flag lebt nur in der Sitzung.
+      await tester.pumpWidget(app(signedIn: true));
+      await tester.pumpAndSettle();
+
+      await feedbackSenden(tester, 'Eine Suche wäre toll');
+
+      expect(gesendet, hasLength(1));
+      expect(gesendet.single.message, 'Eine Suche wäre toll');
+      expect(find.text('Danke für deinen Wunsch! 💡'), findsOneWidget);
+      // Das eigentliche Versprechen:
+      expect(find.text('Wunsch oder Fehler melden'), findsOneWidget);
+    });
+
+    testWidgets('auch die zweite Meldung geht ohne Neustart raus',
+        (tester) async {
+      // Genau der Ablauf, aus dem das Issue entstand: Marcus hatte elf
+      // Dinge zu melden.
+      await tester.pumpWidget(app(signedIn: true));
+      await tester.pumpAndSettle();
+
+      await feedbackSenden(tester, 'Erster Wunsch');
+      await feedbackSenden(tester, 'Zweiter Wunsch');
+
+      expect(gesendet.map((f) => f.message),
+          ['Erster Wunsch', 'Zweiter Wunsch']);
+      expect(find.text('Wunsch oder Fehler melden'), findsOneWidget);
+    });
+
+    testWidgets('das X blendet weiterhin aus — nur das', (tester) async {
+      // Die Gegenprobe: Wegklicken bleibt der EINZIGE Weg, das Banner
+      // loszuwerden.
+      await tester.pumpWidget(app(signedIn: true));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.close));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Wunsch oder Fehler melden'), findsNothing);
+    });
+
+    testWidgets('ein Fehlschlag sagt es und behält das Banner',
+        (tester) async {
+      await tester.pumpWidget(app(signedIn: true, sendenKlappt: false));
+      await tester.pumpAndSettle();
+
+      await feedbackSenden(tester, 'Geht das raus?');
+
+      expect(gesendet, isEmpty);
+      expect(find.textContaining('Senden fehlgeschlagen'), findsOneWidget);
+      expect(find.text('Wunsch oder Fehler melden'), findsOneWidget);
+    });
+
+    testWidgets('die Art der Meldung kommt beim Sendeweg an', (tester) async {
+      await tester.pumpWidget(app(signedIn: true));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Wunsch oder Fehler melden'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('🐛 Fehler'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'Bild bleibt schwarz');
+      await tester.tap(find.text('Senden'));
+      await tester.pumpAndSettle();
+
+      expect(gesendet.single.type, FeedbackType.bug);
+      expect(find.textContaining('Danke für die Meldung'), findsOneWidget);
+    });
   });
 }

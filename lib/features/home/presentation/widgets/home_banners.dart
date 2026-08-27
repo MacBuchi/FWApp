@@ -26,7 +26,13 @@ import 'package:url_launcher/url_launcher.dart';
 /// Update-Banner für diese Sitzung ausgeblendet?
 final updateBannerDismissedProvider = StateProvider<bool>((ref) => false);
 
-/// Feedback-Banner für diese Sitzung ausgeblendet (oder Feedback gesendet)?
+/// Feedback-Banner für diese Sitzung ausgeblendet?
+///
+/// ⚠️ **Senden blendet NICHT aus** (Issue #173). Bis dahin setzte
+/// [showFeedbackDialog] dieses Flag nach jeder erfolgreichen Meldung — wer
+/// zwei Dinge zu sagen hatte, musste die App neu starten. Das Banner ist ein
+/// Angebot, keine Quittung; nur das X klickt es weg, und das nur für diese
+/// Sitzung.
 final feedbackBannerDismissedProvider = StateProvider<bool>((ref) => false);
 
 /// Absturz-Banner ausgeblendet? Anders als die beiden oberen bedeutet das
@@ -43,12 +49,14 @@ Future<void> showFeedbackDialog(BuildContext context, WidgetRef ref) async {
   if (result == null) return;
 
   try {
-    await submitFeedback(
-      ref.read(supabaseClientProvider),
+    await ref.read(feedbackSenderProvider)(
       type: result.type,
       message: result.message,
     );
-    ref.read(feedbackBannerDismissedProvider.notifier).state = true;
+    // Hier stand einmal ein `feedbackBannerDismissedProvider = true`. Es ist
+    // absichtlich weg (Issue #173): Wer gerade etwas gemeldet hat, hat oft
+    // noch etwas — und musste sonst die App neu starten, um wieder an den
+    // Dialog zu kommen.
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(switch (result.type) {

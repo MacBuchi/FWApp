@@ -13,11 +13,14 @@
 /// Wunsch. Das Asset ist ab jetzt die Aussaat, nicht der Bestand.
 library;
 
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/logging/app_logger.dart';
 import 'package:fwapp/core/utils/json_utils.dart';
 import 'package:fwapp/features/game/party/data/party_inhalte.dart';
+import 'package:fwapp/features/knowledge/data/wissen_asset.dart';
 import 'package:fwapp/features/knowledge/domain/wissensfrage.dart';
 
 class WissenSeeder {
@@ -69,6 +72,49 @@ class WissenSeeder {
       // Ohne Grundstock ist die App ärmer, aber nicht kaputt — der
       // Party-Modus fällt auf seine Beladungsfragen zurück.
       appLog.w('Wissens-Grundstock nicht anlegbar', error: e, stackTrace: s);
+      return 0;
+    }
+  }
+
+  /// Legt den ausgelieferten Fachbestand an (Issue #174, Schritt 2).
+  ///
+  /// Getrennt von [seedIfNeeded], weil die Quelle eine andere ist: Der
+  /// Party-Topf ist ein Spiel-Asset ohne Fundstellen, dieser hier ist
+  /// Prüfungsstoff mit Quellenangabe. Erkannt wird wie dort am Fragetext —
+  /// ein zweiter Start soll ergänzen, nicht verdoppeln, und eine von Hand
+  /// korrigierte Frage bleibt, wie sie ist.
+  Future<int> seedFachbestand(List<AssetFrage> fragen) async {
+    try {
+      final vorhanden = {
+        for (final f in await _db.wissenDao.getAll()) _schluessel(f.frage),
+      };
+
+      var angelegt = 0;
+      for (final f in fragen) {
+        if (!vorhanden.add(_schluessel(f.frage))) continue;
+        await _db.wissenDao.insertFrage(WissensfragenCompanion.insert(
+          gebiet: f.gebiet.schluessel,
+          frage: f.frage,
+          antwortenJson: Value(stringListToJson(f.antworten)),
+          richtigeJson: Value(jsonEncode(f.richtige.toList()..sort())),
+          erklaerung: Value(f.erklaerung),
+          herkunft: Value(Fragenherkunft.mitgeliefert.schluessel),
+          stand: Value(Fragenstand.freigegeben.schluessel),
+          quelleWerk: Value(f.quelle?.werk),
+          quelleFundstelle: Value(f.quelle?.fundstelle),
+          quelleStand: Value(f.quelle?.stand),
+          quelleUrl: Value(f.quelle?.url),
+          geltung: Value(f.geltung.schluessel),
+          land: Value(f.land),
+        ));
+        angelegt++;
+      }
+      if (angelegt > 0) {
+        appLog.i('Wissensdatenbank: $angelegt Fachfragen angelegt.');
+      }
+      return angelegt;
+    } catch (e, s) {
+      appLog.w('Fachbestand nicht anlegbar', error: e, stackTrace: s);
       return 0;
     }
   }

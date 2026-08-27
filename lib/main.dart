@@ -14,6 +14,7 @@ import 'package:fwapp/core/crash/crash_store.dart';
 import 'package:fwapp/core/database/database_providers.dart';
 import 'package:fwapp/core/database/library_seeder.dart';
 import 'package:fwapp/features/game/party/data/party_inhalte.dart';
+import 'package:fwapp/features/knowledge/data/wissen_asset.dart';
 import 'package:fwapp/features/knowledge/data/wissen_seeder.dart';
 import 'package:fwapp/features/knowledge/presentation/providers/wissen_providers.dart';
 import 'package:fwapp/core/router/app_router.dart';
@@ -180,6 +181,10 @@ class _FWAppState extends ConsumerState<FWApp> {
     // korrigieren können muss.
     await WissenSeeder(db)
         .seedIfNeeded(await ref.read(partyInhalteProvider.future));
+    if (!mounted) return;
+    // Der Fachbestand aus den Dienstvorschriften (Issue #174, Schritt 2) —
+    // eigener Weg, weil er Fundstellen trägt und der Party-Topf nicht.
+    await WissenSeeder(db).seedFachbestand(await ladeWissensAssets());
     // Nach jedem await prüfen: Wird die App während des Seedens beendet,
     // läuft diese Methode weiter, während das Widget schon abgebaut ist —
     // `ref` wirft dann "Using ref when a widget is about to or has been

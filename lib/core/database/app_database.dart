@@ -307,6 +307,15 @@ class CompartmentDao extends DatabaseAccessor<AppDatabase>
             ..orderBy([(t) => OrderingTerm.asc(t.position)]))
           .get();
 
+  /// Alle Fächer aller Fahrzeuge, in Einbaureihenfolge (Issue #180).
+  ///
+  /// Für die Gerätesuche: Sie braucht den ganzen Fuhrpark auf einmal. Ein
+  /// [getByVehicle] je Fahrzeug wären bei zwölf Fahrzeugen zwölf Abfragen für
+  /// jeden Tastendruck.
+  Future<List<CompartmentData>> getAll() =>
+      (select(compartments)..orderBy([(t) => OrderingTerm.asc(t.position)]))
+          .get();
+
   Stream<List<CompartmentData>> watchByVehicle(int vehicleId) =>
       (select(compartments)
             ..where((t) => t.vehicleId.equals(vehicleId))
@@ -410,6 +419,10 @@ class AssignmentDao extends DatabaseAccessor<AppDatabase>
       (select(equipmentAssignments)
             ..where((t) => t.equipmentId.equals(equipmentId)))
           .get();
+
+  /// Die gesamte Verlastung auf einmal (Issue #180) — siehe
+  /// [CompartmentDao.getAll].
+  Future<List<AssignmentData>> getAll() => select(equipmentAssignments).get();
 
   /// All assignments for all compartments of a vehicle.
   Future<List<AssignmentData>> getByVehicle(int vehicleId) async {

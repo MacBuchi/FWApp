@@ -60,8 +60,8 @@ class _FrageFormularState extends State<FrageFormular> {
   final _frage = TextEditingController();
   final _erklaerung = TextEditingController();
 
-  /// Vier Felder sind der Normalfall einer Quizfrage; zwei genügen, sechs
-  /// sind die Grenze (siehe [pruefeFrage]).
+  /// Vier Felder sind der Normalfall; zwei genügen, zehn sind die Grenze
+  /// (siehe [pruefeFrage]) — so weit geht der amtliche Prüfungsstoff.
   final List<TextEditingController> _antworten =
       List.generate(4, (_) => TextEditingController());
 
@@ -162,7 +162,7 @@ class _FrageFormularState extends State<FrageFormular> {
                   ],
                 ),
               ),
-            if (_antworten.length < 6)
+            if (_antworten.length < 10)
               Align(
                 alignment: Alignment.centerLeft,
                 child: TextButton.icon(

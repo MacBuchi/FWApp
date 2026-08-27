@@ -44,6 +44,14 @@ enum Wissensgebiet {
   fahrzeugkunde('fahrzeugkunde', 'Fahrzeugkunde', '🚒'),
   geraetekunde('geraetekunde', 'Gerätekunde', '🧰'),
   loeschlehre('loeschlehre', 'Löschlehre', '💧'),
+
+  /// Eigener Lehrgang, eigener Lernzielkatalog — und im Prüfungsstoff so
+  /// umfangreich, dass er unter „Gerätekunde" unauffindbar wäre.
+  atemschutz('atemschutz', 'Atemschutz', '😷'),
+
+  /// Taktische Einheiten, Befehlsgebung, Einsatzablauf — der Stoff der
+  /// FwDV 3 und FwDV 100.
+  einsatzlehre('einsatzlehre', 'Einsatzlehre und Taktik', '🧭'),
   technischeHilfe('technische_hilfe', 'Technische Hilfeleistung', '🛠️'),
   gefahrgut('gefahrgut', 'Gefahrgut', '☣️'),
   ersteHilfe('erste_hilfe', 'Erste Hilfe', '🚑'),
@@ -287,8 +295,13 @@ String? pruefeFrage({
   if (sauber.length < 2) {
     return 'Mindestens zwei Antworten — eine richtige und eine falsche.';
   }
-  if (sauber.length > 6) {
-    return 'Höchstens sechs Antworten, sonst passt es auf kein Handy.';
+  // Zehn, weil der amtliche Prüfungsstoff so weit geht: Im Fragenkatalog
+  // des Innenministeriums BW laufen die Antwortkennungen bis „j)". Ein
+  // engeres Limit (anfangs sechs) wäre eine Zahl aus dem Bauch gewesen und
+  // hätte echte Fragen unerfassbar gemacht — derselbe Fehler wie ein
+  // einzelner Index für die Lösung, nur kleiner.
+  if (sauber.length > 10) {
+    return 'Höchstens zehn Antworten.';
   }
   // Doppelte Antworten machen die Frage unbeantwortbar: Zwei gleiche Texte,
   // einer davon als richtig gewertet — das ist keine Frage, das ist eine

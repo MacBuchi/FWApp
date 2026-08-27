@@ -12,6 +12,28 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.41.0] – 2026-08-27
+
+### Neu
+
+- **35 Fachfragen zum Start.** Der erste Teil des Theoriebestands ist da:
+  Einsatzlehre und Taktik, Gerätekunde, Atemschutz und Löschlehre — aus den
+  Feuerwehr-Dienstvorschriften **selbst formuliert**, jede Frage mit ihrer
+  Fundstelle. Also nicht „ein Trupp besteht aus zwei Kräften", sondern
+  „FwDV 3 · Abschnitt 2.1" daneben, damit du es nachschlagen kannst.
+- **Zwei neue Sachgebiete:** Atemschutz und Einsatzlehre. Beides sind eigene
+  Lehrgänge, und unter „Gerätekunde" wären sie nicht wiederzufinden gewesen.
+- Fragen dürfen jetzt bis zu zehn Antwortmöglichkeiten haben. Sechs war
+  geraten — im amtlichen Prüfungsstoff laufen die Antworten bis „j)".
+
+### Hinweis zu den Quellen
+
+Verwendet werden ausschließlich amtliche Werke: die Feuerwehr-Dienst&shy;vor&shy;schriften
+und das Unfallverhütungsrecht. Aus den Lehrstoffblättern der
+Landesfeuerwehrschule wird **nichts** übernommen — die erscheinen im Verlag.
+Aus DIN-Normen ebenfalls nicht; ein Sachverhalt daraus ist frei, der
+Normtext nicht.
+
 ## [1.40.0] – 2026-08-27
 
 ### Neu

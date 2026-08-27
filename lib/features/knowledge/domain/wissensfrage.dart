@@ -8,6 +8,24 @@
 /// erzeugten ihre Fragen bei jedem Spiel neu und warfen sie weg. Man konnte
 /// weder eine Frage suchen noch korrigieren noch eine eigene hinzufügen.
 ///
+/// **Warum eine Frage MEHRERE richtige Antworten hat.** Der amtliche
+/// Fragenkatalog des Innenministeriums Baden-Württemberg wurde ausgezählt:
+/// Von 210 Lösungen haben nur 79 genau eine richtige Antwort — 63 % sind
+/// Mehrfachantworten, bis zu acht richtige aus zehn. Eine Wissensdatenbank,
+/// die nur einen Index speichert, kann echten Prüfungsstoff also zu gut
+/// einem Drittel abbilden. Deshalb ist die Lösung eine **Menge**.
+///
+/// **Warum die Quelle vier Felder hat und kein Textfeld ist.** Man will nach
+/// ihr filtern: Wird das Feuerwehrgesetz geändert, muss man alle Fragen mit
+/// `FwG BW` wiederfinden können. In einem Fließtext findet man sie nicht.
+///
+/// **Warum es einen Geltungsbereich gibt.** Der Lernzielkatalog der
+/// Truppmannausbildung belegt jedes Lernziel im Abschnitt „Rechtsgrundlagen"
+/// mit einem Paragraphen des BADEN-WÜRTTEMBERGISCHEN Feuerwehrgesetzes; in
+/// Bayern steht dort ein anderes Gesetz mit anderen Regeln. Fachliches aus
+/// den Dienstvorschriften gilt dagegen bundesweit. Zwei Töpfe also, nicht
+/// sechzehn.
+///
 /// **Wem die Fragen gehören: der Gesamtwehr.** Feuerwehrwissen ist nicht
 /// abteilungsspezifisch — ein B-Schlauch hat überall denselben
 /// Nenndurchmesser. Derselbe Weg wie bei den Gerätetypen (Stufe ②,
@@ -54,6 +72,81 @@ enum Wissensgebiet {
   /// Was zum Lernen zählt. Klischees gehören nicht dazu.
   static List<Wissensgebiet> get lernstoff =>
       values.where((g) => g != klischee).toList();
+}
+
+/// Wo eine Frage gilt.
+enum Geltungsbereich {
+  /// Fachliches aus den Feuerwehr-Dienstvorschriften und dem
+  /// Unfallverhütungsrecht — in jedem Land dieselbe Antwort.
+  bund('bund', 'Bundesweit'),
+
+  /// Landesrecht: Feuerwehrgesetz, Rangordnung, Ausbildungsordnung.
+  land('land', 'Landesrecht');
+
+  const Geltungsbereich(this.schluessel, this.label);
+  final String schluessel;
+  final String label;
+
+  static Geltungsbereich ausSchluessel(String? wert) => values.firstWhere(
+        (g) => g.schluessel == wert,
+        orElse: () => bund,
+      );
+}
+
+/// Die Länderkürzel. Vollständig angelegt, damit ein zweites Land später
+/// nichts umbauen muss — gefüllt wird vorerst nur Baden-Württemberg. Leere
+/// Landesblöcke sind Ballast, kein Fortschritt.
+const kBundeslaender = <String, String>{
+  'BW': 'Baden-Württemberg',
+  'BY': 'Bayern',
+  'BE': 'Berlin',
+  'BB': 'Brandenburg',
+  'HB': 'Bremen',
+  'HH': 'Hamburg',
+  'HE': 'Hessen',
+  'MV': 'Mecklenburg-Vorpommern',
+  'NI': 'Niedersachsen',
+  'NW': 'Nordrhein-Westfalen',
+  'RP': 'Rheinland-Pfalz',
+  'SL': 'Saarland',
+  'SN': 'Sachsen',
+  'ST': 'Sachsen-Anhalt',
+  'SH': 'Schleswig-Holstein',
+  'TH': 'Thüringen',
+};
+
+/// Woher der Inhalt einer Frage stammt — die Fundstelle, die in der App
+/// unter der Frage steht.
+///
+/// Vier Felder statt eines Satzes, weil danach gefiltert wird. [stand] ist
+/// die **Fassung** der Quelle, nicht das Abrufdatum: Eine Frage nach § 8 FwG
+/// ist an die Gesetzesfassung gebunden, nicht daran, wann jemand nachgesehen
+/// hat.
+class Fragenquelle {
+  /// „FwG BW", „FwDV 10", „DGUV Vorschrift 49".
+  final String werk;
+
+  /// „§ 8 Abs. 2", „Abschnitt 4.2". Leer, wenn das Werk als Ganzes gemeint
+  /// ist.
+  final String? fundstelle;
+
+  /// Fassung der Quelle, z. B. `2010-03-02`.
+  final String? stand;
+
+  final String? url;
+
+  const Fragenquelle({
+    required this.werk,
+    this.fundstelle,
+    this.stand,
+    this.url,
+  });
+
+  /// „FwG BW · § 8 Abs. 2" — was unter der Frage steht.
+  String get anzeige =>
+      fundstelle == null || fundstelle!.isEmpty ? werk : '$werk · $fundstelle';
+
+  bool get istLeer => werk.trim().isEmpty;
 }
 
 /// Woher eine Frage stammt. Entscheidet, was man mit ihr tun darf.
@@ -107,16 +200,26 @@ class Wissensfrage {
   final String frage;
   final List<String> antworten;
 
-  /// Index der richtigen Antwort in [antworten].
+  /// Die Indizes der richtigen Antworten in [antworten].
   ///
-  /// Als Index und nicht als Text — dieselbe Entscheidung wie im
-  /// Party-Modus: Zwei Antworten dürfen gleich lauten, und ein Textvergleich
-  /// träfe dann die falsche.
-  final int richtig;
+  /// Eine **Menge**, weil der amtliche Prüfungsstoff überwiegend
+  /// Mehrfachantworten kennt (siehe Kopf). Indizes und keine Texte — zwei
+  /// Antworten dürfen gleich lauten, und ein Textvergleich träfe dann die
+  /// falsche.
+  final Set<int> richtige;
 
   final String? erklaerung;
   final Fragenherkunft herkunft;
   final Fragenstand stand;
+
+  /// Die Fundstelle. `null` nur bei Fragen, die vor Issue #174 entstanden
+  /// sind — neue verlangen sie.
+  final Fragenquelle? quelle;
+
+  final Geltungsbereich geltung;
+
+  /// Länderkürzel, nur bei [Geltungsbereich.land] gesetzt.
+  final String? land;
 
   /// Wer sie eingebracht hat — Anzeigename, rein zur Nachvollziehbarkeit.
   final String? eingereichtVon;
@@ -126,16 +229,34 @@ class Wissensfrage {
     required this.gebiet,
     required this.frage,
     required this.antworten,
-    required this.richtig,
+    required this.richtige,
     this.erklaerung,
     this.herkunft = Fragenherkunft.eigen,
     this.stand = Fragenstand.eingereicht,
+    this.quelle,
+    this.geltung = Geltungsbereich.bund,
+    this.land,
     this.eingereichtVon,
   });
 
-  String get richtigeAntwort => antworten[richtig];
+  /// Genau eine richtige Antwort? Nur solche Fragen zieht der Party-Modus —
+  /// am Tisch reihum ist Ankreuzen mehrerer Kästchen kein Spielzug.
+  bool get istEinfachauswahl => richtige.length == 1;
 
   bool get spielbar => stand == Fragenstand.freigegeben;
+
+  /// Ist [gewaehlt] die vollständig richtige Antwort?
+  ///
+  /// Vollständig heißt: **alle** richtigen und **keine** falsche. Ein
+  /// „teilweise richtig" gibt es im Prüfungsbogen nicht, und es hier zu
+  /// erfinden wäre eine andere Bewertung als die, auf die hin geübt wird.
+  bool istRichtig(Set<int> gewaehlt) =>
+      gewaehlt.length == richtige.length && gewaehlt.containsAll(richtige);
+
+  /// Wo die Frage gilt, in einem Wort für die Anzeige.
+  String get geltungAnzeige => geltung == Geltungsbereich.bund
+      ? Geltungsbereich.bund.label
+      : (kBundeslaender[land] ?? Geltungsbereich.land.label);
 
   /// Was ausgeliefert wurde, darf niemand löschen — nur abwählen.
   bool get loeschbar => herkunft != Fragenherkunft.mitgeliefert;
@@ -149,7 +270,7 @@ class Wissensfrage {
 String? pruefeFrage({
   required String frage,
   required List<String> antworten,
-  required int richtig,
+  required Set<int> richtige,
 }) {
   final text = frage.trim();
   if (text.length < 8) {
@@ -176,8 +297,16 @@ String? pruefeFrage({
   if (ohneDoppelte.length != sauber.length) {
     return 'Zwei Antworten sind gleich.';
   }
-  if (richtig < 0 || richtig >= sauber.length) {
+  if (richtige.isEmpty) {
     return 'Es ist keine richtige Antwort markiert.';
+  }
+  if (richtige.any((i) => i < 0 || i >= sauber.length)) {
+    return 'Eine markierte Antwort gibt es nicht.';
+  }
+  // Alle Antworten richtig ist keine Frage, sondern eine Aufzählung — und
+  // im Prüfungsbogen kommt das nicht vor.
+  if (richtige.length == sauber.length) {
+    return 'Es müssen auch falsche Antworten dabei sein.';
   }
   return null;
 }

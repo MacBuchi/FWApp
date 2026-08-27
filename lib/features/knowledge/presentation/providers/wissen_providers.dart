@@ -6,6 +6,7 @@
 /// zurückgibt — die liegt in einer `part`-Datei.
 library;
 
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:drift/drift.dart' show Value;
@@ -80,12 +81,42 @@ Wissensfrage zuWissensfrage(WissensfrageData z) => Wissensfrage(
           Wissensgebiet.rechtUndOrganisation,
       frage: z.frage,
       antworten: jsonToStringList(z.antwortenJson),
-      richtig: z.richtig,
+      richtige: indizesAusJson(z.richtigeJson),
       erklaerung: z.erklaerung,
       herkunft: Fragenherkunft.ausSchluessel(z.herkunft),
       stand: Fragenstand.ausSchluessel(z.stand),
+      quelle: (z.quelleWerk ?? '').trim().isEmpty
+          ? null
+          : Fragenquelle(
+              werk: z.quelleWerk!,
+              fundstelle: z.quelleFundstelle,
+              stand: z.quelleStand,
+              url: z.quelleUrl,
+            ),
+      geltung: Geltungsbereich.ausSchluessel(z.geltung),
+      land: z.land,
       eingereichtVon: z.eingereichtVon,
     );
+
+/// Liest die Indizes der richtigen Antworten aus der JSON-Spalte.
+///
+/// Unlesbares wird zu einer leeren Menge statt zu einem Absturz — eine
+/// kaputte Zeile darf höchstens eine Frage kosten, nicht den Schirm.
+Set<int> indizesAusJson(String json) {
+  try {
+    final roh = jsonDecode(json);
+    if (roh is! List) return const {};
+    return {
+      for (final e in roh)
+        if (e is num) e.toInt(),
+    };
+  } catch (_) {
+    return const {};
+  }
+}
+
+String indizesZuJson(Set<int> indizes) =>
+    jsonEncode((indizes.toList()..sort()));
 
 /// Macht aus einer Wissensfrage eine Spielfrage des Party-Modus.
 ///
@@ -97,8 +128,20 @@ Wissensfrage zuWissensfrage(WissensfrageData z) => Wissensfrage(
 /// gutes Gedächtnis für Positionen. Die Regel stand schon am Asset-Weg
 /// (`UnerwarteteFrage.zuPartyFrage`) und ist beim Umzug beinahe verloren
 /// gegangen.
+/// Nur Fragen mit genau EINER richtigen Antwort taugen für den Party-Modus.
+///
+/// Am Tisch geht das Handy reihum; mehrere Kästchen anzukreuzen ist dort
+/// kein Spielzug. Gefiltert wird deshalb VOR dem Umwandeln — eine
+/// Mehrfachantwort-Frage mit einer Platzhalter-Antwort ins Spiel zu lassen
+/// wäre schlimmer, als sie wegzulassen.
+List<WissensfrageData> nurEinfachauswahl(List<WissensfrageData> fragen) =>
+    fragen.where((f) => indizesAusJson(f.richtigeJson).length == 1).toList();
+
 PartyFrage wissensfrageAlsPartyFrage(WissensfrageData z, Random zufall) {
   final antworten = jsonToStringList(z.antwortenJson);
+  final richtige = indizesAusJson(z.richtigeJson);
+  // Verteidigung gegen eine kaputte Zeile, nicht gegen Mehrfachantworten —
+  // die sind vorher heraus (siehe [nurEinfachauswahl]).
   if (antworten.isEmpty) {
     return PartyFrage(
       art: PartyFrageArt.unerwartet,
@@ -108,7 +151,9 @@ PartyFrage wissensfrageAlsPartyFrage(WissensfrageData z, Random zufall) {
       erklaerung: z.erklaerung,
     );
   }
-  final richtigerText = antworten[z.richtig.clamp(0, antworten.length - 1)];
+  final richtigerText =
+      antworten[(richtige.isEmpty ? 0 : richtige.first)
+          .clamp(0, antworten.length - 1)];
   final gemischt = [...antworten]..shuffle(zufall);
   return PartyFrage(
     art: PartyFrageArt.unerwartet,
@@ -130,7 +175,10 @@ Future<int> reicheFrageEin(
   required Wissensgebiet gebiet,
   required String frage,
   required List<String> antworten,
-  required int richtig,
+  required Set<int> richtige,
+  Fragenquelle? quelle,
+  Geltungsbereich geltung = Geltungsbereich.bund,
+  String? land,
   String? erklaerung,
   String? eingereichtVon,
   bool sofortFreigeben = false,
@@ -141,7 +189,13 @@ Future<int> reicheFrageEin(
           frage: frage.trim(),
           antwortenJson:
               Value(stringListToJson(antworten.map((a) => a.trim()).toList())),
-          richtig: Value(richtig),
+          richtigeJson: Value(indizesZuJson(richtige)),
+          quelleWerk: Value(quelle?.werk),
+          quelleFundstelle: Value(quelle?.fundstelle),
+          quelleStand: Value(quelle?.stand),
+          quelleUrl: Value(quelle?.url),
+          geltung: Value(geltung.schluessel),
+          land: Value(geltung == Geltungsbereich.land ? land : null),
           erklaerung: Value(erklaerung?.trim().isEmpty ?? true
               ? null
               : erklaerung!.trim()),

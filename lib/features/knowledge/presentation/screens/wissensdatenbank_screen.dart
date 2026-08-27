@@ -143,6 +143,9 @@ class _WissensdatenbankScreenState
             style: const TextStyle(fontWeight: FontWeight.w600)),
         subtitle: Text([
           f.gebiet.label,
+          // Landesrecht wird benannt, Bundesweites nicht — was überall gilt,
+          // braucht keinen Hinweis, was nur hier gilt schon.
+          if (f.geltung == Geltungsbereich.land) f.geltungAnzeige,
           if (f.herkunft == Fragenherkunft.mitgeliefert) 'mitgeliefert',
           if (f.eingereichtVon != null) 'von ${f.eingereichtVon}',
         ].join(' · '), style: theme.textTheme.bodySmall),
@@ -158,11 +161,11 @@ class _WissensdatenbankScreenState
                     child: Row(
                       children: [
                         Icon(
-                          i == f.richtig
-                              ? Icons.check_circle
-                              : Icons.radio_button_unchecked,
+                          f.richtige.contains(i)
+                              ? Icons.check_box
+                              : Icons.check_box_outline_blank,
                           size: 18,
-                          color: i == f.richtig
+                          color: f.richtige.contains(i)
                               ? Colors.green.shade700
                               : theme.colorScheme.outline,
                         ),
@@ -171,11 +174,39 @@ class _WissensdatenbankScreenState
                       ],
                     ),
                   ),
+                if (f.richtige.length > 1) ...[
+                  const SizedBox(height: 6),
+                  Text('${f.richtige.length} Antworten sind richtig.',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant)),
+                ],
                 if (f.erklaerung != null) ...[
                   const SizedBox(height: 8),
                   Text(f.erklaerung!,
                       style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant)),
+                ],
+                // Die Fundstelle gehört sichtbar an die Frage: Eine Antwort,
+                // die man nicht nachschlagen kann, ist im Zweifel wertlos —
+                // und im Zweifel ist man im Einsatz (Issue #174).
+                if (f.quelle != null) ...[
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Icon(Icons.menu_book_outlined,
+                          size: 14, color: theme.colorScheme.outline),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          f.quelle!.stand == null
+                              ? f.quelle!.anzeige
+                              : '${f.quelle!.anzeige} (${f.quelle!.stand})',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.outline),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
                 const SizedBox(height: 8),
                 _aktionen(z, f, darfFreigeben, offen),
@@ -262,7 +293,10 @@ class _WissensdatenbankScreenState
       gebiet: eingabe.gebiet,
       frage: eingabe.frage,
       antworten: eingabe.antworten,
-      richtig: eingabe.richtig,
+      richtige: eingabe.richtige,
+      quelle: eingabe.quelle,
+      geltung: eingabe.geltung,
+      land: eingabe.land,
       erklaerung: eingabe.erklaerung,
       // Wer freigeben darf, muss sich nicht selbst genehmigen.
       sofortFreigeben: darfFreigeben,

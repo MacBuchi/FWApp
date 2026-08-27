@@ -100,6 +100,10 @@
     {
       "name": "20260827160000_wissensdatenbank.sql",
       "sha256": "5a522a030fc4bc64287165adbed643c7d1f35a0220a80c952471fb377f0b72b7"
+    },
+    {
+      "name": "20260827180000_wissen_mehrfachantworten_und_quellen.sql",
+      "sha256": "6645c32893b36348c5ebc18211897d2e46e24699edce1ebb291560f86eda80fd"
     }
   ],
   "functions": {

@@ -112,11 +112,33 @@ class Wissensfragen extends Table {
   /// Die Antwortmöglichkeiten als JSON-Liste.
   TextColumn get antwortenJson => text().withDefault(const Constant('[]'))();
 
-  /// Index der richtigen Antwort. Index und nicht Text: Zwei Antworten
-  /// dürfen gleich lauten, ein Textvergleich träfe dann die falsche.
-  IntColumn get richtig => integer().withDefault(const Constant(0))();
+  /// Die Indizes der richtigen Antworten als JSON-Liste, z. B. `[0,3,5]`.
+  ///
+  /// ⚠️ Eine MENGE, kein einzelner Index (Issue #174). Der amtliche
+  /// Fragenkatalog des Innenministeriums BW hat ausgezählt 210 Lösungen,
+  /// davon nur 79 mit genau einer richtigen Antwort — 63 % sind
+  /// Mehrfachantworten. Ein `int` könnte den Prüfungsstoff zu einem Drittel
+  /// abbilden.
+  TextColumn get richtigeJson => text().withDefault(const Constant('[0]'))();
 
   TextColumn get erklaerung => text().nullable()();
+
+  /// Die Fundstelle, aus vier Feldern statt einem Satz — man will nach ihr
+  /// filtern. Wird das Feuerwehrgesetz geändert, muss man alle Fragen mit
+  /// `quelleWerk = 'FwG BW'` wiederfinden können.
+  TextColumn get quelleWerk => text().nullable()();
+  TextColumn get quelleFundstelle => text().nullable()();
+
+  /// Die **Fassung** der Quelle, nicht das Abrufdatum.
+  TextColumn get quelleStand => text().nullable()();
+  TextColumn get quelleUrl => text().nullable()();
+
+  /// `bund` | `land`. Rechtsgrundlagen sind Landesrecht, Fachliches aus den
+  /// Dienstvorschriften gilt bundesweit.
+  TextColumn get geltung => text().withDefault(const Constant('bund'))();
+
+  /// Länderkürzel, nur bei `geltung = 'land'`.
+  TextColumn get land => text().nullable()();
 
   /// `mitgeliefert` | `eigen` — was ausgeliefert wurde, ist nicht löschbar.
   TextColumn get herkunft => text().withDefault(const Constant('eigen'))();
@@ -998,7 +1020,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -1063,6 +1085,37 @@ class AppDatabase extends _$AppDatabase {
             // legt `wissen_seeder.dart` beim ersten Start aus dem Asset an,
             // damit eine bestehende Installation nicht ohne Fragen dasteht.
             await m.createTable(wissensfragen);
+          }
+          if (from < 10) {
+            // Mehrfachantworten, Quellenangabe und Geltungsbereich
+            // (Issue #174, zweite Stufe).
+            //
+            // ⚠️ Nur für Datenbanken, die die Tabelle schon als v9 haben.
+            // `createTable` oben legt IMMER die heutige Definition an —
+            // inklusive dieser Spalten. Wer von unterhalb v9 kommt, hat sie
+            // damit bereits, und ein zweites `addColumn` bricht mit
+            // „duplicate column name" ab. Dieselbe Falle wie bei `syncMeta`
+            // in v5, dort steht die Begründung ausführlich.
+            if (from >= 9) {
+            await m.addColumn(wissensfragen, wissensfragen.richtigeJson);
+            await m.addColumn(wissensfragen, wissensfragen.quelleWerk);
+            await m.addColumn(wissensfragen, wissensfragen.quelleFundstelle);
+            await m.addColumn(wissensfragen, wissensfragen.quelleStand);
+            await m.addColumn(wissensfragen, wissensfragen.quelleUrl);
+            await m.addColumn(wissensfragen, wissensfragen.geltung);
+            await m.addColumn(wissensfragen, wissensfragen.land);
+
+            // Der bisherige Einzel-Index wird zur einelementigen Menge.
+            // ⚠️ Muss VOR dem Umbau der Tabelle laufen — danach gibt es die
+            // Spalte `richtig` nicht mehr.
+            await customStatement(
+                "UPDATE wissensfragen SET richtige_json = '[' || richtig "
+                "|| ']'");
+            // `richtig` fällt weg: Zwei Darstellungen derselben Sache laufen
+            // auseinander. `alterTable` baut die Tabelle nach der heutigen
+            // Definition neu und lässt die Spalte damit fallen.
+            await m.alterTable(TableMigration(wissensfragen));
+            }
           }
         },
         beforeOpen: (details) async {

@@ -52,7 +52,8 @@ class WissenSeeder {
           gebiet: gebiet.schluessel,
           frage: f.frage,
           antwortenJson: Value(stringListToJson(f.antworten)),
-          richtig: Value(f.richtig),
+          richtigeJson: Value(stringListToJson(['${f.richtig}'])
+              .replaceAll('"', '')),
           erklaerung: Value(f.erklaerung),
           herkunft: Value(Fragenherkunft.mitgeliefert.schluessel),
           // Ausgeliefertes ist geprüft — es wartet auf niemanden.

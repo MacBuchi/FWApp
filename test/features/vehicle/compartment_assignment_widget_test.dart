@@ -34,20 +34,31 @@ void main() {
 
   tearDown(() => db.close());
 
+  /// Tippt, nachdem sichergestellt ist, dass das Ziel im Bild liegt.
+  ///
+  /// Der Fahrzeugschirm ist eine lange Liste und wächst mit jedem Abschnitt
+  /// (zuletzt die Unterlagen, Issue #182). Ein blankes `tap` traf dann
+  /// plötzlich neben den Knopf — auf einem 800×600-Prüfbild, das kein echtes
+  /// Gerät ist. Scrollen ist ohnehin, was ein Mensch hier täte.
+  Future<void> tippe(WidgetTester tester, Finder ziel) async {
+    await tester.ensureVisible(ziel);
+    await tester.pumpAndSettle();
+    await tester.tap(ziel);
+    await tester.pumpAndSettle();
+  }
+
   Future<void> oeffneFach(WidgetTester tester) async {
     await tester.pumpWidget(buildTestApp(
         db: db, home: VehicleDetailScreen(vehicleId: vehicleId)));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('G1').last);
-    await tester.pumpAndSettle();
+    await tippe(tester, find.text('G1').last);
   }
 
   testWidgets('ein Gerät lässt sich von Hand ins Fach legen', (tester) async {
     await oeffneFach(tester);
     expect(find.text('Kein Gerät zugewiesen.'), findsOneWidget);
 
-    await tester.tap(find.text('Gerät zuweisen'));
-    await tester.pumpAndSettle();
+    await tippe(tester, find.text('Gerät zuweisen'));
     // Seit Issue #149 wählt der Tipp aus, statt sofort zu schreiben — der
     // Knopf schließt ab. Für ein einzelnes Gerät ist das ein Tipp mehr, für
     // ein ganzes Fahrzeug sind es hunderte weniger.
@@ -64,8 +75,7 @@ void main() {
 
   testWidgets('die Suche filtert die Auswahl', (tester) async {
     await oeffneFach(tester);
-    await tester.tap(find.text('Gerät zuweisen'));
-    await tester.pumpAndSettle();
+    await tippe(tester, find.text('Gerät zuweisen'));
 
     await tester.enterText(find.byType(TextField).first, 'spine');
     await tester.pumpAndSettle();
@@ -79,8 +89,7 @@ void main() {
     // Das ist Marcus' Aufnahme-Ablauf: Raum für Raum durchgehen und
     // unterwegs anlegen, was noch fehlt — ohne den Begriff zweimal zu tippen.
     await oeffneFach(tester);
-    await tester.tap(find.text('Gerät zuweisen'));
-    await tester.pumpAndSettle();
+    await tippe(tester, find.text('Gerät zuweisen'));
     expect(find.text('Neues Gerät anlegen'), findsOneWidget);
 
     await tester.enterText(find.byType(TextField).first, 'Pylone');
@@ -99,8 +108,7 @@ void main() {
             compartmentId: compartmentId, equipmentId: equipmentId));
 
     await oeffneFach(tester);
-    await tester.tap(find.byIcon(Icons.more_vert).first);
-    await tester.pumpAndSettle();
+    await tippe(tester, find.byIcon(Icons.more_vert).first);
     await tester.tap(find.text('Aus dem Fach entfernen'));
     await tester.pumpAndSettle();
 
@@ -118,8 +126,7 @@ void main() {
       overrides: [canEditProvider.overrideWithValue(false)],
     ));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('G1').last);
-    await tester.pumpAndSettle();
+    await tippe(tester, find.text('G1').last);
 
     expect(find.text('Gerät zuweisen'), findsNothing);
     expect(find.byIcon(Icons.more_vert), findsNothing);

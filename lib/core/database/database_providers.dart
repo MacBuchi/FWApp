@@ -34,6 +34,10 @@ AssignmentDao assignmentDao(Ref ref) =>
     ref.watch(appDatabaseProvider).assignmentDao;
 
 @Riverpod(keepAlive: true)
+AttachmentDao attachmentDao(Ref ref) =>
+    ref.watch(appDatabaseProvider).attachmentDao;
+
+@Riverpod(keepAlive: true)
 QuizDao quizDao(Ref ref) => ref.watch(appDatabaseProvider).quizDao;
 
 @Riverpod(keepAlive: true)

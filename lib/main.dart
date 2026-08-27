@@ -8,6 +8,7 @@ import 'dart:ui' show PlatformDispatcher;
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fwapp/features/vehicle/presentation/providers/anhang_providers.dart';
 import 'package:fwapp/core/app_version.dart';
 import 'package:fwapp/core/crash/crash_store.dart';
 import 'package:fwapp/core/database/database_providers.dart';
@@ -184,6 +185,12 @@ class _FWAppState extends ConsumerState<FWApp> {
         // Gerätetypen der Gesamtwehr (Stufe ②, Issue #99) — eigener,
         // zeilenweiser Weg neben dem Snapshot. Ohne Gesamtwehr ein No-op.
         await ref.read(equipmentTypeSyncProvider)?.sync();
+        if (!mounted) return;
+        // Unterlagen am Fahrzeug (Issue #182) — ebenfalls zeilenweise, aus
+        // demselben Grund: Der Snapshot würde sie bei einem Alt-Client
+        // löschen.
+        await anhaengeSynchronisieren(ref.read(anhangSpeicherProvider),
+            ref.read(anhangAbteilungProvider));
         if (!mounted) return;
         // Warm the offline image cache in the background (M2).
         unawaited(ref.read(imagePrecacheProvider.notifier).run());

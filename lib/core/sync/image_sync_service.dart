@@ -58,6 +58,28 @@ class ImageSyncService {
         previousPath: previousPath,
       );
 
+  /// Foto eines Geräteraums (Issue #181).
+  ///
+  /// Derselbe Bucket wie die Gerätefotos, weil das Schreibrecht dasselbe ist:
+  /// der Gerätewart. Ein eigener Bucket hätte dieselben vier Policies
+  /// gebraucht und nichts getrennt, was zu trennen wäre.
+  ///
+  /// Das Präfix `co_` unterscheidet die Objekte trotzdem — sonst wäre am
+  /// Namen nicht zu sehen, ob ein verwaistes Bild zu einem Gerät oder einem
+  /// Fach gehörte.
+  Future<String> uploadCompartmentImageBytes({
+    required int compartmentId,
+    required Uint8List bytes,
+    String? previousPath,
+  }) =>
+      _hochladen(
+        bucket: kEquipmentImagesBucket,
+        object:
+            'co_${compartmentId}_${DateTime.now().millisecondsSinceEpoch}.jpg',
+        bytes: bytes,
+        previousPath: previousPath,
+      );
+
   /// Kopfbild einer Gesamtwehr (#57 P5).
   ///
   /// Der Objektname MUSS mit der Gesamtwehr-ID als eigenem Pfadsegment

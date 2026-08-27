@@ -18,6 +18,7 @@ import 'package:fwapp/features/equipment/presentation/widgets/equipment_avatar.d
 import 'package:fwapp/features/inspection/presentation/providers/inspection_providers.dart';
 import 'package:fwapp/features/vehicle/domain/entities/vehicle.dart';
 import 'package:fwapp/features/vehicle/domain/loesch_umfang.dart';
+import 'package:fwapp/features/vehicle/presentation/widgets/fahrzeug_unterlagen.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';
 import 'package:fwapp/features/vehicle/presentation/widgets/vehicle_cutaway_view.dart';
 import 'package:fwapp/features/vehicle/presentation/widgets/vehicle_top_view.dart';
@@ -106,6 +107,13 @@ class VehicleDetailScreen extends ConsumerWidget {
                     ],
                   ),
                 ),
+              ),
+              // Unterlagen zwischen Kopfbereich und Beladung (Issue #182):
+              // Sie gehören zum Fahrzeug als Ganzem, nicht zu einem Fach —
+              // und wer die Betriebsanleitung sucht, soll nicht erst an
+              // dreißig Fächern vorbeiscrollen.
+              SliverToBoxAdapter(
+                child: FahrzeugUnterlagen(vehicleId: vehicleId),
               ),
               // Cutaway view (Schnittdarstellung)
               SliverToBoxAdapter(
@@ -742,7 +750,40 @@ class _CompartmentTile extends ConsumerWidget {
           error: (_, _) => const Text('Fehler'),
           data: (a) => Text(untertitel(a.length)),
         ),
-        children: [_ZuweisungsListe(compartment: compartment)],
+        children: [
+          // Das Foto steht ÜBER der Geräteliste, nicht daneben: Es zeigt den
+          // Sollzustand des Fachs (Issue #181), und wer nachlädt, vergleicht
+          // erst das Bild und liest dann die Liste.
+          if (compartment.imagePath != null &&
+              compartment.imagePath!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: GestureDetector(
+                // Schlüssel, damit die Kachel eindeutig ansprechbar ist: Der
+                // Fachname steht auf diesem Schirm zweimal — einmal in der
+                // Schnittdarstellung, einmal in der Liste.
+                key: ValueKey('fachfoto-${compartment.id}'),
+                onTap: () => showDialog<void>(
+                  context: context,
+                  builder: (_) => Dialog(
+                    child: InteractiveViewer(
+                      child: resolveImage(path: compartment.imagePath),
+                    ),
+                  ),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: resolveImage(
+                    path: compartment.imagePath,
+                    height: 160,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+            ),
+          _ZuweisungsListe(compartment: compartment),
+        ],
       ),
     );
   }

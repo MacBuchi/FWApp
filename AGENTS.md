@@ -251,6 +251,21 @@ pauschales Formatieren in Feature-PRs.
   einem abschließenden `partie.shuffle()` vereinfacht, nimmt die Rundenregel
   zurück, ohne dass es im Code auffällt — `party_mischung_test.dart` und
   `party_screen_test.dart` halten beides fest.
+- ⚠️ **Was am Fahrzeug hängt, gehört NICHT in den Snapshot** (Issue #182).
+  `publish_snapshot` löscht die Zeilen der Abteilung und fügt die Nutzlast
+  neu ein. Zwei Folgen, die beide gegen den naheliegenden Entwurf sprechen:
+  Ein Alt-Client, der `vehicle_attachments` nicht kennt, schickt den
+  Schlüssel gar nicht mit und **löschte damit alle hochgeladenen Unterlagen
+  der Abteilung**; und ein Fremdschlüssel auf `vehicles` mit Cascade würde
+  bei **jeder** Veröffentlichung mitlöschen. Deshalb: eigener zeilenweiser
+  Weg (`anhang_speicher.dart`), und `vehicle_id` ist die LOKALE Drift-ID
+  ohne Fremdschlüssel — dasselbe Muster wie `equipment_type_links`.
+- ⚠️ **Riverpod-Codegen verträgt keine Drift-Datenklassen.** Ein
+  `@riverpod`-Provider, der `VehicleAttachmentData` & Co. zurückgibt, bricht
+  den Build mit `InvalidTypeException` ab — die Klasse liegt in einer
+  `part`-Datei. Deshalb sind `dashboard_providers.dart` und
+  `anhang_providers.dart` bewusst von Hand geschrieben. Wer sie „aufräumt",
+  macht die CI rot.
 - **Der Demo-Datenbestand ist fiktiv.** Die echte AB-G-Beladeliste ist bewusst
   aus dem Arbeitsstand entfernt; der Seeder legt Katalog **vor** Fahrzeug an.
 - **Die Demo-Gesamtwehr ist ein Skript, kein Handbetrieb** (Issue #158):

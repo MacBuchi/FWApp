@@ -214,6 +214,47 @@ final class AssignmentDaoProvider
 
 String _$assignmentDaoHash() => r'a76db3b033c956a12d6260d3083b33434b2e130d';
 
+@ProviderFor(attachmentDao)
+final attachmentDaoProvider = AttachmentDaoProvider._();
+
+final class AttachmentDaoProvider
+    extends $FunctionalProvider<AttachmentDao, AttachmentDao, AttachmentDao>
+    with $Provider<AttachmentDao> {
+  AttachmentDaoProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'attachmentDaoProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$attachmentDaoHash();
+
+  @$internal
+  @override
+  $ProviderElement<AttachmentDao> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  AttachmentDao create(Ref ref) {
+    return attachmentDao(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AttachmentDao value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AttachmentDao>(value),
+    );
+  }
+}
+
+String _$attachmentDaoHash() => r'1aa4a5f8b5b36699e6ca3ba5c4f7da65d8878a70';
+
 @ProviderFor(quizDao)
 final quizDaoProvider = QuizDaoProvider._();
 

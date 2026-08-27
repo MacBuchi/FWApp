@@ -12,6 +12,14 @@ import 'package:fwapp/core/logging/app_logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Drift tables mirrored to Supabase (SQL names, parent→child order).
+///
+/// ⚠️ **`vehicle_attachments` steht hier bewusst NICHT** (Issue #182).
+/// `publish_snapshot` löscht die Zeilen der Abteilung und fügt die Nutzlast
+/// neu ein. Ein Alt-Client, der die Tabelle nicht kennt, schickt den
+/// Schlüssel gar nicht mit — und löschte damit bei seiner nächsten
+/// Veröffentlichung sämtliche hochgeladenen Unterlagen der Abteilung. Sie
+/// geht deshalb den zeilenweisen Weg (`vehicle_attachment_sync.dart`), wie
+/// die Gerätetypen.
 const kSyncedTables = [
   'vehicles',
   'equipment_items',
@@ -270,10 +278,11 @@ class SyncService {
             gridCol: Value(_intOrNull(r['grid_col'])),
             gridColSpan: Value(_int(r['grid_col_span'])),
             // Alt-Server ohne die Spalten liefert die Schlüssel gar nicht —
-            // dann bleiben Seite und Längsposition leer statt den Pull
+            // dann bleiben Seite, Längsposition und Foto leer statt den Pull
             // scheitern zu lassen.
             seite: Value(r['seite'] as String?),
             laengsposition: Value(r['laengsposition'] as String?),
+            imagePath: Value(r['image_path'] as String?),
             updatedAt: Value(_dt(r['updated_at'])),
           ));
     }
@@ -430,6 +439,7 @@ class SyncService {
             'grid_col_span': c.gridColSpan,
             'seite': c.seite,
             'laengsposition': c.laengsposition,
+            'image_path': c.imagePath,
             'updated_at': _ts(c.updatedAt),
           }
       ],

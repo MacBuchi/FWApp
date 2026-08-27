@@ -2,7 +2,7 @@ name: fwapp
 description: Feuerwehr-Lernapp – Fahrzeuge, Geräte, Beladepläne und Trainings-Spielmodi.
 publish_to: 'none'
 
-version: 1.37.0+62
+version: 1.38.0+63
 
 environment:
   sdk: ^3.7.0
@@ -43,6 +43,11 @@ dependencies:
 
   # File handling / images
   file_picker: ^11.0.3
+  # Öffnet eine LOKALE Datei mit dem Betrachter des Geräts (Issue #182).
+  # `url_launcher` kann das auf Android nicht: Ein file://-URI wird seit
+  # Android 7 abgelehnt, es braucht einen FileProvider — und genau den
+  # bringt dieses Paket mit.
+  open_filex: ^4.7.0
   image_picker: ^1.1.2
   cached_network_image: ^3.4.1
   # Nur wegen ImageRenderMethodForWeb (Issue #114): Die Aufzaehlung wird von

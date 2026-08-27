@@ -36,6 +36,7 @@ class CompartmentRepositoryImpl implements CompartmentRepository {
           gridColSpan: Value(c.gridColSpan),
           seite: Value(c.seite),
           laengsposition: Value(c.laengsposition),
+          imagePath: Value(c.imagePath),
         ),
       );
 
@@ -51,6 +52,7 @@ class CompartmentRepositoryImpl implements CompartmentRepository {
           gridColSpan: Value(c.gridColSpan),
           seite: Value(c.seite),
           laengsposition: Value(c.laengsposition),
+          imagePath: Value(c.imagePath),
           updatedAt: Value(DateTime.now()),
         ),
       );
@@ -68,6 +70,7 @@ class CompartmentRepositoryImpl implements CompartmentRepository {
         gridColSpan: row.gridColSpan,
         seite: row.seite,
         laengsposition: row.laengsposition,
+        imagePath: row.imagePath,
         updatedAt: row.updatedAt,
       );
 }

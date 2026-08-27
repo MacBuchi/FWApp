@@ -45,6 +45,15 @@ class VehicleDetailScreen extends ConsumerWidget {
           appBar: AppBar(
             title: Text(vehicle.name),
             actions: [
+              // Vor jedem Bearbeiten-Symbol und ohne Rechteprüfung: Suchen
+              // darf jeder, und im Einsatz ist es die häufigste Frage
+              // überhaupt (Issue #180).
+              IconButton(
+                icon: const Icon(Icons.search),
+                tooltip: 'Gerät in diesem Fahrzeug suchen',
+                onPressed: () =>
+                    context.push('/geraetesuche?fahrzeug=$vehicleId'),
+              ),
               if (ref.watch(canEditProvider)) ...[
                 IconButton(
                   icon: const Icon(Icons.edit),

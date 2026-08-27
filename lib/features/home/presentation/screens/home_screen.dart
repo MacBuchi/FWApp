@@ -1,5 +1,6 @@
-/// home_screen.dart – Persönliches Lern-Dashboard (Start tab): Tagesserie,
-/// XP/Level, Wochenziel, "Weiterlernen"-Empfehlung, letzte Ergebnisse.
+/// home_screen.dart – Persönliches Lern-Dashboard (Start tab): Gerätesuche,
+/// Tagesserie, XP/Level, Wochenziel, "Weiterlernen"-Empfehlung, letzte
+/// Ergebnisse.
 library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -33,6 +34,8 @@ class HomeScreen extends ConsumerWidget {
           children: [
             const GesamtwehrHeader(),
             const HomeBanners(),
+            const _GeraeteSucheCard(),
+            const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(child: _StreakCard(stats: stats)),
@@ -308,6 +311,29 @@ class _SuggestionCard extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Gerätesuche — die einzige Kachel hier, die nichts mit Lernen zu tun hat.
+///
+/// Sie steht trotzdem ganz oben, vor Serie und Wochenziel: „Wo liegt das?"
+/// ist die Frage, die man unter Zeitdruck stellt (Issue #180). Wer sie stellt,
+/// hat es eilig — dann darf der Einstieg nicht unter dem Wochenziel liegen.
+/// Der zweite Einstieg sitzt an der Lupe im Fahrzeug-Reiter und grenzt dort
+/// auf das Fahrzeug ein.
+class _GeraeteSucheCard extends StatelessWidget {
+  const _GeraeteSucheCard();
+
+  @override
+  Widget build(BuildContext context) => Card(
+        child: ListTile(
+          leading: const _IconChip(Icons.search, semanticLabel: 'Suche'),
+          title: const Text('Gerätesuche'),
+          subtitle:
+              const Text('Wo liegt was? Fahrzeug und Fach auf einen Blick'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.push('/geraetesuche'),
+        ),
+      );
 }
 
 /// Gerätewart-Hinweis — nur für Admins auf dem Dashboard.

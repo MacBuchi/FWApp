@@ -23,10 +23,14 @@ class VehicleListScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Fahrzeuge'),
         actions: [
+          // Bis Issue #180 führte die Lupe hier in den Gerätekatalog — also
+          // zu der Frage, welche Geräte es GIBT. Auf dem Fuhrpark-Schirm ist
+          // die Frage aber, wo eines LIEGT. Der Katalog bleibt über „Mehr →
+          // Geräte" erreichbar, wo er hingehört.
           IconButton(
             icon: const Icon(Icons.search),
-            tooltip: 'Gerätekatalog durchsuchen',
-            onPressed: () => context.push('/equipment'),
+            tooltip: 'Gerät im Fuhrpark suchen',
+            onPressed: () => context.push('/geraetesuche'),
           ),
           if (ref.watch(canEditProvider))
             IconButton(

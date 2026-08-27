@@ -12,6 +12,37 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.37.0] – 2026-08-27
+
+### Neu
+
+- **Gerätesuche: „Wo liegt das?"** Bisher konnte die App nur den Katalog
+  durchsuchen — also welche Geräte es gibt. Wo eines davon verlastet ist,
+  stand nirgends; man klickte sich Fahrzeug für Fahrzeug durch die Fächer.
+  Jetzt gibt es eine Suche, die **Fahrzeug und Fach** nennt, mit Farbpunkt und
+  Ortsangabe wie im Fahrzeugmenü, und mit der Stückzahl, wenn mehrere in einem
+  Fach liegen.
+- **Zwei Wege hin:** eine Kachel ganz oben auf der Startseite für den
+  ganzen Fuhrpark, und die Lupe in einer Fahrzeugansicht für dieses
+  Fahrzeug. Die Kachel steht bewusst über Serie und Wochenziel — „Wo
+  liegt das?" fragt man unter Zeitdruck.
+- **Am Fahrzeug sucht sie im Fahrzeug.** Die Lupe in einer Fahrzeugansicht
+  öffnet dieselbe Suche, aber auf dieses Fahrzeug eingegrenzt. Liegt das
+  gesuchte Gerät nicht darin, sagt sie nicht „nichts gefunden", sondern
+  **wo es stattdessen liegt** — im Einsatz die eigentliche Auskunft.
+- **Sie verzeiht beim Tippen.** Umlaute sind egal („schlauche" findet
+  „C-Schläuche"), der Kurzname zählt mit („C42"), und mehrere Wörter dürfen in
+  beliebiger Reihenfolge stehen („schere akku" findet die
+  „Akku-Rettungsschere").
+- **Was noch nicht verlastet ist, wird als solches gemeldet.** Steht ein Gerät
+  im Katalog, aber in keinem Fahrzeug, sagt die Suche genau das, statt „nichts
+  gefunden" zu behaupten.
+
+### Geändert
+
+- Die Lupe in der Fahrzeugliste führt jetzt in die Gerätesuche statt in den
+  Gerätekatalog. Der Katalog bleibt unter **Mehr → Geräte** erreichbar.
+
 ## [1.36.0] – 2026-08-26
 
 ### Behoben

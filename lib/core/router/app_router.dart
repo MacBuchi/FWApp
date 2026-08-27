@@ -19,6 +19,7 @@ import 'package:fwapp/features/settings/presentation/screens/server_settings_scr
 import 'package:fwapp/features/home/presentation/screens/home_screen.dart';
 import 'package:fwapp/features/home/presentation/screens/more_screen.dart';
 import 'package:fwapp/features/vehicle/presentation/screens/vehicle_list_screen.dart';
+import 'package:fwapp/features/search/presentation/screens/geraete_suche_screen.dart';
 import 'package:fwapp/features/vehicle/presentation/screens/vehicle_detail_screen.dart';
 import 'package:fwapp/features/vehicle/presentation/screens/vehicle_form_screen.dart';
 import 'package:fwapp/features/vehicle/presentation/screens/vehicle_template_screen.dart';
@@ -244,6 +245,24 @@ final _routes = [
               ],
             ),
           ],
+        ),
+        // Die Reichweite steckt in der Abfrage, nicht im Pfad: „Wo liegt
+        // das?" ist dieselbe Frage, ob für ein Fahrzeug oder den ganzen
+        // Fuhrpark (Issue #180). Ein eigener Unterpfad je Fahrzeug hätte
+        // zwei Schirme aus einem gemacht.
+        //
+        // Bewusst OHNE Reiter-Zuordnung (`_currentNavIndex` kennt den Pfad
+        // nicht, die Leiste bleibt also weg): Der Schirm ist von Start UND
+        // vom Fahrzeug-Reiter aus erreichbar — kein Reiter wäre der
+        // richtige, und mit offener Tastatur frisst die Leiste eine ganze
+        // Trefferzeile.
+        GoRoute(
+          path: '/geraetesuche',
+          builder: (_, state) {
+            final roh = state.uri.queryParameters['fahrzeug'];
+            return GeraeteSucheScreen(
+                vehicleId: roh == null ? null : int.tryParse(roh));
+          },
         ),
         GoRoute(
           path: '/equipment',

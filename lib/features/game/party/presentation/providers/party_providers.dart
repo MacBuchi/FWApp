@@ -253,7 +253,11 @@ class PartySpiel extends _$PartySpiel {
     // Zuhörer erzeugt den Provider und entsorgt ihn sofort wieder — das
     // Future wird dann NIE fertig, und der Start der Partie steht still.
     // Nachgestellt und bestätigt: mit Zuhörer kehrt es zurück, ohne nicht.
-    final wissen = await ref.read(wissenDaoProvider).getSpielbare();
+    // `nurEinfachauswahl`: Seit die Wissensdatenbank Mehrfachantworten kennt
+    // (Issue #174), passt nicht mehr jede Frage an den Tisch — reihum
+    // mehrere Kästchen anzukreuzen ist kein Spielzug.
+    final wissen =
+        nurEinfachauswahl(await ref.read(wissenDaoProvider).getSpielbare());
 
     final fragen = mischePartie(
       fach: topf.fach,

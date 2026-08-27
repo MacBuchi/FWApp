@@ -7337,17 +7337,17 @@ class $WissensfragenTable extends Wissensfragen
     requiredDuringInsert: false,
     defaultValue: const Constant('[]'),
   );
-  static const VerificationMeta _richtigMeta = const VerificationMeta(
-    'richtig',
+  static const VerificationMeta _richtigeJsonMeta = const VerificationMeta(
+    'richtigeJson',
   );
   @override
-  late final GeneratedColumn<int> richtig = GeneratedColumn<int>(
-    'richtig',
+  late final GeneratedColumn<String> richtigeJson = GeneratedColumn<String>(
+    'richtige_json',
     aliasedName,
     false,
-    type: DriftSqlType.int,
+    type: DriftSqlType.string,
     requiredDuringInsert: false,
-    defaultValue: const Constant(0),
+    defaultValue: const Constant('[0]'),
   );
   static const VerificationMeta _erklaerungMeta = const VerificationMeta(
     'erklaerung',
@@ -7355,6 +7355,71 @@ class $WissensfragenTable extends Wissensfragen
   @override
   late final GeneratedColumn<String> erklaerung = GeneratedColumn<String>(
     'erklaerung',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _quelleWerkMeta = const VerificationMeta(
+    'quelleWerk',
+  );
+  @override
+  late final GeneratedColumn<String> quelleWerk = GeneratedColumn<String>(
+    'quelle_werk',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _quelleFundstelleMeta = const VerificationMeta(
+    'quelleFundstelle',
+  );
+  @override
+  late final GeneratedColumn<String> quelleFundstelle = GeneratedColumn<String>(
+    'quelle_fundstelle',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _quelleStandMeta = const VerificationMeta(
+    'quelleStand',
+  );
+  @override
+  late final GeneratedColumn<String> quelleStand = GeneratedColumn<String>(
+    'quelle_stand',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _quelleUrlMeta = const VerificationMeta(
+    'quelleUrl',
+  );
+  @override
+  late final GeneratedColumn<String> quelleUrl = GeneratedColumn<String>(
+    'quelle_url',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _geltungMeta = const VerificationMeta(
+    'geltung',
+  );
+  @override
+  late final GeneratedColumn<String> geltung = GeneratedColumn<String>(
+    'geltung',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('bund'),
+  );
+  static const VerificationMeta _landMeta = const VerificationMeta('land');
+  @override
+  late final GeneratedColumn<String> land = GeneratedColumn<String>(
+    'land',
     aliasedName,
     true,
     type: DriftSqlType.string,
@@ -7447,8 +7512,14 @@ class $WissensfragenTable extends Wissensfragen
     gebiet,
     frage,
     antwortenJson,
-    richtig,
+    richtigeJson,
     erklaerung,
+    quelleWerk,
+    quelleFundstelle,
+    quelleStand,
+    quelleUrl,
+    geltung,
+    land,
     herkunft,
     stand,
     eingereichtVon,
@@ -7497,16 +7568,61 @@ class $WissensfragenTable extends Wissensfragen
         ),
       );
     }
-    if (data.containsKey('richtig')) {
+    if (data.containsKey('richtige_json')) {
       context.handle(
-        _richtigMeta,
-        richtig.isAcceptableOrUnknown(data['richtig']!, _richtigMeta),
+        _richtigeJsonMeta,
+        richtigeJson.isAcceptableOrUnknown(
+          data['richtige_json']!,
+          _richtigeJsonMeta,
+        ),
       );
     }
     if (data.containsKey('erklaerung')) {
       context.handle(
         _erklaerungMeta,
         erklaerung.isAcceptableOrUnknown(data['erklaerung']!, _erklaerungMeta),
+      );
+    }
+    if (data.containsKey('quelle_werk')) {
+      context.handle(
+        _quelleWerkMeta,
+        quelleWerk.isAcceptableOrUnknown(data['quelle_werk']!, _quelleWerkMeta),
+      );
+    }
+    if (data.containsKey('quelle_fundstelle')) {
+      context.handle(
+        _quelleFundstelleMeta,
+        quelleFundstelle.isAcceptableOrUnknown(
+          data['quelle_fundstelle']!,
+          _quelleFundstelleMeta,
+        ),
+      );
+    }
+    if (data.containsKey('quelle_stand')) {
+      context.handle(
+        _quelleStandMeta,
+        quelleStand.isAcceptableOrUnknown(
+          data['quelle_stand']!,
+          _quelleStandMeta,
+        ),
+      );
+    }
+    if (data.containsKey('quelle_url')) {
+      context.handle(
+        _quelleUrlMeta,
+        quelleUrl.isAcceptableOrUnknown(data['quelle_url']!, _quelleUrlMeta),
+      );
+    }
+    if (data.containsKey('geltung')) {
+      context.handle(
+        _geltungMeta,
+        geltung.isAcceptableOrUnknown(data['geltung']!, _geltungMeta),
+      );
+    }
+    if (data.containsKey('land')) {
+      context.handle(
+        _landMeta,
+        land.isAcceptableOrUnknown(data['land']!, _landMeta),
       );
     }
     if (data.containsKey('herkunft')) {
@@ -7586,14 +7702,39 @@ class $WissensfragenTable extends Wissensfragen
             DriftSqlType.string,
             data['${effectivePrefix}antworten_json'],
           )!,
-      richtig:
+      richtigeJson:
           attachedDatabase.typeMapping.read(
-            DriftSqlType.int,
-            data['${effectivePrefix}richtig'],
+            DriftSqlType.string,
+            data['${effectivePrefix}richtige_json'],
           )!,
       erklaerung: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}erklaerung'],
+      ),
+      quelleWerk: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}quelle_werk'],
+      ),
+      quelleFundstelle: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}quelle_fundstelle'],
+      ),
+      quelleStand: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}quelle_stand'],
+      ),
+      quelleUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}quelle_url'],
+      ),
+      geltung:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}geltung'],
+          )!,
+      land: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}land'],
       ),
       herkunft:
           attachedDatabase.typeMapping.read(
@@ -7647,10 +7788,32 @@ class WissensfrageData extends DataClass
   /// Die Antwortmöglichkeiten als JSON-Liste.
   final String antwortenJson;
 
-  /// Index der richtigen Antwort. Index und nicht Text: Zwei Antworten
-  /// dürfen gleich lauten, ein Textvergleich träfe dann die falsche.
-  final int richtig;
+  /// Die Indizes der richtigen Antworten als JSON-Liste, z. B. `[0,3,5]`.
+  ///
+  /// ⚠️ Eine MENGE, kein einzelner Index (Issue #174). Der amtliche
+  /// Fragenkatalog des Innenministeriums BW hat ausgezählt 210 Lösungen,
+  /// davon nur 79 mit genau einer richtigen Antwort — 63 % sind
+  /// Mehrfachantworten. Ein `int` könnte den Prüfungsstoff zu einem Drittel
+  /// abbilden.
+  final String richtigeJson;
   final String? erklaerung;
+
+  /// Die Fundstelle, aus vier Feldern statt einem Satz — man will nach ihr
+  /// filtern. Wird das Feuerwehrgesetz geändert, muss man alle Fragen mit
+  /// `quelleWerk = 'FwG BW'` wiederfinden können.
+  final String? quelleWerk;
+  final String? quelleFundstelle;
+
+  /// Die **Fassung** der Quelle, nicht das Abrufdatum.
+  final String? quelleStand;
+  final String? quelleUrl;
+
+  /// `bund` | `land`. Rechtsgrundlagen sind Landesrecht, Fachliches aus den
+  /// Dienstvorschriften gilt bundesweit.
+  final String geltung;
+
+  /// Länderkürzel, nur bei `geltung = 'land'`.
+  final String? land;
 
   /// `mitgeliefert` | `eigen` — was ausgeliefert wurde, ist nicht löschbar.
   final String herkunft;
@@ -7672,8 +7835,14 @@ class WissensfrageData extends DataClass
     required this.gebiet,
     required this.frage,
     required this.antwortenJson,
-    required this.richtig,
+    required this.richtigeJson,
     this.erklaerung,
+    this.quelleWerk,
+    this.quelleFundstelle,
+    this.quelleStand,
+    this.quelleUrl,
+    required this.geltung,
+    this.land,
     required this.herkunft,
     required this.stand,
     this.eingereichtVon,
@@ -7689,9 +7858,25 @@ class WissensfrageData extends DataClass
     map['gebiet'] = Variable<String>(gebiet);
     map['frage'] = Variable<String>(frage);
     map['antworten_json'] = Variable<String>(antwortenJson);
-    map['richtig'] = Variable<int>(richtig);
+    map['richtige_json'] = Variable<String>(richtigeJson);
     if (!nullToAbsent || erklaerung != null) {
       map['erklaerung'] = Variable<String>(erklaerung);
+    }
+    if (!nullToAbsent || quelleWerk != null) {
+      map['quelle_werk'] = Variable<String>(quelleWerk);
+    }
+    if (!nullToAbsent || quelleFundstelle != null) {
+      map['quelle_fundstelle'] = Variable<String>(quelleFundstelle);
+    }
+    if (!nullToAbsent || quelleStand != null) {
+      map['quelle_stand'] = Variable<String>(quelleStand);
+    }
+    if (!nullToAbsent || quelleUrl != null) {
+      map['quelle_url'] = Variable<String>(quelleUrl);
+    }
+    map['geltung'] = Variable<String>(geltung);
+    if (!nullToAbsent || land != null) {
+      map['land'] = Variable<String>(land);
     }
     map['herkunft'] = Variable<String>(herkunft);
     map['stand'] = Variable<String>(stand);
@@ -7715,11 +7900,29 @@ class WissensfrageData extends DataClass
       gebiet: Value(gebiet),
       frage: Value(frage),
       antwortenJson: Value(antwortenJson),
-      richtig: Value(richtig),
+      richtigeJson: Value(richtigeJson),
       erklaerung:
           erklaerung == null && nullToAbsent
               ? const Value.absent()
               : Value(erklaerung),
+      quelleWerk:
+          quelleWerk == null && nullToAbsent
+              ? const Value.absent()
+              : Value(quelleWerk),
+      quelleFundstelle:
+          quelleFundstelle == null && nullToAbsent
+              ? const Value.absent()
+              : Value(quelleFundstelle),
+      quelleStand:
+          quelleStand == null && nullToAbsent
+              ? const Value.absent()
+              : Value(quelleStand),
+      quelleUrl:
+          quelleUrl == null && nullToAbsent
+              ? const Value.absent()
+              : Value(quelleUrl),
+      geltung: Value(geltung),
+      land: land == null && nullToAbsent ? const Value.absent() : Value(land),
       herkunft: Value(herkunft),
       stand: Value(stand),
       eingereichtVon:
@@ -7749,8 +7952,14 @@ class WissensfrageData extends DataClass
       gebiet: serializer.fromJson<String>(json['gebiet']),
       frage: serializer.fromJson<String>(json['frage']),
       antwortenJson: serializer.fromJson<String>(json['antwortenJson']),
-      richtig: serializer.fromJson<int>(json['richtig']),
+      richtigeJson: serializer.fromJson<String>(json['richtigeJson']),
       erklaerung: serializer.fromJson<String?>(json['erklaerung']),
+      quelleWerk: serializer.fromJson<String?>(json['quelleWerk']),
+      quelleFundstelle: serializer.fromJson<String?>(json['quelleFundstelle']),
+      quelleStand: serializer.fromJson<String?>(json['quelleStand']),
+      quelleUrl: serializer.fromJson<String?>(json['quelleUrl']),
+      geltung: serializer.fromJson<String>(json['geltung']),
+      land: serializer.fromJson<String?>(json['land']),
       herkunft: serializer.fromJson<String>(json['herkunft']),
       stand: serializer.fromJson<String>(json['stand']),
       eingereichtVon: serializer.fromJson<String?>(json['eingereichtVon']),
@@ -7768,8 +7977,14 @@ class WissensfrageData extends DataClass
       'gebiet': serializer.toJson<String>(gebiet),
       'frage': serializer.toJson<String>(frage),
       'antwortenJson': serializer.toJson<String>(antwortenJson),
-      'richtig': serializer.toJson<int>(richtig),
+      'richtigeJson': serializer.toJson<String>(richtigeJson),
       'erklaerung': serializer.toJson<String?>(erklaerung),
+      'quelleWerk': serializer.toJson<String?>(quelleWerk),
+      'quelleFundstelle': serializer.toJson<String?>(quelleFundstelle),
+      'quelleStand': serializer.toJson<String?>(quelleStand),
+      'quelleUrl': serializer.toJson<String?>(quelleUrl),
+      'geltung': serializer.toJson<String>(geltung),
+      'land': serializer.toJson<String?>(land),
       'herkunft': serializer.toJson<String>(herkunft),
       'stand': serializer.toJson<String>(stand),
       'eingereichtVon': serializer.toJson<String?>(eingereichtVon),
@@ -7785,8 +8000,14 @@ class WissensfrageData extends DataClass
     String? gebiet,
     String? frage,
     String? antwortenJson,
-    int? richtig,
+    String? richtigeJson,
     Value<String?> erklaerung = const Value.absent(),
+    Value<String?> quelleWerk = const Value.absent(),
+    Value<String?> quelleFundstelle = const Value.absent(),
+    Value<String?> quelleStand = const Value.absent(),
+    Value<String?> quelleUrl = const Value.absent(),
+    String? geltung,
+    Value<String?> land = const Value.absent(),
     String? herkunft,
     String? stand,
     Value<String?> eingereichtVon = const Value.absent(),
@@ -7799,8 +8020,17 @@ class WissensfrageData extends DataClass
     gebiet: gebiet ?? this.gebiet,
     frage: frage ?? this.frage,
     antwortenJson: antwortenJson ?? this.antwortenJson,
-    richtig: richtig ?? this.richtig,
+    richtigeJson: richtigeJson ?? this.richtigeJson,
     erklaerung: erklaerung.present ? erklaerung.value : this.erklaerung,
+    quelleWerk: quelleWerk.present ? quelleWerk.value : this.quelleWerk,
+    quelleFundstelle:
+        quelleFundstelle.present
+            ? quelleFundstelle.value
+            : this.quelleFundstelle,
+    quelleStand: quelleStand.present ? quelleStand.value : this.quelleStand,
+    quelleUrl: quelleUrl.present ? quelleUrl.value : this.quelleUrl,
+    geltung: geltung ?? this.geltung,
+    land: land.present ? land.value : this.land,
     herkunft: herkunft ?? this.herkunft,
     stand: stand ?? this.stand,
     eingereichtVon:
@@ -7820,9 +8050,23 @@ class WissensfrageData extends DataClass
           data.antwortenJson.present
               ? data.antwortenJson.value
               : this.antwortenJson,
-      richtig: data.richtig.present ? data.richtig.value : this.richtig,
+      richtigeJson:
+          data.richtigeJson.present
+              ? data.richtigeJson.value
+              : this.richtigeJson,
       erklaerung:
           data.erklaerung.present ? data.erklaerung.value : this.erklaerung,
+      quelleWerk:
+          data.quelleWerk.present ? data.quelleWerk.value : this.quelleWerk,
+      quelleFundstelle:
+          data.quelleFundstelle.present
+              ? data.quelleFundstelle.value
+              : this.quelleFundstelle,
+      quelleStand:
+          data.quelleStand.present ? data.quelleStand.value : this.quelleStand,
+      quelleUrl: data.quelleUrl.present ? data.quelleUrl.value : this.quelleUrl,
+      geltung: data.geltung.present ? data.geltung.value : this.geltung,
+      land: data.land.present ? data.land.value : this.land,
       herkunft: data.herkunft.present ? data.herkunft.value : this.herkunft,
       stand: data.stand.present ? data.stand.value : this.stand,
       eingereichtVon:
@@ -7846,8 +8090,14 @@ class WissensfrageData extends DataClass
           ..write('gebiet: $gebiet, ')
           ..write('frage: $frage, ')
           ..write('antwortenJson: $antwortenJson, ')
-          ..write('richtig: $richtig, ')
+          ..write('richtigeJson: $richtigeJson, ')
           ..write('erklaerung: $erklaerung, ')
+          ..write('quelleWerk: $quelleWerk, ')
+          ..write('quelleFundstelle: $quelleFundstelle, ')
+          ..write('quelleStand: $quelleStand, ')
+          ..write('quelleUrl: $quelleUrl, ')
+          ..write('geltung: $geltung, ')
+          ..write('land: $land, ')
           ..write('herkunft: $herkunft, ')
           ..write('stand: $stand, ')
           ..write('eingereichtVon: $eingereichtVon, ')
@@ -7865,8 +8115,14 @@ class WissensfrageData extends DataClass
     gebiet,
     frage,
     antwortenJson,
-    richtig,
+    richtigeJson,
     erklaerung,
+    quelleWerk,
+    quelleFundstelle,
+    quelleStand,
+    quelleUrl,
+    geltung,
+    land,
     herkunft,
     stand,
     eingereichtVon,
@@ -7883,8 +8139,14 @@ class WissensfrageData extends DataClass
           other.gebiet == this.gebiet &&
           other.frage == this.frage &&
           other.antwortenJson == this.antwortenJson &&
-          other.richtig == this.richtig &&
+          other.richtigeJson == this.richtigeJson &&
           other.erklaerung == this.erklaerung &&
+          other.quelleWerk == this.quelleWerk &&
+          other.quelleFundstelle == this.quelleFundstelle &&
+          other.quelleStand == this.quelleStand &&
+          other.quelleUrl == this.quelleUrl &&
+          other.geltung == this.geltung &&
+          other.land == this.land &&
           other.herkunft == this.herkunft &&
           other.stand == this.stand &&
           other.eingereichtVon == this.eingereichtVon &&
@@ -7899,8 +8161,14 @@ class WissensfragenCompanion extends UpdateCompanion<WissensfrageData> {
   final Value<String> gebiet;
   final Value<String> frage;
   final Value<String> antwortenJson;
-  final Value<int> richtig;
+  final Value<String> richtigeJson;
   final Value<String?> erklaerung;
+  final Value<String?> quelleWerk;
+  final Value<String?> quelleFundstelle;
+  final Value<String?> quelleStand;
+  final Value<String?> quelleUrl;
+  final Value<String> geltung;
+  final Value<String?> land;
   final Value<String> herkunft;
   final Value<String> stand;
   final Value<String?> eingereichtVon;
@@ -7913,8 +8181,14 @@ class WissensfragenCompanion extends UpdateCompanion<WissensfrageData> {
     this.gebiet = const Value.absent(),
     this.frage = const Value.absent(),
     this.antwortenJson = const Value.absent(),
-    this.richtig = const Value.absent(),
+    this.richtigeJson = const Value.absent(),
     this.erklaerung = const Value.absent(),
+    this.quelleWerk = const Value.absent(),
+    this.quelleFundstelle = const Value.absent(),
+    this.quelleStand = const Value.absent(),
+    this.quelleUrl = const Value.absent(),
+    this.geltung = const Value.absent(),
+    this.land = const Value.absent(),
     this.herkunft = const Value.absent(),
     this.stand = const Value.absent(),
     this.eingereichtVon = const Value.absent(),
@@ -7928,8 +8202,14 @@ class WissensfragenCompanion extends UpdateCompanion<WissensfrageData> {
     required String gebiet,
     required String frage,
     this.antwortenJson = const Value.absent(),
-    this.richtig = const Value.absent(),
+    this.richtigeJson = const Value.absent(),
     this.erklaerung = const Value.absent(),
+    this.quelleWerk = const Value.absent(),
+    this.quelleFundstelle = const Value.absent(),
+    this.quelleStand = const Value.absent(),
+    this.quelleUrl = const Value.absent(),
+    this.geltung = const Value.absent(),
+    this.land = const Value.absent(),
     this.herkunft = const Value.absent(),
     this.stand = const Value.absent(),
     this.eingereichtVon = const Value.absent(),
@@ -7944,8 +8224,14 @@ class WissensfragenCompanion extends UpdateCompanion<WissensfrageData> {
     Expression<String>? gebiet,
     Expression<String>? frage,
     Expression<String>? antwortenJson,
-    Expression<int>? richtig,
+    Expression<String>? richtigeJson,
     Expression<String>? erklaerung,
+    Expression<String>? quelleWerk,
+    Expression<String>? quelleFundstelle,
+    Expression<String>? quelleStand,
+    Expression<String>? quelleUrl,
+    Expression<String>? geltung,
+    Expression<String>? land,
     Expression<String>? herkunft,
     Expression<String>? stand,
     Expression<String>? eingereichtVon,
@@ -7959,8 +8245,14 @@ class WissensfragenCompanion extends UpdateCompanion<WissensfrageData> {
       if (gebiet != null) 'gebiet': gebiet,
       if (frage != null) 'frage': frage,
       if (antwortenJson != null) 'antworten_json': antwortenJson,
-      if (richtig != null) 'richtig': richtig,
+      if (richtigeJson != null) 'richtige_json': richtigeJson,
       if (erklaerung != null) 'erklaerung': erklaerung,
+      if (quelleWerk != null) 'quelle_werk': quelleWerk,
+      if (quelleFundstelle != null) 'quelle_fundstelle': quelleFundstelle,
+      if (quelleStand != null) 'quelle_stand': quelleStand,
+      if (quelleUrl != null) 'quelle_url': quelleUrl,
+      if (geltung != null) 'geltung': geltung,
+      if (land != null) 'land': land,
       if (herkunft != null) 'herkunft': herkunft,
       if (stand != null) 'stand': stand,
       if (eingereichtVon != null) 'eingereicht_von': eingereichtVon,
@@ -7976,8 +8268,14 @@ class WissensfragenCompanion extends UpdateCompanion<WissensfrageData> {
     Value<String>? gebiet,
     Value<String>? frage,
     Value<String>? antwortenJson,
-    Value<int>? richtig,
+    Value<String>? richtigeJson,
     Value<String?>? erklaerung,
+    Value<String?>? quelleWerk,
+    Value<String?>? quelleFundstelle,
+    Value<String?>? quelleStand,
+    Value<String?>? quelleUrl,
+    Value<String>? geltung,
+    Value<String?>? land,
     Value<String>? herkunft,
     Value<String>? stand,
     Value<String?>? eingereichtVon,
@@ -7991,8 +8289,14 @@ class WissensfragenCompanion extends UpdateCompanion<WissensfrageData> {
       gebiet: gebiet ?? this.gebiet,
       frage: frage ?? this.frage,
       antwortenJson: antwortenJson ?? this.antwortenJson,
-      richtig: richtig ?? this.richtig,
+      richtigeJson: richtigeJson ?? this.richtigeJson,
       erklaerung: erklaerung ?? this.erklaerung,
+      quelleWerk: quelleWerk ?? this.quelleWerk,
+      quelleFundstelle: quelleFundstelle ?? this.quelleFundstelle,
+      quelleStand: quelleStand ?? this.quelleStand,
+      quelleUrl: quelleUrl ?? this.quelleUrl,
+      geltung: geltung ?? this.geltung,
+      land: land ?? this.land,
       herkunft: herkunft ?? this.herkunft,
       stand: stand ?? this.stand,
       eingereichtVon: eingereichtVon ?? this.eingereichtVon,
@@ -8018,11 +8322,29 @@ class WissensfragenCompanion extends UpdateCompanion<WissensfrageData> {
     if (antwortenJson.present) {
       map['antworten_json'] = Variable<String>(antwortenJson.value);
     }
-    if (richtig.present) {
-      map['richtig'] = Variable<int>(richtig.value);
+    if (richtigeJson.present) {
+      map['richtige_json'] = Variable<String>(richtigeJson.value);
     }
     if (erklaerung.present) {
       map['erklaerung'] = Variable<String>(erklaerung.value);
+    }
+    if (quelleWerk.present) {
+      map['quelle_werk'] = Variable<String>(quelleWerk.value);
+    }
+    if (quelleFundstelle.present) {
+      map['quelle_fundstelle'] = Variable<String>(quelleFundstelle.value);
+    }
+    if (quelleStand.present) {
+      map['quelle_stand'] = Variable<String>(quelleStand.value);
+    }
+    if (quelleUrl.present) {
+      map['quelle_url'] = Variable<String>(quelleUrl.value);
+    }
+    if (geltung.present) {
+      map['geltung'] = Variable<String>(geltung.value);
+    }
+    if (land.present) {
+      map['land'] = Variable<String>(land.value);
     }
     if (herkunft.present) {
       map['herkunft'] = Variable<String>(herkunft.value);
@@ -8055,8 +8377,14 @@ class WissensfragenCompanion extends UpdateCompanion<WissensfrageData> {
           ..write('gebiet: $gebiet, ')
           ..write('frage: $frage, ')
           ..write('antwortenJson: $antwortenJson, ')
-          ..write('richtig: $richtig, ')
+          ..write('richtigeJson: $richtigeJson, ')
           ..write('erklaerung: $erklaerung, ')
+          ..write('quelleWerk: $quelleWerk, ')
+          ..write('quelleFundstelle: $quelleFundstelle, ')
+          ..write('quelleStand: $quelleStand, ')
+          ..write('quelleUrl: $quelleUrl, ')
+          ..write('geltung: $geltung, ')
+          ..write('land: $land, ')
           ..write('herkunft: $herkunft, ')
           ..write('stand: $stand, ')
           ..write('eingereichtVon: $eingereichtVon, ')
@@ -14894,8 +15222,14 @@ typedef $$WissensfragenTableCreateCompanionBuilder =
       required String gebiet,
       required String frage,
       Value<String> antwortenJson,
-      Value<int> richtig,
+      Value<String> richtigeJson,
       Value<String?> erklaerung,
+      Value<String?> quelleWerk,
+      Value<String?> quelleFundstelle,
+      Value<String?> quelleStand,
+      Value<String?> quelleUrl,
+      Value<String> geltung,
+      Value<String?> land,
       Value<String> herkunft,
       Value<String> stand,
       Value<String?> eingereichtVon,
@@ -14910,8 +15244,14 @@ typedef $$WissensfragenTableUpdateCompanionBuilder =
       Value<String> gebiet,
       Value<String> frage,
       Value<String> antwortenJson,
-      Value<int> richtig,
+      Value<String> richtigeJson,
       Value<String?> erklaerung,
+      Value<String?> quelleWerk,
+      Value<String?> quelleFundstelle,
+      Value<String?> quelleStand,
+      Value<String?> quelleUrl,
+      Value<String> geltung,
+      Value<String?> land,
       Value<String> herkunft,
       Value<String> stand,
       Value<String?> eingereichtVon,
@@ -14950,13 +15290,43 @@ class $$WissensfragenTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<int> get richtig => $composableBuilder(
-    column: $table.richtig,
+  ColumnFilters<String> get richtigeJson => $composableBuilder(
+    column: $table.richtigeJson,
     builder: (column) => ColumnFilters(column),
   );
 
   ColumnFilters<String> get erklaerung => $composableBuilder(
     column: $table.erklaerung,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get quelleWerk => $composableBuilder(
+    column: $table.quelleWerk,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get quelleFundstelle => $composableBuilder(
+    column: $table.quelleFundstelle,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get quelleStand => $composableBuilder(
+    column: $table.quelleStand,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get quelleUrl => $composableBuilder(
+    column: $table.quelleUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get geltung => $composableBuilder(
+    column: $table.geltung,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get land => $composableBuilder(
+    column: $table.land,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -15025,13 +15395,43 @@ class $$WissensfragenTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get richtig => $composableBuilder(
-    column: $table.richtig,
+  ColumnOrderings<String> get richtigeJson => $composableBuilder(
+    column: $table.richtigeJson,
     builder: (column) => ColumnOrderings(column),
   );
 
   ColumnOrderings<String> get erklaerung => $composableBuilder(
     column: $table.erklaerung,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get quelleWerk => $composableBuilder(
+    column: $table.quelleWerk,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get quelleFundstelle => $composableBuilder(
+    column: $table.quelleFundstelle,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get quelleStand => $composableBuilder(
+    column: $table.quelleStand,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get quelleUrl => $composableBuilder(
+    column: $table.quelleUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get geltung => $composableBuilder(
+    column: $table.geltung,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get land => $composableBuilder(
+    column: $table.land,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -15094,13 +15494,39 @@ class $$WissensfragenTableAnnotationComposer
     builder: (column) => column,
   );
 
-  GeneratedColumn<int> get richtig =>
-      $composableBuilder(column: $table.richtig, builder: (column) => column);
+  GeneratedColumn<String> get richtigeJson => $composableBuilder(
+    column: $table.richtigeJson,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get erklaerung => $composableBuilder(
     column: $table.erklaerung,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get quelleWerk => $composableBuilder(
+    column: $table.quelleWerk,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get quelleFundstelle => $composableBuilder(
+    column: $table.quelleFundstelle,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get quelleStand => $composableBuilder(
+    column: $table.quelleStand,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get quelleUrl =>
+      $composableBuilder(column: $table.quelleUrl, builder: (column) => column);
+
+  GeneratedColumn<String> get geltung =>
+      $composableBuilder(column: $table.geltung, builder: (column) => column);
+
+  GeneratedColumn<String> get land =>
+      $composableBuilder(column: $table.land, builder: (column) => column);
 
   GeneratedColumn<String> get herkunft =>
       $composableBuilder(column: $table.herkunft, builder: (column) => column);
@@ -15171,8 +15597,14 @@ class $$WissensfragenTableTableManager
                 Value<String> gebiet = const Value.absent(),
                 Value<String> frage = const Value.absent(),
                 Value<String> antwortenJson = const Value.absent(),
-                Value<int> richtig = const Value.absent(),
+                Value<String> richtigeJson = const Value.absent(),
                 Value<String?> erklaerung = const Value.absent(),
+                Value<String?> quelleWerk = const Value.absent(),
+                Value<String?> quelleFundstelle = const Value.absent(),
+                Value<String?> quelleStand = const Value.absent(),
+                Value<String?> quelleUrl = const Value.absent(),
+                Value<String> geltung = const Value.absent(),
+                Value<String?> land = const Value.absent(),
                 Value<String> herkunft = const Value.absent(),
                 Value<String> stand = const Value.absent(),
                 Value<String?> eingereichtVon = const Value.absent(),
@@ -15185,8 +15617,14 @@ class $$WissensfragenTableTableManager
                 gebiet: gebiet,
                 frage: frage,
                 antwortenJson: antwortenJson,
-                richtig: richtig,
+                richtigeJson: richtigeJson,
                 erklaerung: erklaerung,
+                quelleWerk: quelleWerk,
+                quelleFundstelle: quelleFundstelle,
+                quelleStand: quelleStand,
+                quelleUrl: quelleUrl,
+                geltung: geltung,
+                land: land,
                 herkunft: herkunft,
                 stand: stand,
                 eingereichtVon: eingereichtVon,
@@ -15201,8 +15639,14 @@ class $$WissensfragenTableTableManager
                 required String gebiet,
                 required String frage,
                 Value<String> antwortenJson = const Value.absent(),
-                Value<int> richtig = const Value.absent(),
+                Value<String> richtigeJson = const Value.absent(),
                 Value<String?> erklaerung = const Value.absent(),
+                Value<String?> quelleWerk = const Value.absent(),
+                Value<String?> quelleFundstelle = const Value.absent(),
+                Value<String?> quelleStand = const Value.absent(),
+                Value<String?> quelleUrl = const Value.absent(),
+                Value<String> geltung = const Value.absent(),
+                Value<String?> land = const Value.absent(),
                 Value<String> herkunft = const Value.absent(),
                 Value<String> stand = const Value.absent(),
                 Value<String?> eingereichtVon = const Value.absent(),
@@ -15215,8 +15659,14 @@ class $$WissensfragenTableTableManager
                 gebiet: gebiet,
                 frage: frage,
                 antwortenJson: antwortenJson,
-                richtig: richtig,
+                richtigeJson: richtigeJson,
                 erklaerung: erklaerung,
+                quelleWerk: quelleWerk,
+                quelleFundstelle: quelleFundstelle,
+                quelleStand: quelleStand,
+                quelleUrl: quelleUrl,
+                geltung: geltung,
+                land: land,
                 herkunft: herkunft,
                 stand: stand,
                 eingereichtVon: eingereichtVon,

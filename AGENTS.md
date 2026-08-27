@@ -260,6 +260,23 @@ pauschales Formatieren in Feature-PRs.
   bei **jeder** Veröffentlichung mitlöschen. Deshalb: eigener zeilenweiser
   Weg (`anhang_speicher.dart`), und `vehicle_id` ist die LOKALE Drift-ID
   ohne Fremdschlüssel — dasselbe Muster wie `equipment_type_links`.
+- ⚠️ **Eine Wissensfrage hat eine MENGE richtiger Antworten, keinen Index**
+  (Issue #174). Grund in einer Zahl: Im Fragenkatalog des Innenministeriums
+  BW zum Leistungsabzeichen haben von 210 Lösungen nur 79 genau eine
+  richtige Antwort — 63 % sind Mehrfachantworten, bis zu acht aus zehn. Wer
+  das auf einen `int` zurückbaut, wirft zwei Drittel des Prüfungsstoffs weg.
+  Richtig beantwortet heißt **alle richtigen und keine falsche**; ein
+  „teilweise richtig" gibt es im Prüfungsbogen nicht. Der Party-Modus zieht
+  deshalb nur Einfachauswahl (`nurEinfachauswahl`).
+- ⚠️ **Fragen aus Landesrecht sind nicht bundesweit.** Der Lernzielkatalog
+  der Truppmannausbildung belegt jedes Lernziel im Abschnitt
+  „Rechtsgrundlagen" mit einem Paragraphen des BADEN-WÜRTTEMBERGISCHEN
+  Feuerwehrgesetzes; Bayern hat ein anderes. Deshalb `geltung` +
+  `land`. **Quellen, aus denen geschöpft werden darf:** Gesetze,
+  Verwaltungsvorschriften und die FwDV (amtliche Werke, § 5 UrhG, mit
+  Quellenangabe). **Nicht:** die Lehrstoffblätter der Landesfeuerwehrschule
+  (Neckar-Verlag, ISBN) und DIN-Normtexte. Der Sachverhalt aus einer Norm
+  ist frei, ihr Text nicht.
 - ⚠️ **Riverpod-Codegen verträgt keine Drift-Datenklassen.** Ein
   `@riverpod`-Provider, der `VehicleAttachmentData` & Co. zurückgibt, bricht
   den Build mit `InvalidTypeException` ab — die Klasse liegt in einer

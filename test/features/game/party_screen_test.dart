@@ -44,7 +44,7 @@ void main() {
         gebiet: 'recht_organisation',
         frage: 'Testfrage $i',
         antwortenJson: const Value('["Stimmt","Daneben A","Daneben B"]'),
-        richtig: const Value(0),
+        richtigeJson: const Value('[0]'),
         stand: const Value('freigegeben'),
       ));
     }

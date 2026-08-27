@@ -12,6 +12,30 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.40.0] – 2026-08-27
+
+### Neu
+
+- **Fragen dürfen mehrere richtige Antworten haben.** Im amtlichen
+  Prüfungsstoff ist das der Normalfall, nicht die Ausnahme: Im Fragenkatalog
+  des Innenministeriums zum Leistungsabzeichen haben nur 79 von 210 Fragen
+  genau eine richtige Antwort. Beim Anlegen hakst du deshalb alle richtigen
+  an; richtig beantwortet ist eine Frage, wenn **alle** richtigen und
+  **keine** falsche angekreuzt sind.
+- **Jede Frage kann ihre Quelle nennen.** Werk und Fundstelle — etwa
+  „FwG BW · § 8 Abs. 2" oder „FwDV 10 · Abschnitt 4.2" — stehen in der
+  Wissensdatenbank unter der Frage. Eine Antwort, die man nicht nachschlagen
+  kann, nützt im Zweifel wenig, und im Zweifel ist man im Einsatz.
+- **Bundesweit oder Landesrecht.** Fachliches aus den Dienstvorschriften gilt
+  überall gleich; das Feuerwehrgesetz und die Rangordnung sind Landesrecht.
+  Fragen tragen das jetzt sichtbar, und Landesrecht wird beim Namen genannt.
+
+### Geändert
+
+- Der Party-Modus zieht nur Fragen mit **einer** richtigen Antwort. Am Tisch
+  reihum ist Mehrfach-Ankreuzen kein Spielzug — die übrigen Fragen bleiben in
+  der Wissensdatenbank, sie werden dort nur nicht gestellt.
+
 ## [1.39.0] – 2026-08-27
 
 ### Neu

@@ -14,6 +14,7 @@ import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/database/database_providers.dart';
 import 'package:fwapp/features/game/party/data/party_inhalte.dart';
 import 'package:fwapp/features/game/party/domain/party_frage.dart';
+import 'package:fwapp/features/knowledge/domain/wissensfrage.dart';
 import 'package:fwapp/features/game/party/presentation/providers/party_providers.dart';
 
 import '../../helpers/test_database.dart';
@@ -43,7 +44,7 @@ void main() {
         gebiet: 'recht_organisation',
         frage: 'Testfrage $i',
         antwortenJson: const Value('["Richtig","Falsch A","Falsch B"]'),
-        richtig: const Value(0),
+        richtigeJson: const Value('[0]'),
         stand: const Value('freigegeben'),
       ));
     }
@@ -238,6 +239,40 @@ void main() {
       expect(stand(c).aufgabe, isNull);
       expect(stand(c).gewaehlt, isNull);
     });
+  });
+
+  test('Mehrfachantwort-Fragen kommen NICHT in die Partie (Issue #174)',
+      () async {
+    // Am Tisch geht das Handy reihum — mehrere Kästchen anzukreuzen ist dort
+    // kein Spielzug. Die Frage bleibt in der Wissensdatenbank, sie wird nur
+    // nicht gestellt.
+    for (final f in await db.wissenDao.getAll()) {
+      await db.wissenDao.deleteFrage(f.id);
+    }
+    await db.wissenDao.insertFrage(WissensfragenCompanion.insert(
+      gebiet: 'loeschlehre',
+      frage: 'Welche Aussagen sind richtig?',
+      antwortenJson: const Value('["A","B","C"]'),
+      richtigeJson: const Value('[0,2]'),
+      stand: Value(Fragenstand.freigegeben.schluessel),
+    ));
+    await db.wissenDao.insertFrage(WissensfragenCompanion.insert(
+      gebiet: 'loeschlehre',
+      frage: 'Eine einzige richtige Antwort?',
+      antwortenJson: const Value('["Richtig","Falsch A","Falsch B"]'),
+      richtigeJson: const Value('[0]'),
+      stand: Value(Fragenstand.freigegeben.schluessel),
+    ));
+
+    final c = container(inhalte: PartyInhalte.leer);
+    final stand = await starte(c, fragenProSpieler: 3);
+    final texte = stand.fragen.map((f) => f.text).toSet();
+    expect(texte, contains('Eine einzige richtige Antwort?'));
+    expect(texte, isNot(contains('Welche Aussagen sind richtig?')));
+    // Und kein Platzhalter hat sich eingeschlichen.
+    expect(
+        stand.fragen.every((f) => f.antworten.every((a) => a.text != '—')),
+        isTrue);
   });
 
   test('mit Bestand kommen auch Fach-Fragen vor', () async {

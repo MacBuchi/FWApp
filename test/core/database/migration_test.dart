@@ -14,14 +14,14 @@ void main() {
     verifier = SchemaVerifier(GeneratedHelper());
   });
 
-  test('migrates from v1 to v9 without schema errors', () async {
+  test('migrates from v1 to v10 without schema errors', () async {
     final connection = await verifier.startAt(1);
     final db = AppDatabase(connection);
-    await verifier.migrateAndValidate(db, 9);
+    await verifier.migrateAndValidate(db, 10);
     await db.close();
   });
 
-  test('v1 data survives the migration to v9', () async {
+  test('v1 data survives the migration to v10', () async {
     final schema = await verifier.schemaAt(1);
 
     schema.rawDatabase
@@ -40,7 +40,7 @@ void main() {
           "VALUES (1, 1, 1, 2, 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 9);
+    await verifier.migrateAndValidate(db, 10);
 
     final vehicle = await db.vehicleDao.getById(1);
     expect(vehicle?.name, 'AB-G');
@@ -63,7 +63,7 @@ void main() {
       () async {
     final connection = await verifier.startAt(2);
     final db = AppDatabase(connection);
-    await verifier.migrateAndValidate(db, 9);
+    await verifier.migrateAndValidate(db, 10);
 
     final equipmentId = await db.equipmentDao
         .insertEquipment(EquipmentItemsCompanion.insert(name: 'Spineboard'));
@@ -81,7 +81,7 @@ void main() {
   test('new v2 tables are usable after migration', () async {
     final connection = await verifier.startAt(1);
     final db = AppDatabase(connection);
-    await verifier.migrateAndValidate(db, 9);
+    await verifier.migrateAndValidate(db, 10);
 
     final vehicleId = await db.vehicleDao.insertVehicle(
         VehiclesCompanion.insert(name: 'LF 10', type: 'LF'));
@@ -132,7 +132,7 @@ void main() {
         "'{}', '[]', '[]', 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 9);
+    await verifier.migrateAndValidate(db, 10);
 
     final geraet = await db.equipmentDao.getById(1);
     expect(geraet?.name, 'Feuerwehraxt');
@@ -165,7 +165,7 @@ void main() {
           "VALUES (1, 1, 'G1', 0, 2, 1, 3, 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 9);
+    await verifier.migrateAndValidate(db, 10);
 
     final fach = await db.compartmentDao.getById(1);
     expect(fach?.label, 'G1');
@@ -193,7 +193,7 @@ void main() {
           "VALUES (1, 1, 'G1', 0, 1, 'fahrerseite', 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 9);
+    await verifier.migrateAndValidate(db, 10);
 
     final fach = await db.compartmentDao.getById(1);
     expect(fach?.label, 'G1');
@@ -219,7 +219,7 @@ void main() {
           "VALUES (1, 1, 'G1', 0, 1, 'fahrerseite', 'vorne', 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 9);
+    await verifier.migrateAndValidate(db, 10);
 
     final fach = await db.compartmentDao.getById(1);
     expect(fach?.label, 'G1');
@@ -246,19 +246,54 @@ void main() {
         "VALUES (1, 'HLF 20', 'HLF 20', 0, 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 9);
+    await verifier.migrateAndValidate(db, 10);
 
     expect(await db.wissenDao.getAll(), isEmpty);
     await db.wissenDao.insertFrage(WissensfragenCompanion.insert(
       gebiet: 'geraetekunde',
       frage: 'Wie lang ist ein C-Schlauch?',
       antwortenJson: const Value('["15 m","20 m"]'),
-      richtig: const Value(0),
+      richtigeJson: const Value('[0]'),
       stand: const Value('freigegeben'),
     ));
     expect(await db.wissenDao.getSpielbare(), hasLength(1));
     // Das Fahrzeug von vorher steht unangetastet da.
     expect((await db.vehicleDao.getById(1))?.name, 'HLF 20');
+
+    await db.close();
+  });
+
+  test('v9→v10: aus dem einen Index wird eine Menge, ohne Verlust', () async {
+    // Issue #174, zweite Stufe. Der Rückfüll-Schritt ist der heikle: Läuft
+    // er nicht, steht jede bestehende Frage danach auf „Antwort A richtig",
+    // und niemand merkt es, weil das oft zufällig stimmt.
+    final schema = await verifier.schemaAt(9);
+    schema.rawDatabase
+      ..execute("INSERT INTO wissensfragen (id, gebiet, frage, "
+          "antworten_json, richtig, herkunft, stand, dirty, updated_at) "
+          "VALUES (1, 'geraetekunde', 'Wie lang ist ein C-Schlauch?', "
+          "'[\"15 m\",\"20 m\",\"30 m\"]', 2, 'eigen', 'freigegeben', 0, 0)")
+      ..execute("INSERT INTO wissensfragen (id, gebiet, frage, "
+          "antworten_json, richtig, herkunft, stand, dirty, updated_at) "
+          "VALUES (2, 'klischee', 'Was ist heilig?', "
+          "'[\"Kaffee\",\"Spind\"]', 0, 'mitgeliefert', 'freigegeben', 0, 0)")
+      ;
+
+    final db = AppDatabase(schema.newConnection());
+    await verifier.migrateAndValidate(db, 10);
+
+    final fragen = await db.wissenDao.getAll();
+    expect(fragen, hasLength(2));
+    // Index 2 wird zu [2] — nicht zu [0].
+    expect(fragen.firstWhere((f) => f.id == 1).richtigeJson, '[2]');
+    expect(fragen.firstWhere((f) => f.id == 2).richtigeJson, '[0]');
+    // Der übrige Bestand ist unangetastet.
+    expect(fragen.firstWhere((f) => f.id == 1).frage,
+        'Wie lang ist ein C-Schlauch?');
+    expect(fragen.firstWhere((f) => f.id == 2).herkunft, 'mitgeliefert');
+    // Die neuen Felder stehen leer bereit.
+    expect(fragen.first.quelleWerk, isNull);
+    expect(fragen.first.geltung, 'bund');
 
     await db.close();
   });

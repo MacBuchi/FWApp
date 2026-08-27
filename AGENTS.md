@@ -266,6 +266,28 @@ pauschales Formatieren in Feature-PRs.
   `part`-Datei. Deshalb sind `dashboard_providers.dart` und
   `anhang_providers.dart` bewusst von Hand geschrieben. Wer sie „aufräumt",
   macht die CI rot.
+- ⚠️ **Die Wissensdatenbank gehört der GESAMTWEHR** (Issue #174), nicht der
+  Abteilung — Feuerwehrwissen ist nicht abteilungsspezifisch. Sie liegt
+  deshalb außerhalb des Snapshots und geht den zeilenweisen Weg der
+  Gerätetypen. Einreichen darf **jeder mit Konto**, freigeben nur der
+  Gerätewart; beide Regeln stehen als RLS-Policy und nicht bloß in der
+  Oberfläche. Der Grundstock kommt aus `assets/game/party.json` über
+  `wissen_seeder.dart` — bewusst aus dem Asset und nicht aus einer
+  Migration, weil die Einordnung einer Frage redaktionell ist und
+  korrigierbar bleiben muss.
+- ⚠️ **`ref.read(provider.future)` ohne Zuhörer wird NIE fertig.** Provider
+  sind in Riverpod 3 ab Werk auto-dispose: Ein `read` erzeugt den Provider
+  und entsorgt ihn sofort wieder, das Future bleibt hängen — ohne Fehler,
+  ohne Zeitlimit. Der Start einer Partie stand genau daran still. In einem
+  Notifier deshalb die DAO direkt lesen, nicht den Provider.
+- ⚠️ **`insertOnConflictUpdate` ist ein INSERT.** Ein Companion mit nur `id`
+  und einem geänderten Feld fliegt mit `InvalidDataException` heraus, weil
+  die Pflichtspalten fehlen. Für Teil-Updates `update(...)..where(...)` mit
+  `.write(...)` benutzen (`WissenDao.aendere`).
+- ⚠️ **Echte Datei-Ein-/Ausgabe hängt in `testWidgets`.** Der Rumpf läuft in
+  einer Fake-Async-Zone; ein `File.writeAsBytes` darin wird nie fertig, und
+  der Testlauf steht minutenlang OHNE Ausgabe. Alles Datei-Anfassende in
+  `tester.runAsync(...)` wickeln — oder in einem normalen `test()` prüfen.
 - **Der Demo-Datenbestand ist fiktiv.** Die echte AB-G-Beladeliste ist bewusst
   aus dem Arbeitsstand entfernt; der Seeder legt Katalog **vor** Fahrzeug an.
 - **Die Demo-Gesamtwehr ist ein Skript, kein Handbetrieb** (Issue #158):

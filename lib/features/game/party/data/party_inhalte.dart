@@ -34,6 +34,12 @@ class UnerwarteteFrage {
   final List<String> antworten;
   final int richtig;
   final String kategorie;
+
+  /// Sachgebiet für die Wissensdatenbank (Issue #174), z. B.
+  /// `geraetekunde`. `null` bei älteren Asset-Fassungen — der Seeder ordnet
+  /// die Frage dann anhand von [kategorie] ein.
+  final String? gebiet;
+
   final String? erklaerung;
 
   const UnerwarteteFrage({
@@ -41,6 +47,7 @@ class UnerwarteteFrage {
     required this.antworten,
     required this.richtig,
     required this.kategorie,
+    this.gebiet,
     this.erklaerung,
   });
 
@@ -106,6 +113,7 @@ PartyInhalte parsePartyInhalte(String raw) {
       antworten: antworten,
       richtig: richtig,
       kategorie: kategorie,
+      gebiet: (eintrag['gebiet'] as String?)?.trim(),
       erklaerung: (eintrag['erklaerung'] as String?)?.trim(),
     ));
   }

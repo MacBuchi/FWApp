@@ -193,6 +193,18 @@ class LearningDaoManager {
       );
 }
 
+mixin _$WissenDaoMixin on DatabaseAccessor<AppDatabase> {
+  $WissensfragenTable get wissensfragen => attachedDatabase.wissensfragen;
+  WissenDaoManager get managers => WissenDaoManager(this);
+}
+
+class WissenDaoManager {
+  final _$WissenDaoMixin _db;
+  WissenDaoManager(this._db);
+  $$WissensfragenTableTableManager get wissensfragen =>
+      $$WissensfragenTableTableManager(_db.attachedDatabase, _db.wissensfragen);
+}
+
 mixin _$AttachmentDaoMixin on DatabaseAccessor<AppDatabase> {
   $VehiclesTable get vehicles => attachedDatabase.vehicles;
   $VehicleAttachmentsTable get vehicleAttachments =>
@@ -7276,6 +7288,787 @@ class VehicleAttachmentsCompanion
   }
 }
 
+class $WissensfragenTable extends Wissensfragen
+    with TableInfo<$WissensfragenTable, WissensfrageData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $WissensfragenTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _gebietMeta = const VerificationMeta('gebiet');
+  @override
+  late final GeneratedColumn<String> gebiet = GeneratedColumn<String>(
+    'gebiet',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _frageMeta = const VerificationMeta('frage');
+  @override
+  late final GeneratedColumn<String> frage = GeneratedColumn<String>(
+    'frage',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _antwortenJsonMeta = const VerificationMeta(
+    'antwortenJson',
+  );
+  @override
+  late final GeneratedColumn<String> antwortenJson = GeneratedColumn<String>(
+    'antworten_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
+  static const VerificationMeta _richtigMeta = const VerificationMeta(
+    'richtig',
+  );
+  @override
+  late final GeneratedColumn<int> richtig = GeneratedColumn<int>(
+    'richtig',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _erklaerungMeta = const VerificationMeta(
+    'erklaerung',
+  );
+  @override
+  late final GeneratedColumn<String> erklaerung = GeneratedColumn<String>(
+    'erklaerung',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _herkunftMeta = const VerificationMeta(
+    'herkunft',
+  );
+  @override
+  late final GeneratedColumn<String> herkunft = GeneratedColumn<String>(
+    'herkunft',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('eigen'),
+  );
+  static const VerificationMeta _standMeta = const VerificationMeta('stand');
+  @override
+  late final GeneratedColumn<String> stand = GeneratedColumn<String>(
+    'stand',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('eingereicht'),
+  );
+  static const VerificationMeta _eingereichtVonMeta = const VerificationMeta(
+    'eingereichtVon',
+  );
+  @override
+  late final GeneratedColumn<String> eingereichtVon = GeneratedColumn<String>(
+    'eingereicht_von',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _remoteIdMeta = const VerificationMeta(
+    'remoteId',
+  );
+  @override
+  late final GeneratedColumn<String> remoteId = GeneratedColumn<String>(
+    'remote_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _remoteUpdatedAtMeta = const VerificationMeta(
+    'remoteUpdatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> remoteUpdatedAt =
+      GeneratedColumn<DateTime>(
+        'remote_updated_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _dirtyMeta = const VerificationMeta('dirty');
+  @override
+  late final GeneratedColumn<bool> dirty = GeneratedColumn<bool>(
+    'dirty',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("dirty" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    gebiet,
+    frage,
+    antwortenJson,
+    richtig,
+    erklaerung,
+    herkunft,
+    stand,
+    eingereichtVon,
+    remoteId,
+    remoteUpdatedAt,
+    dirty,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'wissensfragen';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<WissensfrageData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('gebiet')) {
+      context.handle(
+        _gebietMeta,
+        gebiet.isAcceptableOrUnknown(data['gebiet']!, _gebietMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_gebietMeta);
+    }
+    if (data.containsKey('frage')) {
+      context.handle(
+        _frageMeta,
+        frage.isAcceptableOrUnknown(data['frage']!, _frageMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_frageMeta);
+    }
+    if (data.containsKey('antworten_json')) {
+      context.handle(
+        _antwortenJsonMeta,
+        antwortenJson.isAcceptableOrUnknown(
+          data['antworten_json']!,
+          _antwortenJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('richtig')) {
+      context.handle(
+        _richtigMeta,
+        richtig.isAcceptableOrUnknown(data['richtig']!, _richtigMeta),
+      );
+    }
+    if (data.containsKey('erklaerung')) {
+      context.handle(
+        _erklaerungMeta,
+        erklaerung.isAcceptableOrUnknown(data['erklaerung']!, _erklaerungMeta),
+      );
+    }
+    if (data.containsKey('herkunft')) {
+      context.handle(
+        _herkunftMeta,
+        herkunft.isAcceptableOrUnknown(data['herkunft']!, _herkunftMeta),
+      );
+    }
+    if (data.containsKey('stand')) {
+      context.handle(
+        _standMeta,
+        stand.isAcceptableOrUnknown(data['stand']!, _standMeta),
+      );
+    }
+    if (data.containsKey('eingereicht_von')) {
+      context.handle(
+        _eingereichtVonMeta,
+        eingereichtVon.isAcceptableOrUnknown(
+          data['eingereicht_von']!,
+          _eingereichtVonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('remote_id')) {
+      context.handle(
+        _remoteIdMeta,
+        remoteId.isAcceptableOrUnknown(data['remote_id']!, _remoteIdMeta),
+      );
+    }
+    if (data.containsKey('remote_updated_at')) {
+      context.handle(
+        _remoteUpdatedAtMeta,
+        remoteUpdatedAt.isAcceptableOrUnknown(
+          data['remote_updated_at']!,
+          _remoteUpdatedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('dirty')) {
+      context.handle(
+        _dirtyMeta,
+        dirty.isAcceptableOrUnknown(data['dirty']!, _dirtyMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  WissensfrageData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return WissensfrageData(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}id'],
+          )!,
+      gebiet:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}gebiet'],
+          )!,
+      frage:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}frage'],
+          )!,
+      antwortenJson:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}antworten_json'],
+          )!,
+      richtig:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}richtig'],
+          )!,
+      erklaerung: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}erklaerung'],
+      ),
+      herkunft:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}herkunft'],
+          )!,
+      stand:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}stand'],
+          )!,
+      eingereichtVon: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}eingereicht_von'],
+      ),
+      remoteId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}remote_id'],
+      ),
+      remoteUpdatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}remote_updated_at'],
+      ),
+      dirty:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}dirty'],
+          )!,
+      updatedAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}updated_at'],
+          )!,
+    );
+  }
+
+  @override
+  $WissensfragenTable createAlias(String alias) {
+    return $WissensfragenTable(attachedDatabase, alias);
+  }
+}
+
+class WissensfrageData extends DataClass
+    implements Insertable<WissensfrageData> {
+  final int id;
+
+  /// Schlüssel aus `Wissensgebiet` — fahrzeugkunde, geraetekunde, …
+  final String gebiet;
+  final String frage;
+
+  /// Die Antwortmöglichkeiten als JSON-Liste.
+  final String antwortenJson;
+
+  /// Index der richtigen Antwort. Index und nicht Text: Zwei Antworten
+  /// dürfen gleich lauten, ein Textvergleich träfe dann die falsche.
+  final int richtig;
+  final String? erklaerung;
+
+  /// `mitgeliefert` | `eigen` — was ausgeliefert wurde, ist nicht löschbar.
+  final String herkunft;
+
+  /// `eingereicht` | `freigegeben` | `abgelehnt`. Gestellt wird nur, was
+  /// freigegeben ist — der Filter, um den das Issue ausdrücklich bat.
+  final String stand;
+  final String? eingereichtVon;
+
+  /// Verknüpfung zur geteilten Zeile der Gesamtwehr; `null` = nur hier.
+  final String? remoteId;
+  final DateTime? remoteUpdatedAt;
+
+  /// Lokal geändert und noch nicht geteilt.
+  final bool dirty;
+  final DateTime updatedAt;
+  const WissensfrageData({
+    required this.id,
+    required this.gebiet,
+    required this.frage,
+    required this.antwortenJson,
+    required this.richtig,
+    this.erklaerung,
+    required this.herkunft,
+    required this.stand,
+    this.eingereichtVon,
+    this.remoteId,
+    this.remoteUpdatedAt,
+    required this.dirty,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['gebiet'] = Variable<String>(gebiet);
+    map['frage'] = Variable<String>(frage);
+    map['antworten_json'] = Variable<String>(antwortenJson);
+    map['richtig'] = Variable<int>(richtig);
+    if (!nullToAbsent || erklaerung != null) {
+      map['erklaerung'] = Variable<String>(erklaerung);
+    }
+    map['herkunft'] = Variable<String>(herkunft);
+    map['stand'] = Variable<String>(stand);
+    if (!nullToAbsent || eingereichtVon != null) {
+      map['eingereicht_von'] = Variable<String>(eingereichtVon);
+    }
+    if (!nullToAbsent || remoteId != null) {
+      map['remote_id'] = Variable<String>(remoteId);
+    }
+    if (!nullToAbsent || remoteUpdatedAt != null) {
+      map['remote_updated_at'] = Variable<DateTime>(remoteUpdatedAt);
+    }
+    map['dirty'] = Variable<bool>(dirty);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  WissensfragenCompanion toCompanion(bool nullToAbsent) {
+    return WissensfragenCompanion(
+      id: Value(id),
+      gebiet: Value(gebiet),
+      frage: Value(frage),
+      antwortenJson: Value(antwortenJson),
+      richtig: Value(richtig),
+      erklaerung:
+          erklaerung == null && nullToAbsent
+              ? const Value.absent()
+              : Value(erklaerung),
+      herkunft: Value(herkunft),
+      stand: Value(stand),
+      eingereichtVon:
+          eingereichtVon == null && nullToAbsent
+              ? const Value.absent()
+              : Value(eingereichtVon),
+      remoteId:
+          remoteId == null && nullToAbsent
+              ? const Value.absent()
+              : Value(remoteId),
+      remoteUpdatedAt:
+          remoteUpdatedAt == null && nullToAbsent
+              ? const Value.absent()
+              : Value(remoteUpdatedAt),
+      dirty: Value(dirty),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory WissensfrageData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return WissensfrageData(
+      id: serializer.fromJson<int>(json['id']),
+      gebiet: serializer.fromJson<String>(json['gebiet']),
+      frage: serializer.fromJson<String>(json['frage']),
+      antwortenJson: serializer.fromJson<String>(json['antwortenJson']),
+      richtig: serializer.fromJson<int>(json['richtig']),
+      erklaerung: serializer.fromJson<String?>(json['erklaerung']),
+      herkunft: serializer.fromJson<String>(json['herkunft']),
+      stand: serializer.fromJson<String>(json['stand']),
+      eingereichtVon: serializer.fromJson<String?>(json['eingereichtVon']),
+      remoteId: serializer.fromJson<String?>(json['remoteId']),
+      remoteUpdatedAt: serializer.fromJson<DateTime?>(json['remoteUpdatedAt']),
+      dirty: serializer.fromJson<bool>(json['dirty']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'gebiet': serializer.toJson<String>(gebiet),
+      'frage': serializer.toJson<String>(frage),
+      'antwortenJson': serializer.toJson<String>(antwortenJson),
+      'richtig': serializer.toJson<int>(richtig),
+      'erklaerung': serializer.toJson<String?>(erklaerung),
+      'herkunft': serializer.toJson<String>(herkunft),
+      'stand': serializer.toJson<String>(stand),
+      'eingereichtVon': serializer.toJson<String?>(eingereichtVon),
+      'remoteId': serializer.toJson<String?>(remoteId),
+      'remoteUpdatedAt': serializer.toJson<DateTime?>(remoteUpdatedAt),
+      'dirty': serializer.toJson<bool>(dirty),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  WissensfrageData copyWith({
+    int? id,
+    String? gebiet,
+    String? frage,
+    String? antwortenJson,
+    int? richtig,
+    Value<String?> erklaerung = const Value.absent(),
+    String? herkunft,
+    String? stand,
+    Value<String?> eingereichtVon = const Value.absent(),
+    Value<String?> remoteId = const Value.absent(),
+    Value<DateTime?> remoteUpdatedAt = const Value.absent(),
+    bool? dirty,
+    DateTime? updatedAt,
+  }) => WissensfrageData(
+    id: id ?? this.id,
+    gebiet: gebiet ?? this.gebiet,
+    frage: frage ?? this.frage,
+    antwortenJson: antwortenJson ?? this.antwortenJson,
+    richtig: richtig ?? this.richtig,
+    erklaerung: erklaerung.present ? erklaerung.value : this.erklaerung,
+    herkunft: herkunft ?? this.herkunft,
+    stand: stand ?? this.stand,
+    eingereichtVon:
+        eingereichtVon.present ? eingereichtVon.value : this.eingereichtVon,
+    remoteId: remoteId.present ? remoteId.value : this.remoteId,
+    remoteUpdatedAt:
+        remoteUpdatedAt.present ? remoteUpdatedAt.value : this.remoteUpdatedAt,
+    dirty: dirty ?? this.dirty,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  WissensfrageData copyWithCompanion(WissensfragenCompanion data) {
+    return WissensfrageData(
+      id: data.id.present ? data.id.value : this.id,
+      gebiet: data.gebiet.present ? data.gebiet.value : this.gebiet,
+      frage: data.frage.present ? data.frage.value : this.frage,
+      antwortenJson:
+          data.antwortenJson.present
+              ? data.antwortenJson.value
+              : this.antwortenJson,
+      richtig: data.richtig.present ? data.richtig.value : this.richtig,
+      erklaerung:
+          data.erklaerung.present ? data.erklaerung.value : this.erklaerung,
+      herkunft: data.herkunft.present ? data.herkunft.value : this.herkunft,
+      stand: data.stand.present ? data.stand.value : this.stand,
+      eingereichtVon:
+          data.eingereichtVon.present
+              ? data.eingereichtVon.value
+              : this.eingereichtVon,
+      remoteId: data.remoteId.present ? data.remoteId.value : this.remoteId,
+      remoteUpdatedAt:
+          data.remoteUpdatedAt.present
+              ? data.remoteUpdatedAt.value
+              : this.remoteUpdatedAt,
+      dirty: data.dirty.present ? data.dirty.value : this.dirty,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WissensfrageData(')
+          ..write('id: $id, ')
+          ..write('gebiet: $gebiet, ')
+          ..write('frage: $frage, ')
+          ..write('antwortenJson: $antwortenJson, ')
+          ..write('richtig: $richtig, ')
+          ..write('erklaerung: $erklaerung, ')
+          ..write('herkunft: $herkunft, ')
+          ..write('stand: $stand, ')
+          ..write('eingereichtVon: $eingereichtVon, ')
+          ..write('remoteId: $remoteId, ')
+          ..write('remoteUpdatedAt: $remoteUpdatedAt, ')
+          ..write('dirty: $dirty, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    gebiet,
+    frage,
+    antwortenJson,
+    richtig,
+    erklaerung,
+    herkunft,
+    stand,
+    eingereichtVon,
+    remoteId,
+    remoteUpdatedAt,
+    dirty,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is WissensfrageData &&
+          other.id == this.id &&
+          other.gebiet == this.gebiet &&
+          other.frage == this.frage &&
+          other.antwortenJson == this.antwortenJson &&
+          other.richtig == this.richtig &&
+          other.erklaerung == this.erklaerung &&
+          other.herkunft == this.herkunft &&
+          other.stand == this.stand &&
+          other.eingereichtVon == this.eingereichtVon &&
+          other.remoteId == this.remoteId &&
+          other.remoteUpdatedAt == this.remoteUpdatedAt &&
+          other.dirty == this.dirty &&
+          other.updatedAt == this.updatedAt);
+}
+
+class WissensfragenCompanion extends UpdateCompanion<WissensfrageData> {
+  final Value<int> id;
+  final Value<String> gebiet;
+  final Value<String> frage;
+  final Value<String> antwortenJson;
+  final Value<int> richtig;
+  final Value<String?> erklaerung;
+  final Value<String> herkunft;
+  final Value<String> stand;
+  final Value<String?> eingereichtVon;
+  final Value<String?> remoteId;
+  final Value<DateTime?> remoteUpdatedAt;
+  final Value<bool> dirty;
+  final Value<DateTime> updatedAt;
+  const WissensfragenCompanion({
+    this.id = const Value.absent(),
+    this.gebiet = const Value.absent(),
+    this.frage = const Value.absent(),
+    this.antwortenJson = const Value.absent(),
+    this.richtig = const Value.absent(),
+    this.erklaerung = const Value.absent(),
+    this.herkunft = const Value.absent(),
+    this.stand = const Value.absent(),
+    this.eingereichtVon = const Value.absent(),
+    this.remoteId = const Value.absent(),
+    this.remoteUpdatedAt = const Value.absent(),
+    this.dirty = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  WissensfragenCompanion.insert({
+    this.id = const Value.absent(),
+    required String gebiet,
+    required String frage,
+    this.antwortenJson = const Value.absent(),
+    this.richtig = const Value.absent(),
+    this.erklaerung = const Value.absent(),
+    this.herkunft = const Value.absent(),
+    this.stand = const Value.absent(),
+    this.eingereichtVon = const Value.absent(),
+    this.remoteId = const Value.absent(),
+    this.remoteUpdatedAt = const Value.absent(),
+    this.dirty = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  }) : gebiet = Value(gebiet),
+       frage = Value(frage);
+  static Insertable<WissensfrageData> custom({
+    Expression<int>? id,
+    Expression<String>? gebiet,
+    Expression<String>? frage,
+    Expression<String>? antwortenJson,
+    Expression<int>? richtig,
+    Expression<String>? erklaerung,
+    Expression<String>? herkunft,
+    Expression<String>? stand,
+    Expression<String>? eingereichtVon,
+    Expression<String>? remoteId,
+    Expression<DateTime>? remoteUpdatedAt,
+    Expression<bool>? dirty,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (gebiet != null) 'gebiet': gebiet,
+      if (frage != null) 'frage': frage,
+      if (antwortenJson != null) 'antworten_json': antwortenJson,
+      if (richtig != null) 'richtig': richtig,
+      if (erklaerung != null) 'erklaerung': erklaerung,
+      if (herkunft != null) 'herkunft': herkunft,
+      if (stand != null) 'stand': stand,
+      if (eingereichtVon != null) 'eingereicht_von': eingereichtVon,
+      if (remoteId != null) 'remote_id': remoteId,
+      if (remoteUpdatedAt != null) 'remote_updated_at': remoteUpdatedAt,
+      if (dirty != null) 'dirty': dirty,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  WissensfragenCompanion copyWith({
+    Value<int>? id,
+    Value<String>? gebiet,
+    Value<String>? frage,
+    Value<String>? antwortenJson,
+    Value<int>? richtig,
+    Value<String?>? erklaerung,
+    Value<String>? herkunft,
+    Value<String>? stand,
+    Value<String?>? eingereichtVon,
+    Value<String?>? remoteId,
+    Value<DateTime?>? remoteUpdatedAt,
+    Value<bool>? dirty,
+    Value<DateTime>? updatedAt,
+  }) {
+    return WissensfragenCompanion(
+      id: id ?? this.id,
+      gebiet: gebiet ?? this.gebiet,
+      frage: frage ?? this.frage,
+      antwortenJson: antwortenJson ?? this.antwortenJson,
+      richtig: richtig ?? this.richtig,
+      erklaerung: erklaerung ?? this.erklaerung,
+      herkunft: herkunft ?? this.herkunft,
+      stand: stand ?? this.stand,
+      eingereichtVon: eingereichtVon ?? this.eingereichtVon,
+      remoteId: remoteId ?? this.remoteId,
+      remoteUpdatedAt: remoteUpdatedAt ?? this.remoteUpdatedAt,
+      dirty: dirty ?? this.dirty,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (gebiet.present) {
+      map['gebiet'] = Variable<String>(gebiet.value);
+    }
+    if (frage.present) {
+      map['frage'] = Variable<String>(frage.value);
+    }
+    if (antwortenJson.present) {
+      map['antworten_json'] = Variable<String>(antwortenJson.value);
+    }
+    if (richtig.present) {
+      map['richtig'] = Variable<int>(richtig.value);
+    }
+    if (erklaerung.present) {
+      map['erklaerung'] = Variable<String>(erklaerung.value);
+    }
+    if (herkunft.present) {
+      map['herkunft'] = Variable<String>(herkunft.value);
+    }
+    if (stand.present) {
+      map['stand'] = Variable<String>(stand.value);
+    }
+    if (eingereichtVon.present) {
+      map['eingereicht_von'] = Variable<String>(eingereichtVon.value);
+    }
+    if (remoteId.present) {
+      map['remote_id'] = Variable<String>(remoteId.value);
+    }
+    if (remoteUpdatedAt.present) {
+      map['remote_updated_at'] = Variable<DateTime>(remoteUpdatedAt.value);
+    }
+    if (dirty.present) {
+      map['dirty'] = Variable<bool>(dirty.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WissensfragenCompanion(')
+          ..write('id: $id, ')
+          ..write('gebiet: $gebiet, ')
+          ..write('frage: $frage, ')
+          ..write('antwortenJson: $antwortenJson, ')
+          ..write('richtig: $richtig, ')
+          ..write('erklaerung: $erklaerung, ')
+          ..write('herkunft: $herkunft, ')
+          ..write('stand: $stand, ')
+          ..write('eingereichtVon: $eingereichtVon, ')
+          ..write('remoteId: $remoteId, ')
+          ..write('remoteUpdatedAt: $remoteUpdatedAt, ')
+          ..write('dirty: $dirty, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -7302,6 +8095,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final $VehicleAttachmentsTable vehicleAttachments =
       $VehicleAttachmentsTable(this);
+  late final $WissensfragenTable wissensfragen = $WissensfragenTable(this);
   late final VehicleDao vehicleDao = VehicleDao(this as AppDatabase);
   late final CompartmentDao compartmentDao = CompartmentDao(
     this as AppDatabase,
@@ -7313,6 +8107,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final LearningDao learningDao = LearningDao(this as AppDatabase);
   late final InventoryDao inventoryDao = InventoryDao(this as AppDatabase);
   late final AttachmentDao attachmentDao = AttachmentDao(this as AppDatabase);
+  late final WissenDao wissenDao = WissenDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -7332,6 +8127,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     inventorySessions,
     inventoryChecks,
     vehicleAttachments,
+    wissensfragen,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -14092,6 +14888,375 @@ typedef $$VehicleAttachmentsTableProcessedTableManager =
       VehicleAttachmentData,
       PrefetchHooks Function({bool vehicleId})
     >;
+typedef $$WissensfragenTableCreateCompanionBuilder =
+    WissensfragenCompanion Function({
+      Value<int> id,
+      required String gebiet,
+      required String frage,
+      Value<String> antwortenJson,
+      Value<int> richtig,
+      Value<String?> erklaerung,
+      Value<String> herkunft,
+      Value<String> stand,
+      Value<String?> eingereichtVon,
+      Value<String?> remoteId,
+      Value<DateTime?> remoteUpdatedAt,
+      Value<bool> dirty,
+      Value<DateTime> updatedAt,
+    });
+typedef $$WissensfragenTableUpdateCompanionBuilder =
+    WissensfragenCompanion Function({
+      Value<int> id,
+      Value<String> gebiet,
+      Value<String> frage,
+      Value<String> antwortenJson,
+      Value<int> richtig,
+      Value<String?> erklaerung,
+      Value<String> herkunft,
+      Value<String> stand,
+      Value<String?> eingereichtVon,
+      Value<String?> remoteId,
+      Value<DateTime?> remoteUpdatedAt,
+      Value<bool> dirty,
+      Value<DateTime> updatedAt,
+    });
+
+class $$WissensfragenTableFilterComposer
+    extends Composer<_$AppDatabase, $WissensfragenTable> {
+  $$WissensfragenTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get gebiet => $composableBuilder(
+    column: $table.gebiet,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get frage => $composableBuilder(
+    column: $table.frage,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get antwortenJson => $composableBuilder(
+    column: $table.antwortenJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get richtig => $composableBuilder(
+    column: $table.richtig,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get erklaerung => $composableBuilder(
+    column: $table.erklaerung,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get herkunft => $composableBuilder(
+    column: $table.herkunft,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get stand => $composableBuilder(
+    column: $table.stand,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get eingereichtVon => $composableBuilder(
+    column: $table.eingereichtVon,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get remoteUpdatedAt => $composableBuilder(
+    column: $table.remoteUpdatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get dirty => $composableBuilder(
+    column: $table.dirty,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$WissensfragenTableOrderingComposer
+    extends Composer<_$AppDatabase, $WissensfragenTable> {
+  $$WissensfragenTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get gebiet => $composableBuilder(
+    column: $table.gebiet,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get frage => $composableBuilder(
+    column: $table.frage,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get antwortenJson => $composableBuilder(
+    column: $table.antwortenJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get richtig => $composableBuilder(
+    column: $table.richtig,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get erklaerung => $composableBuilder(
+    column: $table.erklaerung,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get herkunft => $composableBuilder(
+    column: $table.herkunft,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get stand => $composableBuilder(
+    column: $table.stand,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get eingereichtVon => $composableBuilder(
+    column: $table.eingereichtVon,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get remoteUpdatedAt => $composableBuilder(
+    column: $table.remoteUpdatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get dirty => $composableBuilder(
+    column: $table.dirty,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$WissensfragenTableAnnotationComposer
+    extends Composer<_$AppDatabase, $WissensfragenTable> {
+  $$WissensfragenTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get gebiet =>
+      $composableBuilder(column: $table.gebiet, builder: (column) => column);
+
+  GeneratedColumn<String> get frage =>
+      $composableBuilder(column: $table.frage, builder: (column) => column);
+
+  GeneratedColumn<String> get antwortenJson => $composableBuilder(
+    column: $table.antwortenJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get richtig =>
+      $composableBuilder(column: $table.richtig, builder: (column) => column);
+
+  GeneratedColumn<String> get erklaerung => $composableBuilder(
+    column: $table.erklaerung,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get herkunft =>
+      $composableBuilder(column: $table.herkunft, builder: (column) => column);
+
+  GeneratedColumn<String> get stand =>
+      $composableBuilder(column: $table.stand, builder: (column) => column);
+
+  GeneratedColumn<String> get eingereichtVon => $composableBuilder(
+    column: $table.eingereichtVon,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get remoteId =>
+      $composableBuilder(column: $table.remoteId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get remoteUpdatedAt => $composableBuilder(
+    column: $table.remoteUpdatedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get dirty =>
+      $composableBuilder(column: $table.dirty, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$WissensfragenTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $WissensfragenTable,
+          WissensfrageData,
+          $$WissensfragenTableFilterComposer,
+          $$WissensfragenTableOrderingComposer,
+          $$WissensfragenTableAnnotationComposer,
+          $$WissensfragenTableCreateCompanionBuilder,
+          $$WissensfragenTableUpdateCompanionBuilder,
+          (
+            WissensfrageData,
+            BaseReferences<
+              _$AppDatabase,
+              $WissensfragenTable,
+              WissensfrageData
+            >,
+          ),
+          WissensfrageData,
+          PrefetchHooks Function()
+        > {
+  $$WissensfragenTableTableManager(_$AppDatabase db, $WissensfragenTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$WissensfragenTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () =>
+                  $$WissensfragenTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer:
+              () => $$WissensfragenTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> gebiet = const Value.absent(),
+                Value<String> frage = const Value.absent(),
+                Value<String> antwortenJson = const Value.absent(),
+                Value<int> richtig = const Value.absent(),
+                Value<String?> erklaerung = const Value.absent(),
+                Value<String> herkunft = const Value.absent(),
+                Value<String> stand = const Value.absent(),
+                Value<String?> eingereichtVon = const Value.absent(),
+                Value<String?> remoteId = const Value.absent(),
+                Value<DateTime?> remoteUpdatedAt = const Value.absent(),
+                Value<bool> dirty = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => WissensfragenCompanion(
+                id: id,
+                gebiet: gebiet,
+                frage: frage,
+                antwortenJson: antwortenJson,
+                richtig: richtig,
+                erklaerung: erklaerung,
+                herkunft: herkunft,
+                stand: stand,
+                eingereichtVon: eingereichtVon,
+                remoteId: remoteId,
+                remoteUpdatedAt: remoteUpdatedAt,
+                dirty: dirty,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String gebiet,
+                required String frage,
+                Value<String> antwortenJson = const Value.absent(),
+                Value<int> richtig = const Value.absent(),
+                Value<String?> erklaerung = const Value.absent(),
+                Value<String> herkunft = const Value.absent(),
+                Value<String> stand = const Value.absent(),
+                Value<String?> eingereichtVon = const Value.absent(),
+                Value<String?> remoteId = const Value.absent(),
+                Value<DateTime?> remoteUpdatedAt = const Value.absent(),
+                Value<bool> dirty = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => WissensfragenCompanion.insert(
+                id: id,
+                gebiet: gebiet,
+                frage: frage,
+                antwortenJson: antwortenJson,
+                richtig: richtig,
+                erklaerung: erklaerung,
+                herkunft: herkunft,
+                stand: stand,
+                eingereichtVon: eingereichtVon,
+                remoteId: remoteId,
+                remoteUpdatedAt: remoteUpdatedAt,
+                dirty: dirty,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          BaseReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$WissensfragenTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $WissensfragenTable,
+      WissensfrageData,
+      $$WissensfragenTableFilterComposer,
+      $$WissensfragenTableOrderingComposer,
+      $$WissensfragenTableAnnotationComposer,
+      $$WissensfragenTableCreateCompanionBuilder,
+      $$WissensfragenTableUpdateCompanionBuilder,
+      (
+        WissensfrageData,
+        BaseReferences<_$AppDatabase, $WissensfragenTable, WissensfrageData>,
+      ),
+      WissensfrageData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -14124,4 +15289,6 @@ class $AppDatabaseManager {
       $$InventoryChecksTableTableManager(_db, _db.inventoryChecks);
   $$VehicleAttachmentsTableTableManager get vehicleAttachments =>
       $$VehicleAttachmentsTableTableManager(_db, _db.vehicleAttachments);
+  $$WissensfragenTableTableManager get wissensfragen =>
+      $$WissensfragenTableTableManager(_db, _db.wissensfragen);
 }

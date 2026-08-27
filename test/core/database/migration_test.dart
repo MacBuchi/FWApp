@@ -14,14 +14,14 @@ void main() {
     verifier = SchemaVerifier(GeneratedHelper());
   });
 
-  test('migrates from v1 to v8 without schema errors', () async {
+  test('migrates from v1 to v9 without schema errors', () async {
     final connection = await verifier.startAt(1);
     final db = AppDatabase(connection);
-    await verifier.migrateAndValidate(db, 8);
+    await verifier.migrateAndValidate(db, 9);
     await db.close();
   });
 
-  test('v1 data survives the migration to v8', () async {
+  test('v1 data survives the migration to v9', () async {
     final schema = await verifier.schemaAt(1);
 
     schema.rawDatabase
@@ -40,7 +40,7 @@ void main() {
           "VALUES (1, 1, 1, 2, 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 8);
+    await verifier.migrateAndValidate(db, 9);
 
     final vehicle = await db.vehicleDao.getById(1);
     expect(vehicle?.name, 'AB-G');
@@ -63,7 +63,7 @@ void main() {
       () async {
     final connection = await verifier.startAt(2);
     final db = AppDatabase(connection);
-    await verifier.migrateAndValidate(db, 8);
+    await verifier.migrateAndValidate(db, 9);
 
     final equipmentId = await db.equipmentDao
         .insertEquipment(EquipmentItemsCompanion.insert(name: 'Spineboard'));
@@ -81,7 +81,7 @@ void main() {
   test('new v2 tables are usable after migration', () async {
     final connection = await verifier.startAt(1);
     final db = AppDatabase(connection);
-    await verifier.migrateAndValidate(db, 8);
+    await verifier.migrateAndValidate(db, 9);
 
     final vehicleId = await db.vehicleDao.insertVehicle(
         VehiclesCompanion.insert(name: 'LF 10', type: 'LF'));
@@ -132,7 +132,7 @@ void main() {
         "'{}', '[]', '[]', 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 8);
+    await verifier.migrateAndValidate(db, 9);
 
     final geraet = await db.equipmentDao.getById(1);
     expect(geraet?.name, 'Feuerwehraxt');
@@ -165,7 +165,7 @@ void main() {
           "VALUES (1, 1, 'G1', 0, 2, 1, 3, 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 8);
+    await verifier.migrateAndValidate(db, 9);
 
     final fach = await db.compartmentDao.getById(1);
     expect(fach?.label, 'G1');
@@ -193,7 +193,7 @@ void main() {
           "VALUES (1, 1, 'G1', 0, 1, 'fahrerseite', 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 8);
+    await verifier.migrateAndValidate(db, 9);
 
     final fach = await db.compartmentDao.getById(1);
     expect(fach?.label, 'G1');
@@ -219,7 +219,7 @@ void main() {
           "VALUES (1, 1, 'G1', 0, 1, 'fahrerseite', 'vorne', 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 8);
+    await verifier.migrateAndValidate(db, 9);
 
     final fach = await db.compartmentDao.getById(1);
     expect(fach?.label, 'G1');
@@ -232,6 +232,33 @@ void main() {
     await db.attachmentDao.insertAttachment(VehicleAttachmentsCompanion.insert(
         vehicleId: 1, title: 'Betriebsanleitung'));
     expect(await db.attachmentDao.getByVehicle(1), hasLength(1));
+
+    await db.close();
+  });
+
+  test('v8→v9: die Wissensdatenbank entsteht leer und benutzbar', () async {
+    // Issue #174. Der Grundstock kommt NICHT aus der Migration, sondern beim
+    // ersten Start aus dem Asset — sonst läge die Einordnung der Fragen in
+    // einer Migration fest und ließe sich nie korrigieren.
+    final schema = await verifier.schemaAt(8);
+    schema.rawDatabase.execute(
+        "INSERT INTO vehicles (id, name, type, created_at, updated_at) "
+        "VALUES (1, 'HLF 20', 'HLF 20', 0, 0)");
+
+    final db = AppDatabase(schema.newConnection());
+    await verifier.migrateAndValidate(db, 9);
+
+    expect(await db.wissenDao.getAll(), isEmpty);
+    await db.wissenDao.insertFrage(WissensfragenCompanion.insert(
+      gebiet: 'geraetekunde',
+      frage: 'Wie lang ist ein C-Schlauch?',
+      antwortenJson: const Value('["15 m","20 m"]'),
+      richtig: const Value(0),
+      stand: const Value('freigegeben'),
+    ));
+    expect(await db.wissenDao.getSpielbare(), hasLength(1));
+    // Das Fahrzeug von vorher steht unangetastet da.
+    expect((await db.vehicleDao.getById(1))?.name, 'HLF 20');
 
     await db.close();
   });

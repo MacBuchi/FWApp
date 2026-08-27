@@ -162,7 +162,7 @@ final class PartySpielProvider
   }
 }
 
-String _$partySpielHash() => r'95fafbdb69835fdc5b341348cc1f82a771773558';
+String _$partySpielHash() => r'661b88aebdf76a914b4bbf7a1114dc6db057d0ee';
 
 /// Die laufende Partie. `null` heißt: es läuft keine.
 ///

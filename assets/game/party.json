@@ -12,7 +12,8 @@
       ],
       "richtig": 3,
       "kategorie": "wissen",
-      "erklaerung": "Hilfeleistungslöschgruppenfahrzeug — ein LF 20 mit fest verlasteter technischer Hilfeleistung."
+      "erklaerung": "Hilfeleistungslöschgruppenfahrzeug — ein LF 20 mit fest verlasteter technischer Hilfeleistung.",
+      "gebiet": "fahrzeugkunde"
     },
     {
       "frage": "Welchen Farbton hat ein deutsches Feuerwehrfahrzeug nach Norm?",
@@ -24,7 +25,8 @@
       ],
       "richtig": 2,
       "kategorie": "wissen",
-      "erklaerung": "RAL 3000 heißt tatsächlich „Feuerrot“ — und nicht jedes rote Fahrzeug der Welt ist rot: In den USA gibt es aus Sichtbarkeitsgründen limettengrüne Feuerwehrautos."
+      "erklaerung": "RAL 3000 heißt tatsächlich „Feuerrot“ — und nicht jedes rote Fahrzeug der Welt ist rot: In den USA gibt es aus Sichtbarkeitsgründen limettengrüne Feuerwehrautos.",
+      "gebiet": "fahrzeugkunde"
     },
     {
       "frage": "Wer ist der Schutzpatron der Feuerwehr?",
@@ -36,7 +38,8 @@
       ],
       "richtig": 1,
       "kategorie": "wissen",
-      "erklaerung": "Deshalb der Funkrufname „Florian“ — und der Florianstag am 4. Mai."
+      "erklaerung": "Deshalb der Funkrufname „Florian“ — und der Florianstag am 4. Mai.",
+      "gebiet": "recht_organisation"
     },
     {
       "frage": "Wie lang ist ein C-Druckschlauch üblicherweise?",
@@ -48,7 +51,8 @@
       ],
       "richtig": 1,
       "kategorie": "wissen",
-      "erklaerung": "15 Meter ist der Normalfall; 30-Meter-Längen gibt es ebenfalls."
+      "erklaerung": "15 Meter ist der Normalfall; 30-Meter-Längen gibt es ebenfalls.",
+      "gebiet": "geraetekunde"
     },
     {
       "frage": "Welchen Durchmesser hat ein B-Druckschlauch?",
@@ -60,7 +64,8 @@
       ],
       "richtig": 2,
       "kategorie": "wissen",
-      "erklaerung": "B = 75 mm, C = 42 oder 52 mm, D = 25 mm."
+      "erklaerung": "B = 75 mm, C = 42 oder 52 mm, D = 25 mm.",
+      "gebiet": "geraetekunde"
     },
     {
       "frage": "Was verbirgt sich hinter der Bezeichnung DLK 23/12?",
@@ -72,7 +77,8 @@
       ],
       "richtig": 3,
       "kategorie": "wissen",
-      "erklaerung": "Die zweite Zahl ist der Abstand zum Gebäude, bei dem die Höhe noch erreicht wird."
+      "erklaerung": "Die zweite Zahl ist der Abstand zum Gebäude, bei dem die Höhe noch erreicht wird.",
+      "gebiet": "fahrzeugkunde"
     },
     {
       "frage": "Wie viele Einsatzkräfte hat eine Löschgruppe?",
@@ -84,7 +90,8 @@
       ],
       "richtig": 0,
       "kategorie": "wissen",
-      "erklaerung": "1/8/9 — ein Führer, acht Mann. Die Staffel ist 1/5/6, der Trupp besteht aus zwei."
+      "erklaerung": "1/8/9 — ein Führer, acht Mann. Die Staffel ist 1/5/6, der Trupp besteht aus zwei.",
+      "gebiet": "recht_organisation"
     },
     {
       "frage": "Aus wie vielen Personen besteht ein Trupp?",
@@ -96,7 +103,8 @@
       ],
       "richtig": 0,
       "kategorie": "wissen",
-      "erklaerung": "Truppführer und Truppmann. Der selbstständige Trupp bringt einen Maschinisten mit."
+      "erklaerung": "Truppführer und Truppmann. Der selbstständige Trupp bringt einen Maschinisten mit.",
+      "gebiet": "recht_organisation"
     },
     {
       "frage": "Was sagt die Zahl im Namen „TLF 3000“?",
@@ -108,7 +116,8 @@
       ],
       "richtig": 1,
       "kategorie": "wissen",
-      "erklaerung": "Seit der Normumstellung steht bei Tanklöschfahrzeugen die Wassermenge im Namen."
+      "erklaerung": "Seit der Normumstellung steht bei Tanklöschfahrzeugen die Wassermenge im Namen.",
+      "gebiet": "fahrzeugkunde"
     },
     {
       "frage": "Blaulicht UND Martinshorn zusammen — was bedeutet das rechtlich?",
@@ -120,7 +129,8 @@
       ],
       "richtig": 3,
       "kategorie": "wissen",
-      "erklaerung": "§ 38 StVO. Blaulicht allein ist nur Warnung — das Wegerecht entsteht erst mit beidem."
+      "erklaerung": "§ 38 StVO. Blaulicht allein ist nur Warnung — das Wegerecht entsteht erst mit beidem.",
+      "gebiet": "recht_organisation"
     },
     {
       "frage": "Wie heißt die Kupplung an deutschen Feuerwehrschläuchen?",
@@ -132,7 +142,8 @@
       ],
       "richtig": 1,
       "kategorie": "wissen",
-      "erklaerung": "Benannt nach Guido Storz. Eine Knaggenkupplung, die in jeder Drehlage passt."
+      "erklaerung": "Benannt nach Guido Storz. Eine Knaggenkupplung, die in jeder Drehlage passt.",
+      "gebiet": "geraetekunde"
     },
     {
       "frage": "Wie viele Abgänge hat ein Verteiler?",
@@ -144,7 +155,8 @@
       ],
       "richtig": 2,
       "kategorie": "wissen",
-      "erklaerung": "B-Eingang, in der Mitte der B-Abgang, außen die beiden C-Abgänge."
+      "erklaerung": "B-Eingang, in der Mitte der B-Abgang, außen die beiden C-Abgänge.",
+      "gebiet": "geraetekunde"
     },
     {
       "frage": "Warum löscht man einen Fettbrand niemals mit Wasser?",
@@ -156,7 +168,8 @@
       ],
       "richtig": 0,
       "kategorie": "wissen",
-      "erklaerung": "Brandklasse F. Aus einem Liter Wasser werden beim Verdampfen rund 1700 Liter Dampf — das ist die Fettexplosion."
+      "erklaerung": "Brandklasse F. Aus einem Liter Wasser werden beim Verdampfen rund 1700 Liter Dampf — das ist die Fettexplosion.",
+      "gebiet": "loeschlehre"
     },
     {
       "frage": "Woran sterben die meisten Menschen bei einem Wohnungsbrand?",
@@ -168,7 +181,8 @@
       ],
       "richtig": 3,
       "kategorie": "wissen",
-      "erklaerung": "Deshalb die Rauchmelderpflicht — die gilt inzwischen in allen 16 Bundesländern."
+      "erklaerung": "Deshalb die Rauchmelderpflicht — die gilt inzwischen in allen 16 Bundesländern.",
+      "gebiet": "loeschlehre"
     },
     {
       "frage": "Was ist Brandklasse A?",
@@ -180,7 +194,8 @@
       ],
       "richtig": 2,
       "kategorie": "wissen",
-      "erklaerung": "A fest, B flüssig, C gasförmig, D Metall, F Speisefett."
+      "erklaerung": "A fest, B flüssig, C gasförmig, D Metall, F Speisefett.",
+      "gebiet": "loeschlehre"
     },
     {
       "frage": "Wie oft muss ein Atemschutzgeräteträger zur Belastungsübung?",
@@ -192,7 +207,8 @@
       ],
       "richtig": 1,
       "kategorie": "wissen",
-      "erklaerung": "FwDV 7. Dazu kommen der jährliche Einsatz oder die Übung unter Atemschutz und die G26.3."
+      "erklaerung": "FwDV 7. Dazu kommen der jährliche Einsatz oder die Übung unter Atemschutz und die G26.3.",
+      "gebiet": "recht_organisation"
     },
     {
       "frage": "Was wiegt eine komplette Atemschutzausrüstung ungefähr?",
@@ -204,7 +220,8 @@
       ],
       "richtig": 0,
       "kategorie": "wissen",
-      "erklaerung": "Pressluftatmer mit Flasche und Maske — und das kommt zur Schutzkleidung noch obendrauf."
+      "erklaerung": "Pressluftatmer mit Flasche und Maske — und das kommt zur Schutzkleidung noch obendrauf.",
+      "gebiet": "geraetekunde"
     },
     {
       "frage": "Wozu rückt die Feuerwehr in Deutschland häufiger aus?",
@@ -216,7 +233,8 @@
       ],
       "richtig": 0,
       "kategorie": "wissen",
-      "erklaerung": "Türöffnung, Ölspur, Unwetter, Verkehrsunfall — Brände sind der kleinere Teil der Einsätze."
+      "erklaerung": "Türöffnung, Ölspur, Unwetter, Verkehrsunfall — Brände sind der kleinere Teil der Einsätze.",
+      "gebiet": "technische_hilfe"
     },
     {
       "frage": "Wie viele Feuerwehrleute in Deutschland sind ehrenamtlich?",
@@ -228,7 +246,8 @@
       ],
       "richtig": 3,
       "kategorie": "wissen",
-      "erklaerung": "Die Freiwillige Feuerwehr ist der Regelfall — Berufsfeuerwehren gibt es fast nur in großen Städten."
+      "erklaerung": "Die Freiwillige Feuerwehr ist der Regelfall — Berufsfeuerwehren gibt es fast nur in großen Städten.",
+      "gebiet": "recht_organisation"
     },
     {
       "frage": "Seit wann gilt die 112 europaweit als Notruf?",
@@ -240,7 +259,8 @@
       ],
       "richtig": 2,
       "kategorie": "wissen",
-      "erklaerung": "Ein EU-Beschluss von 1991. Die 112 funktioniert heute in jedem Mitgliedsstaat."
+      "erklaerung": "Ein EU-Beschluss von 1991. Die 112 funktioniert heute in jedem Mitgliedsstaat.",
+      "gebiet": "recht_organisation"
     },
     {
       "frage": "Was bedeutet der Befehl „Wasser marsch“?",
@@ -252,7 +272,8 @@
       ],
       "richtig": 2,
       "kategorie": "wissen",
-      "erklaerung": "Das Gegenstück heißt „Wasser halt“."
+      "erklaerung": "Das Gegenstück heißt „Wasser halt“.",
+      "gebiet": "funk"
     },
     {
       "frage": "Bis zu welcher Höhe darf man in ein Sprungpolster springen?",
@@ -264,7 +285,8 @@
       ],
       "richtig": 3,
       "kategorie": "wissen",
-      "erklaerung": "SP 16 — und es ist immer das letzte Mittel, nie der geplante Rettungsweg."
+      "erklaerung": "SP 16 — und es ist immer das letzte Mittel, nie der geplante Rettungsweg.",
+      "gebiet": "technische_hilfe"
     },
     {
       "frage": "Wessen Aufgabe ist der Brandschutz in Deutschland?",
@@ -276,7 +298,8 @@
       ],
       "richtig": 2,
       "kategorie": "wissen",
-      "erklaerung": "Feuerwehr ist kommunale Pflichtaufgabe — geregelt in den Feuerwehrgesetzen der Länder."
+      "erklaerung": "Feuerwehr ist kommunale Pflichtaufgabe — geregelt in den Feuerwehrgesetzen der Länder.",
+      "gebiet": "recht_organisation"
     },
     {
       "frage": "Was ist das Erste, was nach dem Einsatz passiert?",
@@ -288,7 +311,8 @@
       ],
       "richtig": 3,
       "kategorie": "wissen",
-      "erklaerung": "Schläuche tauschen, Tank füllen, Geräte prüfen. Der nächste Alarm fragt nicht, wie spät es ist."
+      "erklaerung": "Schläuche tauschen, Tank füllen, Geräte prüfen. Der nächste Alarm fragt nicht, wie spät es ist.",
+      "gebiet": "geraetekunde"
     },
     {
       "frage": "Warum war ausgerechnet der Dalmatiner der Feuerwehrhund?",
@@ -300,7 +324,8 @@
       ],
       "richtig": 3,
       "kategorie": "wissen",
-      "erklaerung": "Aus der Zeit der Pferdespritzen in den USA. Geblieben ist er als Maskottchen."
+      "erklaerung": "Aus der Zeit der Pferdespritzen in den USA. Geblieben ist er als Maskottchen.",
+      "gebiet": "klischee"
     },
     {
       "frage": "Was ist im Gerätehaus heiliger als jedes Fahrzeug?",
@@ -312,7 +337,8 @@
       ],
       "richtig": 3,
       "kategorie": "klischee",
-      "erklaerung": "Klischee-Frage. Wer sie falsch beantwortet, war noch nie nach Mitternacht im Gerätehaus."
+      "erklaerung": "Klischee-Frage. Wer sie falsch beantwortet, war noch nie nach Mitternacht im Gerätehaus.",
+      "gebiet": "klischee"
     },
     {
       "frage": "Woran erkennt man den Maschinisten mit Sicherheit?",
@@ -324,7 +350,8 @@
       ],
       "richtig": 3,
       "kategorie": "klischee",
-      "erklaerung": "Klischee-Frage. „Das ist MEIN Fahrzeug“ ist keine Dienstvorschrift, aber es gilt trotzdem."
+      "erklaerung": "Klischee-Frage. „Das ist MEIN Fahrzeug“ ist keine Dienstvorschrift, aber es gilt trotzdem.",
+      "gebiet": "klischee"
     },
     {
       "frage": "Welcher Satz beendet in jeder Wehr jede Diskussion?",
@@ -336,7 +363,8 @@
       ],
       "richtig": 2,
       "kategorie": "klischee",
-      "erklaerung": "Klischee-Frage. Und sie beendet die Diskussion wirklich."
+      "erklaerung": "Klischee-Frage. Und sie beendet die Diskussion wirklich.",
+      "gebiet": "klischee"
     },
     {
       "frage": "Womit endet eine gelungene Übung traditionell?",
@@ -348,7 +376,8 @@
       ],
       "richtig": 0,
       "kategorie": "klischee",
-      "erklaerung": "Klischee-Frage. Die Nachbesprechung findet dann meistens gleich mit statt."
+      "erklaerung": "Klischee-Frage. Die Nachbesprechung findet dann meistens gleich mit statt.",
+      "gebiet": "klischee"
     },
     {
       "frage": "Wie oft holt eine Feuerwehr wirklich eine Katze vom Baum?",
@@ -360,7 +389,8 @@
       ],
       "richtig": 0,
       "kategorie": "klischee",
-      "erklaerung": "Katzen kommen meistens allein wieder herunter. Das Klischee hält sich trotzdem hartnäckig."
+      "erklaerung": "Katzen kommen meistens allein wieder herunter. Das Klischee hält sich trotzdem hartnäckig.",
+      "gebiet": "klischee"
     },
     {
       "frage": "Was ist die zuverlässigste Alarmzeit?",
@@ -372,7 +402,8 @@
       ],
       "richtig": 1,
       "kategorie": "klischee",
-      "erklaerung": "Klischee-Frage — und trotzdem fragt jeder in der Runde gerade zustimmend nickend nach."
+      "erklaerung": "Klischee-Frage — und trotzdem fragt jeder in der Runde gerade zustimmend nickend nach.",
+      "gebiet": "klischee"
     },
     {
       "frage": "Was passiert garantiert, sobald das Fahrzeug frisch gewaschen ist?",
@@ -384,7 +415,8 @@
       ],
       "richtig": 0,
       "kategorie": "klischee",
-      "erklaerung": "Klischee-Frage. Beweisen kann es niemand, erlebt hat es jeder."
+      "erklaerung": "Klischee-Frage. Beweisen kann es niemand, erlebt hat es jeder.",
+      "gebiet": "klischee"
     }
   ],
   "aufgaben": [

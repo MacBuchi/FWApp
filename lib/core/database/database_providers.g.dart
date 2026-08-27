@@ -255,6 +255,47 @@ final class AttachmentDaoProvider
 
 String _$attachmentDaoHash() => r'1aa4a5f8b5b36699e6ca3ba5c4f7da65d8878a70';
 
+@ProviderFor(wissenDao)
+final wissenDaoProvider = WissenDaoProvider._();
+
+final class WissenDaoProvider
+    extends $FunctionalProvider<WissenDao, WissenDao, WissenDao>
+    with $Provider<WissenDao> {
+  WissenDaoProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'wissenDaoProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$wissenDaoHash();
+
+  @$internal
+  @override
+  $ProviderElement<WissenDao> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  WissenDao create(Ref ref) {
+    return wissenDao(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(WissenDao value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<WissenDao>(value),
+    );
+  }
+}
+
+String _$wissenDaoHash() => r'6e1237f73b9e4924e92d71d0ac17f344573de327';
+
 @ProviderFor(quizDao)
 final quizDaoProvider = QuizDaoProvider._();
 

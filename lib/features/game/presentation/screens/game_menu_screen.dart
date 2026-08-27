@@ -63,6 +63,15 @@ class GameMenuScreen extends StatelessWidget {
             color: Colors.green.shade700,
             onTap: () => context.push('/game/deployment'),
           ),
+          // Kein Spiel, sondern der Stoff dahinter — steht deshalb am Ende
+          // und trägt ein anderes Symbol (Issue #174).
+          _GameCard(
+            icon: Icons.menu_book,
+            title: 'Wissensdatenbank',
+            subtitle: 'Fragen ansehen und eigene beisteuern',
+            color: Colors.teal.shade700,
+            onTap: () => context.push('/wissensdatenbank'),
+          ),
           _GameCard(
             icon: Icons.groups,
             title: 'Party-Modus',

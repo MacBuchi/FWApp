@@ -12,6 +12,35 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.39.0] – 2026-08-27
+
+### Neu
+
+- **Wissensdatenbank.** Die Fragen hinter den Quizzen sind jetzt ein
+  durchsuchbarer Bestand statt drei getrennter Töpfe — zu finden unter
+  *Lernen → Wissensdatenbank*. Jede Frage hat ein Sachgebiet:
+  Fahrzeugkunde, Gerätekunde, Löschlehre, Technische Hilfeleistung,
+  Gefahrgut, Erste Hilfe, Recht und Organisation, Funk — und getrennt davon
+  die Klischees, damit niemand sie für Prüfungsstoff hält.
+- **Jeder darf eine Frage beisteuern.** Wer ein Konto hat, kann eine Frage
+  einreichen; das Formular führt durch Frage, Antworten und Erklärung und
+  sagt in einem Satz, was noch fehlt. **Freigegeben wird sie vom
+  Gerätewart** — bis dahin steht sie sichtbar auf dem Stapel, aber sie wird
+  nicht gestellt.
+- **Freigegebene Fragen spielen sofort mit.** Der Party-Modus zieht seinen
+  Topf mit den unerwarteten Fragen ab jetzt aus der Wissensdatenbank statt
+  aus einer festen Datei. Was die Wehr beisteuert, ist am selben Abend im
+  Spiel.
+- Die 32 mitgelieferten Fragen sind eingeordnet und bleiben der Grundstock.
+  Sie lassen sich nicht löschen — sie kämen beim nächsten Start ohnehin
+  wieder.
+
+### Hinweis
+
+Die Fragen gehören der **Gesamtwehr**, nicht der einzelnen Abteilung: Ein
+B-Schlauch hat überall denselben Durchmesser. Was eine Abteilung beisteuert,
+steht nach dem nächsten Abgleich allen Abteilungen der Wehr zur Verfügung.
+
 ## [1.38.0] – 2026-08-27
 
 ### Neu

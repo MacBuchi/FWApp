@@ -19,6 +19,7 @@ import 'package:fwapp/features/settings/presentation/screens/server_settings_scr
 import 'package:fwapp/features/home/presentation/screens/home_screen.dart';
 import 'package:fwapp/features/home/presentation/screens/more_screen.dart';
 import 'package:fwapp/features/vehicle/presentation/screens/vehicle_list_screen.dart';
+import 'package:fwapp/features/knowledge/presentation/screens/wissensdatenbank_screen.dart';
 import 'package:fwapp/features/search/presentation/screens/geraete_suche_screen.dart';
 import 'package:fwapp/features/vehicle/presentation/screens/vehicle_detail_screen.dart';
 import 'package:fwapp/features/vehicle/presentation/screens/vehicle_form_screen.dart';
@@ -257,6 +258,10 @@ final _routes = [
         // richtige, und mit offener Tastatur frisst die Leiste eine ganze
         // Trefferzeile.
         GoRoute(
+          path: '/wissensdatenbank',
+          builder: (_, _) => const WissensdatenbankScreen(),
+        ),
+        GoRoute(
           path: '/geraetesuche',
           builder: (_, state) {
             final roh = state.uri.queryParameters['fahrzeug'];
@@ -450,7 +455,11 @@ class _AppShell extends StatelessWidget {
 
   int _currentNavIndex(String path) {
     if (path == '/') return 0;
-    if (path.startsWith('/game')) return 1;
+    // Die Wissensdatenbank ist der Stoff hinter dem Lernen — der Reiter
+    // bleibt deshalb auf „Lernen" stehen (Issue #174).
+    if (path.startsWith('/game') || path.startsWith('/wissensdatenbank')) {
+      return 1;
+    }
     if (path.startsWith('/vehicles')) return 2;
     if (path.startsWith('/more') ||
         path.startsWith('/equipment') ||

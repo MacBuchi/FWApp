@@ -20,6 +20,7 @@ import 'package:fwapp/core/utils/json_utils.dart';
 import 'package:fwapp/features/compartment/presentation/fach_antwort.dart';
 import 'package:fwapp/features/game/party/data/party_inhalte.dart';
 import 'package:fwapp/features/game/party/domain/party_frage.dart';
+import 'package:fwapp/features/knowledge/presentation/providers/wissen_providers.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'party_providers.g.dart';
@@ -242,12 +243,24 @@ class PartySpiel extends _$PartySpiel {
   }) async {
     final topf = await ref.read(partyTopfProvider(vehicleId).future);
     final inhalte = await ref.read(partyInhalteProvider.future);
+    // Seit Issue #174 kommt der unerwartete Topf aus der Wissensdatenbank
+    // und nicht mehr direkt aus dem Asset: Nur so spielen selbst
+    // eingebrachte und freigegebene Fragen mit. Das Asset ist die Aussaat,
+    // die Datenbank der Bestand.
+    //
+    // ⚠️ Die DAO direkt, NICHT `ref.read(spielbareFragenProvider.future)`.
+    // Provider sind in Riverpod 3 ab Werk auto-dispose: Ein `read` ohne
+    // Zuhörer erzeugt den Provider und entsorgt ihn sofort wieder — das
+    // Future wird dann NIE fertig, und der Start der Partie steht still.
+    // Nachgestellt und bestätigt: mit Zuhörer kehrt es zurück, ohne nicht.
+    final wissen = await ref.read(wissenDaoProvider).getSpielbare();
 
     final fragen = mischePartie(
       fach: topf.fach,
       bild: topf.bild,
-      unerwartet:
-          inhalte.fragen.map((f) => f.zuPartyFrage(_zufall)).toList(),
+      unerwartet: wissen
+          .map((f) => wissensfrageAlsPartyFrage(f, _zufall))
+          .toList(),
       anzahl: namen.length * fragenProSpieler,
       // Eine Runde ist ein Umlauf des Handys — dieselbe Länge, mit der
       // `zugNummer` rechnet. Daran hängt „eine Runde, eine Kategorie".

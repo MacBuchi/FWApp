@@ -92,6 +92,52 @@ class VehicleAttachments extends Table {
       dateTime().withDefault(currentDateAndTime)();
 }
 
+/// Die Wissensdatenbank hinter den Quizfragen (Issue #174).
+///
+/// ⚠️ **Sie gehört der GESAMTWEHR, nicht der Abteilung** — Feuerwehrwissen
+/// ist nicht abteilungsspezifisch, ein B-Schlauch hat überall denselben
+/// Durchmesser. Deshalb liegt sie NICHT im Snapshot (`kSyncedTables`),
+/// sondern geht denselben zeilenweisen Weg wie die Gerätetypen: Zwei
+/// Gerätewarte, die gleichzeitig pflegen, würden sich über den
+/// Einzelschreiber-Snapshot sonst gegenseitig überschreiben.
+@DataClassName('WissensfrageData')
+class Wissensfragen extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  /// Schlüssel aus `Wissensgebiet` — fahrzeugkunde, geraetekunde, …
+  TextColumn get gebiet => text()();
+
+  TextColumn get frage => text()();
+
+  /// Die Antwortmöglichkeiten als JSON-Liste.
+  TextColumn get antwortenJson => text().withDefault(const Constant('[]'))();
+
+  /// Index der richtigen Antwort. Index und nicht Text: Zwei Antworten
+  /// dürfen gleich lauten, ein Textvergleich träfe dann die falsche.
+  IntColumn get richtig => integer().withDefault(const Constant(0))();
+
+  TextColumn get erklaerung => text().nullable()();
+
+  /// `mitgeliefert` | `eigen` — was ausgeliefert wurde, ist nicht löschbar.
+  TextColumn get herkunft => text().withDefault(const Constant('eigen'))();
+
+  /// `eingereicht` | `freigegeben` | `abgelehnt`. Gestellt wird nur, was
+  /// freigegeben ist — der Filter, um den das Issue ausdrücklich bat.
+  TextColumn get stand => text().withDefault(const Constant('eingereicht'))();
+
+  TextColumn get eingereichtVon => text().nullable()();
+
+  /// Verknüpfung zur geteilten Zeile der Gesamtwehr; `null` = nur hier.
+  TextColumn get remoteId => text().nullable()();
+  DateTimeColumn get remoteUpdatedAt => dateTime().nullable()();
+
+  /// Lokal geändert und noch nicht geteilt.
+  BoolColumn get dirty => boolean().withDefault(const Constant(false))();
+
+  DateTimeColumn get updatedAt =>
+      dateTime().withDefault(currentDateAndTime)();
+}
+
 @DataClassName('EquipmentItemData')
 class EquipmentItems extends Table {
   IntColumn get id => integer().autoIncrement()();
@@ -796,6 +842,87 @@ class LearningDao extends DatabaseAccessor<AppDatabase>
 // DATABASE CLASS
 // ─────────────────────────────────────────────────────────────
 
+/// Die Wissensdatenbank (Issue #174).
+@DriftAccessor(tables: [Wissensfragen])
+class WissenDao extends DatabaseAccessor<AppDatabase>
+    with _$WissenDaoMixin {
+  WissenDao(super.db);
+
+  Stream<List<WissensfrageData>> watchAll() =>
+      (select(wissensfragen)..orderBy([(t) => OrderingTerm.asc(t.frage)]))
+          .watch();
+
+  Future<List<WissensfrageData>> getAll() => select(wissensfragen).get();
+
+  /// Nur, was wirklich gestellt werden darf.
+  Future<List<WissensfrageData>> getSpielbare({String? gebiet}) =>
+      (select(wissensfragen)
+            ..where((t) => t.stand.equals('freigegeben'))
+            ..where((t) => gebiet == null
+                ? const Constant(true)
+                : t.gebiet.equals(gebiet)))
+          .get();
+
+  /// Der Strom der spielbaren Fragen.
+  ///
+  /// ⚠️ Bewusst ein STROM und nicht „Abfrage, die einen Strom beobachtet".
+  /// Ein `FutureProvider`, der einen Strom `watch`t, wird bei dessen erster
+  /// Emission verworfen — wer sein `.future` abwartet, wartet dann ewig.
+  /// Genau daran hing der Start einer Partie fest, bis es auffiel.
+  Stream<List<WissensfrageData>> watchSpielbare() => (select(wissensfragen)
+        ..where((t) => t.stand.equals('freigegeben')))
+      .watch();
+
+  Stream<List<WissensfrageData>> watchOffen() => (select(wissensfragen)
+        ..where((t) => t.stand.equals('eingereicht'))
+        ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)]))
+      .watch();
+
+  Future<WissensfrageData?> getById(int id) =>
+      (select(wissensfragen)..where((t) => t.id.equals(id)))
+          .getSingleOrNull();
+
+  Future<WissensfrageData?> getByRemoteId(String remoteId) =>
+      (select(wissensfragen)..where((t) => t.remoteId.equals(remoteId)))
+          .getSingleOrNull();
+
+  Future<int> insertFrage(WissensfragenCompanion f) =>
+      into(wissensfragen).insert(f);
+
+  Future<int> upsert(WissensfragenCompanion f) =>
+      into(wissensfragen).insertOnConflictUpdate(f);
+
+  /// Ändert einzelne Felder einer vorhandenen Frage.
+  ///
+  /// ⚠️ NICHT [upsert] dafür benutzen: `insertOnConflictUpdate` ist ein
+  /// INSERT und verlangt deshalb jede Pflichtspalte. Ein Companion mit nur
+  /// `id` und `stand` fliegt mit `InvalidDataException` heraus — beim
+  /// Freigeben einer Frage, also genau im wichtigsten Zug.
+  Future<int> aendere(int id, WissensfragenCompanion aenderung) =>
+      (update(wissensfragen)..where((t) => t.id.equals(id)))
+          .write(aenderung);
+
+  Future<bool> updateFrage(WissensfragenCompanion f) =>
+      update(wissensfragen).replace(f);
+
+  Future<int> deleteFrage(int id) =>
+      (delete(wissensfragen)..where((t) => t.id.equals(id))).go();
+
+  /// Wie viele Fragen je Gebiet — Grundlage der Übersicht.
+  Future<Map<String, int>> zaehleJeGebiet({bool nurFreigegeben = true}) async {
+    final zeilen = await (select(wissensfragen)
+          ..where((t) => nurFreigegeben
+              ? t.stand.equals('freigegeben')
+              : const Constant(true)))
+        .get();
+    final zaehlung = <String, int>{};
+    for (final z in zeilen) {
+      zaehlung[z.gebiet] = (zaehlung[z.gebiet] ?? 0) + 1;
+    }
+    return zaehlung;
+  }
+}
+
 /// Unterlagen am Fahrzeug (Issue #182).
 @DriftAccessor(tables: [VehicleAttachments])
 class AttachmentDao extends DatabaseAccessor<AppDatabase>
@@ -852,6 +979,7 @@ class AttachmentDao extends DatabaseAccessor<AppDatabase>
     InventorySessions,
     InventoryChecks,
     VehicleAttachments,
+    Wissensfragen,
   ],
   daos: [
     VehicleDao,
@@ -863,13 +991,14 @@ class AttachmentDao extends DatabaseAccessor<AppDatabase>
     LearningDao,
     InventoryDao,
     AttachmentDao,
+    WissenDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -928,6 +1057,12 @@ class AppDatabase extends _$AppDatabase {
             // Vorgängerinnen; die Tabelle entsteht leer.
             await m.addColumn(compartments, compartments.imagePath);
             await m.createTable(vehicleAttachments);
+          }
+          if (from < 9) {
+            // Wissensdatenbank (Issue #174). Entsteht leer; den Grundstock
+            // legt `wissen_seeder.dart` beim ersten Start aus dem Asset an,
+            // damit eine bestehende Installation nicht ohne Fragen dasteht.
+            await m.createTable(wissensfragen);
           }
         },
         beforeOpen: (details) async {

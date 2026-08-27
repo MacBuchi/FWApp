@@ -34,7 +34,25 @@ final testInhalte = PartyInhalte(
 void main() {
   late AppDatabase db;
 
-  setUp(() => db = createTestDatabase());
+  /// Der unerwartete Topf kommt seit Issue #174 aus der Wissensdatenbank,
+  /// nicht mehr aus dem Asset. Deshalb wird er hier gesät statt gemockt —
+  /// das ist derselbe Weg, den die App geht.
+  Future<void> seedWissen({int anzahl = 12}) async {
+    for (var i = 0; i < anzahl; i++) {
+      await db.wissenDao.insertFrage(WissensfragenCompanion.insert(
+        gebiet: 'recht_organisation',
+        frage: 'Testfrage $i',
+        antwortenJson: const Value('["Richtig","Falsch A","Falsch B"]'),
+        richtig: const Value(0),
+        stand: const Value('freigegeben'),
+      ));
+    }
+  }
+
+  setUp(() async {
+    db = createTestDatabase();
+    await seedWissen();
+  });
   tearDown(() => db.close());
 
   /// Ein Fahrzeug mit vier Fächern und einem verorteten Gerät — genug für
@@ -268,8 +286,11 @@ void main() {
   });
 
   test('ohne Bestand und ohne Topf startet die Partie gar nicht', () async {
-    // Kein Fahrzeug, kein Asset — dann ist ein Start ohne Fragen ehrlicher
-    // als ein leerer Spielschirm.
+    // Kein Fahrzeug, keine Wissensfrage — dann ist ein Start ohne Fragen
+    // ehrlicher als ein leerer Spielschirm.
+    for (final f in await db.wissenDao.getAll()) {
+      await db.wissenDao.deleteFrage(f.id);
+    }
     final c = container(inhalte: PartyInhalte.leer);
     final klappt = await c
         .read(partySpielProvider.notifier)

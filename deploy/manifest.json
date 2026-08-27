@@ -96,6 +96,10 @@
     {
       "name": "20260827060000_fach_foto_und_fahrzeug_anhaenge.sql",
       "sha256": "8abfa7d0b8d875e2de6129c0eab0d74bc844a65c64eeab9362985eda38c60b39"
+    },
+    {
+      "name": "20260827160000_wissensdatenbank.sql",
+      "sha256": "5a522a030fc4bc64287165adbed643c7d1f35a0220a80c952471fb377f0b72b7"
     }
   ],
   "functions": {

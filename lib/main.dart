@@ -13,6 +13,9 @@ import 'package:fwapp/core/app_version.dart';
 import 'package:fwapp/core/crash/crash_store.dart';
 import 'package:fwapp/core/database/database_providers.dart';
 import 'package:fwapp/core/database/library_seeder.dart';
+import 'package:fwapp/features/game/party/data/party_inhalte.dart';
+import 'package:fwapp/features/knowledge/data/wissen_seeder.dart';
+import 'package:fwapp/features/knowledge/presentation/providers/wissen_providers.dart';
 import 'package:fwapp/core/router/app_router.dart';
 import 'package:fwapp/core/sync/abteilung_providers.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
@@ -170,6 +173,13 @@ class _FWAppState extends ConsumerState<FWApp> {
   Future<void> _seedAndSync() async {
     final db = ref.read(appDatabaseProvider);
     await LibrarySeeder(db).seedIfNeeded();
+    if (!mounted) return;
+    // Der Grundstock der Wissensdatenbank (Issue #174). Aus dem Asset und
+    // nicht aus einer Migration: Die Einordnung einer Frage ist eine
+    // redaktionelle Entscheidung, die man mit der nächsten App-Version
+    // korrigieren können muss.
+    await WissenSeeder(db)
+        .seedIfNeeded(await ref.read(partyInhalteProvider.future));
     // Nach jedem await prüfen: Wird die App während des Seedens beendet,
     // läuft diese Methode weiter, während das Widget schon abgebaut ist —
     // `ref` wirft dann "Using ref when a widget is about to or has been
@@ -191,6 +201,16 @@ class _FWAppState extends ConsumerState<FWApp> {
         // löschen.
         await anhaengeSynchronisieren(ref.read(anhangSpeicherProvider),
             ref.read(anhangAbteilungProvider));
+        if (!mounted) return;
+        // Die Wissensdatenbank gehört der Gesamtwehr und geht denselben
+        // zeilenweisen Weg wie die Gerätetypen (Issue #174).
+        final wehr = ref.read(wissenGesamtwehrProvider);
+        if (wehr != null) {
+          final wissen = ref.read(wissenSyncProvider);
+          await wissen.schiebe(wehr);
+          if (!mounted) return;
+          await wissen.ziehe(wehr);
+        }
         if (!mounted) return;
         // Warm the offline image cache in the background (M2).
         unawaited(ref.read(imagePrecacheProvider.notifier).run());

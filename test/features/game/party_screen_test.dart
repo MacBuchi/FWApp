@@ -35,7 +35,25 @@ final testInhalte = PartyInhalte(
 void main() {
   late AppDatabase db;
 
-  setUp(() => db = createTestDatabase());
+  /// Der unerwartete Topf kommt seit Issue #174 aus der Wissensdatenbank.
+  /// Antworttexte bewusst ohne „Richtig"/„Daneben" — das sind die Wörter der
+  /// Auflösung, und ein Test, der beides verwechselt, prüft nichts.
+  Future<void> seedWissen() async {
+    for (var i = 0; i < 12; i++) {
+      await db.wissenDao.insertFrage(WissensfragenCompanion.insert(
+        gebiet: 'recht_organisation',
+        frage: 'Testfrage $i',
+        antwortenJson: const Value('["Stimmt","Daneben A","Daneben B"]'),
+        richtig: const Value(0),
+        stand: const Value('freigegeben'),
+      ));
+    }
+  }
+
+  setUp(() async {
+    db = createTestDatabase();
+    await seedWissen();
+  });
   tearDown(() => db.close());
 
   /// Ein Fahrzeug mit vier Fächern und vier verorteten Geräten — genug für
@@ -243,8 +261,13 @@ void main() {
 
   testWidgets('die Fach-Frage zeigt das Fahrzeug, bevor geantwortet wird',
       (tester) async {
-    // Der leere Asset-Topf ist Absicht: Dann bleiben nur Fach-Fragen übrig,
-    // und der Test hängt nicht am Zufall der Rundenverteilung.
+    // Keine Wissensfragen: Dann bleiben nur Fach-Fragen übrig, und der Test
+    // hängt nicht am Zufall der Rundenverteilung. Seit Issue #174 kommt der
+    // unerwartete Topf aus der Datenbank — den Asset-Provider zu leeren
+    // genügt dafür nicht mehr.
+    for (final f in await db.wissenDao.getAll()) {
+      await db.wissenDao.deleteFrage(f.id);
+    }
     await seedBestand();
     await pumpe(tester, inhalte: PartyInhalte.leer);
     await starten(tester);
@@ -293,6 +316,12 @@ void main() {
     // die Kachel an der Frage. Beim ersten Lauf lief die Auswahl um 285
     // Pixel über — statt des Namens stand dort die gestreifte Fehlerfläche.
     // Der Test fällt bei jedem „RenderFlex overflowed" auf diesem Weg.
+    // Ohne Wissensfragen bleibt nur die Fach-Frage — nur die trägt die
+    // Fahrzeug-Kachel, um die es hier geht (seit Issue #174 kommt der
+    // unerwartete Topf aus der Datenbank).
+    for (final f in await db.wissenDao.getAll()) {
+      await db.wissenDao.deleteFrage(f.id);
+    }
     await seedBestand(fahrzeug: 'HLF 20/16 Florian Musterstadt 1/44');
     await pumpe(tester,
         inhalte: PartyInhalte.leer, groesse: const Size(360, 800));

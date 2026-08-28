@@ -104,6 +104,10 @@
     {
       "name": "20260827180000_wissen_mehrfachantworten_und_quellen.sql",
       "sha256": "6645c32893b36348c5ebc18211897d2e46e24699edce1ebb291560f86eda80fd"
+    },
+    {
+      "name": "20260828090000_wissen_kapitel_und_bild.sql",
+      "sha256": "52c427ec68bfbf018acfb467da8fe34e42de1dca68d16d7821f1ed0fa5573230"
     }
   ],
   "functions": {

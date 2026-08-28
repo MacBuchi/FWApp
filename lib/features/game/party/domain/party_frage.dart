@@ -17,6 +17,8 @@ library;
 import 'dart:math';
 
 import 'package:fwapp/features/compartment/presentation/fach_antwort.dart';
+import 'package:fwapp/features/knowledge/domain/wissensfrage.dart'
+    show Fragenquelle;
 
 /// Woher eine Frage stammt. Die Art entscheidet, wie sie dargestellt wird.
 enum PartyFrageArt {
@@ -91,6 +93,22 @@ class PartyFrage {
   /// Wird nach dem Antworten gezeigt, falls vorhanden.
   final String? erklaerung;
 
+  /// Woher die richtige Antwort stammt (Issue #174).
+  ///
+  /// ⚠️ **Am Tisch ist das der wichtigste Teil der Auflösung.** Genau hier
+  /// wird widersprochen — „das stimmt doch gar nicht" —, und ohne
+  /// Fundstelle entscheidet die lauteste Stimme statt der Vorschrift. Der
+  /// Weg aus der Wissensdatenbank ins Spiel ließ das Feld anfangs fallen:
+  /// Die Frage kam mit Quelle aus der Datenbank und ohne sie auf den
+  /// Schirm.
+  final Fragenquelle? quelle;
+
+  /// „Baden-Württemberg", wenn die Frage nur dort gilt (Issue #174).
+  ///
+  /// Bei allem, was bundesweit gilt, bleibt das Feld leer. Ein Hinweis an
+  /// jeder Frage wäre keiner mehr.
+  final String? geltungshinweis;
+
   const PartyFrage({
     required this.art,
     required this.text,
@@ -101,6 +119,8 @@ class PartyFrage {
     this.bildPfad,
     this.funktionen = const [],
     this.erklaerung,
+    this.quelle,
+    this.geltungshinweis,
   });
 
   PartyAntwort get richtigeAntwort => antworten[richtig];

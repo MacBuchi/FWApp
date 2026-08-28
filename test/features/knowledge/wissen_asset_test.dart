@@ -1,11 +1,16 @@
 /// wissen_asset_test.dart – Der ausgelieferte Fachbestand (Issue #174,
 /// Schritt 2).
 ///
-/// Der wichtigste Test steht unten: Er liest die **wirklich ausgelieferte**
-/// `fwdv.json`, nicht eine erfundene. Eine Frage ohne Fundstelle, ein
-/// Tippfehler im Gebiet oder eine Antwortmenge, die auf nichts zeigt, fällt
-/// damit in der CI auf — und nicht beim Üben.
+/// Der wichtigste Test steht unten: Er liest die **wirklich ausgelieferten**
+/// Dateien, nicht erfundene. Eine Frage ohne Fundstelle, ein Tippfehler im
+/// Gebiet oder eine Antwortmenge, die auf nichts zeigt, fällt damit in der
+/// CI auf — und nicht beim Üben.
+///
+/// `bestandPruefen` gilt für jeden Bestand; was je Datei verschieden ist,
+/// steht in ihren Argumenten: die erlaubten Werke und der Geltungsbereich.
 library;
+
+import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -98,67 +103,126 @@ void main() {
     });
   });
 
-  group('der AUSGELIEFERTE Bestand', () {
-    late List<AssetFrage> fragen;
+  /// Prüfungen, die für JEDEN ausgelieferten Bestand gelten. Als Funktion,
+  /// damit ein neuer Landesbestand sie mit einer Zeile erbt statt sie zu
+  /// kopieren — kopierte Prüfungen werden beim Nachziehen vergessen.
+  void bestandPruefen(
+    String pfad, {
+    required RegExp erlaubteWerke,
+    required Geltungsbereich geltung,
+    String? land,
+    required int mindestens,
+  }) {
+    group('der ausgelieferte Bestand $pfad', () {
+      late List<AssetFrage> fragen;
+      late String roh;
 
-    setUpAll(() async {
-      fragen = parseWissensAsset(
-          await rootBundle.loadString('assets/knowledge/fwdv.json'));
+      setUpAll(() async {
+        roh = await rootBundle.loadString(pfad);
+        fragen = parseWissensAsset(roh);
+      });
+
+      test('lässt sich vollständig lesen', () {
+        // Zählt gegen die Datei selbst: Fällt eine Frage beim Parsen heraus,
+        // stimmt die Zahl nicht mehr — und genau das soll auffallen.
+        final imJson = RegExp(r'"frage"\s*:').allMatches(roh).length;
+        expect(fragen, hasLength(imJson),
+            reason: 'eine Frage ist beim Parsen herausgefallen');
+        expect(fragen.length, greaterThanOrEqualTo(mindestens));
+      });
+
+      test('jede Frage nennt ihre Fundstelle', () {
+        // Der ganze Zweck des Bestands: Eine Antwort, die man nicht
+        // nachschlagen kann, nützt im Zweifel wenig.
+        for (final f in fragen) {
+          expect(f.quelle, isNotNull, reason: 'ohne Quelle: "${f.frage}"');
+          expect(f.quelle!.werk, isNotEmpty);
+          expect(f.quelle!.fundstelle, isNotNull,
+              reason: 'ohne Fundstelle: "${f.frage}"');
+          expect(f.quelle!.stand, isNotNull,
+              reason: 'ohne Fassung: "${f.frage}"');
+        }
+      });
+
+      test('die Quellen sind amtliche Werke, keine geschützten', () {
+        // Lehrstoffblätter (Neckar-Verlag) und DIN-Normtexte sind
+        // urheberrechtlich geschützt — aus ihnen wird nichts entnommen.
+        for (final f in fragen) {
+          expect(erlaubteWerke.hasMatch(f.quelle!.werk), isTrue,
+              reason: 'unerwartete Quelle "${f.quelle!.werk}" bei '
+                  '"${f.frage}"');
+        }
+      });
+
+      test('der Geltungsbereich stimmt für die ganze Datei', () {
+        for (final f in fragen) {
+          expect(f.geltung, geltung,
+              reason: 'falscher Geltungsbereich: "${f.frage}"');
+          expect(f.land, land, reason: 'falsches Land: "${f.frage}"');
+        }
+      });
+
+      test('Mehrfachantworten sind dabei — sonst wäre die Erweiterung umsonst',
+          () {
+        final mehrfach = fragen.where((f) => f.richtige.length > 1);
+        expect(mehrfach, isNotEmpty);
+        // Und es sind keine Fangfragen, bei denen alles richtig ist.
+        for (final f in mehrfach) {
+          expect(f.richtige.length, lessThan(f.antworten.length));
+        }
+      });
+
+      test('keine Frage steht zweimal drin', () {
+        final texte = fragen.map((f) => f.frage.toLowerCase()).toList();
+        expect(texte.toSet(), hasLength(texte.length));
+      });
     });
+  }
 
-    test('lässt sich vollständig lesen', () async {
-      // Zählt gegen die Datei selbst: Fällt eine Frage beim Parsen heraus,
-      // stimmt die Zahl nicht mehr — und genau das soll auffallen.
-      final roh = await rootBundle.loadString('assets/knowledge/fwdv.json');
-      final imJson = RegExp(r'"frage"\s*:').allMatches(roh).length;
-      expect(fragen, hasLength(imJson),
-          reason: 'eine Frage ist beim Parsen herausgefallen');
-      expect(fragen.length, greaterThanOrEqualTo(30));
-    });
+  bestandPruefen(
+    'assets/knowledge/fwdv.json',
+    erlaubteWerke: RegExp(r'^(FwDV \d+|DGUV .+)$'),
+    geltung: Geltungsbereich.bund,
+    mindestens: 30,
+  );
 
-    test('jede Frage nennt ihre Fundstelle', () {
-      // Der ganze Zweck des Bestands: Eine Antwort, die man nicht
-      // nachschlagen kann, nützt im Zweifel wenig.
-      for (final f in fragen) {
-        expect(f.quelle, isNotNull, reason: 'ohne Quelle: "${f.frage}"');
-        expect(f.quelle!.werk, isNotEmpty);
-        expect(f.quelle!.fundstelle, isNotNull,
-            reason: 'ohne Fundstelle: "${f.frage}"');
-        expect(f.quelle!.stand, isNotNull,
-            reason: 'ohne Fassung: "${f.frage}"');
+  // Baden-Württemberg (Issue #174, Schritt 3). Die erlaubten Werke sind
+  // eng gefasst und das ist Absicht: Das Feuerwehrgesetz und die beiden
+  // Verwaltungsvorschriften sind amtliche Werke nach § 5 UrhG. Wer hier ein
+  // weiteres Werk einträgt, hat vorher zu klären, ob es das auch ist —
+  // die Lehrstoffblätter der Landesfeuerwehrschule sind es NICHT.
+  bestandPruefen(
+    'assets/knowledge/bw.json',
+    erlaubteWerke:
+        RegExp(r'^(FwG BW|VwV Feuerwehrbekleidung|VwV Feuerwehrausbildung)$'),
+    geltung: Geltungsbereich.land,
+    land: 'BW',
+    mindestens: 40,
+  );
+
+  group('alle Bestände zusammen', () {
+    test('jedes Asset aus kWissensAssets ist auch ausgeliefert', () async {
+      // Ein Eintrag in kWissensAssets ohne Zeile in pubspec.yaml lädt zur
+      // Laufzeit nichts und fällt sonst nirgends auf — das Sachgebiet wäre
+      // auf dem Gerät einfach leer.
+      final pubspec = File('pubspec.yaml').readAsStringSync();
+      for (final pfad in kWissensAssets) {
+        expect(pubspec, contains('- $pfad'),
+            reason: '$pfad steht in kWissensAssets, aber nicht in '
+                'pubspec.yaml');
+        // Und umgekehrt: Die Datei muss wirklich im Bundle liegen.
+        await expectLater(rootBundle.loadString(pfad), completes);
       }
     });
 
-    test('die Quellen sind Dienstvorschriften, keine geschützten Werke', () {
-      // Lehrstoffblätter (Neckar-Verlag) und DIN-Normtexte sind
-      // urheberrechtlich geschützt — aus ihnen wird nichts entnommen.
-      final erlaubt = RegExp(r'^(FwDV \d+|DGUV .+)$');
-      for (final f in fragen) {
-        expect(erlaubt.hasMatch(f.quelle!.werk), isTrue,
-            reason: 'unerwartete Quelle "${f.quelle!.werk}" bei '
-                '"${f.frage}"');
+    test('keine Frage steht in zwei Beständen', () async {
+      // Eine Frage, die bundesweit UND im Landesbestand steht, käme im
+      // Spiel doppelt und in der Übersicht zweimal untereinander.
+      final texte = <String>[];
+      for (final pfad in kWissensAssets) {
+        texte.addAll(parseWissensAsset(await rootBundle.loadString(pfad))
+            .map((f) => f.frage.toLowerCase()));
       }
-    });
-
-    test('der bundesweite Bestand enthält kein Landesrecht', () {
-      for (final f in fragen) {
-        expect(f.geltung, Geltungsbereich.bund,
-            reason: 'Landesrecht im Bundes-Asset: "${f.frage}"');
-      }
-    });
-
-    test('Mehrfachantworten sind dabei — sonst wäre die Erweiterung umsonst',
-        () {
-      final mehrfach = fragen.where((f) => f.richtige.length > 1);
-      expect(mehrfach, isNotEmpty);
-      // Und es sind keine Fangfragen, bei denen alles richtig ist.
-      for (final f in mehrfach) {
-        expect(f.richtige.length, lessThan(f.antworten.length));
-      }
-    });
-
-    test('keine Frage steht zweimal drin', () {
-      final texte = fragen.map((f) => f.frage.toLowerCase()).toList();
       expect(texte.toSet(), hasLength(texte.length));
     });
   });

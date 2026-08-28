@@ -12,7 +12,7 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
-## [1.41.0] – 2026-08-27
+## [1.41.0] – 2026-08-28
 
 ### Neu
 
@@ -21,15 +21,30 @@ Abschnitt „Workflow".
   Feuerwehr-Dienstvorschriften **selbst formuliert**, jede Frage mit ihrer
   Fundstelle. Also nicht „ein Trupp besteht aus zwei Kräften", sondern
   „FwDV 3 · Abschnitt 2.1" daneben, damit du es nachschlagen kannst.
+- **65 Fragen zum Landesrecht Baden-Württemberg.** Wer wählt den
+  Kommandanten, wann ist ein Einsatz kostenpflichtig, ab wann darf man in
+  die Einsatzabteilung, welcher Dienstgrad kommt nach dem Löschmeister —
+  aus dem Feuerwehrgesetz und den beiden Verwaltungsvorschriften des Landes,
+  ebenfalls mit Fundstelle. Fragen, die nur hier gelten, sagen das auch:
+  „gilt in Baden-Württemberg" steht dabei.
 - **Zwei neue Sachgebiete:** Atemschutz und Einsatzlehre. Beides sind eigene
   Lehrgänge, und unter „Gerätekunde" wären sie nicht wiederzufinden gewesen.
 - Fragen dürfen jetzt bis zu zehn Antwortmöglichkeiten haben. Sechs war
   geraten — im amtlichen Prüfungsstoff laufen die Antworten bis „j)".
 
+### Besser
+
+- **Der Party-Modus nennt jetzt die Fundstelle.** Nach dem Antworten steht
+  unter der Auflösung, woher die Antwort stammt — antippen öffnet die
+  amtliche Fassung im Browser. Genau am Tisch wird über eine Antwort
+  gestritten, und dort soll die Vorschrift entscheiden und nicht die
+  lauteste Stimme.
+
 ### Hinweis zu den Quellen
 
-Verwendet werden ausschließlich amtliche Werke: die Feuerwehr-Dienst&shy;vor&shy;schriften
-und das Unfallverhütungsrecht. Aus den Lehrstoffblättern der
+Verwendet werden ausschließlich amtliche Werke: die Feuerwehr-Dienst&shy;vor&shy;schriften,
+das Unfallverhütungsrecht sowie das Feuerwehrgesetz Baden-Württemberg und
+seine Verwaltungsvorschriften. Aus den Lehrstoffblättern der
 Landesfeuerwehrschule wird **nichts** übernommen — die erscheinen im Verlag.
 Aus DIN-Normen ebenfalls nicht; ein Sachverhalt daraus ist frei, der
 Normtext nicht.

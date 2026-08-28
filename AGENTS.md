@@ -277,6 +277,18 @@ pauschales Formatieren in Feature-PRs.
   Quellenangabe). **Nicht:** die Lehrstoffblätter der Landesfeuerwehrschule
   (Neckar-Verlag, ISBN) und DIN-Normtexte. Der Sachverhalt aus einer Norm
   ist frei, ihr Text nicht.
+- ⚠️ **Ein Landesbestand wird trotzdem ÜBERALL ausgeliefert.** `bw.json`
+  hängt in `kWissensAssets` neben `fwdv.json`; gefiltert wird nicht beim
+  Laden, sondern sichtbar an der Frage („gilt in Baden-Württemberg"). Wer
+  das Asset erst gar nicht mitliefert, nimmt der Wehr an der Landesgrenze
+  die Möglichkeit nachzuschlagen — und ein Bestand, den niemand sehen kann,
+  ist derselbe wie keiner.
+- ⚠️ **Ein neues Feld an der Wissensfrage muss den Party-Modus erreichen.**
+  `wissensfrageAlsPartyFrage` baut die Spielfrage von Hand zusammen und ließ
+  Quelle und Geltungsbereich still fallen: In der Wissensdatenbank stand die
+  Fundstelle, am Tisch nicht — also genau dort nicht, wo über eine Antwort
+  gestritten wird. `test/features/knowledge/wissen_party_test.dart` hält den
+  Weg zusammen.
 - ⚠️ **Riverpod-Codegen verträgt keine Drift-Datenklassen.** Ein
   `@riverpod`-Provider, der `VehicleAttachmentData` & Co. zurückgibt, bricht
   den Build mit `InvalidTypeException` ab — die Klasse liegt in einer

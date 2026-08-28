@@ -140,6 +140,13 @@ List<WissensfrageData> nurEinfachauswahl(List<WissensfrageData> fragen) =>
 PartyFrage wissensfrageAlsPartyFrage(WissensfrageData z, Random zufall) {
   final antworten = jsonToStringList(z.antwortenJson);
   final richtige = indizesAusJson(z.richtigeJson);
+  // Quelle und Geltungsbereich reisen mit ins Spiel (Issue #174). Sie
+  // fielen hier anfangs still heraus, und ausgerechnet am Tisch fehlten
+  // sie: Dort wird über eine Antwort gestritten, nicht in der Übersicht.
+  final frage = zuWissensfrage(z);
+  final hinweis = frage.geltung == Geltungsbereich.land
+      ? frage.geltungAnzeige
+      : null;
   // Verteidigung gegen eine kaputte Zeile, nicht gegen Mehrfachantworten —
   // die sind vorher heraus (siehe [nurEinfachauswahl]).
   if (antworten.isEmpty) {
@@ -149,6 +156,8 @@ PartyFrage wissensfrageAlsPartyFrage(WissensfrageData z, Random zufall) {
       antworten: const [PartyAntwort('—')],
       richtig: 0,
       erklaerung: z.erklaerung,
+      quelle: frage.quelle,
+      geltungshinweis: hinweis,
     );
   }
   final richtigerText =
@@ -161,6 +170,8 @@ PartyFrage wissensfrageAlsPartyFrage(WissensfrageData z, Random zufall) {
     antworten: gemischt.map(PartyAntwort.new).toList(),
     richtig: gemischt.indexOf(richtigerText),
     erklaerung: z.erklaerung,
+    quelle: frage.quelle,
+    geltungshinweis: hinweis,
   );
 }
 

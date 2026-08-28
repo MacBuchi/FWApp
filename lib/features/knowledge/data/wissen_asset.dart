@@ -26,12 +26,18 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:fwapp/core/logging/app_logger.dart';
 import 'package:fwapp/features/knowledge/domain/wissensfrage.dart';
 
-/// Die ausgelieferten Fragenbestände, in Ladereihenfolge.
+/// Die ausgelieferten Fragenbestände, in Ladereihenfolge: erst das, was
+/// überall gilt, dann die Landesbestände.
 ///
-/// Landesbestände kommen später als eigene Dateien daneben — die Struktur
-/// trägt sie schon, gefüllt wird vorerst nur der bundesweite Teil.
+/// ⚠️ **Ein Landesbestand wird trotzdem überall geladen** — gefiltert wird
+/// nicht hier, sondern beim Stellen der Frage. Der Grund ist die Wehr, die
+/// über eine Landesgrenze hinweg übt oder nachschlägt: Wer das Asset gar
+/// nicht erst mitliefert, nimmt ihr die Möglichkeit, und ein Bestand, den
+/// niemand sehen kann, ist derselbe wie keiner. Der Geltungsbereich steht an
+/// jeder Frage, damit sichtbar ist, wo sie gilt.
 const kWissensAssets = <String>[
   'assets/knowledge/fwdv.json',
+  'assets/knowledge/bw.json',
 ];
 
 /// Eine Frage, wie sie im Asset steht — noch ohne Datenbank-Identität.

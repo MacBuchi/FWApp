@@ -38,6 +38,10 @@ void main() {
   /// Der unerwartete Topf kommt seit Issue #174 aus der Wissensdatenbank.
   /// Antworttexte bewusst ohne „Richtig"/„Daneben" — das sind die Wörter der
   /// Auflösung, und ein Test, der beides verwechselt, prüft nichts.
+  ///
+  /// Mit Fundstelle und Landesangabe, weil der ausgelieferte Bestand sie
+  /// hat: Ohne sie liefe der Test an genau dem Fall vorbei, den er sichern
+  /// soll.
   Future<void> seedWissen() async {
     for (var i = 0; i < 12; i++) {
       await db.wissenDao.insertFrage(WissensfragenCompanion.insert(
@@ -45,6 +49,11 @@ void main() {
         frage: 'Testfrage $i',
         antwortenJson: const Value('["Stimmt","Daneben A","Daneben B"]'),
         richtigeJson: const Value('[0]'),
+        quelleWerk: const Value('FwG BW'),
+        quelleFundstelle: const Value('§ 8 Abs. 2'),
+        quelleStand: const Value('2025-02-25'),
+        geltung: const Value('land'),
+        land: const Value('BW'),
         stand: const Value('freigegeben'),
       ));
     }
@@ -195,6 +204,31 @@ void main() {
 
     expect(find.text('Daneben'), findsOneWidget);
     expect(find.textContaining('Ein Schluck'), findsNothing);
+
+    await endTestApp(tester);
+  });
+
+  testWidgets('die Auflösung nennt die Fundstelle und wo sie gilt',
+      (tester) async {
+    // Der Streit am Tisch endet an der Vorschrift oder an der lautesten
+    // Stimme (Issue #174). Vor dem Schritt stand die Quelle nur in der
+    // Wissensdatenbank — also dort, wo gerade niemand hinsieht.
+    await pumpe(tester);
+    await starten(tester);
+    await tester.tap(find.text('Bereit'));
+    await tester.pumpAndSettle();
+
+    // Vor der Antwort nicht: Die Fundstelle wäre ein Hinweis auf die
+    // Lösung.
+    expect(find.textContaining('FwG BW'), findsNothing);
+
+    await tester.tap(find.text('Stimmt'));
+    await tester.pumpAndSettle();
+
+    expect(
+        find.text('FwG BW · § 8 Abs. 2 (2025-02-25) · gilt in '
+            'Baden-Württemberg'),
+        findsOneWidget);
 
     await endTestApp(tester);
   });

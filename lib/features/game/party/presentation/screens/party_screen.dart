@@ -16,6 +16,7 @@ import 'package:fwapp/features/compartment/presentation/fach_antwort.dart';
 import 'package:fwapp/features/equipment/presentation/widgets/equipment_avatar.dart';
 import 'package:fwapp/features/game/party/domain/party_frage.dart';
 import 'package:fwapp/features/game/party/presentation/providers/party_providers.dart';
+import 'package:fwapp/features/knowledge/presentation/widgets/quellen_zeile.dart';
 import 'package:fwapp/features/vehicle/domain/entities/vehicle.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';
 
@@ -441,6 +442,14 @@ class _PartyScreenState extends ConsumerState<PartyScreen> {
           Text(stand.frage.erklaerung!,
               style: theme.textTheme.bodyMedium
                   ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+        ],
+        // Die Fundstelle steht in der Auflösung, weil genau hier
+        // widersprochen wird (Issue #174). Antippen öffnet die amtliche
+        // Fassung — damit endet der Streit am Gesetz und nicht am Handy.
+        if (stand.frage.quelle != null) ...[
+          const SizedBox(height: 8),
+          QuellenZeile(stand.frage.quelle!,
+              geltungshinweis: stand.frage.geltungshinweis),
         ],
         if (stand.aufgabe != null) ...[
           const SizedBox(height: 12),

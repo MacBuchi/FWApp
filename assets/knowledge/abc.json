@@ -1,0 +1,1091 @@
+{
+ "_hinweis": "ABC-Einsatz (Issue #174). Jede Frage ist aus der genannten Fundstelle selbst formuliert. Zwei Quellen: die FwDV 500 „Einheiten im ABC-Einsatz“ (Neufassung Januar 2022, vom AFKzV am 16.03.2022 genehmigt und in Baden-Wuerttemberg eingefuehrt) und das ADR, das in Deutschland als Anlageband zum Bundesgesetzblatt Teil II verkuendet wird — beides amtliche Werke nach § 5 UrhG. ZU DEN BILDERN: Die Gefahrzettel sind SELBST GEZEICHNET nach den Angaben des ADR (Abschnitt 5.2.2.2.2: Symbol, Symbolfarbe, Hintergrund, Ziffer). Erzeugt von tool/generate_gefahrzettel.py; kein Bild ist irgendwo heruntergeladen. NICHT verwendet: Lehrstoffblaetter der Landesfeuerwehrschule (Neckar-Verlag) und DIN-Normtexte.",
+ "fragen": [
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Gefahrzettel und Kennzeichnung",
+   "frage": "Welche Gefahr zeigt dieser Gefahrzettel an?",
+   "antworten": [
+    "Entzündbare flüssige Stoffe",
+    "Entzündbare Gase",
+    "Selbstentzündliche Stoffe",
+    "Organische Peroxide"
+   ],
+   "richtige": [
+    0
+   ],
+   "bild": "assets/knowledge/bilder/gefahrzettel_klasse_3.png",
+   "erklaerung": "Rote Raute, Flamme, Ziffer 3 — Klasse 3. Die Klasse 2.1 (entzündbare Gase) sieht fast gleich aus; unterschieden wird an der Ziffer in der unteren Ecke.",
+   "quelle": {
+    "werk": "ADR",
+    "fundstelle": "Abschnitt 5.2.2.2.2, Muster 3",
+    "stand": "2025-01",
+    "url": "https://www.recht.bund.de/bgbl/2/2025/57"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Gefahrzettel und Kennzeichnung",
+   "frage": "Wofür steht die grüne Raute mit der Gasflasche?",
+   "antworten": [
+    "Nicht entzündbare, nicht giftige Gase",
+    "Entzündbare Gase",
+    "Giftige Gase",
+    "Tiefgekühlt verflüssigte Gase aller Art"
+   ],
+   "richtige": [
+    0
+   ],
+   "bild": "assets/knowledge/bilder/gefahrzettel_klasse_2_2.png",
+   "erklaerung": "Grün heißt bei den Gasen: weder brennbar noch giftig — zum Beispiel Stickstoff oder Kohlendioxid. Erstickend können sie trotzdem sein.",
+   "quelle": {
+    "werk": "ADR",
+    "fundstelle": "Abschnitt 5.2.2.2.2, Muster 2.2",
+    "stand": "2025-01",
+    "url": "https://www.recht.bund.de/bgbl/2/2025/57"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Gefahrzettel und Kennzeichnung",
+   "frage": "Vor welcher Gefahr warnt dieser Gefahrzettel?",
+   "antworten": [
+    "Giftige Gase",
+    "Ansteckungsgefährliche Stoffe",
+    "Giftige feste Stoffe",
+    "Radioaktive Stoffe"
+   ],
+   "richtige": [
+    0
+   ],
+   "bild": "assets/knowledge/bilder/gefahrzettel_klasse_2_3.png",
+   "erklaerung": "Totenkopf auf weißem Grund mit der Ziffer 2 — giftige Gase. Derselbe Totenkopf mit der Ziffer 6 wäre die Klasse 6.1, giftige Stoffe.",
+   "quelle": {
+    "werk": "ADR",
+    "fundstelle": "Abschnitt 5.2.2.2.2, Muster 2.3",
+    "stand": "2025-01",
+    "url": "https://www.recht.bund.de/bgbl/2/2025/57"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Gefahrzettel und Kennzeichnung",
+   "frage": "Was bedeutet die blaue Raute mit der Flamme?",
+   "antworten": [
+    "Stoffe, die in Berührung mit Wasser entzündbare Gase entwickeln",
+    "Stoffe, die nur mit Wasser gelöscht werden dürfen",
+    "Tiefgekühlte Stoffe",
+    "Wassergefährdende Stoffe"
+   ],
+   "richtige": [
+    0
+   ],
+   "bild": "assets/knowledge/bilder/gefahrzettel_klasse_4_3.png",
+   "erklaerung": "Klasse 4.3 — hier ist Wasser das Falscheste, was man nehmen kann. Blau steht dabei nicht für Wasser als Löschmittel, sondern für die Gefahr, die davon ausgeht.",
+   "quelle": {
+    "werk": "ADR",
+    "fundstelle": "Abschnitt 5.2.2.2.2, Muster 4.3",
+    "stand": "2025-01",
+    "url": "https://www.recht.bund.de/bgbl/2/2025/57"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Gefahrzettel und Kennzeichnung",
+   "frage": "Welche Gefahr zeigt die gelbe Raute mit Flamme über einem Kreis?",
+   "antworten": [
+    "Entzündend (oxidierend) wirkende Stoffe",
+    "Organische Peroxide",
+    "Selbstzersetzliche Stoffe",
+    "Entzündbare feste Stoffe"
+   ],
+   "richtige": [
+    0
+   ],
+   "bild": "assets/knowledge/bilder/gefahrzettel_klasse_5_1.png",
+   "erklaerung": "Klasse 5.1. Diese Stoffe brennen nicht unbedingt selbst, sie liefern aber den Sauerstoff dazu — ein Brand daneben wird dadurch erheblich heftiger.",
+   "quelle": {
+    "werk": "ADR",
+    "fundstelle": "Abschnitt 5.2.2.2.2, Muster 5.1",
+    "stand": "2025-01",
+    "url": "https://www.recht.bund.de/bgbl/2/2025/57"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Gefahrzettel und Kennzeichnung",
+   "frage": "Wofür steht dieser Gefahrzettel?",
+   "antworten": [
+    "Ätzende Stoffe",
+    "Giftige Stoffe",
+    "Verschiedene gefährliche Stoffe",
+    "Radioaktive Stoffe"
+   ],
+   "richtige": [
+    0
+   ],
+   "bild": "assets/knowledge/bilder/gefahrzettel_klasse_8.png",
+   "erklaerung": "Klasse 8: obere Hälfte weiß, untere schwarz, die Ziffer 8 in Weiß. Das Symbol zeigt zwei Reagenzgläser, deren Inhalt eine Hand und ein Metallstück angreift.",
+   "quelle": {
+    "werk": "ADR",
+    "fundstelle": "Abschnitt 5.2.2.2.2, Muster 8",
+    "stand": "2025-01",
+    "url": "https://www.recht.bund.de/bgbl/2/2025/57"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Gefahrzettel und Kennzeichnung",
+   "frage": "Welche Klasse kennzeichnet dieser Gefahrzettel?",
+   "antworten": [
+    "Klasse 7 – Radioaktive Stoffe",
+    "Klasse 5.1 – Oxidierende Stoffe",
+    "Klasse 4.1 – Entzündbare feste Stoffe",
+    "Klasse 9 – Verschiedene gefährliche Stoffe"
+   ],
+   "richtige": [
+    0
+   ],
+   "bild": "assets/knowledge/bilder/gefahrzettel_klasse_7.png",
+   "erklaerung": "Das Strahlensymbol auf gelb-weißem Grund. Je nach Kategorie (I-WEISS, II-GELB, III-GELB) trägt der Zettel zusätzlich ein bis drei rote senkrechte Balken.",
+   "quelle": {
+    "werk": "ADR",
+    "fundstelle": "Abschnitt 5.2.2.2.2, Muster 7A bis 7C",
+    "stand": "2025-01",
+    "url": "https://www.recht.bund.de/bgbl/2/2025/57"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Gefahrzettel und Kennzeichnung",
+   "frage": "Was bedeuten die sieben senkrechten Streifen in der oberen Hälfte?",
+   "antworten": [
+    "Klasse 9 – Verschiedene gefährliche Stoffe und Gegenstände",
+    "Klasse 4.1 – Entzündbare feste Stoffe",
+    "Klasse 6.2 – Ansteckungsgefährliche Stoffe",
+    "Ein Zettel für Stoffe ohne Gefahr"
+   ],
+   "richtige": [
+    0
+   ],
+   "bild": "assets/knowledge/bilder/gefahrzettel_klasse_9.png",
+   "erklaerung": "Die Ziffer 9 ist als einzige unterstrichen. In diese Sammelklasse fallen unter anderem Lithiumbatterien — dafür gibt es das Muster 9A mit dem Batteriesymbol in der unteren Hälfte.",
+   "quelle": {
+    "werk": "ADR",
+    "fundstelle": "Abschnitt 5.2.2.2.2, Muster 9",
+    "stand": "2025-01",
+    "url": "https://www.recht.bund.de/bgbl/2/2025/57"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Gefahrzettel und Kennzeichnung",
+   "frage": "Welche Klasse zeigen die roten senkrechten Streifen mit der Flamme?",
+   "antworten": [
+    "Klasse 4.1 – Entzündbare feste Stoffe",
+    "Klasse 4.2 – Selbstentzündliche Stoffe",
+    "Klasse 3 – Entzündbare flüssige Stoffe",
+    "Klasse 9 – Verschiedene gefährliche Stoffe"
+   ],
+   "richtige": [
+    0
+   ],
+   "bild": "assets/knowledge/bilder/gefahrzettel_klasse_4_1.png",
+   "erklaerung": "Sieben rote Streifen auf weißem Grund, schwarze Flamme, Ziffer 4. Die Klasse 4.2 hat dagegen eine weiße obere und eine rote untere Hälfte.",
+   "quelle": {
+    "werk": "ADR",
+    "fundstelle": "Abschnitt 5.2.2.2.2, Muster 4.1",
+    "stand": "2025-01",
+    "url": "https://www.recht.bund.de/bgbl/2/2025/57"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Gefahrzettel und Kennzeichnung",
+   "frage": "Was steht auf einer orangefarbenen Warntafel oben und was unten?",
+   "antworten": [
+    "Oben die Nummer zur Kennzeichnung der Gefahr, unten die UN-Nummer",
+    "Oben die UN-Nummer, unten die Nummer zur Kennzeichnung der Gefahr",
+    "Oben die Gefahrklasse, unten die Menge",
+    "Oben die Telefonnummer der Leitstelle, unten die UN-Nummer"
+   ],
+   "richtige": [
+    0
+   ],
+   "bild": "assets/knowledge/bilder/warntafel_33_1203.png",
+   "erklaerung": "Im Beispiel: 33 oben heißt „leicht entzündbarer flüssiger Stoff, Flammpunkt unter 23 °C“, 1203 unten ist die UN-Nummer von Benzin.",
+   "quelle": {
+    "werk": "ADR",
+    "fundstelle": "Abschnitt 5.3.2.2",
+    "stand": "2025-01",
+    "url": "https://www.recht.bund.de/bgbl/2/2025/57"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Gefahrzettel und Kennzeichnung",
+   "frage": "Was bedeutet das X vor der Gefahrnummer?",
+   "antworten": [
+    "Der Stoff reagiert in gefährlicher Weise mit Wasser",
+    "Der Stoff ist besonders giftig",
+    "Der Stoff ist explosionsgefährlich",
+    "Die Ladung ist ungereinigt und leer"
+   ],
+   "richtige": [
+    0
+   ],
+   "bild": "assets/knowledge/bilder/warntafel_x423_1428.png",
+   "erklaerung": "Bei solchen Stoffen darf Wasser nur im Einverständnis mit Sachverständigen verwendet werden. Im Beispiel: X423 auf einem Transport von Natrium (UN 1428).",
+   "quelle": {
+    "werk": "ADR",
+    "fundstelle": "Absatz 5.3.2.3.1",
+    "stand": "2025-01",
+    "url": "https://www.recht.bund.de/bgbl/2/2025/57"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Gefahrzettel und Kennzeichnung",
+   "frage": "Was bedeutet die Verdoppelung einer Ziffer in der Gefahrnummer, zum Beispiel 33?",
+   "antworten": [
+    "Die Zunahme der entsprechenden Gefahr",
+    "Zwei verschiedene Gefahren desselben Stoffes",
+    "Zwei getrennte Ladungen im selben Tank",
+    "Nichts — sie ist nur eine Auffüllziffer"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "30 ist ein entzündbarer flüssiger Stoff, 33 ein LEICHT entzündbarer. Die angehängte Null bedeutet dagegen, dass eine Ziffer zur Beschreibung reicht.",
+   "quelle": {
+    "werk": "ADR",
+    "fundstelle": "Absatz 5.3.2.3.1",
+    "stand": "2025-01",
+    "url": "https://www.recht.bund.de/bgbl/2/2025/57"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Gefahrzettel und Kennzeichnung",
+   "frage": "Auf welche Gefahren weisen die Ziffern der Gefahrnummer hin?",
+   "antworten": [
+    "2 – Entweichen von Gas durch Druck oder chemische Reaktion",
+    "3 – Entzündbarkeit von flüssigen Stoffen und Gasen",
+    "6 – Giftigkeit oder Ansteckungsgefahr",
+    "8 – Ätzwirkung",
+    "1 – Radioaktivität"
+   ],
+   "richtige": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "erklaerung": "Radioaktivität ist die 7. Weiter: 4 entzündbare feste Stoffe, 5 oxidierende Wirkung, 9 Gefahr einer spontanen heftigen Reaktion.",
+   "quelle": {
+    "werk": "ADR",
+    "fundstelle": "Absatz 5.3.2.3.1",
+    "stand": "2025-01",
+    "url": "https://www.recht.bund.de/bgbl/2/2025/57"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Gefahrzettel und Kennzeichnung",
+   "frage": "Wie viele orangefarbene Warntafeln muss eine Beförderungseinheit mit gefährlichen Gütern tragen und wo?",
+   "antworten": [
+    "Zwei, senkrecht angebracht vorn und hinten an der Beförderungseinheit",
+    "Eine, gut sichtbar an der Fahrerseite",
+    "Vier, an allen vier Seiten",
+    "Zwei, an beiden Längsseiten"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Wird ein Anhänger unterwegs abgehängt, muss an seiner Heckseite eine Tafel angebracht bleiben.",
+   "quelle": {
+    "werk": "ADR",
+    "fundstelle": "Absatz 5.3.2.1.1",
+    "stand": "2025-01",
+    "url": "https://www.recht.bund.de/bgbl/2/2025/57"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Gefahrzettel und Kennzeichnung",
+   "frage": "Welche Form und Mindestgröße hat ein Gefahrzettel?",
+   "antworten": [
+    "Ein auf die Spitze gestelltes Quadrat (Raute), mindestens 100 mm × 100 mm",
+    "Ein Quadrat auf der Kante, mindestens 100 mm × 100 mm",
+    "Ein Kreis mit mindestens 100 mm Durchmesser",
+    "Ein Dreieck mit mindestens 150 mm Kantenlänge"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Innerhalb des Randes läuft parallel dazu eine Linie in etwa 5 mm Abstand. In der oberen Hälfte steht das Symbol, in der unteren Ecke die Klassennummer.",
+   "quelle": {
+    "werk": "ADR",
+    "fundstelle": "Absatz 5.2.2.2.1.2",
+    "stand": "2025-01",
+    "url": "https://www.recht.bund.de/bgbl/2/2025/57"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Gefahrengruppen",
+   "frage": "In wie viele Gefahrengruppen teilt die FwDV 500 Bereiche mit ABC-Gefahrstoffen ein?",
+   "antworten": [
+    "Drei",
+    "Zwei",
+    "Vier",
+    "Fünf"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "I, II und III — je nach Zugehörigkeit des Gefahrstoffs ergänzt um A, B oder C: IA, IIB, IIIC und so fort.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 1.2.1",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Gefahrengruppen",
+   "frage": "Was kennzeichnet die Gefahrengruppe I?",
+   "antworten": [
+    "Bereiche, in denen die Einsatzkräfte ohne Sonderausrüstung tätig werden dürfen",
+    "Bereiche, die nur mit Sonderausrüstung betreten werden dürfen",
+    "Bereiche, die eine sachkundige Person erfordern",
+    "Bereiche, die überhaupt nicht betreten werden dürfen"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Atemschutz soll zur Vermeidung einer Inkorporation trotzdem getragen werden; nur wenn eine Inkorporationsgefahr ausgeschlossen ist, kann darauf verzichtet werden.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 1.2.1",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Gefahrengruppen",
+   "frage": "Was unterscheidet die Gefahrengruppe III von der Gefahrengruppe II?",
+   "antworten": [
+    "Die Eigenart des Bereichs macht die Anwesenheit einer sachkundigen Person notwendig",
+    "In Gruppe III ist keine Dekontamination mehr möglich",
+    "In Gruppe III wird ohne Atemschutz gearbeitet",
+    "Gruppe III betrifft nur radioaktive Stoffe"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Diese Person beurteilt während des Einsatzes die entstehende Gefährdung und die Schutzmaßnahmen. Sonderausrüstung, Überwachung und Dekontamination verlangen beide Gruppen.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 1.2.1",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Gefahrengruppen",
+   "frage": "Wie ist bei einem Einsatz im Zusammenhang mit einem TRANSPORT gefährlicher Güter zu verfahren?",
+   "antworten": [
+    "Zunächst wie bei Einsätzen in Bereichen der Gefahrengruppe II",
+    "Zunächst wie bei Einsätzen in Bereichen der Gefahrengruppe I",
+    "Immer wie bei Gefahrengruppe III",
+    "Nach der Gefahrengruppe, die auf der Warntafel steht"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Transporte werden nach eigenen Vorschriften klassifiziert und gekennzeichnet; eine vorbereitende Einteilung in Gefahrengruppen ist dort im Einzelfall nicht möglich.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 1.2.1",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Gefahrengruppen",
+   "frage": "Wie sind Einsätze nach einem Anschlag zu behandeln?",
+   "antworten": [
+    "Grundsätzlich wie Bereiche der Gefahrengruppe III",
+    "Wie Bereiche der Gefahrengruppe I",
+    "Wie ein gewöhnlicher Transportunfall",
+    "Ausschließlich nach Weisung der Leitstelle"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Ein Tätigwerden in unsicheren und teilsicheren Bereichen erfolgt erst nach Abstimmung mit der Polizei und deren ausdrücklicher Freigabe.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 1.2.1",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Gefahrengruppen",
+   "frage": "Welche Grundsätze nennt die FwDV 500 zur Kontamination?",
+   "antworten": [
+    "Eine Kontamination ist zu vermeiden, zumindest so gering wie möglich zu halten",
+    "Eine Kontaminationsverschleppung ist zu verhindern",
+    "Eine Kontamination ist hinzunehmen, solange dekontaminiert wird",
+    "Eine Kontamination ist nur bei radioaktiven Stoffen relevant"
+   ],
+   "richtige": [
+    0,
+    1
+   ],
+   "erklaerung": "Daneben steht der zweite Grundsatz: Jede gefährliche Einwirkung von Energie ist so gering wie möglich zu halten, jede von mechanischer Energie zu verhindern.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 1.2.1",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Erstmaßnahmen und Bereiche",
+   "frage": "Wofür stehen die vier Buchstaben der GAMS-Regel?",
+   "antworten": [
+    "Gefahr erkennen",
+    "Absperren",
+    "Menschenrettung durchführen",
+    "Spezialkräfte alarmieren",
+    "Sofort-Dekontamination einrichten"
+   ],
+   "richtige": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "erklaerung": "Die Sofort-Dekon ist zusätzlich einzurichten und der Brandschutz sicherzustellen — sie gehört aber nicht zu den vier Buchstaben.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 1.5.3.2",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Erstmaßnahmen und Bereiche",
+   "frage": "Wozu dient die GAMS-Regel?",
+   "antworten": [
+    "Sie nennt die Mindestmaßnahmen für Kräfte ohne vollständige ABC-Ausbildung und -Ausrüstung",
+    "Sie ersetzt die Alarmierung von Spezialkräften",
+    "Sie regelt den Aufbau des Dekon-Platzes",
+    "Sie legt die Reihenfolge der Dekon-Stufen fest"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "In der ersten Einsatzphase steht oft niemand mit voller ABC-Ausrüstung da. Diese vier Dinge kann die Gruppe trotzdem tun.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 1.5.3.2",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Erstmaßnahmen und Bereiche",
+   "frage": "Welche Bereiche sind bei allen ABC-Einsätzen um das Schadenobjekt zu bilden?",
+   "antworten": [
+    "Gefahrenbereich",
+    "Absperrbereich",
+    "Übergangsbereich, soweit erforderlich",
+    "Bereitstellungsraum für die Presse"
+   ],
+   "richtige": [
+    0,
+    1,
+    2
+   ],
+   "erklaerung": "Bei der Festlegung sind die meteorologischen und topographischen Verhältnisse zu berücksichtigen — vor allem der Wind.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 1.5.3.5",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Erstmaßnahmen und Bereiche",
+   "frage": "Welche Abstände vom Schadenobjekt nennt die FwDV 500?",
+   "antworten": [
+    "Gefahrenbereich: kürzester Abstand etwa 50 m",
+    "Absperrbereich: kürzester Abstand etwa 100 m",
+    "Übergangsbereich: kürzester Abstand etwa 50 m",
+    "Gefahrenbereich: kürzester Abstand etwa 200 m"
+   ],
+   "richtige": [
+    0,
+    1,
+    2
+   ],
+   "erklaerung": "Ist weder eine Gefährdung der Umgebung erkennbar noch eine Gefahr außerhalb des Schadenobjektes gegeben, darf die Grenze des Gefahrenbereichs bis auf 5 m herangezogen werden.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 1.5.3.5",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Erstmaßnahmen und Bereiche",
+   "frage": "Welche Farben sind den Bereichen zugeordnet?",
+   "antworten": [
+    "Gefahrenbereich rot, Absperrbereich grün, Übergangsbereich gelb",
+    "Gefahrenbereich rot, Absperrbereich gelb, Übergangsbereich grün",
+    "Gefahrenbereich schwarz, Absperrbereich rot, Übergangsbereich weiß",
+    "Alle drei Bereiche werden rot markiert"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Gefahren- und Übergangsbereich markiert und sichert die Feuerwehr, den Absperrbereich in Absprache mit der Polizei.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 1.5.3.5",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Erstmaßnahmen und Bereiche",
+   "frage": "Was ist im Gefahren- und im Übergangsbereich verboten?",
+   "antworten": [
+    "Rauchen, Essen und Trinken",
+    "Der Einsatz von Wasser",
+    "Das Tragen von Atemschutz",
+    "Jeder Funkverkehr"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Der Grund ist die Inkorporation: Was an den Händen hängt, wandert sonst über Zigarette oder Brot in den Körper.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 1.5.3.5",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Erstmaßnahmen und Bereiche",
+   "frage": "Was ist bei bestehender Explosions- oder Zerknallgefahr zu tun?",
+   "antworten": [
+    "Den Gefahrenbereich erheblich erweitern und jede Deckungsmöglichkeit nutzen",
+    "Den Gefahrenbereich auf 5 m verkleinern",
+    "Den Absperrbereich aufheben",
+    "Den Übergangsbereich in den Gefahrenbereich verlegen"
+   ],
+   "richtige": [
+    0
+   ],
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 1.5.3.5",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Erstmaßnahmen und Bereiche",
+   "frage": "Was ist bei der Lagefeststellung besonders zu erkunden?",
+   "antworten": [
+    "Art der freigesetzten Stoffe — was tritt aus?",
+    "Gesamtstoffmenge und Menge pro Zeit — wie viel tritt aus?",
+    "Ausbreitung des Stoffes — wohin?",
+    "Der Marktwert der Ladung"
+   ],
+   "richtige": [
+    0,
+    1,
+    2
+   ],
+   "erklaerung": "Dazu kommt die Plausibilitätsprüfung: Beförderungspapiere und Kennzeichnung mit der tatsächlichen Ladung vergleichen.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 1.5.1",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Schutzausrüstung im ABC-Einsatz",
+   "frage": "Wovor schützt die Schutzkleidung Form 1?",
+   "antworten": [
+    "Ausschließlich vor Kontamination mit FESTEN ABC-Gefahrstoffen, mit eingeschränktem Spritzschutz",
+    "Vor festen und flüssigen ABC-Gefahrstoffen",
+    "Vor festen, flüssigen und gasförmigen ABC-Gefahrstoffen",
+    "Vor Hitze und Flammen"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Sie ist weder flüssigkeits- noch gasdicht und besteht aus der Brandschutzkleidung plus einer Schutzhaube mit Kragen.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 1.3.1.2",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Schutzausrüstung im ABC-Einsatz",
+   "frage": "Wovor schützt die Schutzkleidung Form 2 — und wovor nicht?",
+   "antworten": [
+    "Vor festen und begrenzt auch flüssigen ABC-Gefahrstoffen",
+    "Sie ist NICHT gasdicht",
+    "Sie schützt vor gesundheitsschädlichen Gasen und Dämpfen",
+    "Sie darf ohne Weiteres zur Brandbekämpfung getragen werden"
+   ],
+   "richtige": [
+    0,
+    1
+   ],
+   "erklaerung": "Über den Einsatz zur Brandbekämpfung hat der Einsatzleiter gesondert zu entscheiden — das Material ist nur begrenzt temperaturbeständig.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 1.3.1.2",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Schutzausrüstung im ABC-Einsatz",
+   "frage": "Wann ist die Schutzkleidung Form 3 einzusetzen?",
+   "antworten": [
+    "Wenn Gefahren durch ABC-Gefahrstoffe einen umfassenden Schutz erforderlich machen — sie schützt auch vor gasförmigen Stoffen",
+    "Immer, sobald ein Gefahrzettel sichtbar ist",
+    "Nur bei radioaktiven Stoffen",
+    "Nur, wenn kein Isoliergerät verfügbar ist"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Sie ist in der Regel nur unzureichend gegen hohe Temperaturen (Brände, Heißdampf) und tiefe Temperaturen (verflüssigte Gase) beständig.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 1.3.1.2",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Schutzausrüstung im ABC-Einsatz",
+   "frage": "Mit welcher Mindestausrüstung dürfen Einsatzkräfte zur Rettung von Menschenleben ohne vollständige Sonderausrüstung vorgehen?",
+   "antworten": [
+    "Mindestens Schutzkleidung Form 1 und Isoliergeräte als Atemschutz",
+    "Mindestens Schutzkleidung Form 2 und Filtergeräte",
+    "Feuerwehrschutzkleidung ohne Atemschutz",
+    "Es gibt keine Ausnahme"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Die Entscheidung trifft der Einsatzleiter, und er trägt dabei eine besondere Verantwortung. Zur Rettung von Menschenleben dürfen auch Bereiche der Gefahrengruppe III ohne sachkundige Person betreten werden.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 1.5.3.3",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Schutzausrüstung im ABC-Einsatz",
+   "frage": "Welche Gerätegruppen zum Nachweis nennt die FwDV 500 für den ABC-Einsatz?",
+   "antworten": [
+    "Geräte zum Nachweis explosionsfähiger Gas/Dampf-Luft-Gemische",
+    "Geräte zum Nachweis des Sauerstoffgehalts",
+    "Geräte zum Nachweis gefährlicher Strahlung",
+    "Geräte zum Nachweis der Windrichtung"
+   ],
+   "richtige": [
+    0,
+    1,
+    2
+   ],
+   "erklaerung": "Dazu kommen Geräte für sonstige gesundheitsschädliche Gase und Dämpfe sowie für gesundheitsschädliche feste und flüssige Stoffe. Für den C-Einsatz gehören Prüfröhrchen mindestens für die Stoffe nach vfdb-Richtlinie 10/01 dazu.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffern 1.3.2 und 4.3.2",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Dekontamination",
+   "frage": "Was ist die Dekon-Stufe I?",
+   "antworten": [
+    "Die Sofort-Dekontamination",
+    "Die Standard-Dekontamination am Dekon-Platz",
+    "Die erweiterte Dekontamination",
+    "Die Entsorgung kontaminierter Einsatzmittel"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Sie ist zeitgleich mit dem Einsatz des ersten Trupps an der Grenze zum Gefahrenbereich sicherzustellen und ist nicht an einen Dekon-Platz gebunden.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 1.5.3.6",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Dekontamination",
+   "frage": "Wann muss der Standard-Dekon-Platz (Dekon-Stufe II) betriebsbereit sein?",
+   "antworten": [
+    "Spätestens 15 Minuten nach dem ersten Anlegen einer persönlichen Schutzausrüstung",
+    "Spätestens 30 Minuten nach Eintreffen an der Einsatzstelle",
+    "Vor dem Eintreffen des ersten Fahrzeugs",
+    "Erst nach Abschluss der Menschenrettung"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Und außerhalb des Gefahrenbereichs. Zur Menschenrettung kann der Einsatzleiter Ausnahmen zulassen.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 1.5.3.6",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Dekontamination",
+   "frage": "Was ist das Ziel der Sofort-Dekontamination?",
+   "antworten": [
+    "Kontaminierte Personen so schnell zu dekontaminieren, dass lebensrettende Sofortmaßnahmen ohne Eigen- oder Fremdgefährdung durchgeführt werden können",
+    "Die vollständige Reinigung der Schutzkleidung",
+    "Die Sammlung und Verpackung kontaminierter Einsatzmittel",
+    "Das hygienische Duschen der Einsatzkräfte nach dem Einsatz"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Orte, an denen eine Sofort-Dekon durchgeführt wurde, gelten selbst als kontaminiert und sind abzusperren.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 1.5.3.6",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Dekontamination",
+   "frage": "Bei welchen Einsätzen ist ein Dekon-Platz einzurichten?",
+   "antworten": [
+    "Bei jedem ABC-Einsatz der Gefahrengruppen II und III",
+    "Nur bei Einsätzen der Gefahrengruppe III",
+    "Bei jedem ABC-Einsatz, auch der Gefahrengruppe I",
+    "Nur, wenn eine Dekon-Einheit alarmiert wurde"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Seine Lage legt der für die Dekontamination zuständige Einheitsführer in Absprache mit der Einsatzleitung fest.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 1.5.3.6",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Dekontamination",
+   "frage": "Wo soll der Dekon-Platz liegen?",
+   "antworten": [
+    "An der windzugewandten Seite außerhalb des Gefahrenbereichs",
+    "An der windabgewandten Seite innerhalb des Gefahrenbereichs",
+    "Möglichst mittig im Absperrbereich, unabhängig vom Wind",
+    "Unmittelbar am Schadenobjekt"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Außerdem ist auf gute Erreichbarkeit und auf Ver- und Entsorgungsmöglichkeiten zu achten — Strom, Wasser, Abwasser.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 1.5.3.6",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Dekontamination",
+   "frage": "Wann wird die Dekon-Stufe III (erweiterte Dekontamination) nötig?",
+   "antworten": [
+    "Bei einer hohen Anzahl zu dekontaminierender Personen",
+    "Bei mehreren liegend verletzten Personen",
+    "Wenn große Abwassermengen aufgefangen werden müssen",
+    "Bei jedem Einsatz mit Schutzkleidung Form 2"
+   ],
+   "richtige": [
+    0,
+    1,
+    2
+   ],
+   "erklaerung": "Weitere Gründe: besondere Maßnahmen bei bestimmten Gefahrstoffen, Schutz vor Witterung, hygienisches Duschen mit Warmwasser, Einsatz von Sanitäts- und Fachkräften.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 1.5.3.6",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Dekontamination",
+   "frage": "Welche Aufgabe hat der Wassertrupp im ABC-Einsatz einer Gruppe?",
+   "antworten": [
+    "Er ist Sicherheitstrupp und führt die Dekon-Stufe I durch",
+    "Er stellt die Löschwasserversorgung her",
+    "Er markiert und überwacht den Gefahrenbereich",
+    "Er bedient die Nachweisgeräte"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Er rüstet sich mindestens gleichwertig zum Angriffstrupp aus, schließt aber den Lungenautomaten nicht an. Das Markieren des Gefahrenbereichs ist Sache des Schlauchtrupps.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 1.5.4.2",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Aufgaben im ABC-Einsatz",
+   "frage": "Wofür kann eine Gruppe im ABC-Einsatz selbstständig eingesetzt werden?",
+   "antworten": [
+    "Nur für die ersten Einsatzmaßnahmen oder Aufträge kleineren Umfangs mit klar begrenztem Risiko",
+    "Für jede Aufgabe des ABC-Einsatzes",
+    "Nur für die Dekontamination",
+    "Nur zusammen mit einem zweiten Löschzug"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Trupps unter Schutzkleidung Form 2 oder 3 erfordern weitere Einheiten zur Dekontamination und als Reserve.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 1.5.4.2",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Aufgaben im ABC-Einsatz",
+   "frage": "Welche Aufgaben hat der Gruppenführer im ABC-Einsatz?",
+   "antworten": [
+    "Er legt in einem ersten Entschluss den Gefahrenbereich fest",
+    "Er erkundet außerhalb des möglichen Gefahrenbereichs",
+    "Er stellt die Atemschutz- und Dosisüberwachung sicher",
+    "Er betritt als Erster den Gefahrenbereich"
+   ],
+   "richtige": [
+    0,
+    1,
+    2
+   ],
+   "erklaerung": "Er ist außerdem dafür verantwortlich, dass der Gefahrenbereich nur mit geeigneter Schutzausrüstung betreten und nicht ohne Dekontamination verlassen wird.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 1.5.4.2",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Aufgaben im ABC-Einsatz",
+   "frage": "Wann ist der Einsatz zu unterbrechen, wenn weitere Isoliergeräte und Personal nicht schnell genug zur Verfügung stehen?",
+   "antworten": [
+    "Bei Isoliergeräten nach etwa zehn Minuten",
+    "Nach etwa dreißig Minuten",
+    "Erst wenn der erste Trupp zurück ist",
+    "Gar nicht — der Einsatz läuft bis zum Abschluss"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Der Gruppenführer hat rechtzeitig für weitere Kräfte zu sorgen, mindestens für eine Dekon-Einheit.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 1.5.4.2",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Aufgaben im ABC-Einsatz",
+   "frage": "Welche Aufgaben hat der Schlauchtrupp im ABC-Einsatz?",
+   "antworten": [
+    "Er stellt die Geräte an der Grenze zum Gefahrenbereich bereit",
+    "Er markiert den Gefahrenbereich und überwacht ihn von außerhalb",
+    "Er übernimmt außerhalb des Gefahrenbereichs die Absicherung der Einsatzstelle",
+    "Er führt die Sofort-Dekontamination durch"
+   ],
+   "richtige": [
+    0,
+    1,
+    2
+   ],
+   "erklaerung": "Die Sofort-Dekon macht der Wassertrupp, der zugleich Sicherheitstrupp ist.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 1.5.4.2",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Strahlenschutz (A-Einsatz)",
+   "frage": "Wonach richtet sich die Einteilung in Gefahrengruppen beim A-Einsatz?",
+   "antworten": [
+    "Danach, ob eine Kontaminationsgefahr besteht und wie hoch die Aktivität der Strahlenquelle ist",
+    "Nach der Entfernung zur Strahlenquelle",
+    "Nach der Art der Strahlung — Alpha, Beta oder Gamma",
+    "Nach der Anzahl der betroffenen Personen"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Maßstab ist ein Vielfaches der Freigrenze nach Strahlenschutzverordnung: bis zum 10⁴-fachen Gefahrengruppe IA, darüber bis 10⁷ IIA, darüber IIIA.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 2.1",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Strahlenschutz (A-Einsatz)",
+   "frage": "Wann beginnt die Strahlenschutzüberwachung?",
+   "antworten": [
+    "Unmittelbar nach der Ausrüstung der Trupps außerhalb des Gefahrenbereichs",
+    "Erst beim Betreten des Gefahrenbereichs",
+    "Nach Rückkehr des ersten Trupps",
+    "Erst mit dem Eintreffen der Strahlenschutzbehörde"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Schon dann ist auch die Nullrate außerhalb des Gefahrenbereichs zu messen und mit der dort üblichen zu vergleichen.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 2.4.2.3",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Strahlenschutz (A-Einsatz)",
+   "frage": "Wozu dient die Messung der Dosisleistung im Gefahrenbereich?",
+   "antworten": [
+    "Zur Abschätzung der zu erwartenden Dosis",
+    "Zur Festlegung von Zeitbeschränkungen bei der Strahlenexposition",
+    "Zur Festlegung von Mindestabständen zu Strahlenquellen",
+    "Zur Bestimmung der Halbwertszeit des Stoffes"
+   ],
+   "richtige": [
+    0,
+    1,
+    2
+   ],
+   "erklaerung": "Jeder Trupp misst sie an seinem Aufenthaltsort und meldet größere Veränderungen an den Einsatzleiter. Als Angriffswege sind Bereiche mit geringer Dosisleistung zu wählen.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 2.4.2.3",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Strahlenschutz (A-Einsatz)",
+   "frage": "Wie wird die Personendosis nach dem Einsatz festgestellt?",
+   "antworten": [
+    "Unverzüglich durch Auswerten der amtlichen Personendosimeter in Verbindung mit dem Referenzdosimeter",
+    "Durch Ablesen des Dosiswarngeräts an der Einsatzstelle",
+    "Durch eine ärztliche Untersuchung am Folgetag",
+    "Sie wird nicht festgestellt, nur die Dosisleistung"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Über die Werte ist ein Nachweis zu führen. Für Kräfte, die ohne dosimetrische Überwachung tätig waren, ist mit der Strahlenschutzbehörde eine Ersatzdosis festzulegen.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 2.4.2.3",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  },
+  {
+   "gebiet": "gefahrgut",
+   "kapitel": "Strahlenschutz (A-Einsatz)",
+   "frage": "Was zeigt das Dosiswarngerät an?",
+   "antworten": [
+    "Das Erreichen bestimmter Dosiswerte, eingestellt auf den befohlenen Referenzwert",
+    "Die Art des radioaktiven Stoffes",
+    "Die Kontamination der Schutzkleidung",
+    "Die verbleibende Atemluft"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Seine Messwerte sind ebenfalls zu dokumentieren. Es ersetzt nicht das amtliche Personendosimeter, das erst nach dem Einsatz ausgewertet wird.",
+   "quelle": {
+    "werk": "FwDV 500",
+    "fundstelle": "Ziffer 2.4.2.3",
+    "stand": "2022-01",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_500_AFKzV_2022-03-16_02.pdf"
+   }
+  }
+ ]
+}

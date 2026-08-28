@@ -49,6 +49,10 @@ void main() {
         frage: 'Testfrage $i',
         antwortenJson: const Value('["Stimmt","Daneben A","Daneben B"]'),
         richtigeJson: const Value('[0]'),
+        // Alle mit Bild, damit der Test nicht von der Mischung abhängt —
+        // bei einem Gefahrzettel IST das Bild die Frage.
+        bildPfad: const Value(
+            'assets/knowledge/bilder/gefahrzettel_klasse_3.png'),
         quelleWerk: const Value('FwG BW'),
         quelleFundstelle: const Value('§ 8 Abs. 2'),
         quelleStand: const Value('2025-02-25'),
@@ -204,6 +208,30 @@ void main() {
 
     expect(find.text('Daneben'), findsOneWidget);
     expect(find.textContaining('Ein Schluck'), findsNothing);
+
+    await endTestApp(tester);
+  });
+
+  testWidgets('eine Bildfrage zeigt ihr Bild am Tisch', (tester) async {
+    // Der Weg Asset → Datenbank → PartyFrage → Schirm ist lang, und schon
+    // einmal fiel auf ihm etwas heraus (die Quelle, Issue #174). Ohne den
+    // Gefahrzettel steht am Tisch „Welche Gefahr zeigt dieser Gefahrzettel
+    // an?" ohne den Gefahrzettel.
+    await pumpe(tester);
+    await starten(tester);
+
+    // Auf dem Übergabe-Schirm noch nicht — dort ist die Frage verdeckt.
+    expect(find.byType(Image), findsNothing);
+
+    await tester.tap(find.text('Bereit'));
+    await tester.pumpAndSettle();
+
+    final bilder = find.byType(Image).evaluate().map((e) =>
+        (e.widget as Image).image);
+    expect(
+      bilder.whereType<AssetImage>().map((a) => a.assetName),
+      contains('assets/knowledge/bilder/gefahrzettel_klasse_3.png'),
+    );
 
     await endTestApp(tester);
   });

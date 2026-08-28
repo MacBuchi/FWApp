@@ -292,6 +292,32 @@ pauschales Formatieren in Feature-PRs.
   FwDV 7 den 01.04.2005 — das PDF selbst sagt „Ausgabe August 2004". Im Asset
   steht die Ausgabe, weil sie den Text bezeichnet und das Einführungsdatum nur
   seine Geltung in einem Land.
+- ⚠️ **Piktogramme werden GEZEICHNET, nicht heruntergeladen.** Die
+  Gefahrzettel unter `assets/knowledge/bilder/` entstehen aus
+  `tool/generate_gefahrzettel.py` nach den Angaben des ADR (Abschnitt
+  5.2.2.2.2: Symbol, Symbolfarbe, Hintergrund, Ziffer). Nur so bleibt wahr,
+  was `licenses_test.dart` über `assets/knowledge/` behauptet — alles darunter
+  ist Eigenerzeugnis. Bei fremden Piktogrammen ist die Herkunft selten so
+  dokumentiert, wie sie sein müsste. Dasselbe Verfahren wie bei
+  `tool/generate_pictograms.py`.
+  ⚠️ Zwei Fallen beim Zeichnen: `clip-path` und `transform` dürfen NICHT am
+  selben SVG-Element hängen (der Clip wird nach der eigenen Transformation
+  gelesen und schneidet alles weg), und die Raute ist oben schmal — bei
+  y = 40 nur 76 von 200 Einheiten breit. Ein mittig platziertes Symbol ragt
+  dort hinaus.
+- ⚠️ **Zwei Fragen mit demselben Wortlaut werden zu einer.** `WissenSeeder`
+  erkennt eine schon angelegte Frage AM TEXT. Bei den Bildfragen wäre das
+  beinahe passiert — „Welche Gefahr zeigt dieser Gefahrzettel an?" stand
+  zweimal da, unterschieden nur durch das Bild, und eine der beiden wäre nie
+  in der Datenbank angekommen. `wissen_asset_test.dart` prüft es je Datei.
+- ⚠️ **`alterTable` baut nach der HEUTIGEN Definition.** Der v9→v10-Schritt
+  der Wissensdatenbank baut die Tabelle neu; sobald jemand später eine Spalte
+  ergänzt, will die Kopier-Abfrage sie aus der ALTEN Tabelle lesen und die
+  Migration bricht mit „no such column" ab. Neue Spalten gehören deshalb in
+  `TableMigration(..., newColumns: [...])` — und der zugehörige
+  `from < N`-Schritt darf dann nur noch für die Versionen laufen, die den
+  Neubau NICHT durchlaufen haben (`from == 10`, nicht `from >= 9`). Gefunden
+  hat das der Migrationstest, nicht ein Gerät.
 - ⚠️ **Ein Landesbestand wird trotzdem ÜBERALL ausgeliefert.** `bw.json`
   hängt in `kWissensAssets` neben `fwdv.json`; gefiltert wird nicht beim
   Laden, sondern sichtbar an der Frage („gilt in Baden-Württemberg"). Wer

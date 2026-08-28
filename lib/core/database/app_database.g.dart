@@ -7425,6 +7425,28 @@ class $WissensfragenTable extends Wissensfragen
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _kapitelMeta = const VerificationMeta(
+    'kapitel',
+  );
+  @override
+  late final GeneratedColumn<String> kapitel = GeneratedColumn<String>(
+    'kapitel',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _bildPfadMeta = const VerificationMeta(
+    'bildPfad',
+  );
+  @override
+  late final GeneratedColumn<String> bildPfad = GeneratedColumn<String>(
+    'bild_pfad',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _herkunftMeta = const VerificationMeta(
     'herkunft',
   );
@@ -7520,6 +7542,8 @@ class $WissensfragenTable extends Wissensfragen
     quelleUrl,
     geltung,
     land,
+    kapitel,
+    bildPfad,
     herkunft,
     stand,
     eingereichtVon,
@@ -7623,6 +7647,18 @@ class $WissensfragenTable extends Wissensfragen
       context.handle(
         _landMeta,
         land.isAcceptableOrUnknown(data['land']!, _landMeta),
+      );
+    }
+    if (data.containsKey('kapitel')) {
+      context.handle(
+        _kapitelMeta,
+        kapitel.isAcceptableOrUnknown(data['kapitel']!, _kapitelMeta),
+      );
+    }
+    if (data.containsKey('bild_pfad')) {
+      context.handle(
+        _bildPfadMeta,
+        bildPfad.isAcceptableOrUnknown(data['bild_pfad']!, _bildPfadMeta),
       );
     }
     if (data.containsKey('herkunft')) {
@@ -7736,6 +7772,14 @@ class $WissensfragenTable extends Wissensfragen
         DriftSqlType.string,
         data['${effectivePrefix}land'],
       ),
+      kapitel: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kapitel'],
+      ),
+      bildPfad: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}bild_pfad'],
+      ),
       herkunft:
           attachedDatabase.typeMapping.read(
             DriftSqlType.string,
@@ -7815,6 +7859,20 @@ class WissensfrageData extends DataClass
   /// Länderkürzel, nur bei `geltung = 'land'`.
   final String? land;
 
+  /// Unterkapitel innerhalb des Sachgebiets, im Klartext — „Gefahrzettel und
+  /// Kennzeichnung", „Dekontamination", „Strahlenschutz (A-Einsatz)".
+  ///
+  /// ⚠️ Freier Text und KEIN Aufzählungstyp, damit ein neues Kapitel eine
+  /// Zeile im Asset kostet und keine Code-Änderung. Gegen Tippfehler wacht
+  /// `wissen_asset_test.dart` mit einer namentlichen Liste je Datei — ein
+  /// verrutschter Buchstabe legte sonst still ein zweites Kapitel an.
+  final String? kapitel;
+
+  /// Bild zur Frage, z. B. `assets/knowledge/bilder/gefahrzettel_klasse_3.png`.
+  /// Bei manchen Fragen IST das Bild die Frage — ein Gefahrzettel lässt sich
+  /// nicht sinnvoll umschreiben.
+  final String? bildPfad;
+
   /// `mitgeliefert` | `eigen` — was ausgeliefert wurde, ist nicht löschbar.
   final String herkunft;
 
@@ -7843,6 +7901,8 @@ class WissensfrageData extends DataClass
     this.quelleUrl,
     required this.geltung,
     this.land,
+    this.kapitel,
+    this.bildPfad,
     required this.herkunft,
     required this.stand,
     this.eingereichtVon,
@@ -7877,6 +7937,12 @@ class WissensfrageData extends DataClass
     map['geltung'] = Variable<String>(geltung);
     if (!nullToAbsent || land != null) {
       map['land'] = Variable<String>(land);
+    }
+    if (!nullToAbsent || kapitel != null) {
+      map['kapitel'] = Variable<String>(kapitel);
+    }
+    if (!nullToAbsent || bildPfad != null) {
+      map['bild_pfad'] = Variable<String>(bildPfad);
     }
     map['herkunft'] = Variable<String>(herkunft);
     map['stand'] = Variable<String>(stand);
@@ -7923,6 +7989,14 @@ class WissensfrageData extends DataClass
               : Value(quelleUrl),
       geltung: Value(geltung),
       land: land == null && nullToAbsent ? const Value.absent() : Value(land),
+      kapitel:
+          kapitel == null && nullToAbsent
+              ? const Value.absent()
+              : Value(kapitel),
+      bildPfad:
+          bildPfad == null && nullToAbsent
+              ? const Value.absent()
+              : Value(bildPfad),
       herkunft: Value(herkunft),
       stand: Value(stand),
       eingereichtVon:
@@ -7960,6 +8034,8 @@ class WissensfrageData extends DataClass
       quelleUrl: serializer.fromJson<String?>(json['quelleUrl']),
       geltung: serializer.fromJson<String>(json['geltung']),
       land: serializer.fromJson<String?>(json['land']),
+      kapitel: serializer.fromJson<String?>(json['kapitel']),
+      bildPfad: serializer.fromJson<String?>(json['bildPfad']),
       herkunft: serializer.fromJson<String>(json['herkunft']),
       stand: serializer.fromJson<String>(json['stand']),
       eingereichtVon: serializer.fromJson<String?>(json['eingereichtVon']),
@@ -7985,6 +8061,8 @@ class WissensfrageData extends DataClass
       'quelleUrl': serializer.toJson<String?>(quelleUrl),
       'geltung': serializer.toJson<String>(geltung),
       'land': serializer.toJson<String?>(land),
+      'kapitel': serializer.toJson<String?>(kapitel),
+      'bildPfad': serializer.toJson<String?>(bildPfad),
       'herkunft': serializer.toJson<String>(herkunft),
       'stand': serializer.toJson<String>(stand),
       'eingereichtVon': serializer.toJson<String?>(eingereichtVon),
@@ -8008,6 +8086,8 @@ class WissensfrageData extends DataClass
     Value<String?> quelleUrl = const Value.absent(),
     String? geltung,
     Value<String?> land = const Value.absent(),
+    Value<String?> kapitel = const Value.absent(),
+    Value<String?> bildPfad = const Value.absent(),
     String? herkunft,
     String? stand,
     Value<String?> eingereichtVon = const Value.absent(),
@@ -8031,6 +8111,8 @@ class WissensfrageData extends DataClass
     quelleUrl: quelleUrl.present ? quelleUrl.value : this.quelleUrl,
     geltung: geltung ?? this.geltung,
     land: land.present ? land.value : this.land,
+    kapitel: kapitel.present ? kapitel.value : this.kapitel,
+    bildPfad: bildPfad.present ? bildPfad.value : this.bildPfad,
     herkunft: herkunft ?? this.herkunft,
     stand: stand ?? this.stand,
     eingereichtVon:
@@ -8067,6 +8149,8 @@ class WissensfrageData extends DataClass
       quelleUrl: data.quelleUrl.present ? data.quelleUrl.value : this.quelleUrl,
       geltung: data.geltung.present ? data.geltung.value : this.geltung,
       land: data.land.present ? data.land.value : this.land,
+      kapitel: data.kapitel.present ? data.kapitel.value : this.kapitel,
+      bildPfad: data.bildPfad.present ? data.bildPfad.value : this.bildPfad,
       herkunft: data.herkunft.present ? data.herkunft.value : this.herkunft,
       stand: data.stand.present ? data.stand.value : this.stand,
       eingereichtVon:
@@ -8098,6 +8182,8 @@ class WissensfrageData extends DataClass
           ..write('quelleUrl: $quelleUrl, ')
           ..write('geltung: $geltung, ')
           ..write('land: $land, ')
+          ..write('kapitel: $kapitel, ')
+          ..write('bildPfad: $bildPfad, ')
           ..write('herkunft: $herkunft, ')
           ..write('stand: $stand, ')
           ..write('eingereichtVon: $eingereichtVon, ')
@@ -8110,7 +8196,7 @@ class WissensfrageData extends DataClass
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     id,
     gebiet,
     frage,
@@ -8123,6 +8209,8 @@ class WissensfrageData extends DataClass
     quelleUrl,
     geltung,
     land,
+    kapitel,
+    bildPfad,
     herkunft,
     stand,
     eingereichtVon,
@@ -8130,7 +8218,7 @@ class WissensfrageData extends DataClass
     remoteUpdatedAt,
     dirty,
     updatedAt,
-  );
+  ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -8147,6 +8235,8 @@ class WissensfrageData extends DataClass
           other.quelleUrl == this.quelleUrl &&
           other.geltung == this.geltung &&
           other.land == this.land &&
+          other.kapitel == this.kapitel &&
+          other.bildPfad == this.bildPfad &&
           other.herkunft == this.herkunft &&
           other.stand == this.stand &&
           other.eingereichtVon == this.eingereichtVon &&
@@ -8169,6 +8259,8 @@ class WissensfragenCompanion extends UpdateCompanion<WissensfrageData> {
   final Value<String?> quelleUrl;
   final Value<String> geltung;
   final Value<String?> land;
+  final Value<String?> kapitel;
+  final Value<String?> bildPfad;
   final Value<String> herkunft;
   final Value<String> stand;
   final Value<String?> eingereichtVon;
@@ -8189,6 +8281,8 @@ class WissensfragenCompanion extends UpdateCompanion<WissensfrageData> {
     this.quelleUrl = const Value.absent(),
     this.geltung = const Value.absent(),
     this.land = const Value.absent(),
+    this.kapitel = const Value.absent(),
+    this.bildPfad = const Value.absent(),
     this.herkunft = const Value.absent(),
     this.stand = const Value.absent(),
     this.eingereichtVon = const Value.absent(),
@@ -8210,6 +8304,8 @@ class WissensfragenCompanion extends UpdateCompanion<WissensfrageData> {
     this.quelleUrl = const Value.absent(),
     this.geltung = const Value.absent(),
     this.land = const Value.absent(),
+    this.kapitel = const Value.absent(),
+    this.bildPfad = const Value.absent(),
     this.herkunft = const Value.absent(),
     this.stand = const Value.absent(),
     this.eingereichtVon = const Value.absent(),
@@ -8232,6 +8328,8 @@ class WissensfragenCompanion extends UpdateCompanion<WissensfrageData> {
     Expression<String>? quelleUrl,
     Expression<String>? geltung,
     Expression<String>? land,
+    Expression<String>? kapitel,
+    Expression<String>? bildPfad,
     Expression<String>? herkunft,
     Expression<String>? stand,
     Expression<String>? eingereichtVon,
@@ -8253,6 +8351,8 @@ class WissensfragenCompanion extends UpdateCompanion<WissensfrageData> {
       if (quelleUrl != null) 'quelle_url': quelleUrl,
       if (geltung != null) 'geltung': geltung,
       if (land != null) 'land': land,
+      if (kapitel != null) 'kapitel': kapitel,
+      if (bildPfad != null) 'bild_pfad': bildPfad,
       if (herkunft != null) 'herkunft': herkunft,
       if (stand != null) 'stand': stand,
       if (eingereichtVon != null) 'eingereicht_von': eingereichtVon,
@@ -8276,6 +8376,8 @@ class WissensfragenCompanion extends UpdateCompanion<WissensfrageData> {
     Value<String?>? quelleUrl,
     Value<String>? geltung,
     Value<String?>? land,
+    Value<String?>? kapitel,
+    Value<String?>? bildPfad,
     Value<String>? herkunft,
     Value<String>? stand,
     Value<String?>? eingereichtVon,
@@ -8297,6 +8399,8 @@ class WissensfragenCompanion extends UpdateCompanion<WissensfrageData> {
       quelleUrl: quelleUrl ?? this.quelleUrl,
       geltung: geltung ?? this.geltung,
       land: land ?? this.land,
+      kapitel: kapitel ?? this.kapitel,
+      bildPfad: bildPfad ?? this.bildPfad,
       herkunft: herkunft ?? this.herkunft,
       stand: stand ?? this.stand,
       eingereichtVon: eingereichtVon ?? this.eingereichtVon,
@@ -8346,6 +8450,12 @@ class WissensfragenCompanion extends UpdateCompanion<WissensfrageData> {
     if (land.present) {
       map['land'] = Variable<String>(land.value);
     }
+    if (kapitel.present) {
+      map['kapitel'] = Variable<String>(kapitel.value);
+    }
+    if (bildPfad.present) {
+      map['bild_pfad'] = Variable<String>(bildPfad.value);
+    }
     if (herkunft.present) {
       map['herkunft'] = Variable<String>(herkunft.value);
     }
@@ -8385,6 +8495,8 @@ class WissensfragenCompanion extends UpdateCompanion<WissensfrageData> {
           ..write('quelleUrl: $quelleUrl, ')
           ..write('geltung: $geltung, ')
           ..write('land: $land, ')
+          ..write('kapitel: $kapitel, ')
+          ..write('bildPfad: $bildPfad, ')
           ..write('herkunft: $herkunft, ')
           ..write('stand: $stand, ')
           ..write('eingereichtVon: $eingereichtVon, ')
@@ -15230,6 +15342,8 @@ typedef $$WissensfragenTableCreateCompanionBuilder =
       Value<String?> quelleUrl,
       Value<String> geltung,
       Value<String?> land,
+      Value<String?> kapitel,
+      Value<String?> bildPfad,
       Value<String> herkunft,
       Value<String> stand,
       Value<String?> eingereichtVon,
@@ -15252,6 +15366,8 @@ typedef $$WissensfragenTableUpdateCompanionBuilder =
       Value<String?> quelleUrl,
       Value<String> geltung,
       Value<String?> land,
+      Value<String?> kapitel,
+      Value<String?> bildPfad,
       Value<String> herkunft,
       Value<String> stand,
       Value<String?> eingereichtVon,
@@ -15327,6 +15443,16 @@ class $$WissensfragenTableFilterComposer
 
   ColumnFilters<String> get land => $composableBuilder(
     column: $table.land,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get kapitel => $composableBuilder(
+    column: $table.kapitel,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get bildPfad => $composableBuilder(
+    column: $table.bildPfad,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -15435,6 +15561,16 @@ class $$WissensfragenTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get kapitel => $composableBuilder(
+    column: $table.kapitel,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get bildPfad => $composableBuilder(
+    column: $table.bildPfad,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get herkunft => $composableBuilder(
     column: $table.herkunft,
     builder: (column) => ColumnOrderings(column),
@@ -15528,6 +15664,12 @@ class $$WissensfragenTableAnnotationComposer
   GeneratedColumn<String> get land =>
       $composableBuilder(column: $table.land, builder: (column) => column);
 
+  GeneratedColumn<String> get kapitel =>
+      $composableBuilder(column: $table.kapitel, builder: (column) => column);
+
+  GeneratedColumn<String> get bildPfad =>
+      $composableBuilder(column: $table.bildPfad, builder: (column) => column);
+
   GeneratedColumn<String> get herkunft =>
       $composableBuilder(column: $table.herkunft, builder: (column) => column);
 
@@ -15605,6 +15747,8 @@ class $$WissensfragenTableTableManager
                 Value<String?> quelleUrl = const Value.absent(),
                 Value<String> geltung = const Value.absent(),
                 Value<String?> land = const Value.absent(),
+                Value<String?> kapitel = const Value.absent(),
+                Value<String?> bildPfad = const Value.absent(),
                 Value<String> herkunft = const Value.absent(),
                 Value<String> stand = const Value.absent(),
                 Value<String?> eingereichtVon = const Value.absent(),
@@ -15625,6 +15769,8 @@ class $$WissensfragenTableTableManager
                 quelleUrl: quelleUrl,
                 geltung: geltung,
                 land: land,
+                kapitel: kapitel,
+                bildPfad: bildPfad,
                 herkunft: herkunft,
                 stand: stand,
                 eingereichtVon: eingereichtVon,
@@ -15647,6 +15793,8 @@ class $$WissensfragenTableTableManager
                 Value<String?> quelleUrl = const Value.absent(),
                 Value<String> geltung = const Value.absent(),
                 Value<String?> land = const Value.absent(),
+                Value<String?> kapitel = const Value.absent(),
+                Value<String?> bildPfad = const Value.absent(),
                 Value<String> herkunft = const Value.absent(),
                 Value<String> stand = const Value.absent(),
                 Value<String?> eingereichtVon = const Value.absent(),
@@ -15667,6 +15815,8 @@ class $$WissensfragenTableTableManager
                 quelleUrl: quelleUrl,
                 geltung: geltung,
                 land: land,
+                kapitel: kapitel,
+                bildPfad: bildPfad,
                 herkunft: herkunft,
                 stand: stand,
                 eingereichtVon: eingereichtVon,

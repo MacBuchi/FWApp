@@ -70,7 +70,10 @@ void main() {
       // dieser Quellen abgeschrieben sind, trägt sie zu Unrecht ein.
       'assets/knowledge/':
           'selbst formulierte Fragen aus amtlichen Werken (§ 5 UrhG), '
-          'Fundstelle an jeder Frage (Issue #174)',
+          'Fundstelle an jeder Frage (Issue #174); die Gefahrzettel unter '
+          'bilder/ sind eigene Zeichnungen nach den Angaben des ADR '
+          '(Symbol, Farbe, Hintergrund, Ziffer), erzeugt von '
+          'tool/generate_gefahrzettel.py — kein Bild ist heruntergeladen',
     };
 
     test('kein ausgeliefertes Asset ohne Lizenz-Entscheidung', () {

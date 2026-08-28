@@ -106,6 +106,8 @@ class WissenSeeder {
           quelleUrl: Value(f.quelle?.url),
           geltung: Value(f.geltung.schluessel),
           land: Value(f.land),
+          kapitel: Value(f.kapitel),
+          bildPfad: Value(f.bildPfad),
         ));
         angelegt++;
       }

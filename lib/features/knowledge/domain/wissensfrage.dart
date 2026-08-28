@@ -229,6 +229,18 @@ class Wissensfrage {
   /// Länderkürzel, nur bei [Geltungsbereich.land] gesetzt.
   final String? land;
 
+  /// Unterkapitel innerhalb des Sachgebiets, im Klartext — „Gefahrzettel und
+  /// Kennzeichnung", „Dekontamination". `null` heißt: gehört zum Sachgebiet
+  /// als Ganzem.
+  ///
+  /// Der ABC-Einsatz brachte das: „Gefahrgut" als ein Topf wäre eine Liste
+  /// von vierzig Fragen, in der niemand gezielt das eine übt, was er nicht
+  /// kann.
+  final String? kapitel;
+
+  /// Bild zur Frage. Bei einem Gefahrzettel IST das Bild die Frage.
+  final String? bildPfad;
+
   /// Wer sie eingebracht hat — Anzeigename, rein zur Nachvollziehbarkeit.
   final String? eingereichtVon;
 
@@ -244,6 +256,8 @@ class Wissensfrage {
     this.quelle,
     this.geltung = Geltungsbereich.bund,
     this.land,
+    this.kapitel,
+    this.bildPfad,
     this.eingereichtVon,
   });
 

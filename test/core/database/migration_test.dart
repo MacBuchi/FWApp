@@ -14,14 +14,14 @@ void main() {
     verifier = SchemaVerifier(GeneratedHelper());
   });
 
-  test('migrates from v1 to v10 without schema errors', () async {
+  test('migrates from v1 to v11 without schema errors', () async {
     final connection = await verifier.startAt(1);
     final db = AppDatabase(connection);
-    await verifier.migrateAndValidate(db, 10);
+    await verifier.migrateAndValidate(db, 11);
     await db.close();
   });
 
-  test('v1 data survives the migration to v10', () async {
+  test('v1 data survives the migration to v11', () async {
     final schema = await verifier.schemaAt(1);
 
     schema.rawDatabase
@@ -40,7 +40,7 @@ void main() {
           "VALUES (1, 1, 1, 2, 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 10);
+    await verifier.migrateAndValidate(db, 11);
 
     final vehicle = await db.vehicleDao.getById(1);
     expect(vehicle?.name, 'AB-G');
@@ -63,7 +63,7 @@ void main() {
       () async {
     final connection = await verifier.startAt(2);
     final db = AppDatabase(connection);
-    await verifier.migrateAndValidate(db, 10);
+    await verifier.migrateAndValidate(db, 11);
 
     final equipmentId = await db.equipmentDao
         .insertEquipment(EquipmentItemsCompanion.insert(name: 'Spineboard'));
@@ -81,7 +81,7 @@ void main() {
   test('new v2 tables are usable after migration', () async {
     final connection = await verifier.startAt(1);
     final db = AppDatabase(connection);
-    await verifier.migrateAndValidate(db, 10);
+    await verifier.migrateAndValidate(db, 11);
 
     final vehicleId = await db.vehicleDao.insertVehicle(
         VehiclesCompanion.insert(name: 'LF 10', type: 'LF'));
@@ -132,7 +132,7 @@ void main() {
         "'{}', '[]', '[]', 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 10);
+    await verifier.migrateAndValidate(db, 11);
 
     final geraet = await db.equipmentDao.getById(1);
     expect(geraet?.name, 'Feuerwehraxt');
@@ -165,7 +165,7 @@ void main() {
           "VALUES (1, 1, 'G1', 0, 2, 1, 3, 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 10);
+    await verifier.migrateAndValidate(db, 11);
 
     final fach = await db.compartmentDao.getById(1);
     expect(fach?.label, 'G1');
@@ -193,7 +193,7 @@ void main() {
           "VALUES (1, 1, 'G1', 0, 1, 'fahrerseite', 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 10);
+    await verifier.migrateAndValidate(db, 11);
 
     final fach = await db.compartmentDao.getById(1);
     expect(fach?.label, 'G1');
@@ -219,7 +219,7 @@ void main() {
           "VALUES (1, 1, 'G1', 0, 1, 'fahrerseite', 'vorne', 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 10);
+    await verifier.migrateAndValidate(db, 11);
 
     final fach = await db.compartmentDao.getById(1);
     expect(fach?.label, 'G1');
@@ -246,7 +246,7 @@ void main() {
         "VALUES (1, 'HLF 20', 'HLF 20', 0, 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 10);
+    await verifier.migrateAndValidate(db, 11);
 
     expect(await db.wissenDao.getAll(), isEmpty);
     await db.wissenDao.insertFrage(WissensfragenCompanion.insert(
@@ -280,7 +280,7 @@ void main() {
       ;
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 10);
+    await verifier.migrateAndValidate(db, 11);
 
     final fragen = await db.wissenDao.getAll();
     expect(fragen, hasLength(2));
@@ -294,6 +294,30 @@ void main() {
     // Die neuen Felder stehen leer bereit.
     expect(fragen.first.quelleWerk, isNull);
     expect(fragen.first.geltung, 'bund');
+
+    await db.close();
+  });
+
+  test('v10→v11: Unterkapitel und Bild kommen leer dazu', () async {
+    // Der Grund für einen eigenen Test: `alterTable` in Schritt 10 baut die
+    // Tabelle neu. Kommt jemand von v10, läuft dieser Zweig NICHT — und ein
+    // vergessenes addColumn fiele erst auf dem Gerät auf, das nicht
+    // aktualisiert hat.
+    final schema = await verifier.schemaAt(10);
+    schema.rawDatabase.execute(
+        "INSERT INTO wissensfragen (id, gebiet, frage, antworten_json, "
+        "richtige_json, herkunft, stand, geltung, dirty, updated_at) "
+        "VALUES (1, 'gefahrgut', 'Wofür steht die Ziffer 3?', "
+        "'[\"Entzündbarkeit\",\"Ätzwirkung\"]', '[0]', 'eigen', "
+        "'freigegeben', 'bund', 0, 0)");
+
+    final db = AppDatabase(schema.newConnection());
+    await verifier.migrateAndValidate(db, 11);
+
+    final frage = (await db.wissenDao.getAll()).single;
+    expect(frage.frage, 'Wofür steht die Ziffer 3?');
+    expect(frage.kapitel, isNull);
+    expect(frage.bildPfad, isNull);
 
     await db.close();
   });

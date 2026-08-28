@@ -1,0 +1,341 @@
+{
+  "_hinweis": "Bundesweiter Grundstock der Wissensdatenbank (Issue #174, Schritt 2). Jede Frage ist aus der genannten Fundstelle selbst formuliert, nicht aus einem Fragenkatalog uebernommen. Die Feuerwehr-Dienstvorschriften werden vom AFKzV erarbeitet und von den Laendern per Erlass eingefuehrt; als amtliche Werke sind sie nach § 5 UrhG nicht urheberrechtlich geschuetzt, die Quellenangabe bleibt Pflicht und steht deshalb an jeder Frage. NICHT verwendet: Lehrstoffblaetter der Landesfeuerwehrschule (Neckar-Verlag) und DIN-Normtexte.",
+  "fragen": [
+    {
+      "gebiet": "einsatzlehre",
+      "frage": "Welche taktische Einheit ist die Grundeinheit der Feuerwehr?",
+      "antworten": ["Die Gruppe", "Die Staffel", "Der Zug", "Der Selbstständige Trupp"],
+      "richtige": [0],
+      "erklaerung": "Die FwDV 3 nennt die Gruppe ausdrücklich die taktische Grundeinheit. Staffel und Selbstständiger Trupp sind kleinere, der Zug ist die größere Einheit.",
+      "quelle": {"werk": "FwDV 3", "fundstelle": "Abschnitt 2", "stand": "2008-02"}
+    },
+    {
+      "gebiet": "einsatzlehre",
+      "frage": "Welche taktischen Einheiten kennt die FwDV 3?",
+      "antworten": ["Selbstständiger Trupp", "Staffel", "Gruppe", "Zug", "Bereitschaft", "Abteilung"],
+      "richtige": [0, 1, 2, 3],
+      "erklaerung": "Bereitschaft und Abteilung sind Gliederungen oberhalb des Zuges und nicht Gegenstand dieser Vorschrift.",
+      "quelle": {"werk": "FwDV 3", "fundstelle": "Abschnitt 2", "stand": "2008-02"}
+    },
+    {
+      "gebiet": "einsatzlehre",
+      "frage": "Wie ist die Mannschaftsstärke einer Gruppe?",
+      "antworten": ["1/8/9", "1/5/6", "1/2/3", "0/2/2"],
+      "richtige": [0],
+      "erklaerung": "Ein Gruppenführer, acht weitere Einsatzkräfte, neun insgesamt.",
+      "quelle": {"werk": "FwDV 3", "fundstelle": "Abschnitt 2.1", "stand": "2008-02"}
+    },
+    {
+      "gebiet": "einsatzlehre",
+      "frage": "Aus welchen Funktionen besteht die Mannschaft einer Gruppe?",
+      "antworten": ["Gruppenführer", "Maschinist", "Melder", "Angriffstrupp", "Wassertrupp", "Schlauchtrupp", "Sicherheitstrupp"],
+      "richtige": [0, 1, 2, 3, 4, 5],
+      "erklaerung": "Ein Sicherheitstrupp ist keine Funktion innerhalb der Gruppe, sondern wird beim Atemschutzeinsatz zusätzlich bereitgestellt (FwDV 7).",
+      "quelle": {"werk": "FwDV 3", "fundstelle": "Abschnitt 2.1", "stand": "2008-02"}
+    },
+    {
+      "gebiet": "einsatzlehre",
+      "frage": "Wie ist die Mannschaftsstärke einer Staffel?",
+      "antworten": ["1/5/6", "1/8/9", "1/2/3", "1/7/8"],
+      "richtige": [0],
+      "quelle": {"werk": "FwDV 3", "fundstelle": "Abschnitt 2.2", "stand": "2008-02"}
+    },
+    {
+      "gebiet": "einsatzlehre",
+      "frage": "Welche Funktionen hat die Staffel im Vergleich zur Gruppe nicht?",
+      "antworten": ["Melder", "Schlauchtrupp", "Maschinist", "Angriffstrupp", "Wassertrupp"],
+      "richtige": [0, 1],
+      "erklaerung": "Der Staffel fehlen gegenüber der Gruppe der Melder und der Schlauchtrupp; Maschinist, Angriffs- und Wassertrupp sind vorhanden.",
+      "quelle": {"werk": "FwDV 3", "fundstelle": "Abschnitt 2.2", "stand": "2008-02"}
+    },
+    {
+      "gebiet": "einsatzlehre",
+      "frage": "Wie ist die Mannschaftsstärke eines Selbstständigen Trupps?",
+      "antworten": ["1/2/3", "0/2/2", "1/5/6", "1/1/2"],
+      "richtige": [0],
+      "erklaerung": "Truppführer, Maschinist und Truppmann.",
+      "quelle": {"werk": "FwDV 3", "fundstelle": "Abschnitt 2.3", "stand": "2008-02"}
+    },
+    {
+      "gebiet": "einsatzlehre",
+      "frage": "Was unterscheidet den Selbstständigen Trupp von einem Angriffstrupp?",
+      "antworten": [
+        "Er ist eine taktische Einheit und kann eigenständig eingesetzt werden",
+        "Er besteht aus drei statt zwei Einsatzkräften",
+        "Er hat einen eigenen Maschinisten",
+        "Er trägt grundsätzlich Atemschutz"
+      ],
+      "richtige": [0, 1, 2],
+      "erklaerung": "Atemschutz ist keine Eigenschaft des Selbstständigen Trupps, sondern hängt vom Einsatz ab.",
+      "quelle": {"werk": "FwDV 3", "fundstelle": "Abschnitt 2.3", "stand": "2008-02"}
+    },
+    {
+      "gebiet": "einsatzlehre",
+      "frage": "Wie gliedert sich der Zugtrupp?",
+      "antworten": ["Führungsassistent", "Melder", "Fahrer", "Maschinist", "Schlauchtrupp"],
+      "richtige": [0, 1, 2],
+      "erklaerung": "Der Zugtrupp hat die Stärke 1/2/3 und ist die Führungseinheit des Zuges.",
+      "quelle": {"werk": "FwDV 3", "fundstelle": "Abschnitt 2.4", "stand": "2008-02"}
+    },
+    {
+      "gebiet": "einsatzlehre",
+      "frage": "Welche Mannschaftsstärke hat ein Zug in der Regel?",
+      "antworten": ["22", "18", "27", "9"],
+      "richtige": [0],
+      "erklaerung": "Zugführer und Zugtrupp (1/2/3) sowie in der Regel zwei Gruppen (je 1/8/9) ergeben 22.",
+      "quelle": {"werk": "FwDV 3", "fundstelle": "Abschnitt 2.4", "stand": "2008-02"}
+    },
+    {
+      "gebiet": "einsatzlehre",
+      "frage": "Wer vertritt den Zugführer?",
+      "antworten": ["Der Führungsassistent", "Der Melder", "Der ranghöchste Gruppenführer", "Der Fahrer"],
+      "richtige": [0],
+      "quelle": {"werk": "FwDV 3", "fundstelle": "Abschnitt 2.4", "stand": "2008-02"}
+    },
+    {
+      "gebiet": "einsatzlehre",
+      "frage": "Was muss der Befehl eines Zugführers mindestens enthalten?",
+      "antworten": ["Einheit", "Auftrag", "Mittel", "Ziel", "Weg"],
+      "richtige": [0, 1],
+      "erklaerung": "Mittel, Ziel und Weg sind die Befehlselemente der Gruppen-, Staffel- und Truppführer. Der Zugführer verwendet sie im Sinne der Auftragstaktik nur, wenn sie zur Klarheit beitragen.",
+      "quelle": {"werk": "FwDV 3", "fundstelle": "Abschnitt 6.2", "stand": "2008-02"}
+    },
+    {
+      "gebiet": "einsatzlehre",
+      "frage": "Wie werden die Führer der taktischen Einheiten zusammenfassend genannt?",
+      "antworten": ["Einheitsführer", "Verbandsführer", "Einsatzleiter", "Zugführer"],
+      "richtige": [0],
+      "erklaerung": "Einheitsführer sind der Truppführer eines Selbstständigen Trupps, der Staffelführer, der Gruppenführer und der Zugführer.",
+      "quelle": {"werk": "FwDV 3", "fundstelle": "Abschnitt 2", "stand": "2008-02"}
+    },
+
+    {
+      "gebiet": "geraetekunde",
+      "frage": "Welchen Anstellwinkel muss eine Anlegeleiter haben?",
+      "antworten": ["65° bis 75°", "55° bis 60°", "45° bis 55°", "80° bis 90°"],
+      "richtige": [0],
+      "erklaerung": "Zu flach angestellt rutscht die Leiter weg, zu steil kippt sie nach hinten.",
+      "quelle": {"werk": "FwDV 10", "fundstelle": "Abschnitt 6", "stand": "2019-11"}
+    },
+    {
+      "gebiet": "geraetekunde",
+      "frage": "Welche tragbaren Leitern sind nach DIN EN 1147 genormt?",
+      "antworten": ["Steckleiter", "dreiteilige Schiebleiter", "Hakenleiter", "Klappleiter", "Multifunktionsleiter", "Drehleiter"],
+      "richtige": [0, 1, 2, 3, 4],
+      "erklaerung": "Die Drehleiter ist keine tragbare Leiter, sondern ein Hubrettungsfahrzeug.",
+      "quelle": {"werk": "FwDV 10", "fundstelle": "Abschnitt 3", "stand": "2019-11"}
+    },
+    {
+      "gebiet": "geraetekunde",
+      "frage": "Wozu können tragbare Leitern eingesetzt werden?",
+      "antworten": ["Als Rettungsweg", "Als Angriffsweg", "Als Hilfsgerät", "Als Absturzsicherung"],
+      "richtige": [0, 1, 2],
+      "quelle": {"werk": "FwDV 10", "fundstelle": "Abschnitt 2", "stand": "2019-11"}
+    },
+    {
+      "gebiet": "geraetekunde",
+      "frage": "Wer gibt die Kommandos bei der Vor- und Rücknahme einer tragbaren Leiter?",
+      "antworten": [
+        "Der Truppführer, der den Befehl vom Einheitsführer erhalten hat",
+        "Der Einheitsführer selbst",
+        "Der Maschinist",
+        "Der Melder"
+      ],
+      "richtige": [0],
+      "quelle": {"werk": "FwDV 10", "fundstelle": "Abschnitt 5", "stand": "2019-11"}
+    },
+    {
+      "gebiet": "geraetekunde",
+      "frage": "Wer bestimmt die Anzahl der benötigten Steckleiterteile?",
+      "antworten": ["Der Truppführer", "Der Gruppenführer", "Der Maschinist", "Der Angriffstrupp gemeinsam"],
+      "richtige": [0],
+      "quelle": {"werk": "FwDV 10", "fundstelle": "Abschnitt 5", "stand": "2019-11"}
+    },
+    {
+      "gebiet": "geraetekunde",
+      "frage": "Von welcher Geschosshöhe geht die FwDV 10 bei den Rettungs- und Arbeitshöhen aus?",
+      "antworten": ["Drei Meter", "Zwei Meter", "Vier Meter", "Zweieinhalb Meter"],
+      "richtige": [0],
+      "erklaerung": "Die Annahme steht als Fußnote bei den Rettungs- und Arbeitshöhen und erklärt, warum die Werte in Geschossen aufgehen.",
+      "quelle": {"werk": "FwDV 10", "fundstelle": "Abschnitt 4", "stand": "2019-11"}
+    },
+    {
+      "gebiet": "geraetekunde",
+      "frage": "Welche Kommandos nennt die FwDV 10 für die Vornahme von Leitern?",
+      "antworten": [
+        "„Leiter – Marsch!“",
+        "„Leiter – Richtet auf!“",
+        "„Leiter – Legt an!“",
+        "„Leiter – Steckt ein!“",
+        "„Leiter – Vor!“",
+        "„Leiter – Setzt ab!“"
+      ],
+      "richtige": [0, 1, 2, 3],
+      "erklaerung": "„Leiter – Vor!“ und „Leiter – Setzt ab!“ gibt es nicht. Bei der Rücknahme heißt es unter anderem „Leiter – Legt ab!“ und „Leiter – Auf!“.",
+      "quelle": {"werk": "FwDV 10", "fundstelle": "Abschnitt 5", "stand": "2019-11"}
+    },
+    {
+      "gebiet": "geraetekunde",
+      "frage": "Was ist nach jeder Benutzung einer tragbaren Leiter zu tun?",
+      "antworten": [
+        "Der Benutzer unterzieht sie einer Sichtprüfung auf Verschleiß oder Beschädigung",
+        "Sie ist vom Gerätewart zu prüfen und zu dokumentieren",
+        "Sie ist zu reinigen und zu fetten",
+        "Nichts, solange sie nicht beschädigt wirkt"
+      ],
+      "richtige": [0],
+      "quelle": {"werk": "FwDV 10", "fundstelle": "Abschnitt 6", "stand": "2019-11"}
+    },
+
+    {
+      "gebiet": "atemschutz",
+      "frage": "Welche Mindeststärke hat ein Sicherheitstrupp?",
+      "antworten": ["0/2/2", "1/2/3", "0/1/1", "1/1/2"],
+      "richtige": [0],
+      "erklaerung": "Je nach Risiko und Stärke des eingesetzten Atemschutztrupps wird der Sicherheitstrupp verstärkt, etwa in Tunneln und Tiefgaragen.",
+      "quelle": {"werk": "FwDV 7", "fundstelle": "Abschnitt 7.2", "stand": "2004-08"}
+    },
+    {
+      "gebiet": "atemschutz",
+      "frage": "Wann darf auf die Bereitstellung eines Sicherheitstrupps verzichtet werden?",
+      "antworten": [
+        "Wenn eine Gefährdung der Atemschutztrupps weitestgehend auszuschließen ist",
+        "Wenn die Rettung auch ohne Atemschutz möglich wäre, etwa bei Bränden im Freien",
+        "Wenn nur ein Atemschutztrupp eingesetzt ist",
+        "Wenn der Einsatz kürzer als zehn Minuten dauert"
+      ],
+      "richtige": [0, 1],
+      "quelle": {"werk": "FwDV 7", "fundstelle": "Abschnitt 7.2", "stand": "2004-08"}
+    },
+    {
+      "gebiet": "atemschutz",
+      "frage": "Was ist bei der Atemschutzüberwachung festzuhalten?",
+      "antworten": [
+        "Uhrzeit beim Anschließen des Luftversorgungssystems",
+        "Uhrzeit bei einem Drittel und bei zwei Dritteln der zu erwartenden Einsatzzeit",
+        "Erreichen des Einsatzzieles",
+        "Beginn des Rückzugs",
+        "Der Name des Einheitsführers"
+      ],
+      "richtige": [0, 1, 2, 3],
+      "quelle": {"werk": "FwDV 7", "fundstelle": "Abschnitt 7.4", "stand": "2004-08"}
+    },
+    {
+      "gebiet": "atemschutz",
+      "frage": "Was ist für den Atemschutznachweis zu registrieren?",
+      "antworten": [
+        "Name des Atemschutzgeräteträgers",
+        "Datum",
+        "Einsatzort",
+        "Art des Gerätes",
+        "Atemschutzeinsatzzeit",
+        "Verbrauchte Luftmenge in Litern"
+      ],
+      "richtige": [0, 1, 2, 3, 4],
+      "quelle": {"werk": "FwDV 7", "fundstelle": "Abschnitt 7.4", "stand": "2004-08"}
+    },
+    {
+      "gebiet": "atemschutz",
+      "frage": "Wozu dient ein Notsignalgeber?",
+      "antworten": [
+        "Er erleichtert das Auffinden verunfallter Atemschutzgeräteträger durch optische und/oder akustische Signale",
+        "Er warnt vor zu geringem Flaschendruck",
+        "Er misst die Konzentration von Atemgiften",
+        "Er ersetzt die Atemschutzüberwachung"
+      ],
+      "richtige": [0],
+      "quelle": {"werk": "FwDV 7", "fundstelle": "Abschnitt 7.5", "stand": "2004-08"}
+    },
+
+    {
+      "gebiet": "loeschlehre",
+      "frage": "Womit wird die Halteleine am Saugkorb befestigt?",
+      "antworten": [
+        "Mit Zimmermannsschlag oder Mastwurf und Spierenstich",
+        "Mit einem Halbschlag",
+        "Mit einem Schotenstich",
+        "Mit einem doppelten Ankerstich"
+      ],
+      "richtige": [0],
+      "erklaerung": "Und zwar vor dem Anbringen des Saugschutzkorbes. An jedem Saugschlauch wird sie danach mit einem Halbschlag befestigt.",
+      "quelle": {"werk": "FwDV 1", "fundstelle": "Abschnitt 6.1", "stand": "2006-09"}
+    },
+    {
+      "gebiet": "loeschlehre",
+      "frage": "Womit wird die Halteleine an den einzelnen Saugschläuchen befestigt?",
+      "antworten": ["Mit einem Halbschlag", "Mit einem Mastwurf", "Mit einem Spierenstich", "Mit einem Zimmermannsschlag"],
+      "richtige": [0],
+      "quelle": {"werk": "FwDV 1", "fundstelle": "Abschnitt 6.1", "stand": "2006-09"}
+    },
+    {
+      "gebiet": "loeschlehre",
+      "frage": "Wann ist das Anbringen einer Halteleine an der Saugleitung besonders zweckmäßig?",
+      "antworten": ["Bei fließenden Gewässern", "In Schächten", "Bei jeder Wasserentnahme", "Nur bei Frost"],
+      "richtige": [0, 1],
+      "quelle": {"werk": "FwDV 1", "fundstelle": "Abschnitt 6.1", "stand": "2006-09"}
+    },
+    {
+      "gebiet": "geraetekunde",
+      "frage": "Wofür werden Knoten und Stiche bei der Feuerwehr verwendet?",
+      "antworten": ["Als Befestigungsknoten", "Als Verbindungsknoten", "Als Bremsknoten", "Als Zierknoten"],
+      "richtige": [0, 1, 2],
+      "quelle": {"werk": "FwDV 1", "fundstelle": "Abschnitt 16.2", "stand": "2006-09"}
+    },
+    {
+      "gebiet": "geraetekunde",
+      "frage": "Dürfen zum Binden von Knoten die Schutzhandschuhe ausgezogen werden?",
+      "antworten": [
+        "Ja, das lässt die Vorschrift ausdrücklich zu",
+        "Nein, die Schutzhandschuhe sind immer zu tragen",
+        "Nur mit Erlaubnis des Einheitsführers",
+        "Nur außerhalb des Gefahrenbereichs"
+      ],
+      "richtige": [0],
+      "quelle": {"werk": "FwDV 1", "fundstelle": "Abschnitt 16.2", "stand": "2006-09"}
+    },
+    {
+      "gebiet": "geraetekunde",
+      "frage": "Wozu dient der Halbschlag?",
+      "antworten": [
+        "Zum Führen von Geräten beim Hochziehen",
+        "Zur Einbindung von Personen auf Krankentragen",
+        "Als Rettungsknoten am Menschen",
+        "Zum Verbinden zweier Leinen"
+      ],
+      "richtige": [0, 1],
+      "quelle": {"werk": "FwDV 1", "fundstelle": "Abschnitt 16.2", "stand": "2006-09"}
+    },
+    {
+      "gebiet": "loeschlehre",
+      "frage": "Auf welches Kommando öffnet der Maschinist das Absperrorgan an der Pumpe?",
+      "antworten": ["„Wasser marsch!“", "„Rohr auf!“", "„Angriff vor!“", "„Pumpe – Marsch!“"],
+      "richtige": [0],
+      "quelle": {"werk": "FwDV 1", "fundstelle": "Abschnitt 4.3", "stand": "2006-09"}
+    },
+    {
+      "gebiet": "einsatzlehre",
+      "frage": "Was gilt neben den Feuerwehr-Dienstvorschriften im Einsatz und in der Ausbildung?",
+      "antworten": [
+        "Die Unfallverhütungsvorschrift „Feuerwehren“ samt Durchführungsanweisungen",
+        "Ausschließlich die Dienstvorschriften selbst",
+        "Nur das Landesrecht",
+        "Die Straßenverkehrsordnung ersetzt sie"
+      ],
+      "richtige": [0],
+      "erklaerung": "Die FwDV 3 verweist im ersten Abschnitt ausdrücklich auf die Unfallverhütungsvorschrift.",
+      "quelle": {"werk": "FwDV 3", "fundstelle": "Abschnitt 1", "stand": "2008-02"}
+    },
+    {
+      "gebiet": "einsatzlehre",
+      "frage": "Was ist ein Löscheinsatz im Sinne der FwDV 3?",
+      "antworten": [
+        "Jede Tätigkeit, bei der Strahlrohre vorgenommen werden",
+        "Das Schützen gefährdeter Menschen oder Objekte durch Abriegeln",
+        "Das Niederschlagen, Abdrängen oder Verwirbeln gefährlicher Dämpfe und Gase",
+        "Nur der unmittelbare Löschangriff auf ein Feuer"
+      ],
+      "richtige": [0, 1, 2],
+      "quelle": {"werk": "FwDV 3", "fundstelle": "Abschnitt 1", "stand": "2008-02"}
+    }
+  ]
+}

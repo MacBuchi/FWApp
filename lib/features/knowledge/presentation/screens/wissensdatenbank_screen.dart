@@ -16,6 +16,7 @@ import 'package:fwapp/core/widgets/abteilung_switcher.dart';
 import 'package:fwapp/features/knowledge/domain/wissensfrage.dart';
 import 'package:fwapp/features/knowledge/presentation/providers/wissen_providers.dart';
 import 'package:fwapp/features/knowledge/presentation/widgets/frage_formular.dart';
+import 'package:fwapp/features/knowledge/presentation/widgets/quellen_zeile.dart';
 
 class WissensdatenbankScreen extends ConsumerStatefulWidget {
   const WissensdatenbankScreen({super.key});
@@ -188,25 +189,11 @@ class _WissensdatenbankScreenState
                 ],
                 // Die Fundstelle gehört sichtbar an die Frage: Eine Antwort,
                 // die man nicht nachschlagen kann, ist im Zweifel wertlos —
-                // und im Zweifel ist man im Einsatz (Issue #174).
+                // und im Zweifel ist man im Einsatz (Issue #174). Ohne
+                // Geltungshinweis, der steht schon in der Unterzeile.
                 if (f.quelle != null) ...[
                   const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Icon(Icons.menu_book_outlined,
-                          size: 14, color: theme.colorScheme.outline),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          f.quelle!.stand == null
-                              ? f.quelle!.anzeige
-                              : '${f.quelle!.anzeige} (${f.quelle!.stand})',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.outline),
-                        ),
-                      ),
-                    ],
-                  ),
+                  QuellenZeile(f.quelle!),
                 ],
                 const SizedBox(height: 8),
                 _aktionen(z, f, darfFreigeben, offen),

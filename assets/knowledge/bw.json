@@ -1,0 +1,908 @@
+{
+  "_hinweis": "Landesbestand Baden-Wuerttemberg (Issue #174, Schritt 3). Jede Frage ist aus dem geltenden Landesrecht selbst formuliert, nicht aus einem Fragenkatalog uebernommen. Gesetze und Verwaltungsvorschriften sind amtliche Werke nach § 5 UrhG und damit nicht urheberrechtlich geschuetzt; die Quellenangabe bleibt Pflicht und steht deshalb an jeder Frage. Geprueft wurde die Aenderungskette des FwG bis zum Gesetz vom 25. Februar 2025 (GBl. 2025 Nr. 14) — sie hat seit 2015 nur die §§ 4, 27 Absatz 4 und 35 beruehrt. NICHT verwendet: Lehrstoffblaetter der Landesfeuerwehrschule (Neckar-Verlag) und DIN-Normtexte.",
+  "fragen": [
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Was ist die Feuerwehr nach dem Feuerwehrgesetz Baden-Württemberg?",
+      "antworten": [
+        "Eine gemeinnützige, der Nächstenhilfe dienende Einrichtung der Gemeinde ohne eigene Rechtspersönlichkeit",
+        "Ein eingetragener Verein mit eigener Rechtspersönlichkeit",
+        "Eine Abteilung der Polizei",
+        "Eine Einrichtung des Landkreises"
+      ],
+      "richtige": [0],
+      "erklaerung": "Sie ist Einrichtung der Gemeinde und in ihrer Einrichtung von der Polizei unabhängig. Der Förderverein daneben ist ein Verein — die Feuerwehr selbst ist es nicht.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 1 Abs. 1", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Welche Aufgaben hat die Feuerwehr nach § 2 Absatz 1 FwG in jedem Fall zu erfüllen?",
+      "antworten": [
+        "Hilfe leisten bei Schadenfeuer (Bränden)",
+        "Hilfe leisten bei öffentlichen Notständen",
+        "Technische Hilfe zur Rettung von Menschen und Tieren aus lebensbedrohlichen Lagen",
+        "Brandsicherheitswachen stellen",
+        "Brandschutzerziehung durchführen"
+      ],
+      "richtige": [0, 1, 2],
+      "erklaerung": "Die ersten drei sind die Pflichtaufgaben. Brandsicherheitswache und Brandschutzerziehung stehen in Absatz 2 — damit kann die Gemeinde die Feuerwehr zusätzlich beauftragen, sie muss es nicht.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 2 Abs. 1", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Womit kann die Gemeinde ihre Feuerwehr über die Pflichtaufgaben hinaus beauftragen?",
+      "antworten": [
+        "Mit der Abwehr von Gefahren bei anderen Notlagen für Menschen, Tiere und Schiffe",
+        "Mit Maßnahmen der Brandverhütung, etwa Brandschutzaufklärung und -erziehung",
+        "Mit der Brandsicherheitswache",
+        "Mit der Überwachung des ruhenden Verkehrs",
+        "Mit dem Krankentransport"
+      ],
+      "richtige": [0, 1, 2],
+      "erklaerung": "§ 2 Absatz 2 nennt genau diese Beauftragungen. Krankentransport ist Sache des Rettungsdienstgesetzes.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 2 Abs. 2", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Kann sich eine einzelne Person darauf berufen, dass die Feuerwehr für sie tätig werden muss?",
+      "antworten": [
+        "Nein, das Gesetz begründet ausdrücklich keine Rechtsansprüche einzelner Personen",
+        "Ja, jeder Einwohner hat einen einklagbaren Anspruch auf Hilfe",
+        "Ja, aber nur Grundstückseigentümer",
+        "Ja, sobald der Notruf angenommen wurde"
+      ],
+      "richtige": [0],
+      "erklaerung": "Die Aufgabenzuweisung gilt der Allgemeinheit. Das schließt Amtshaftung bei Fehlern nicht aus, begründet aber keinen Anspruch auf ein Tätigwerden.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 2 Abs. 3", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Wer muss eine leistungsfähige Feuerwehr aufstellen, ausrüsten und unterhalten?",
+      "antworten": [
+        "Jede Gemeinde auf ihre Kosten",
+        "Der Landkreis",
+        "Das Land Baden-Württemberg",
+        "Der Feuerwehrverband"
+      ],
+      "richtige": [0],
+      "erklaerung": "Die Gemeinde trägt auch die Kosten der Einsätze, bekleidet und rüstet die Angehörigen aus und stellt die Räume.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 3 Abs. 1", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Wer hat in Baden-Württemberg die Leitstellen zu schaffen und zu betreiben?",
+      "antworten": [
+        "Die Landkreise, für Feuerwehr und Rettungsdienst gemeinsam als Integrierte Leitstelle",
+        "Die Gemeinden",
+        "Das Regierungspräsidium",
+        "Die Landesfeuerwehrschule"
+      ],
+      "richtige": [0],
+      "erklaerung": "Die Trägerschaft kann durch Vereinbarung übertragen werden, die Pflicht liegt aber beim Landkreis.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 4 Abs. 1", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Welche Aufgaben obliegen dem Land nach dem Feuerwehrgesetz?",
+      "antworten": [
+        "Errichtung und Unterhaltung einer Landesfeuerwehrschule",
+        "Zuwendungen für die Überlandhilfe",
+        "Unterstützung der Gemeinden bei Beschaffung und Unterhaltung durch Zuwendungen",
+        "Aufstellung der Alarm- und Ausrückeordnung jeder Gemeinde",
+        "Beschaffung der Löschfahrzeuge für die Gemeinden"
+      ],
+      "richtige": [0, 1, 2],
+      "erklaerung": "Die Alarm- und Ausrückeordnung stellt der Feuerwehrkommandant auf, die Fahrzeuge beschafft die Gemeinde.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 5", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Woraus besteht eine Gemeindefeuerwehr mindestens?",
+      "antworten": [
+        "Aus mindestens einer Einsatzabteilung der Freiwilligen Feuerwehr",
+        "Aus einer Einsatzabteilung und einer Jugendfeuerwehr",
+        "Aus mindestens zwei Einsatzabteilungen",
+        "Aus einer Einsatzabteilung und einer Altersabteilung"
+      ],
+      "richtige": [0],
+      "erklaerung": "Jugendfeuerwehr, Altersabteilungen und Musikabteilungen kann die Gemeinde daneben aufstellen — sie muss es nicht.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 6 Abs. 1", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Ab welcher Einwohnerzahl muss eine Gemeinde eine Einsatzabteilung der Berufsfeuerwehr aufstellen?",
+      "antworten": [
+        "Mehr als 100 000 Einwohner",
+        "Mehr als 15 000 Einwohner",
+        "Mehr als 50 000 Einwohner",
+        "Mehr als 200 000 Einwohner"
+      ],
+      "richtige": [0],
+      "erklaerung": "Für Gemeinden mit weniger als 150 000 Einwohnern kann das Innenministerium Ausnahmen zulassen.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 6 Abs. 2", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Welche Bezeichnung führt eine Gemeindefeuerwehr, die eine Einsatzabteilung der Berufsfeuerwehr eingerichtet hat?",
+      "antworten": [
+        "„Feuerwehr“",
+        "„Freiwillige Feuerwehr“",
+        "„Berufsfeuerwehr“",
+        "„Stadtfeuerwehr“"
+      ],
+      "richtige": [0],
+      "erklaerung": "Ohne hauptamtliche Einsatzabteilung heißt sie „Freiwillige Feuerwehr“. Den Zusatz „Feuerwehr“ dürfen außer Gemeindefeuerwehren nur Werkfeuerwehren führen.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 6 Abs. 1", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "In wessen Auftrag werden die Angehörigen der Gemeindefeuerwehr bei der Ausübung ihres Dienstes tätig?",
+      "antworten": [
+        "Stets im Auftrag der Gemeinde, deren Feuerwehr sie angehören",
+        "Im eigenen Namen",
+        "Im Auftrag des Landkreises",
+        "Im Auftrag des Feuerwehrverbands"
+      ],
+      "richtige": [0],
+      "erklaerung": "Daran hängt die Haftung: Für Schäden, die im Dienst entstehen, steht die Gemeinde ein.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 7 Abs. 1", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Für wie lange wird der ehrenamtliche Feuerwehrkommandant gewählt?",
+      "antworten": ["Fünf Jahre", "Drei Jahre", "Sechs Jahre", "Zehn Jahre"],
+      "richtige": [0],
+      "erklaerung": "Dieselbe Amtszeit gilt für die Abteilungskommandanten, die Stellvertreter und den Feuerwehrausschuss.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 8 Abs. 2", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Wie kommt der ehrenamtliche Feuerwehrkommandant ins Amt?",
+      "antworten": [
+        "Er wird in geheimer Wahl aus der Mitte der Einsatzabteilungen gewählt und nach Zustimmung des Gemeinderats vom Bürgermeister bestellt",
+        "Der Bürgermeister ernennt ihn frei",
+        "Der Gemeinderat wählt ihn ohne Beteiligung der Feuerwehr",
+        "Der Kreisbrandmeister bestimmt ihn"
+      ],
+      "richtige": [0],
+      "erklaerung": "Kommt binnen drei Monaten keine Neuwahl zustande, bestellt der Bürgermeister den vom Gemeinderat gewählten Feuerwehrangehörigen.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 8 Abs. 2", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Wer bestellt die Unterführer, also die Zug- und Gruppenführer, einer Einsatzabteilung?",
+      "antworten": [
+        "Der Abteilungskommandant im Einvernehmen mit dem Feuerwehrkommandanten",
+        "Die Angehörigen der Abteilung durch Wahl",
+        "Der Bürgermeister",
+        "Der Feuerwehrausschuss"
+      ],
+      "richtige": [0],
+      "erklaerung": "Unterführer werden bestellt, nicht gewählt — gewählt werden nur Kommandanten und Ausschüsse.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 8 Abs. 4", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Binnen welcher Frist kann gegen die Wahl eines Kommandanten Einspruch erhoben werden?",
+      "antworten": [
+        "Binnen einer Woche nach der Wahl",
+        "Binnen eines Monats nach der Wahl",
+        "Binnen zwei Wochen nach der Bestellung",
+        "Bis zur Zustimmung des Gemeinderats"
+      ],
+      "richtige": [0],
+      "erklaerung": "Nach Ablauf der Frist können weitere Einspruchsgründe nicht mehr geltend gemacht werden.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 8 Abs. 6", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Wofür ist der Feuerwehrkommandant nach dem Gesetz verantwortlich?",
+      "antworten": [
+        "Für die Leistungsfähigkeit der Gemeindefeuerwehr",
+        "Für Aufstellung und Fortschreibung der Alarm- und Ausrückeordnung",
+        "Für die Aus- und Fortbildung der Angehörigen",
+        "Für die Instandhaltung der Feuerwehrausrüstungen und -einrichtungen",
+        "Für die Genehmigung des Gemeindehaushalts"
+      ],
+      "richtige": [0, 1, 2, 3],
+      "erklaerung": "Er hat außerdem auf die ordnungsgemäße feuerwehrtechnische Ausstattung hinzuwirken; die Gemeinde muss ihn dabei angemessen unterstützen.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 9 Abs. 1", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Wer ist Vorsitzender des Feuerwehrausschusses?",
+      "antworten": [
+        "Der Feuerwehrkommandant",
+        "Der Bürgermeister",
+        "Ein aus der Mitte des Ausschusses gewähltes Mitglied",
+        "Der dienstälteste Abteilungskommandant"
+      ],
+      "richtige": [0],
+      "erklaerung": "Bei den Abteilungsausschüssen führt entsprechend der jeweilige Abteilungskommandant den Vorsitz.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 10 Abs. 1", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Ab welchem Alter darf man in eine Einsatzabteilung aufgenommen werden und ab wann an Einsätzen teilnehmen?",
+      "antworten": [
+        "Aufnahme mit vollendetem 17., Einsatzteilnahme erst mit vollendetem 18. Lebensjahr",
+        "Aufnahme und Einsatz jeweils mit vollendetem 18. Lebensjahr",
+        "Aufnahme mit vollendetem 16., Einsatz mit vollendetem 18. Lebensjahr",
+        "Aufnahme mit vollendetem 17., Einsatz sofort"
+      ],
+      "richtige": [0],
+      "erklaerung": "Ein Jahr Ausbildung ohne Einsatzdienst ist damit gesetzlich vorgesehen, nicht bloß üblich.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 11 Abs. 1 Nr. 1", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Wie lange dauert die Probezeit bei der Aufnahme in eine Einsatzabteilung der Freiwilligen Feuerwehr?",
+      "antworten": [
+        "Zwölf Monate",
+        "Sechs Monate",
+        "Drei Monate",
+        "Vierundzwanzig Monate"
+      ],
+      "richtige": [0],
+      "erklaerung": "Innerhalb der Probezeit soll der Grundausbildungslehrgang erfolgreich absolviert werden. Beim Übertritt aus Jugendfeuerwehr oder Musikabteilung kann auf sie verzichtet werden.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 11 Abs. 2", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Wer entscheidet über die Aufnahme in die Einsatzabteilung?",
+      "antworten": [
+        "Der Feuerwehrausschuss",
+        "Der Feuerwehrkommandant allein",
+        "Der Bürgermeister",
+        "Der Gemeinderat"
+      ],
+      "richtige": [0],
+      "erklaerung": "Ein Rechtsanspruch auf Aufnahme besteht nicht; eine Ablehnung ist dem Antragsteller schriftlich mitzuteilen.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 11 Abs. 3", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Welche Umstände schließen die Aufnahme in eine Einsatzabteilung aus?",
+      "antworten": [
+        "Verlust der Fähigkeit zur Bekleidung öffentlicher Ämter durch Richterspruch",
+        "Verurteilung wegen Brandstiftung nach den §§ 306 bis 306c StGB",
+        "Maßregeln der Besserung und Sicherung nach § 61 StGB, ausgenommen die Entziehung der Fahrerlaubnis",
+        "Fehlender Wohnsitz in der Gemeinde",
+        "Fehlende Fahrerlaubnis der Klasse C"
+      ],
+      "richtige": [0, 1, 2],
+      "erklaerung": "Wohnsitz und Führerschein sind keine Aufnahmevoraussetzungen. Hinzu kommen gesundheitliche sowie geistige und charakterliche Eignung.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 11 Abs. 1", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Welche Personen kann die Gemeinde durch Satzung zum Feuerwehrdienst verpflichten?",
+      "antworten": [
+        "Gemeindeeinwohner zwischen dem vollendeten 18. und dem vollendeten 50. Lebensjahr",
+        "Alle Gemeindeeinwohner ab 16 Jahren",
+        "Gemeindeeinwohner zwischen 18 und 65 Jahren",
+        "Nur Grundstückseigentümer der Gemeinde"
+      ],
+      "richtige": [0],
+      "erklaerung": "Wer in mehreren Gemeinden wohnt, darf nur dort verpflichtet werden, wo die Hauptwohnung liegt.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 12 Abs. 1", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Mit Vollendung welchen Lebensjahres endet der Feuerwehrdienst in einer Einsatzabteilung?",
+      "antworten": [
+        "Mit Vollendung des 65. Lebensjahres",
+        "Mit Vollendung des 60. Lebensjahres",
+        "Mit Vollendung des 63. Lebensjahres",
+        "Mit Vollendung des 67. Lebensjahres"
+      ],
+      "richtige": [0],
+      "erklaerung": "Danach steht der Wechsel in die Altersabteilung offen; deren Angehörige können weiterhin zu Übungen und Einsätzen herangezogen werden, wenn sie die Anforderungen erfüllen.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 13 Abs. 1 Nr. 5", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Wer kann den ehrenamtlichen Feuerwehrdienst aus wichtigem Grund beenden?",
+      "antworten": [
+        "Der Gemeinderat nach Anhörung des Feuerwehrausschusses",
+        "Der Feuerwehrkommandant allein",
+        "Der Feuerwehrausschuss allein",
+        "Der Kreisbrandmeister"
+      ],
+      "richtige": [0],
+      "erklaerung": "Gründe sind etwa fortgesetzte Nachlässigkeit, schwere Dienstpflichtverstöße oder erhebliche schuldhafte Schädigung des Ansehens der Feuerwehr. Der Betroffene ist vorher anzuhören.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 13 Abs. 3", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Welche Dienstpflichten nennt das Feuerwehrgesetz ausdrücklich?",
+      "antworten": [
+        "Regelmäßig und pünktlich am Dienst einschließlich der Aus- und Fortbildung teilnehmen",
+        "Bei Alarm sich unverzüglich zum Dienst einfinden",
+        "Den dienstlichen Weisungen der Vorgesetzten nachkommen",
+        "Über Angelegenheiten Verschwiegenheit wahren, deren Geheimhaltung erforderlich ist",
+        "Anvertraute Ausrüstung nur zu dienstlichen Zwecken benutzen",
+        "Mindestens 40 Stunden Dienst im Jahr leisten"
+      ],
+      "richtige": [0, 1, 2, 3, 4],
+      "erklaerung": "Die 40 Stunden im Jahr stehen nicht im Gesetz, sondern in der VwV-Feuerwehrausbildung als Umfang der Truppmannausbildung Teil 2.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 14 Abs. 1", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Welche Höchstsumme kann bei groben Verstößen gegen die Dienstpflichten als Geldbuße verhängt werden?",
+      "antworten": ["1 000 Euro", "500 Euro", "2 500 Euro", "5 000 Euro"],
+      "richtige": [0],
+      "erklaerung": "Die Geldbuße verhängt der Bürgermeister auf Antrag des Feuerwehrkommandanten. Einen bloßen Verweis kann der Kommandant selbst erteilen.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 14 Abs. 5", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Was gilt, wenn ein Einsatz oder eine Ausbildung in die Arbeitszeit fällt?",
+      "antworten": [
+        "Die Feuerwehrangehörigen sind für die Dauer der Teilnahme von der Arbeitsleistung freigestellt",
+        "Auch für eine angemessene Ruhezeit nach dem Einsatz besteht die Freistellung",
+        "Kündigung, Versetzung oder sonstige berufliche Benachteiligung deswegen sind unzulässig",
+        "Der Arbeitgeber muss der Teilnahme vorher zustimmen",
+        "Die versäumte Zeit ist nachzuarbeiten"
+      ],
+      "richtige": [0, 1, 2],
+      "erklaerung": "Die Teilnahme an Lehrgängen ist dem Arbeitgeber rechtzeitig mitzuteilen — mitzuteilen, nicht genehmigen zu lassen.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 15 Abs. 1", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Ab welcher Einsatzdauer hat die Gemeinde des Einsatzortes einen Erfrischungszuschuss zu leisten?",
+      "antworten": [
+        "Wenn der Einsatz über vier Stunden dauert",
+        "Wenn der Einsatz über zwei Stunden dauert",
+        "Wenn der Einsatz über sechs Stunden dauert",
+        "Bei jedem Einsatz"
+      ],
+      "richtige": [0],
+      "erklaerung": "Zuständig ist die Gemeinde des Einsatzortes — bei Überlandhilfe also nicht die eigene.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 16 Abs. 1", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "In welcher Mindesthöhe müssen die Gemeinden ihre ehrenamtlichen Feuerwehrangehörigen gegen Haftpflicht versichern?",
+      "antworten": [
+        "Mindestens 15 Millionen Euro",
+        "Mindestens 5 Millionen Euro",
+        "Mindestens 50 Millionen Euro",
+        "Mindestens 1 Million Euro"
+      ],
+      "richtige": [0],
+      "erklaerung": "Das ist eine Pflicht der Gemeinde, nicht der Feuerwehrangehörigen.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 16 Abs. 6", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Wann ersetzt die Gemeinde einen im Dienst erlittenen Sachschaden nicht?",
+      "antworten": [
+        "Wenn der Schaden vorsätzlich oder grob fahrlässig verursacht wurde",
+        "Wenn der Schaden während einer Übung entstand",
+        "Wenn der Schaden am eigenen Fahrzeug entstand",
+        "Wenn der Schaden weniger als 100 Euro beträgt"
+      ],
+      "richtige": [0],
+      "erklaerung": "Ersetzt werden auf Antrag auch die vermögenswerten Versicherungsnachteile, die als Eigentümer oder Halter eines eingesetzten Kraftfahrzeugs entstehen.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 17 Abs. 1", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Wer entscheidet über die Verwendung der Mittel eines Sondervermögens für die Kameradschaftspflege?",
+      "antworten": [
+        "Der Feuerwehrausschuss oder der Abteilungsausschuss",
+        "Der Feuerwehrkommandant",
+        "Der Gemeinderat",
+        "Der Kassenwart des Fördervereins"
+      ],
+      "richtige": [0],
+      "erklaerung": "Der Wirtschaftsplan wird vom Ausschuss mit Zustimmung des Bürgermeisters aufgestellt; wird eine Veranstaltung darüber abgewickelt, ist die Gemeinde Veranstalter.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 18 Abs. 3", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Wer trägt die Kosten einer Werkfeuerwehr?",
+      "antworten": [
+        "Der Betrieb, die Einrichtung oder die Verwaltung",
+        "Die Gemeinde",
+        "Der Landkreis",
+        "Das Land"
+      ],
+      "richtige": [0],
+      "erklaerung": "Die Pflicht der Gemeindefeuerwehr zur Hilfeleistung bleibt daneben bestehen.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 19 Abs. 1", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Wem untersteht die Landesfeuerwehrschule?",
+      "antworten": [
+        "Dem Innenministerium",
+        "Dem Landesfeuerwehrverband",
+        "Dem Regierungspräsidium Stuttgart",
+        "Dem Landkreistag"
+      ],
+      "richtige": [0],
+      "erklaerung": "Sie ist eine Einrichtung des Landes zur Aus- und Fortbildung der Feuerwehrangehörigen.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 20", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Wer führt die Aufsicht über das Feuerwehrwesen der kreisangehörigen Gemeinden?",
+      "antworten": [
+        "Das Landratsamt",
+        "Das Regierungspräsidium",
+        "Das Innenministerium",
+        "Der Kreisbrandmeister"
+      ],
+      "richtige": [0],
+      "erklaerung": "Für Stadtkreise und Landkreise ist das Regierungspräsidium zuständig; obere Aufsichtsbehörde ist das Regierungspräsidium, oberste das Innenministerium.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 22 Abs. 1", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Wer bestellt einen hauptamtlichen Kreisbrandmeister?",
+      "antworten": [
+        "Jeder Landkreis",
+        "Das Regierungspräsidium",
+        "Das Innenministerium",
+        "Der Kreisfeuerwehrverband"
+      ],
+      "richtige": [0],
+      "erklaerung": "Vor der Bestellung sind die Feuerwehrkommandanten der Gemeinden und die Werkfeuerwehrkommandanten im Landkreis anzuhören. Seine Stellvertreter werden für fünf Jahre als Ehrenbeamte berufen.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 23 Abs. 1", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Wer ist Vorsitzender des Landesfeuerwehrbeirats?",
+      "antworten": [
+        "Der Landesbranddirektor",
+        "Der Innenminister",
+        "Der Präsident des Landesfeuerwehrverbands",
+        "Der Leiter der Landesfeuerwehrschule"
+      ],
+      "richtige": [0],
+      "erklaerung": "Der Beirat berät das Innenministerium; seine Mitglieder werden auf fünf Jahre berufen und sind ehrenamtlich tätig.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 25 Abs. 3", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Wofür ist das Aufkommen aus der Feuerschutzsteuer zu verwenden?",
+      "antworten": [
+        "Für Zwecke der Feuerwehr und des vorbeugenden Brandschutzes",
+        "Für den allgemeinen Landeshaushalt",
+        "Für den Rettungsdienst",
+        "Für den Katastrophenschutz des Bundes"
+      ],
+      "richtige": [0],
+      "erklaerung": "Aus diesen Mitteln stammen die Landeszuschüsse zu Fahrzeugen und Gerätehäusern.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 33", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Sind Einsätze der Gemeindefeuerwehr bei Bränden und öffentlichen Notständen kostenpflichtig?",
+      "antworten": [
+        "Grundsätzlich unentgeltlich; Kostenersatz nur in den im Gesetz aufgezählten Fällen",
+        "Immer kostenpflichtig nach Stundensätzen",
+        "Immer unentgeltlich, ohne Ausnahme",
+        "Kostenpflichtig, sobald mehr als ein Fahrzeug ausrückt"
+      ],
+      "richtige": [0],
+      "erklaerung": "Für Einsätze nach § 2 Absatz 2 — etwa die Türöffnung oder die Beseitigung anderer Notlagen — sollen die Träger dagegen Kostenersatz verlangen.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 34 Abs. 1", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "In welchen Fällen wird für einen Einsatz nach § 2 Absatz 1 FwG Kostenersatz verlangt?",
+      "antworten": [
+        "Vom Verursacher, der die Gefahr vorsätzlich oder grob fahrlässig herbeigeführt hat",
+        "Vom Fahrzeughalter, wenn der Einsatz durch den Betrieb eines Kraftfahrzeugs verursacht wurde",
+        "Von dem, der die Feuerwehr ohne Schadensereignis vorsätzlich oder grob fahrlässig alarmiert hat",
+        "Vom Betreiber einer Brandmeldeanlage bei Fehlalarm ohne Schadenfeuer",
+        "Von jedem, dem geholfen wurde"
+      ],
+      "richtige": [0, 1, 2, 3],
+      "erklaerung": "Hinzu kommen Sonderlösch- und -einsatzmittel bei Bränden in Gewerbe- und Industriebetrieben sowie Einsätze beim gewerblichen Umgang mit Gefahrstoffen.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 34 Abs. 1", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "einsatzlehre",
+      "frage": "Wer ist bei einem Einsatz in Baden-Württemberg Technischer Einsatzleiter?",
+      "antworten": [
+        "Der Feuerwehrkommandant des Einsatzortes",
+        "Der ranghöchste anwesende Feuerwehrangehörige",
+        "Der Kreisbrandmeister",
+        "Der Bürgermeister"
+      ],
+      "richtige": [0],
+      "erklaerung": "Erstreckt sich der Einsatz über einen Landkreis hinaus, kann das Regierungspräsidium einen Technischen Einsatzleiter bestimmen; bei mehreren Regierungsbezirken das Innenministerium.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 27 Abs. 1", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "einsatzlehre",
+      "frage": "Wer hat bei einem Einsatz die organisatorische Oberleitung?",
+      "antworten": [
+        "Der Bürgermeister, soweit sie nicht eine Aufsichtsbehörde übernimmt",
+        "Der Technische Einsatzleiter",
+        "Der Kreisbrandmeister",
+        "Der Leiter der Integrierten Leitstelle"
+      ],
+      "richtige": [0],
+      "erklaerung": "Technische Einsatzleitung und organisatorische Oberleitung sind zwei verschiedene Rollen: Der Bürgermeister führt den Einsatz nicht, er verantwortet das Drumherum.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 27 Abs. 4", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "einsatzlehre",
+      "frage": "Was hat der Technische Einsatzleiter zu tun, wenn neben der Feuerwehr weitere Organisationen eingesetzt sind?",
+      "antworten": [
+        "Eine Führungseinheit bilden, der Vertreter der eingesetzten Organisationen als Berater angehören",
+        "Die Einsatzleitung an das Deutsche Rote Kreuz abgeben",
+        "Die Leitstelle um einen Einsatzleiter bitten",
+        "Jede Organisation eigenständig arbeiten lassen"
+      ],
+      "richtige": [0],
+      "erklaerung": "Die Vertreter beraten — die Einsatzleitung bleibt bei einer Person.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 27 Abs. 3", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "einsatzlehre",
+      "frage": "Wer ist Technischer Einsatzleiter, wenn die Gemeindefeuerwehr in einem Betrieb mit Werkfeuerwehr eingesetzt wird?",
+      "antworten": [
+        "Der Leiter der Werkfeuerwehr, sofern nichts anderes bestimmt ist",
+        "Der Feuerwehrkommandant der Gemeinde",
+        "Der Betriebsleiter",
+        "Der Kreisbrandmeister"
+      ],
+      "richtige": [0],
+      "erklaerung": "Er kennt Anlage und Gefahren. Die betriebstechnischen Befugnisse der Betriebsleitung bleiben davon unberührt.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 28 Abs. 1", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "einsatzlehre",
+      "frage": "Wen trifft die Pflicht, einen bemerkten Brand zu melden?",
+      "antworten": [
+        "Jeden, der ihn bemerkt, unverzüglich, sofern er die Gefahr nicht selbst beseitigen kann",
+        "Nur den Eigentümer des betroffenen Gebäudes",
+        "Nur Feuerwehrangehörige",
+        "Nur volljährige Personen"
+      ],
+      "richtige": [0],
+      "erklaerung": "Bei einem Waldbrand genügt auch die Benachrichtigung der nächsten Forstdienststelle.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 29 Abs. 1", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "einsatzlehre",
+      "frage": "Wer kann an einer Einsatzstelle zur Hilfeleistung herangezogen werden?",
+      "antworten": [
+        "Jede über 18 Jahre alte Person, die körperlich dazu in der Lage ist und dazu aufgefordert wird",
+        "Nur Feuerwehrangehörige",
+        "Jede Person ab 16 Jahren",
+        "Nur Anwohner der betroffenen Straße"
+      ],
+      "richtige": [0],
+      "erklaerung": "Ablehnen darf man nur bei erheblicher eigener Gefahr oder wenn dadurch andere wichtige Pflichten verletzt würden. Wer so hilft, wird im Auftrag der Gemeinde tätig und erhält Schäden ersetzt.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 30 Abs. 2", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "einsatzlehre",
+      "frage": "Wessen Anordnungen hat jeder an der Einsatzstelle Anwesende zu befolgen?",
+      "antworten": [
+        "Die des Technischen Einsatzleiters und der von ihm beauftragten Personen",
+        "Die des Bürgermeisters",
+        "Die der Polizei",
+        "Die des ranghöchsten anwesenden Feuerwehrangehörigen"
+      ],
+      "richtige": [0],
+      "erklaerung": "Ausgenommen sind dienstlich anwesende Angehörige der Aufsichtsbehörden und Personen, die außerhalb des Feuerwehrgesetzes gesetzliche Aufgaben der Gefahrenabwehr wahrnehmen.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 30 Abs. 3", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "einsatzlehre",
+      "frage": "Was müssen Eigentümer und Besitzer betroffener Grundstücke bei einem Einsatz dulden?",
+      "antworten": [
+        "Den Zutritt zu Grundstücken und baulichen Anlagen und deren Benutzung für Lösch- und Rettungsarbeiten",
+        "Die Bereitstellung ihrer Wasservorräte auf Anforderung",
+        "Das Überlassen ihrer verwendbaren Geräte",
+        "Angeordnete Maßnahmen wie die Räumung von Grundstücken oder die Beseitigung von Gebäudeteilen",
+        "Die dauerhafte Nutzung ihres Grundstücks als Löschwasserentnahmestelle"
+      ],
+      "richtige": [0, 1, 2, 3],
+      "erklaerung": "Dieselbe Pflicht trifft die Nachbarschaft im Umfeld der Einsatzstelle, soweit das zur Schadensabwehr nötig ist — dort allerdings gegen angemessene Entschädigung.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 31 Abs. 1", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "einsatzlehre",
+      "frage": "Wer trägt die Kosten der Überlandhilfe?",
+      "antworten": [
+        "Der Träger der Gemeindefeuerwehr, der Hilfe geleistet wurde",
+        "Die Hilfe leistende Gemeinde",
+        "Der Landkreis",
+        "Das Land aus der Feuerschutzsteuer"
+      ],
+      "richtige": [0],
+      "erklaerung": "Angefordert wird die Überlandhilfe vom Bürgermeister der Hilfe bedürftigen Gemeinde, bei Gefahr im Verzug vom Technischen Einsatzleiter oder der Leitstelle.",
+      "quelle": {"werk": "FwG BW", "fundstelle": "§ 26 Abs. 2", "stand": "2025-02-25", "url": "https://www.landesrecht-bw.de/perma?a=FeuerwG_BW"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Welcher Dienstgrad wird nach erfolgreichem Gruppenführerlehrgang verliehen?",
+      "antworten": [
+        "Löschmeister/-in",
+        "Brandmeister/-in",
+        "Hauptfeuerwehrfrau/-mann",
+        "Oberlöschmeister/-in"
+      ],
+      "richtige": [0],
+      "erklaerung": "Das ist eine der beiden ausdrücklichen Ausnahmen vom Verbot der Sprungbeförderung. Die andere: nach dem Zugführerlehrgang der Dienstgrad Brandmeister/-in.",
+      "quelle": {"werk": "VwV Feuerwehrbekleidung", "fundstelle": "Anlage 2 Nr. 1.1", "stand": "2022-09-27", "url": "https://www.lfs-bw.de/themen/gesetzevorschriften/vwv/vwv-feuerwehrbekleidung-und-dienstgrade/"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Welcher Dienstgrad wird nach erfolgreichem Zugführerlehrgang verliehen?",
+      "antworten": [
+        "Brandmeister/-in",
+        "Löschmeister/-in",
+        "Oberbrandmeister/-in",
+        "Hauptlöschmeister/-in"
+      ],
+      "richtige": [0],
+      "erklaerung": "Mit dem Brandmeister wechselt die Farbe der Dienstgradsterne von rot-silbern auf silbern.",
+      "quelle": {"werk": "VwV Feuerwehrbekleidung", "fundstelle": "Anlage 2 Nr. 1.1", "stand": "2022-09-27", "url": "https://www.lfs-bw.de/themen/gesetzevorschriften/vwv/vwv-feuerwehrbekleidung-und-dienstgrade/"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Wie viele Dienstgradsterne trägt eine Hauptfeuerwehrfrau oder ein Hauptfeuerwehrmann?",
+      "antworten": [
+        "Drei rote Sterne",
+        "Zwei rote Sterne",
+        "Drei rot-silberne Sterne",
+        "Drei silberne Sterne"
+      ],
+      "richtige": [0],
+      "erklaerung": "Rot sind die Sterne der Feuerwehrfrau- und -mann-Gruppe, rot-silbern die der Löschmeister-Gruppe, silbern die der Brandmeister-Gruppe.",
+      "quelle": {"werk": "VwV Feuerwehrbekleidung", "fundstelle": "Anlage 2 Nr. 1.1", "stand": "2022-09-27", "url": "https://www.lfs-bw.de/themen/gesetzevorschriften/vwv/vwv-feuerwehrbekleidung-und-dienstgrade/"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Welche Dienstgrade tragen rot-silberne Dienstgradsterne?",
+      "antworten": [
+        "Löschmeister/-in",
+        "Oberlöschmeister/-in",
+        "Hauptlöschmeister/-in",
+        "Brandmeister/-in",
+        "Oberfeuerwehrfrau/-mann"
+      ],
+      "richtige": [0, 1, 2],
+      "erklaerung": "Der Brandmeister trägt bereits silberne Sterne, die Oberfeuerwehrfrau noch rote.",
+      "quelle": {"werk": "VwV Feuerwehrbekleidung", "fundstelle": "Anlage 2 Nr. 1.1", "stand": "2022-09-27", "url": "https://www.lfs-bw.de/themen/gesetzevorschriften/vwv/vwv-feuerwehrbekleidung-und-dienstgrade/"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Welcher Zeitabstand muss zwischen zwei Beförderungen mindestens liegen?",
+      "antworten": ["Ein Jahr", "Sechs Monate", "Zwei Jahre", "Drei Jahre"],
+      "richtige": [0],
+      "erklaerung": "Bei Wahlämtern richtet sich die zeitliche Voraussetzung ausschließlich nach dieser Jahresfrist.",
+      "quelle": {"werk": "VwV Feuerwehrbekleidung", "fundstelle": "Anlage 2 Nr. 1.1", "stand": "2022-09-27", "url": "https://www.lfs-bw.de/themen/gesetzevorschriften/vwv/vwv-feuerwehrbekleidung-und-dienstgrade/"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Welcher Dienstgrad ist der höchstmögliche für den Feuerwehrkommandanten einer Gemeinde mit mehr als 15 000 Einwohnern?",
+      "antworten": [
+        "Leitende/r Hauptbrandmeister/-in",
+        "Hauptbrandmeister/-in",
+        "Oberbrandmeister/-in",
+        "Brandmeister/-in"
+      ],
+      "richtige": [0],
+      "erklaerung": "Unter 15 000 Einwohnern ist Hauptbrandmeister/-in der höchstmögliche Dienstgrad des Kommandanten. Der höchstmögliche Dienstgrad hängt also an der Einwohnerzahl, nicht an der Person.",
+      "quelle": {"werk": "VwV Feuerwehrbekleidung", "fundstelle": "Anlage 2 Nr. 1.1", "stand": "2022-09-27", "url": "https://www.lfs-bw.de/themen/gesetzevorschriften/vwv/vwv-feuerwehrbekleidung-und-dienstgrade/"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Welchen Dienstgrad behalten Angehörige der Altersabteilung?",
+      "antworten": [
+        "Den zuletzt in der Einsatzabteilung getragenen",
+        "Sie legen den Dienstgrad ab",
+        "Sie werden einheitlich zum Hauptfeuerwehrmann befördert",
+        "Sie werden um eine Stufe zurückgestuft"
+      ],
+      "richtige": [0],
+      "erklaerung": "Der Wechsel in die Altersabteilung ist kein Abstieg — der Dienstgrad bleibt.",
+      "quelle": {"werk": "VwV Feuerwehrbekleidung", "fundstelle": "Anlage 2 Nr. 1.1", "stand": "2022-09-27", "url": "https://www.lfs-bw.de/themen/gesetzevorschriften/vwv/vwv-feuerwehrbekleidung-und-dienstgrade/"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Welche Voraussetzungen führen zur Beförderung zur Oberfeuerwehrfrau oder zum Oberfeuerwehrmann?",
+      "antworten": [
+        "Mindestens zehn Jahre als Feuerwehrfrau/-mann",
+        "Mindestens drei Jahre als Feuerwehrfrau/-mann, Truppmannausbildung Teil 2 und einer der Lehrgänge Maschinist, Atemschutzgeräteträger oder Sprechfunker",
+        "Der Gruppenführerlehrgang",
+        "Fünf Jahre in der Jugendfeuerwehr"
+      ],
+      "richtige": [0, 1],
+      "erklaerung": "Die Verordnung nennt zwei Wege: den langen über die Dienstzeit und den kurzen über die Ausbildung.",
+      "quelle": {"werk": "VwV Feuerwehrbekleidung", "fundstelle": "Anlage 2 Nr. 1.1", "stand": "2022-09-27", "url": "https://www.lfs-bw.de/themen/gesetzevorschriften/vwv/vwv-feuerwehrbekleidung-und-dienstgrade/"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Was tragen die feuerwehrtechnischen Beamten nach § 23 FwG anstelle von Dienstgradabzeichen?",
+      "antworten": [
+        "Funktionsabzeichen",
+        "Dieselben Dienstgradabzeichen wie die Ehrenamtlichen",
+        "Gar keine Abzeichen",
+        "Abzeichen nach ihrer Entgeltgruppe"
+      ],
+      "richtige": [0],
+      "erklaerung": "Das gilt auch für den Leiter der Landesfeuerwehrschule und dessen Stellvertreter.",
+      "quelle": {"werk": "VwV Feuerwehrbekleidung", "fundstelle": "Anlage 2 Nr. 1.2", "stand": "2022-09-27", "url": "https://www.lfs-bw.de/themen/gesetzevorschriften/vwv/vwv-feuerwehrbekleidung-und-dienstgrade/"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Wie lange dauert die Truppmannausbildung Teil 1 in Baden-Württemberg mindestens?",
+      "antworten": ["70 Stunden", "35 Stunden", "100 Stunden", "40 Stunden"],
+      "richtige": [0],
+      "erklaerung": "Wird der Sprechfunkerlehrgang integriert, verlängert sich der Lehrgang um zehn Stunden.",
+      "quelle": {"werk": "VwV Feuerwehrausbildung", "fundstelle": "Anlage 1 Nr. 1", "stand": "2020-12-28", "url": "https://www.landesrecht-bw.de/perma?a=VVBW-IM-20180205-SF"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Was umfasst die Truppmannausbildung Teil 2?",
+      "antworten": [
+        "Eine mindestens zweijährige Tätigkeit im Einsatz- und Ausbildungsdienst von mindestens 40 Stunden pro Jahr",
+        "Einen einwöchigen Lehrgang an der Landesfeuerwehrschule",
+        "35 Unterrichtsstunden auf Kreisebene",
+        "Eine Prüfung vor dem Kreisbrandmeister"
+      ],
+      "richtige": [0],
+      "erklaerung": "Zeiten im Einsatzdienst werden mit bis zu zehn Stunden pro Jahr angerechnet; die Ausbildung in der Jugendfeuerwehr mit bis zu einem Jahr, wenn die Leistungsspange erworben wurde.",
+      "quelle": {"werk": "VwV Feuerwehrausbildung", "fundstelle": "Nr. 2.1.2", "stand": "2020-12-28", "url": "https://www.landesrecht-bw.de/perma?a=VVBW-IM-20180205-SF"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Welche Lehrgänge werden in Baden-Württemberg auf Gemeinde- und Kreisebene durchgeführt?",
+      "antworten": [
+        "Truppmannausbildung Teil 1 und Teil 2",
+        "Truppführer",
+        "Sprechfunker",
+        "Atemschutzgeräteträger und Maschinisten",
+        "Gruppenführer",
+        "Zugführer"
+      ],
+      "richtige": [0, 1, 2, 3],
+      "erklaerung": "Gruppenführer und Zugführer sind Führungslehrgänge der Landesfeuerwehrschule und dauern dort je zehn Tage.",
+      "quelle": {"werk": "VwV Feuerwehrausbildung", "fundstelle": "Nr. 2.1", "stand": "2020-12-28", "url": "https://www.landesrecht-bw.de/perma?a=VVBW-IM-20180205-SF"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "atemschutz",
+      "frage": "Was müssen Teilnehmende vor Beginn des Lehrgangs „Atemschutzgeräteträger“ vorweisen?",
+      "antworten": [
+        "Eine gültige Eignungsuntersuchung, zum Beispiel nach dem DGUV-Grundsatz G 26",
+        "Eine Fahrerlaubnis der Klasse C",
+        "Den abgeschlossenen Truppführerlehrgang",
+        "Das Feuerwehr-Leistungsabzeichen in Bronze"
+      ],
+      "richtige": [0],
+      "erklaerung": "Vorausgesetzt werden außerdem die Truppmannausbildung Teil 1 und der Sprechfunkerlehrgang. Der Lehrgang dauert mindestens 25 Stunden.",
+      "quelle": {"werk": "VwV Feuerwehrausbildung", "fundstelle": "Nr. 2.1.5 und Anlage 1", "stand": "2020-12-28", "url": "https://www.landesrecht-bw.de/perma?a=VVBW-IM-20180205-SF"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Welche Voraussetzung muss erfüllen, wer am Maschinistenlehrgang teilnimmt?",
+      "antworten": [
+        "Der Besitz einer gültigen Fahrerlaubnis oder Fahrberechtigung für die vorgesehenen Löschfahrzeuge",
+        "Der abgeschlossene Gruppenführerlehrgang",
+        "Eine Mindestdienstzeit von fünf Jahren",
+        "Die Ausbildung zum Atemschutzgeräteträger"
+      ],
+      "richtige": [0],
+      "erklaerung": "Vorausgesetzt werden zusätzlich die Truppmannausbildung Teil 2 und der Sprechfunkerlehrgang; der Lehrgang dauert mindestens 35 Stunden.",
+      "quelle": {"werk": "VwV Feuerwehrausbildung", "fundstelle": "Nr. 2.1.6 und Anlage 1", "stand": "2020-12-28", "url": "https://www.landesrecht-bw.de/perma?a=VVBW-IM-20180205-SF"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Womit sollen die fachlichen Befähigungen des Truppführers nachgewiesen werden?",
+      "antworten": [
+        "Mit dem Feuerwehr-Leistungsabzeichen Baden-Württemberg in Bronze",
+        "Mit dem Deutschen Sportabzeichen",
+        "Mit der Leistungsspange der Deutschen Jugendfeuerwehr",
+        "Mit einer schriftlichen Prüfung an der Landesfeuerwehrschule"
+      ],
+      "richtige": [0],
+      "erklaerung": "Der Truppführer trägt bei Übung und Einsatz die Verantwortung für die Einsatzmaßnahmen und die Sicherheit seines Truppmanns — deshalb der Leistungsnachweis.",
+      "quelle": {"werk": "VwV Feuerwehrausbildung", "fundstelle": "Nr. 2.1.3", "stand": "2020-12-28", "url": "https://www.landesrecht-bw.de/perma?a=VVBW-IM-20180205-SF"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "funk",
+      "frage": "Wie lange dauert der Lehrgang „Sprechfunker“ in Baden-Württemberg mindestens, und wann soll er abgeschlossen sein?",
+      "antworten": [
+        "16 Stunden, und er soll vor den Lehrgängen Atemschutzgeräteträger und Maschinisten abgeschlossen sein",
+        "35 Stunden, und er kann jederzeit besucht werden",
+        "8 Stunden, und er folgt auf den Truppführerlehrgang",
+        "25 Stunden, und er ist Voraussetzung für die Truppmannausbildung Teil 1"
+      ],
+      "richtige": [0],
+      "erklaerung": "Er kann auch in die Truppmannausbildung Teil 1 integriert werden; diese verlängert sich dann um zehn Stunden.",
+      "quelle": {"werk": "VwV Feuerwehrausbildung", "fundstelle": "Nr. 2.1.4 und Anlage 1", "stand": "2020-12-28", "url": "https://www.landesrecht-bw.de/perma?a=VVBW-IM-20180205-SF"},
+      "geltung": "land", "land": "BW"
+    },
+    {
+      "gebiet": "recht_organisation",
+      "frage": "Wie viele Teilnehmende soll ein Lehrgang auf Gemeinde- und Kreisebene höchstens haben?",
+      "antworten": [
+        "24 Teilnehmende, bei Gruppenbildung höchstens acht je Gruppe",
+        "16 Teilnehmende, bei Gruppenbildung höchstens vier je Gruppe",
+        "30 Teilnehmende ohne Gruppenbegrenzung",
+        "12 Teilnehmende, bei Gruppenbildung höchstens sechs je Gruppe"
+      ],
+      "richtige": [0],
+      "erklaerung": "Für einen Lehrgang müssen mindestens zwei Ausbilder zur Verfügung stehen.",
+      "quelle": {"werk": "VwV Feuerwehrausbildung", "fundstelle": "Nr. 2.1", "stand": "2020-12-28", "url": "https://www.landesrecht-bw.de/perma?a=VVBW-IM-20180205-SF"},
+      "geltung": "land", "land": "BW"
+    }
+  ]
+}

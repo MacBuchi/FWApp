@@ -57,10 +57,23 @@ void main() {
       expect(pruefe(richtige: {99}), isNotNull);
     });
 
-    test('mehr als sechs Antworten passen auf kein Handy', () {
+    test('sieben Antworten sind erlaubt — der Prüfungsstoff geht bis zehn',
+        () {
+      // Die erste Fassung stoppte bei sechs. Das war geraten: Im amtlichen
+      // Fragenkatalog laufen die Antwortkennungen bis „j)".
       expect(
           pruefe(
               antworten: const ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
+              richtige: {0}),
+          isNull);
+    });
+
+    test('mehr als zehn Antworten werden abgewiesen', () {
+      expect(
+          pruefe(
+              antworten: const [
+                'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k'
+              ],
               richtige: {0}),
           isNotNull);
     });

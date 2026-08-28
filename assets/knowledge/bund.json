@@ -1,0 +1,1837 @@
+{
+ "_hinweis": "Bundesweiter Fachbestand der Wissensdatenbank (Issue #174, Schritte 2 und 4). Jede Frage ist aus der genannten Fundstelle selbst formuliert, nicht aus einem Fragenkatalog uebernommen. Quellen und ihr Status: Die Feuerwehr-Dienstvorschriften werden vom AFKzV erarbeitet und von den Laendern per Erlass eingefuehrt; die Strassenverkehrs-Ordnung ist eine Rechtsverordnung des Bundes; die ASR A2.2 wird vom Ausschuss fuer Arbeitsstaetten ermittelt und vom BMAS im Gemeinsamen Ministerialblatt bekannt gemacht. Alle drei sind amtliche Werke nach § 5 UrhG und damit nicht urheberrechtlich geschuetzt; die Quellenangabe bleibt Pflicht und steht deshalb an jeder Frage. Die Staende sind gegen die Einfuehrungsliste der Landesfeuerwehrschule Baden-Wuerttemberg geprueft. ZUR ASR A2.2: Ihre Tabelle 1 gibt die Brandklassen wieder und verweist dafuer auf die DIN EN 2. Entnommen ist hier die amtlich bekannt gemachte Regel, nicht der Normtext - und auch aus ihr nur der Sachverhalt, in eigenen Worten. NICHT verwendet: Lehrstoffblaetter der Landesfeuerwehrschule (Neckar-Verlag) und DIN-Normtexte.",
+ "fragen": [
+  {
+   "gebiet": "einsatzlehre",
+   "frage": "Welche taktische Einheit ist die Grundeinheit der Feuerwehr?",
+   "antworten": [
+    "Die Gruppe",
+    "Die Staffel",
+    "Der Zug",
+    "Der Selbstständige Trupp"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Die FwDV 3 nennt die Gruppe ausdrücklich die taktische Grundeinheit. Staffel und Selbstständiger Trupp sind kleinere, der Zug ist die größere Einheit.",
+   "quelle": {
+    "werk": "FwDV 3",
+    "fundstelle": "Abschnitt 2",
+    "stand": "2008-02",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_003.pdf"
+   }
+  },
+  {
+   "gebiet": "einsatzlehre",
+   "frage": "Welche taktischen Einheiten kennt die FwDV 3?",
+   "antworten": [
+    "Selbstständiger Trupp",
+    "Staffel",
+    "Gruppe",
+    "Zug",
+    "Bereitschaft",
+    "Abteilung"
+   ],
+   "richtige": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "erklaerung": "Bereitschaft und Abteilung sind Gliederungen oberhalb des Zuges und nicht Gegenstand dieser Vorschrift.",
+   "quelle": {
+    "werk": "FwDV 3",
+    "fundstelle": "Abschnitt 2",
+    "stand": "2008-02",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_003.pdf"
+   }
+  },
+  {
+   "gebiet": "einsatzlehre",
+   "frage": "Wie ist die Mannschaftsstärke einer Gruppe?",
+   "antworten": [
+    "1/8/9",
+    "1/5/6",
+    "1/2/3",
+    "0/2/2"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Ein Gruppenführer, acht weitere Einsatzkräfte, neun insgesamt.",
+   "quelle": {
+    "werk": "FwDV 3",
+    "fundstelle": "Abschnitt 2.1",
+    "stand": "2008-02",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_003.pdf"
+   }
+  },
+  {
+   "gebiet": "einsatzlehre",
+   "frage": "Aus welchen Funktionen besteht die Mannschaft einer Gruppe?",
+   "antworten": [
+    "Gruppenführer",
+    "Maschinist",
+    "Melder",
+    "Angriffstrupp",
+    "Wassertrupp",
+    "Schlauchtrupp",
+    "Sicherheitstrupp"
+   ],
+   "richtige": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "erklaerung": "Ein Sicherheitstrupp ist keine Funktion innerhalb der Gruppe, sondern wird beim Atemschutzeinsatz zusätzlich bereitgestellt (FwDV 7).",
+   "quelle": {
+    "werk": "FwDV 3",
+    "fundstelle": "Abschnitt 2.1",
+    "stand": "2008-02",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_003.pdf"
+   }
+  },
+  {
+   "gebiet": "einsatzlehre",
+   "frage": "Wie ist die Mannschaftsstärke einer Staffel?",
+   "antworten": [
+    "1/5/6",
+    "1/8/9",
+    "1/2/3",
+    "1/7/8"
+   ],
+   "richtige": [
+    0
+   ],
+   "quelle": {
+    "werk": "FwDV 3",
+    "fundstelle": "Abschnitt 2.2",
+    "stand": "2008-02",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_003.pdf"
+   }
+  },
+  {
+   "gebiet": "einsatzlehre",
+   "frage": "Welche Funktionen hat die Staffel im Vergleich zur Gruppe nicht?",
+   "antworten": [
+    "Melder",
+    "Schlauchtrupp",
+    "Maschinist",
+    "Angriffstrupp",
+    "Wassertrupp"
+   ],
+   "richtige": [
+    0,
+    1
+   ],
+   "erklaerung": "Der Staffel fehlen gegenüber der Gruppe der Melder und der Schlauchtrupp; Maschinist, Angriffs- und Wassertrupp sind vorhanden.",
+   "quelle": {
+    "werk": "FwDV 3",
+    "fundstelle": "Abschnitt 2.2",
+    "stand": "2008-02",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_003.pdf"
+   }
+  },
+  {
+   "gebiet": "einsatzlehre",
+   "frage": "Wie ist die Mannschaftsstärke eines Selbstständigen Trupps?",
+   "antworten": [
+    "1/2/3",
+    "0/2/2",
+    "1/5/6",
+    "1/1/2"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Truppführer, Maschinist und Truppmann.",
+   "quelle": {
+    "werk": "FwDV 3",
+    "fundstelle": "Abschnitt 2.3",
+    "stand": "2008-02",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_003.pdf"
+   }
+  },
+  {
+   "gebiet": "einsatzlehre",
+   "frage": "Was unterscheidet den Selbstständigen Trupp von einem Angriffstrupp?",
+   "antworten": [
+    "Er ist eine taktische Einheit und kann eigenständig eingesetzt werden",
+    "Er besteht aus drei statt zwei Einsatzkräften",
+    "Er hat einen eigenen Maschinisten",
+    "Er trägt grundsätzlich Atemschutz"
+   ],
+   "richtige": [
+    0,
+    1,
+    2
+   ],
+   "erklaerung": "Atemschutz ist keine Eigenschaft des Selbstständigen Trupps, sondern hängt vom Einsatz ab.",
+   "quelle": {
+    "werk": "FwDV 3",
+    "fundstelle": "Abschnitt 2.3",
+    "stand": "2008-02",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_003.pdf"
+   }
+  },
+  {
+   "gebiet": "einsatzlehre",
+   "frage": "Wie gliedert sich der Zugtrupp?",
+   "antworten": [
+    "Führungsassistent",
+    "Melder",
+    "Fahrer",
+    "Maschinist",
+    "Schlauchtrupp"
+   ],
+   "richtige": [
+    0,
+    1,
+    2
+   ],
+   "erklaerung": "Der Zugtrupp hat die Stärke 1/2/3 und ist die Führungseinheit des Zuges.",
+   "quelle": {
+    "werk": "FwDV 3",
+    "fundstelle": "Abschnitt 2.4",
+    "stand": "2008-02",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_003.pdf"
+   }
+  },
+  {
+   "gebiet": "einsatzlehre",
+   "frage": "Welche Mannschaftsstärke hat ein Zug in der Regel?",
+   "antworten": [
+    "22",
+    "18",
+    "27",
+    "9"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Zugführer und Zugtrupp (1/2/3) sowie in der Regel zwei Gruppen (je 1/8/9) ergeben 22.",
+   "quelle": {
+    "werk": "FwDV 3",
+    "fundstelle": "Abschnitt 2.4",
+    "stand": "2008-02",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_003.pdf"
+   }
+  },
+  {
+   "gebiet": "einsatzlehre",
+   "frage": "Wer vertritt den Zugführer?",
+   "antworten": [
+    "Der Führungsassistent",
+    "Der Melder",
+    "Der ranghöchste Gruppenführer",
+    "Der Fahrer"
+   ],
+   "richtige": [
+    0
+   ],
+   "quelle": {
+    "werk": "FwDV 3",
+    "fundstelle": "Abschnitt 2.4",
+    "stand": "2008-02",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_003.pdf"
+   }
+  },
+  {
+   "gebiet": "einsatzlehre",
+   "frage": "Was muss der Befehl eines Zugführers mindestens enthalten?",
+   "antworten": [
+    "Einheit",
+    "Auftrag",
+    "Mittel",
+    "Ziel",
+    "Weg"
+   ],
+   "richtige": [
+    0,
+    1
+   ],
+   "erklaerung": "Mittel, Ziel und Weg sind die Befehlselemente der Gruppen-, Staffel- und Truppführer. Der Zugführer verwendet sie im Sinne der Auftragstaktik nur, wenn sie zur Klarheit beitragen.",
+   "quelle": {
+    "werk": "FwDV 3",
+    "fundstelle": "Abschnitt 6.2",
+    "stand": "2008-02",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_003.pdf"
+   }
+  },
+  {
+   "gebiet": "einsatzlehre",
+   "frage": "Wie werden die Führer der taktischen Einheiten zusammenfassend genannt?",
+   "antworten": [
+    "Einheitsführer",
+    "Verbandsführer",
+    "Einsatzleiter",
+    "Zugführer"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Einheitsführer sind der Truppführer eines Selbstständigen Trupps, der Staffelführer, der Gruppenführer und der Zugführer.",
+   "quelle": {
+    "werk": "FwDV 3",
+    "fundstelle": "Abschnitt 2",
+    "stand": "2008-02",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_003.pdf"
+   }
+  },
+  {
+   "gebiet": "geraetekunde",
+   "frage": "Welchen Anstellwinkel muss eine Anlegeleiter haben?",
+   "antworten": [
+    "65° bis 75°",
+    "55° bis 60°",
+    "45° bis 55°",
+    "80° bis 90°"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Zu flach angestellt rutscht die Leiter weg, zu steil kippt sie nach hinten.",
+   "quelle": {
+    "werk": "FwDV 10",
+    "fundstelle": "Abschnitt 6",
+    "stand": "2019-11",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_010.pdf"
+   }
+  },
+  {
+   "gebiet": "geraetekunde",
+   "frage": "Welche tragbaren Leitern sind nach DIN EN 1147 genormt?",
+   "antworten": [
+    "Steckleiter",
+    "dreiteilige Schiebleiter",
+    "Hakenleiter",
+    "Klappleiter",
+    "Multifunktionsleiter",
+    "Drehleiter"
+   ],
+   "richtige": [
+    0,
+    1,
+    2,
+    3,
+    4
+   ],
+   "erklaerung": "Die Drehleiter ist keine tragbare Leiter, sondern ein Hubrettungsfahrzeug.",
+   "quelle": {
+    "werk": "FwDV 10",
+    "fundstelle": "Abschnitt 3",
+    "stand": "2019-11",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_010.pdf"
+   }
+  },
+  {
+   "gebiet": "geraetekunde",
+   "frage": "Wozu können tragbare Leitern eingesetzt werden?",
+   "antworten": [
+    "Als Rettungsweg",
+    "Als Angriffsweg",
+    "Als Hilfsgerät",
+    "Als Absturzsicherung"
+   ],
+   "richtige": [
+    0,
+    1,
+    2
+   ],
+   "quelle": {
+    "werk": "FwDV 10",
+    "fundstelle": "Abschnitt 2",
+    "stand": "2019-11",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_010.pdf"
+   }
+  },
+  {
+   "gebiet": "geraetekunde",
+   "frage": "Wer gibt die Kommandos bei der Vor- und Rücknahme einer tragbaren Leiter?",
+   "antworten": [
+    "Der Truppführer, der den Befehl vom Einheitsführer erhalten hat",
+    "Der Einheitsführer selbst",
+    "Der Maschinist",
+    "Der Melder"
+   ],
+   "richtige": [
+    0
+   ],
+   "quelle": {
+    "werk": "FwDV 10",
+    "fundstelle": "Abschnitt 5",
+    "stand": "2019-11",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_010.pdf"
+   }
+  },
+  {
+   "gebiet": "geraetekunde",
+   "frage": "Wer bestimmt die Anzahl der benötigten Steckleiterteile?",
+   "antworten": [
+    "Der Truppführer",
+    "Der Gruppenführer",
+    "Der Maschinist",
+    "Der Angriffstrupp gemeinsam"
+   ],
+   "richtige": [
+    0
+   ],
+   "quelle": {
+    "werk": "FwDV 10",
+    "fundstelle": "Abschnitt 5",
+    "stand": "2019-11",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_010.pdf"
+   }
+  },
+  {
+   "gebiet": "geraetekunde",
+   "frage": "Von welcher Geschosshöhe geht die FwDV 10 bei den Rettungs- und Arbeitshöhen aus?",
+   "antworten": [
+    "Drei Meter",
+    "Zwei Meter",
+    "Vier Meter",
+    "Zweieinhalb Meter"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Die Annahme steht als Fußnote bei den Rettungs- und Arbeitshöhen und erklärt, warum die Werte in Geschossen aufgehen.",
+   "quelle": {
+    "werk": "FwDV 10",
+    "fundstelle": "Abschnitt 4",
+    "stand": "2019-11",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_010.pdf"
+   }
+  },
+  {
+   "gebiet": "geraetekunde",
+   "frage": "Welche Kommandos nennt die FwDV 10 für die Vornahme von Leitern?",
+   "antworten": [
+    "„Leiter – Marsch!“",
+    "„Leiter – Richtet auf!“",
+    "„Leiter – Legt an!“",
+    "„Leiter – Steckt ein!“",
+    "„Leiter – Vor!“",
+    "„Leiter – Setzt ab!“"
+   ],
+   "richtige": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "erklaerung": "„Leiter – Vor!“ und „Leiter – Setzt ab!“ gibt es nicht. Bei der Rücknahme heißt es unter anderem „Leiter – Legt ab!“ und „Leiter – Auf!“.",
+   "quelle": {
+    "werk": "FwDV 10",
+    "fundstelle": "Abschnitt 5",
+    "stand": "2019-11",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_010.pdf"
+   }
+  },
+  {
+   "gebiet": "geraetekunde",
+   "frage": "Was ist nach jeder Benutzung einer tragbaren Leiter zu tun?",
+   "antworten": [
+    "Der Benutzer unterzieht sie einer Sichtprüfung auf Verschleiß oder Beschädigung",
+    "Sie ist vom Gerätewart zu prüfen und zu dokumentieren",
+    "Sie ist zu reinigen und zu fetten",
+    "Nichts, solange sie nicht beschädigt wirkt"
+   ],
+   "richtige": [
+    0
+   ],
+   "quelle": {
+    "werk": "FwDV 10",
+    "fundstelle": "Abschnitt 6",
+    "stand": "2019-11",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_010.pdf"
+   }
+  },
+  {
+   "gebiet": "atemschutz",
+   "frage": "Welche Mindeststärke hat ein Sicherheitstrupp?",
+   "antworten": [
+    "0/2/2",
+    "1/2/3",
+    "0/1/1",
+    "1/1/2"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Je nach Risiko und Stärke des eingesetzten Atemschutztrupps wird der Sicherheitstrupp verstärkt, etwa in Tunneln und Tiefgaragen.",
+   "quelle": {
+    "werk": "FwDV 7",
+    "fundstelle": "Abschnitt 7.2",
+    "stand": "2004-08",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_007.pdf"
+   }
+  },
+  {
+   "gebiet": "atemschutz",
+   "frage": "Wann darf auf die Bereitstellung eines Sicherheitstrupps verzichtet werden?",
+   "antworten": [
+    "Wenn eine Gefährdung der Atemschutztrupps weitestgehend auszuschließen ist",
+    "Wenn die Rettung auch ohne Atemschutz möglich wäre, etwa bei Bränden im Freien",
+    "Wenn nur ein Atemschutztrupp eingesetzt ist",
+    "Wenn der Einsatz kürzer als zehn Minuten dauert"
+   ],
+   "richtige": [
+    0,
+    1
+   ],
+   "quelle": {
+    "werk": "FwDV 7",
+    "fundstelle": "Abschnitt 7.2",
+    "stand": "2004-08",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_007.pdf"
+   }
+  },
+  {
+   "gebiet": "atemschutz",
+   "frage": "Was ist bei der Atemschutzüberwachung festzuhalten?",
+   "antworten": [
+    "Uhrzeit beim Anschließen des Luftversorgungssystems",
+    "Uhrzeit bei einem Drittel und bei zwei Dritteln der zu erwartenden Einsatzzeit",
+    "Erreichen des Einsatzzieles",
+    "Beginn des Rückzugs",
+    "Der Name des Einheitsführers"
+   ],
+   "richtige": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "quelle": {
+    "werk": "FwDV 7",
+    "fundstelle": "Abschnitt 7.4",
+    "stand": "2004-08",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_007.pdf"
+   }
+  },
+  {
+   "gebiet": "atemschutz",
+   "frage": "Was ist für den Atemschutznachweis zu registrieren?",
+   "antworten": [
+    "Name des Atemschutzgeräteträgers",
+    "Datum",
+    "Einsatzort",
+    "Art des Gerätes",
+    "Atemschutzeinsatzzeit",
+    "Verbrauchte Luftmenge in Litern"
+   ],
+   "richtige": [
+    0,
+    1,
+    2,
+    3,
+    4
+   ],
+   "quelle": {
+    "werk": "FwDV 7",
+    "fundstelle": "Abschnitt 7.4",
+    "stand": "2004-08",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_007.pdf"
+   }
+  },
+  {
+   "gebiet": "atemschutz",
+   "frage": "Wozu dient ein Notsignalgeber?",
+   "antworten": [
+    "Er erleichtert das Auffinden verunfallter Atemschutzgeräteträger durch optische und/oder akustische Signale",
+    "Er warnt vor zu geringem Flaschendruck",
+    "Er misst die Konzentration von Atemgiften",
+    "Er ersetzt die Atemschutzüberwachung"
+   ],
+   "richtige": [
+    0
+   ],
+   "quelle": {
+    "werk": "FwDV 7",
+    "fundstelle": "Abschnitt 7.5",
+    "stand": "2004-08",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_007.pdf"
+   }
+  },
+  {
+   "gebiet": "loeschlehre",
+   "frage": "Womit wird die Halteleine am Saugkorb befestigt?",
+   "antworten": [
+    "Mit Zimmermannsschlag oder Mastwurf und Spierenstich",
+    "Mit einem Halbschlag",
+    "Mit einem Schotenstich",
+    "Mit einem doppelten Ankerstich"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Und zwar vor dem Anbringen des Saugschutzkorbes. An jedem Saugschlauch wird sie danach mit einem Halbschlag befestigt.",
+   "quelle": {
+    "werk": "FwDV 1",
+    "fundstelle": "Abschnitt 6.1",
+    "stand": "2006-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_001.pdf"
+   }
+  },
+  {
+   "gebiet": "loeschlehre",
+   "frage": "Womit wird die Halteleine an den einzelnen Saugschläuchen befestigt?",
+   "antworten": [
+    "Mit einem Halbschlag",
+    "Mit einem Mastwurf",
+    "Mit einem Spierenstich",
+    "Mit einem Zimmermannsschlag"
+   ],
+   "richtige": [
+    0
+   ],
+   "quelle": {
+    "werk": "FwDV 1",
+    "fundstelle": "Abschnitt 6.1",
+    "stand": "2006-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_001.pdf"
+   }
+  },
+  {
+   "gebiet": "loeschlehre",
+   "frage": "Wann ist das Anbringen einer Halteleine an der Saugleitung besonders zweckmäßig?",
+   "antworten": [
+    "Bei fließenden Gewässern",
+    "In Schächten",
+    "Bei jeder Wasserentnahme",
+    "Nur bei Frost"
+   ],
+   "richtige": [
+    0,
+    1
+   ],
+   "quelle": {
+    "werk": "FwDV 1",
+    "fundstelle": "Abschnitt 6.1",
+    "stand": "2006-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_001.pdf"
+   }
+  },
+  {
+   "gebiet": "geraetekunde",
+   "frage": "Wofür werden Knoten und Stiche bei der Feuerwehr verwendet?",
+   "antworten": [
+    "Als Befestigungsknoten",
+    "Als Verbindungsknoten",
+    "Als Bremsknoten",
+    "Als Zierknoten"
+   ],
+   "richtige": [
+    0,
+    1,
+    2
+   ],
+   "quelle": {
+    "werk": "FwDV 1",
+    "fundstelle": "Abschnitt 16.2",
+    "stand": "2006-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_001.pdf"
+   }
+  },
+  {
+   "gebiet": "geraetekunde",
+   "frage": "Dürfen zum Binden von Knoten die Schutzhandschuhe ausgezogen werden?",
+   "antworten": [
+    "Ja, das lässt die Vorschrift ausdrücklich zu",
+    "Nein, die Schutzhandschuhe sind immer zu tragen",
+    "Nur mit Erlaubnis des Einheitsführers",
+    "Nur außerhalb des Gefahrenbereichs"
+   ],
+   "richtige": [
+    0
+   ],
+   "quelle": {
+    "werk": "FwDV 1",
+    "fundstelle": "Abschnitt 16.2",
+    "stand": "2006-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_001.pdf"
+   }
+  },
+  {
+   "gebiet": "geraetekunde",
+   "frage": "Wozu dient der Halbschlag?",
+   "antworten": [
+    "Zum Führen von Geräten beim Hochziehen",
+    "Zur Einbindung von Personen auf Krankentragen",
+    "Als Rettungsknoten am Menschen",
+    "Zum Verbinden zweier Leinen"
+   ],
+   "richtige": [
+    0,
+    1
+   ],
+   "quelle": {
+    "werk": "FwDV 1",
+    "fundstelle": "Abschnitt 16.2",
+    "stand": "2006-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_001.pdf"
+   }
+  },
+  {
+   "gebiet": "loeschlehre",
+   "frage": "Auf welches Kommando öffnet der Maschinist das Absperrorgan an der Pumpe?",
+   "antworten": [
+    "„Wasser marsch!“",
+    "„Rohr auf!“",
+    "„Angriff vor!“",
+    "„Pumpe – Marsch!“"
+   ],
+   "richtige": [
+    0
+   ],
+   "quelle": {
+    "werk": "FwDV 1",
+    "fundstelle": "Abschnitt 4.3",
+    "stand": "2006-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_001.pdf"
+   }
+  },
+  {
+   "gebiet": "einsatzlehre",
+   "frage": "Was gilt neben den Feuerwehr-Dienstvorschriften im Einsatz und in der Ausbildung?",
+   "antworten": [
+    "Die Unfallverhütungsvorschrift „Feuerwehren“ samt Durchführungsanweisungen",
+    "Ausschließlich die Dienstvorschriften selbst",
+    "Nur das Landesrecht",
+    "Die Straßenverkehrsordnung ersetzt sie"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Die FwDV 3 verweist im ersten Abschnitt ausdrücklich auf die Unfallverhütungsvorschrift.",
+   "quelle": {
+    "werk": "FwDV 3",
+    "fundstelle": "Abschnitt 1",
+    "stand": "2008-02",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_003.pdf"
+   }
+  },
+  {
+   "gebiet": "einsatzlehre",
+   "frage": "Was ist ein Löscheinsatz im Sinne der FwDV 3?",
+   "antworten": [
+    "Jede Tätigkeit, bei der Strahlrohre vorgenommen werden",
+    "Das Schützen gefährdeter Menschen oder Objekte durch Abriegeln",
+    "Das Niederschlagen, Abdrängen oder Verwirbeln gefährlicher Dämpfe und Gase",
+    "Nur der unmittelbare Löschangriff auf ein Feuer"
+   ],
+   "richtige": [
+    0,
+    1,
+    2
+   ],
+   "quelle": {
+    "werk": "FwDV 3",
+    "fundstelle": "Abschnitt 1",
+    "stand": "2008-02",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_003.pdf"
+   }
+  },
+  {
+   "gebiet": "funk",
+   "frage": "Auf welchem Funkstandard beruht der Digitalfunk BOS?",
+   "antworten": [
+    "TETRA",
+    "GSM",
+    "DMR",
+    "POCSAG"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Das Netz ist bundesweit einheitlich und flächendeckend. POCSAG ist der Standard der digitalen Alarmierung, nicht des Sprechfunks.",
+   "quelle": {
+    "werk": "FwDV 810",
+    "fundstelle": "Teil I Nr. 1.1",
+    "stand": "2018-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_DV_810.pdf"
+   }
+  },
+  {
+   "gebiet": "funk",
+   "frage": "Welche Merkmale hat der Digitalfunk BOS?",
+   "antworten": [
+    "Abhörsicherheit durch Verschlüsselung",
+    "Übertragung der Teilnehmerkennung",
+    "Möglichkeit der differenzierten Berechtigungsverwaltung",
+    "Unbegrenzte Gesprächsdauer ohne Sendezeitbegrenzung",
+    "Betrieb ohne jede zentrale Stelle"
+   ],
+   "richtige": [
+    0,
+    1,
+    2
+   ],
+   "erklaerung": "Eine Sendezeitbegrenzung gibt es sehr wohl, und für Aufbau und Betrieb ist die BDBOS zuständig.",
+   "quelle": {
+    "werk": "FwDV 810",
+    "fundstelle": "Teil I Nr. 1.1",
+    "stand": "2018-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_DV_810.pdf"
+   }
+  },
+  {
+   "gebiet": "funk",
+   "frage": "Wer ist für Aufbau, Betrieb und Weiterentwicklung des Funknetzes des Digitalfunks BOS verantwortlich?",
+   "antworten": [
+    "Die Bundesanstalt für den Digitalfunk der BOS (BDBOS)",
+    "Die Bundesnetzagentur",
+    "Die jeweilige Integrierte Leitstelle",
+    "Das Bundesamt für Bevölkerungsschutz und Katastrophenhilfe"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "In den Ländern und beim Bund sind zusätzlich Autorisierte Stellen (AS) für die betrieblichen Abläufe eingerichtet.",
+   "quelle": {
+    "werk": "FwDV 810",
+    "fundstelle": "Teil I Nr. 1.2",
+    "stand": "2018-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_DV_810.pdf"
+   }
+  },
+  {
+   "gebiet": "funk",
+   "frage": "Wie heißen die beiden Betriebsarten im Digitalfunk BOS?",
+   "antworten": [
+    "TMO – Netzbetrieb",
+    "DMO – Direktbetrieb",
+    "AMO – Analogbetrieb",
+    "RMO – Relaisbetrieb"
+   ],
+   "richtige": [
+    0,
+    1
+   ],
+   "erklaerung": "Kommuniziert wird vorzugsweise im Netzbetrieb (TMO); der Direktbetrieb (DMO) kommt bei taktischer Notwendigkeit oder unzureichender Funkversorgung zum Einsatz.",
+   "quelle": {
+    "werk": "FwDV 810",
+    "fundstelle": "Teil I Nr. 2.1 und Nr. 5",
+    "stand": "2018-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_DV_810.pdf"
+   }
+  },
+  {
+   "gebiet": "funk",
+   "frage": "Welche Kommunikationsform ist im Sprechfunkverkehr vorrangig zu nutzen?",
+   "antworten": [
+    "Die Gruppenkommunikation",
+    "Die Einzelkommunikation",
+    "Die Kurznachricht",
+    "Beide gleichrangig"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Nur sie erreicht alle Nutzer der Rufgruppe gleichzeitig. Wer eine Einzelkommunikation führt, ist für andere grundsätzlich nicht erreichbar.",
+   "quelle": {
+    "werk": "FwDV 810",
+    "fundstelle": "Teil I Nr. 3.1",
+    "stand": "2018-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_DV_810.pdf"
+   }
+  },
+  {
+   "gebiet": "funk",
+   "frage": "Was ist bei der Gesprächsabwicklung im Sprechfunk zu unterlassen?",
+   "antworten": [
+    "Höflichkeitsformen",
+    "Abkürzungen",
+    "Personennamen und Amtsbezeichnungen",
+    "Die Wiederholung wesentlicher Inhalte",
+    "Das Buchstabieren schwer verständlicher Wörter"
+   ],
+   "richtige": [
+    0,
+    1,
+    2
+   ],
+   "erklaerung": "Wiederholen und Buchstabieren sind ausdrücklich vorgesehen. Angesprochen wird mit „Sie“.",
+   "quelle": {
+    "werk": "FwDV 810",
+    "fundstelle": "Teil I Nr. 3.2",
+    "stand": "2018-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_DV_810.pdf"
+   }
+  },
+  {
+   "gebiet": "funk",
+   "frage": "Wie wird der Sprechfunkverkehr grundsätzlich durchgeführt?",
+   "antworten": [
+    "Als Gruppenruf; der Einzelruf nur, wenn er taktisch unbedingt erforderlich ist",
+    "Als Einzelruf; der Gruppenruf nur auf Anordnung der Leitstelle",
+    "Wahlweise, das entscheidet jeder Teilnehmer selbst",
+    "Als Sammelruf an alle"
+   ],
+   "richtige": [
+    0
+   ],
+   "quelle": {
+    "werk": "FwDV 810",
+    "fundstelle": "Teil I Nr. 5.1.1",
+    "stand": "2018-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_DV_810.pdf"
+   }
+  },
+  {
+   "gebiet": "funk",
+   "frage": "Woraus besteht der Anruf im Sprechfunkverkehr?",
+   "antworten": [
+    "Dem Rufnamen der Gegenstelle",
+    "Dem Wort „von“",
+    "Dem eigenen Rufnamen",
+    "Der Aufforderung „Kommen“",
+    "Der Uhrzeit der Absendung"
+   ],
+   "richtige": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "erklaerung": "Beispiel: „Florian X von Florian Y – kommen“. Bei den Vorrangstufen Blitz oder Sofort wird die Stufe dreimal vorangestellt.",
+   "quelle": {
+    "werk": "FwDV 810",
+    "fundstelle": "Teil I Nr. 5.1.1.1",
+    "stand": "2018-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_DV_810.pdf"
+   }
+  },
+  {
+   "gebiet": "funk",
+   "frage": "Woraus besteht die Anrufantwort?",
+   "antworten": [
+    "„Hier“, eigener Rufname, „Kommen“",
+    "Eigener Rufname, „von“, Rufname der Gegenstelle, „Kommen“",
+    "„Verstanden“ und der eigene Rufname",
+    "Nur dem eigenen Rufnamen"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Beispiel: „Hier Florian X – kommen“. Der Anruf ist sofort durch die Anrufantwort zu bestätigen.",
+   "quelle": {
+    "werk": "FwDV 810",
+    "fundstelle": "Teil I Nr. 5.1.1.1",
+    "stand": "2018-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_DV_810.pdf"
+   }
+  },
+  {
+   "gebiet": "funk",
+   "frage": "Wie bestätigt der angerufene Nutzer den Empfang einer Nachricht?",
+   "antworten": [
+    "Mit „Verstanden“ und der Wiederholung der wesentlichen Inhalte",
+    "Mit „Ende“",
+    "Mit „Roger“",
+    "Mit der bloßen Nennung des eigenen Rufnamens"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Die Empfangsbestätigung kann mit der Aufnahmeuhrzeit verbunden werden.",
+   "quelle": {
+    "werk": "FwDV 810",
+    "fundstelle": "Teil I Nr. 5.1.1.2",
+    "stand": "2018-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_DV_810.pdf"
+   }
+  },
+  {
+   "gebiet": "funk",
+   "frage": "Wer beendet das Funkgespräch, und mit welchem Wort?",
+   "antworten": [
+    "Der Anrufende, mit dem Wort „Ende“",
+    "Der Angerufene, mit dem Wort „Ende“",
+    "Der Anrufende, mit dem Wort „Schluss“",
+    "Die Leitstelle, mit dem Wort „Ende“"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Bei einem Sammelruf dürfen die gerufenen Teilnehmer das Gespräch nicht beenden.",
+   "quelle": {
+    "werk": "FwDV 810",
+    "fundstelle": "Teil I Nr. 5.1.1.2",
+    "stand": "2018-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_DV_810.pdf"
+   }
+  },
+  {
+   "gebiet": "funk",
+   "frage": "Was sagt der Angerufene, wenn er die Nachricht nicht sofort aufnehmen kann?",
+   "antworten": [
+    "Er ersetzt „Kommen“ durch „Warten“ und meldet sich danach mit „Kommen“",
+    "Er antwortet gar nicht und wartet den nächsten Anruf ab",
+    "Er antwortet mit „Ende“",
+    "Er antwortet mit „Wiederholen Sie“"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Ist er überhaupt nicht in der Lage, die Nachricht aufzunehmen, antwortet er „Ich rufe zurück – Ende“.",
+   "quelle": {
+    "werk": "FwDV 810",
+    "fundstelle": "Teil I Nr. 5.1.1.5 und 5.1.1.6",
+    "stand": "2018-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_DV_810.pdf"
+   }
+  },
+  {
+   "gebiet": "funk",
+   "frage": "Womit wird das Buchstabieren eingeleitet?",
+   "antworten": [
+    "„Ich buchstabiere“",
+    "„Ich berichtige“",
+    "„Wiederholen Sie“",
+    "„Achtung, buchstabieren“"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Zu nutzen ist die Buchstabiertafel der FwDV / DV 800 „IuK-Technik im Einsatz“, Anlage 2. Beispiel: „Berlin – ich buchstabiere – Berta – Emil – Richard – Ludwig – Ida – Nordpol“.",
+   "quelle": {
+    "werk": "FwDV 810",
+    "fundstelle": "Teil I Nr. 5.1.1.7",
+    "stand": "2018-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_DV_810.pdf"
+   }
+  },
+  {
+   "gebiet": "funk",
+   "frage": "Wie wird ein Durchgabefehler korrigiert?",
+   "antworten": [
+    "Sofort mit „Ich berichtige“, dann beginnend mit dem letzten richtig gesprochenen Wort",
+    "Mit „Ich buchstabiere“ und der Wiederholung des ganzen Spruchs",
+    "Gar nicht – der Empfänger fragt bei Bedarf nach",
+    "Am Ende der Nachricht mit „Berichtigung“"
+   ],
+   "richtige": [
+    0
+   ],
+   "quelle": {
+    "werk": "FwDV 810",
+    "fundstelle": "Teil I Nr. 5.1.1.8",
+    "stand": "2018-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_DV_810.pdf"
+   }
+  },
+  {
+   "gebiet": "funk",
+   "frage": "Wann darf ein Notruf ausgelöst werden?",
+   "antworten": [
+    "Wenn eine Gefahr für Leib oder Leben von Einsatzkräften besteht und unverzügliche Unterstützung erforderlich ist",
+    "Wenn eine erhebliche Gefahr für die eigenen Einsatzkräfte vorliegt",
+    "Wenn die Leitstelle sich nach mehrfachem Anruf nicht meldet",
+    "Wenn der Einsatzauftrag unklar ist"
+   ],
+   "richtige": [
+    0,
+    1
+   ],
+   "erklaerung": "Das Notrufverfahren nach FwDV 7 „Atemschutz“ bleibt davon unberührt — es wird zusätzlich eröffnet, nicht ersetzt.",
+   "quelle": {
+    "werk": "FwDV 810",
+    "fundstelle": "Teil I Nr. 5.1.2.3",
+    "stand": "2018-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_DV_810.pdf"
+   }
+  },
+  {
+   "gebiet": "funk",
+   "frage": "Was geschieht mit dem Auslösen des Notrufs im Netzbetrieb (TMO)?",
+   "antworten": [
+    "Es wird automatisch eine Sprachverbindung zur zuständigen Stelle aufgebaut und die Freisprechfunktion aktiviert",
+    "Bestehende Gespräche in der Rufgruppe werden unterbrochen",
+    "Neben der Teilnehmerkennung werden grundsätzlich auch die zuletzt erfassten Positionsdaten übertragen",
+    "Das Endgerät schaltet selbsttätig in den Direktbetrieb um"
+   ],
+   "richtige": [
+    0,
+    1,
+    2
+   ],
+   "erklaerung": "Im Direktbetrieb (DMO) wird dagegen ausschließlich die Teilnehmerkennung übertragen — Positionsdaten gibt es dort nicht.",
+   "quelle": {
+    "werk": "FwDV 810",
+    "fundstelle": "Teil I Nr. 2.1.3.1",
+    "stand": "2018-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_DV_810.pdf"
+   }
+  },
+  {
+   "gebiet": "funk",
+   "frage": "Wer darf bevorrechtigt sprechen, also jederzeit in Rufgruppen einsprechen und bestehende Gespräche unterbrechen?",
+   "antworten": [
+    "Nur Leitstellen oder Befehlsstellen",
+    "Jeder Einheitsführer",
+    "Jeder Teilnehmer der Rufgruppe",
+    "Nur die Autorisierte Stelle des Landes"
+   ],
+   "richtige": [
+    0
+   ],
+   "quelle": {
+    "werk": "FwDV 810",
+    "fundstelle": "Teil I Nr. 5.1.2.1",
+    "stand": "2018-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_DV_810.pdf"
+   }
+  },
+  {
+   "gebiet": "funk",
+   "frage": "Was gilt für den Wechsel der Rufgruppe während eines Einsatzes?",
+   "antworten": [
+    "Er ist zu vermeiden und nur auf besondere Weisung mit Ankündigung zulässig; die Ankündigung ist von allen Betroffenen zu bestätigen",
+    "Er ist jederzeit frei möglich",
+    "Er ist grundsätzlich verboten",
+    "Er ist nur der Leitstelle erlaubt"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Statusmeldungen vereinfachen das Verfahren. Beim Ein- und Austritt aus einer Rufgruppe meldet man sich unter Angabe des Grundes an bzw. ab.",
+   "quelle": {
+    "werk": "FwDV 810",
+    "fundstelle": "Teil I Nr. 3.3 und 3.4",
+    "stand": "2018-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_DV_810.pdf"
+   }
+  },
+  {
+   "gebiet": "technische_hilfe",
+   "frage": "Was umfasst der Hilfeleistungseinsatz im Sinne der FwDV 3?",
+   "antworten": [
+    "Maßnahmen zur Abwehr von Gefahren für Leben, Gesundheit oder Sachen aus Explosionen, Überschwemmungen, Unfällen oder ähnlichen Ereignissen",
+    "Ausschließlich Verkehrsunfälle mit eingeklemmten Personen",
+    "Jede Tätigkeit, bei der Strahlrohre vorgenommen werden",
+    "Nur Einsätze, bei denen ein Rüstwagen alarmiert ist"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Er schließt insbesondere das Retten ein. Die dritte Antwort beschreibt den Löscheinsatz.",
+   "quelle": {
+    "werk": "FwDV 3",
+    "fundstelle": "Nr. 1",
+    "stand": "2008-02",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_003.pdf"
+   }
+  },
+  {
+   "gebiet": "technische_hilfe",
+   "frage": "Was bedeutet „Retten“ nach der FwDV 3?",
+   "antworten": [
+    "Lebensrettende Sofortmaßnahmen für Atmung, Kreislauf und Herztätigkeit",
+    "Das Befreien aus einer lebens- oder gesundheitsgefährdenden Zwangslage",
+    "Das Bergen von Sachwerten aus dem Gefahrenbereich",
+    "Es gilt nicht nur für Menschen, sondern auch für Tiere"
+   ],
+   "richtige": [
+    0,
+    1,
+    3
+   ],
+   "erklaerung": "Retten ist das Abwenden einer Gefahr von Menschen ODER Tieren. Sachwerte werden nicht gerettet, sondern geborgen — das ist der Unterschied, der in der Prüfung gern gefragt wird.",
+   "quelle": {
+    "werk": "FwDV 3",
+    "fundstelle": "Nr. 1",
+    "stand": "2008-02",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_003.pdf"
+   }
+  },
+  {
+   "gebiet": "technische_hilfe",
+   "frage": "Wer sichert im Hilfeleistungseinsatz sofort die Einsatzstelle mit Warnblinkanlage, Fahrlicht und blauem Blinklicht?",
+   "antworten": [
+    "Der Maschinist",
+    "Der Wassertrupp",
+    "Der Melder",
+    "Der Einheitsführer"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Er ist Fahrer und bedient die Aggregate; er unterstützt außerdem bei der Geräteentnahme und meldet Mängel an den Einsatzmitteln.",
+   "quelle": {
+    "werk": "FwDV 3",
+    "fundstelle": "Nr. 7.1",
+    "stand": "2008-02",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_003.pdf"
+   }
+  },
+  {
+   "gebiet": "technische_hilfe",
+   "frage": "Welche Aufgaben hat der Angriffstrupp im Hilfeleistungseinsatz?",
+   "antworten": [
+    "Er rettet",
+    "Er führt bis zur Übergabe an den Rettungsdienst die Erstversorgung durch",
+    "Er leistet technische Hilfe",
+    "Er sichert die Einsatzstelle gegen weitere Gefahren"
+   ],
+   "richtige": [
+    0,
+    1,
+    2
+   ],
+   "erklaerung": "Das Sichern gegen weitere Gefahren ist auf Befehl Aufgabe des Wassertrupps.",
+   "quelle": {
+    "werk": "FwDV 3",
+    "fundstelle": "Nr. 7.1",
+    "stand": "2008-02",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_003.pdf"
+   }
+  },
+  {
+   "gebiet": "technische_hilfe",
+   "frage": "Welche Aufgabe hat der Wassertrupp im Hilfeleistungseinsatz?",
+   "antworten": [
+    "Er sichert auf Befehl die Einsatzstelle gegen weitere Gefahren und nimmt die dafür erforderlichen Einsatzmittel vor",
+    "Er stellt die Wasserversorgung her",
+    "Er bereitet die befohlenen Geräte für den Angriffstrupp vor",
+    "Er betreut die zu rettende Person"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Danach steht er für weitere Aufgaben zur Verfügung. Das Vorbereiten der Geräte ist Sache des Schlauchtrupps.",
+   "quelle": {
+    "werk": "FwDV 3",
+    "fundstelle": "Nr. 7.1",
+    "stand": "2008-02",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_003.pdf"
+   }
+  },
+  {
+   "gebiet": "technische_hilfe",
+   "frage": "Was hat beim Hilfeleistungseinsatz oberste Priorität?",
+   "antworten": [
+    "Die Erstversorgung, mindestens Erste Hilfe",
+    "Das Absichern gegen den fließenden Verkehr",
+    "Das Stabilisieren des Fahrzeugs",
+    "Der Aufbau des Brandschutzes"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Und: Eine zu rettende Person soll bis zur Übergabe an den Rettungsdienst nicht ohne Betreuung sein — eine Erkundung sollte deshalb nicht allein erfolgen.",
+   "quelle": {
+    "werk": "FwDV 3",
+    "fundstelle": "Nr. 7.2",
+    "stand": "2008-02",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_003.pdf"
+   }
+  },
+  {
+   "gebiet": "technische_hilfe",
+   "frage": "Vor welchen Gefahren muss an Einsatzstellen der Hilfeleistung insbesondere gesichert werden?",
+   "antworten": [
+    "Fließendem Verkehr",
+    "Nachsacken, Wegrutschen oder Wegrollen von Lasten",
+    "Betriebsstoffen und Energieversorgung",
+    "Dunkelheit",
+    "Lärm durch die laufenden Aggregate"
+   ],
+   "richtige": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "erklaerung": "Die FwDV 3 nennt außerdem herabfallende Teile und die Brandgefahr. Lärmschutz ist eine Frage der persönlichen Schutzausrüstung, keine Sicherungsmaßnahme an der Einsatzstelle.",
+   "quelle": {
+    "werk": "FwDV 3",
+    "fundstelle": "Nr. 7.2",
+    "stand": "2008-02",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_003.pdf"
+   }
+  },
+  {
+   "gebiet": "technische_hilfe",
+   "frage": "Welche Bereiche werden zur Ordnung des Raumes an einer Hilfeleistungs-Einsatzstelle festgelegt?",
+   "antworten": [
+    "Ein Absperrbereich und ein Arbeitsbereich",
+    "Eine Ablagefläche für Einsatzmittel",
+    "Eine Ablagefläche für aus dem Arbeitsbereich entfernte Gegenstände",
+    "Ein Dekontaminationsplatz"
+   ],
+   "richtige": [
+    0,
+    1,
+    2
+   ],
+   "erklaerung": "Der Dekonplatz gehört zum ABC-Einsatz, nicht zur Raumordnung der technischen Hilfeleistung.",
+   "quelle": {
+    "werk": "FwDV 3",
+    "fundstelle": "Nr. 7.2",
+    "stand": "2008-02",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_003.pdf"
+   }
+  },
+  {
+   "gebiet": "technische_hilfe",
+   "frage": "Was ist der Arbeitsbereich?",
+   "antworten": [
+    "Der Bereich unmittelbar an der Gefahrenstelle, in dem die Maßnahmen zur Beseitigung der Gefahren durchgeführt werden",
+    "Die Aufstellungs- und Bereitstellungsfläche für Einsatzkräfte und Einsatzmittel",
+    "Der Raum zwischen Fahrzeug und Einsatzstelle",
+    "Der Bereich, in dem die Befehlsstelle eingerichtet wird"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Die zweite Antwort beschreibt den Absperrbereich.",
+   "quelle": {
+    "werk": "FwDV 3",
+    "fundstelle": "Anlage „Begriffsbestimmungen“",
+    "stand": "2008-02",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_003.pdf"
+   }
+  },
+  {
+   "gebiet": "technische_hilfe",
+   "frage": "Was ist bei Einsätzen mitzuführen, bei denen mit unzureichender Wasserversorgung zu rechnen ist, etwa auf der Autobahn?",
+   "antworten": [
+    "Ein Feuerwehrfahrzeug mit ausreichendem Löschmittelvorrat",
+    "Ein zweiter Rüstwagen",
+    "Ein Schlauchwagen",
+    "Nichts Besonderes — der Löschangriff wird improvisiert"
+   ],
+   "richtige": [
+    0
+   ],
+   "quelle": {
+    "werk": "FwDV 3",
+    "fundstelle": "Nr. 7.2",
+    "stand": "2008-02",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_003.pdf"
+   }
+  },
+  {
+   "gebiet": "technische_hilfe",
+   "frage": "In welcher Entfernung beginnt die Absicherung einer Einsatzstelle gegen den fließenden Verkehr?",
+   "antworten": [
+    "Außerorts ungefähr 200 m, innerorts ungefähr 100 m vor der Einsatzstelle",
+    "Außerorts 100 m, innerorts 50 m",
+    "Immer 150 m, unabhängig von der Ortslage",
+    "Außerorts 400 m, innerorts 200 m"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Bei unübersichtlicher Straßenführung — Kurven, Kuppen, sonstige Sichtbehinderungen — sind größere Sicherheitsabstände zu wählen.",
+   "quelle": {
+    "werk": "FwDV 1",
+    "fundstelle": "Nr. 19",
+    "stand": "2006-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_001.pdf"
+   }
+  },
+  {
+   "gebiet": "technische_hilfe",
+   "frage": "Was gilt bei der Absicherung auf Straßen mit Gegenverkehr?",
+   "antworten": [
+    "Es muss stets nach beiden Seiten gesichert werden",
+    "Es genügt die Sicherung in Fahrtrichtung",
+    "Es wird nur die Seite der Einsatzstelle gesichert",
+    "Die Sicherung entfällt, wenn die Polizei vor Ort ist"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Sind Warndreiecke und Warnleuchten in ausreichender Anzahl vorhanden, sollen sie auf beiden Fahrbahnseiten aufgestellt werden.",
+   "quelle": {
+    "werk": "FwDV 1",
+    "fundstelle": "Nr. 19",
+    "stand": "2006-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_001.pdf"
+   }
+  },
+  {
+   "gebiet": "technische_hilfe",
+   "frage": "Wie erfolgt die Absicherung auf Autobahnen und Kraftfahrstraßen mit getrennten Richtungsfahrbahnen?",
+   "antworten": [
+    "Entgegen der Fahrtrichtung des fließenden Verkehrs",
+    "In Fahrtrichtung des fließenden Verkehrs",
+    "Von der Einsatzstelle aus nach beiden Seiten",
+    "Ausschließlich über die Anzeige an der Streckenbeeinflussungsanlage"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Der Beginn der Absicherung richtet sich nach den möglichen Höchstgeschwindigkeiten.",
+   "quelle": {
+    "werk": "FwDV 1",
+    "fundstelle": "Nr. 19",
+    "stand": "2006-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_001.pdf"
+   }
+  },
+  {
+   "gebiet": "technische_hilfe",
+   "frage": "Wer trägt Warnkleidung?",
+   "antworten": [
+    "Alle Feuerwehrangehörigen, die der Gefahr durch fließenden Verkehr ausgesetzt sind",
+    "Nur der Einheitsführer und der Maschinist",
+    "Nur der Trupp, der auf der Fahrbahn arbeitet",
+    "Nur bei Dunkelheit alle Einsatzkräfte"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Als Warnkleidung kommt auch eine Feuerwehrüberjacke in Betracht, die neben anderen Funktionen auch die der Warnkleidung erfüllt.",
+   "quelle": {
+    "werk": "FwDV 1",
+    "fundstelle": "Nr. 2.2",
+    "stand": "2006-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_001.pdf"
+   }
+  },
+  {
+   "gebiet": "technische_hilfe",
+   "frage": "Welche Ergänzungen der persönlichen Schutzausrüstung nennt die FwDV 1 für den Hilfeleistungseinsatz?",
+   "antworten": [
+    "Schutzbrille",
+    "Gehörschutz",
+    "Schnittschutzkleidung",
+    "Hitzeschutzkleidung"
+   ],
+   "richtige": [
+    0,
+    1,
+    2
+   ],
+   "erklaerung": "Hitzeschutzkleidung steht bei den Ergänzungen für den LÖSCHeinsatz. Warnkleidung, Gesichtsschutz, Feuerwehr-Haltegurt, Feuerwehrleine und Atemschutzgerät werden bei beiden Einsatzarten genannt.",
+   "quelle": {
+    "werk": "FwDV 1",
+    "fundstelle": "Nr. 2.1.2",
+    "stand": "2006-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_001.pdf"
+   }
+  },
+  {
+   "gebiet": "technische_hilfe",
+   "frage": "Was ist beim Heben von Lasten mit der Brechstange zu beachten?",
+   "antworten": [
+    "Die Last muss durch Unterbauen gesichert werden",
+    "Bei Metall auf Metall ist einer gleithemmenden Zwischenlage vorzubeugen, zum Beispiel mit Holz",
+    "Es ist Gesichtsschutz zu verwenden",
+    "Mit dem Hammer auf die Spitze zu schlagen erhöht die Hebelwirkung"
+   ],
+   "richtige": [
+    0,
+    1,
+    2
+   ],
+   "erklaerung": "Auf Spitze oder Klaue darf gerade NICHT geschlagen werden — das gehärtete Material platzt sonst ab.",
+   "quelle": {
+    "werk": "FwDV 1",
+    "fundstelle": "Nr. 8.1",
+    "stand": "2006-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_001.pdf"
+   }
+  },
+  {
+   "gebiet": "technische_hilfe",
+   "frage": "Wer ist für die Sicherheit der Mannschaft verantwortlich?",
+   "antworten": [
+    "Der Einheitsführer",
+    "Der Maschinist",
+    "Jeder für sich selbst",
+    "Der Sicherheitsbeauftragte der Wehr"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Er ist an keinen bestimmten Platz gebunden und bestimmt die Fahrzeugaufstellung, die Ordnung des Raumes und die Standorte der Aggregate.",
+   "quelle": {
+    "werk": "FwDV 3",
+    "fundstelle": "Nr. 7.1",
+    "stand": "2008-02",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_003.pdf"
+   }
+  },
+  {
+   "gebiet": "loeschlehre",
+   "frage": "Was gehört zur Brandklasse A?",
+   "antworten": [
+    "Brände fester Stoffe, die normalerweise unter Glutbildung verbrennen — Holz, Papier, Stroh, Textilien, Kohle, Autoreifen",
+    "Brände von flüssigen oder flüssig werdenden Stoffen",
+    "Brände von Gasen",
+    "Brände von Metallen"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Die Brandklasse steht als Piktogramm auf jedem Feuerlöscher — sie sagt, wofür er zugelassen ist.",
+   "quelle": {
+    "werk": "ASR A2.2",
+    "fundstelle": "Nr. 4.1 Tabelle 1",
+    "stand": "2025-05",
+    "url": "https://www.baua.de/DE/Angebote/Regelwerk/ASR/pdf/ASR-A2-2.pdf"
+   }
+  },
+  {
+   "gebiet": "loeschlehre",
+   "frage": "Welche Stoffe fallen in die Brandklasse B?",
+   "antworten": [
+    "Benzin, Öle und Schmierfette",
+    "Lacke, Harze, Wachse und Teer",
+    "Methan, Propan und Wasserstoff",
+    "Aluminium, Magnesium und Lithium"
+   ],
+   "richtige": [
+    0,
+    1
+   ],
+   "erklaerung": "Brandklasse B sind flüssige oder flüssig werdende Stoffe. Gase sind Klasse C, Metalle Klasse D.",
+   "quelle": {
+    "werk": "ASR A2.2",
+    "fundstelle": "Nr. 4.1 Tabelle 1",
+    "stand": "2025-05",
+    "url": "https://www.baua.de/DE/Angebote/Regelwerk/ASR/pdf/ASR-A2-2.pdf"
+   }
+  },
+  {
+   "gebiet": "loeschlehre",
+   "frage": "Wofür steht die Brandklasse F?",
+   "antworten": [
+    "Brände von Speiseölen und -fetten in Frittier- und Fettbackgeräten",
+    "Brände in elektrischen Anlagen",
+    "Brände von Metallen",
+    "Brände von Gasen"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Gemeint sind pflanzliche oder tierische Öle und Fette in Küchengeräten — der klassische Fettbrand, den man niemals mit Wasser löscht.",
+   "quelle": {
+    "werk": "ASR A2.2",
+    "fundstelle": "Nr. 4.1 Tabelle 1",
+    "stand": "2025-05",
+    "url": "https://www.baua.de/DE/Angebote/Regelwerk/ASR/pdf/ASR-A2-2.pdf"
+   }
+  },
+  {
+   "gebiet": "loeschlehre",
+   "frage": "Welche Brandklasse gilt für Brände an elektrischen Anlagen und Betriebsmitteln?",
+   "antworten": [
+    "Keine eigene — für elektrische Anlagen ist keine eigenständige Brandklasse ausgewiesen",
+    "Die Brandklasse E",
+    "Die Brandklasse C",
+    "Die Brandklasse D"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Die frühere Klasse E gibt es nicht mehr. Geeignete Feuerlöscher sind stattdessen mit der maximalen Spannung und dem nötigen Mindestabstand gekennzeichnet.",
+   "quelle": {
+    "werk": "ASR A2.2",
+    "fundstelle": "Nr. 4.1",
+    "stand": "2025-05",
+    "url": "https://www.baua.de/DE/Angebote/Regelwerk/ASR/pdf/ASR-A2-2.pdf"
+   }
+  },
+  {
+   "gebiet": "loeschlehre",
+   "frage": "Wie stellt man ein CM-Strahlrohr auf Vollstrahl?",
+   "antworten": [
+    "Hebel am Schaltorgan nach vorn",
+    "Hebel am Schaltorgan nach hinten",
+    "Mundstück abnehmen",
+    "Strahlrohr eine Vierteldrehung nach rechts"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Hebel nach hinten ergibt den Sprühstrahl. Das Mundstück wird nur auf Befehl des Einheitsführers entfernt.",
+   "quelle": {
+    "werk": "FwDV 1",
+    "fundstelle": "Nr. 5.2",
+    "stand": "2006-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_001.pdf"
+   }
+  },
+  {
+   "gebiet": "loeschlehre",
+   "frage": "Von wie vielen Feuerwehrangehörigen muss ein BM-Strahlrohr gehalten werden?",
+   "antworten": [
+    "Mit Stützkrümmer von mindestens zwei, ohne Stützkrümmer von mindestens drei",
+    "Immer von mindestens zwei",
+    "Immer von mindestens drei",
+    "Mit Stützkrümmer genügt einer"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Drei sind auch dann nötig, wenn mit Stützkrümmer keine ausreichende Standsicherheit gegeben ist. Der Schlauch sollte hinter dem Stützkrümmer auf etwa fünf Metern gerade liegen, damit die Rückkraft abgeleitet wird.",
+   "quelle": {
+    "werk": "FwDV 1",
+    "fundstelle": "Nr. 5.2",
+    "stand": "2006-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_001.pdf"
+   }
+  },
+  {
+   "gebiet": "loeschlehre",
+   "frage": "Was gilt für angekuppelte Strahlrohre?",
+   "antworten": [
+    "Sie dürfen nicht im geöffneten Zustand abgelegt werden",
+    "Sie dürfen nur mit geschlossenem Mundstück abgelegt werden",
+    "Sie dürfen gar nicht abgelegt werden",
+    "Sie sind nach dem Ablegen vom Schlauch zu trennen"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Ein offen abgelegtes Strahlrohr schlägt um sich, sobald Wasser kommt. Die Regel gilt für CM-, BM- und Hohlstrahlrohre gleichermaßen.",
+   "quelle": {
+    "werk": "FwDV 1",
+    "fundstelle": "Nr. 5.2",
+    "stand": "2006-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_001.pdf"
+   }
+  },
+  {
+   "gebiet": "loeschlehre",
+   "frage": "Was muss der vorgehende Trupp beim Hohlstrahlrohr beachten?",
+   "antworten": [
+    "Sprühwinkel und befohlene Durchflussmenge vor der Wasserabgabe einstellen",
+    "Mit Löschwasserverbrauch, Rückstoßgefahr und Wasserdampfbildung vertraut sein",
+    "Bei B-Kupplung einen Stützkrümmer verwenden oder einen dritten Feuerwehrangehörigen einsetzen",
+    "Das Mundstück grundsätzlich abnehmen"
+   ],
+   "richtige": [
+    0,
+    1,
+    2
+   ],
+   "erklaerung": "Ein Mundstück hat das Hohlstrahlrohr gar nicht — das ist das CM-/BM-Strahlrohr.",
+   "quelle": {
+    "werk": "FwDV 1",
+    "fundstelle": "Nr. 5.2",
+    "stand": "2006-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_001.pdf"
+   }
+  },
+  {
+   "gebiet": "loeschlehre",
+   "frage": "Was ist nach dem Einsatz eines Feuerlöschers zu tun?",
+   "antworten": [
+    "Ihn auf den Kopf stellen und drucklos machen",
+    "Ihn sofort wieder in die Halterung setzen",
+    "Ihn mit Wasser ausspülen",
+    "Ihn stehen lassen, bis der Gerätewart ihn abholt"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Bei der Inbetriebnahme dürfen sich keine Körperteile in Wirkrichtung des Überdruckventils und des Löschstrahles befinden.",
+   "quelle": {
+    "werk": "FwDV 1",
+    "fundstelle": "Nr. 7.2",
+    "stand": "2006-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_001.pdf"
+   }
+  },
+  {
+   "gebiet": "loeschlehre",
+   "frage": "Was ist beim Löscheinsatz in elektrischen Anlagen zu beachten?",
+   "antworten": [
+    "Die Sicherheitsabstände",
+    "Dass grundsätzlich nur Sprühstrahl zulässig ist",
+    "Dass Wasser dort nie verwendet werden darf",
+    "Dass immer zuerst die Feuerwehr-Haltegurte anzulegen sind"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Der Hinweis steht in der FwDV 1 bei jedem Strahlrohrtyp — beim CM-, beim BM- und beim Hohlstrahlrohr.",
+   "quelle": {
+    "werk": "FwDV 1",
+    "fundstelle": "Nr. 5.2",
+    "stand": "2006-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_001.pdf"
+   }
+  },
+  {
+   "gebiet": "loeschlehre",
+   "frage": "Welche Ergänzungen der persönlichen Schutzausrüstung nennt die FwDV 1 für den Löscheinsatz?",
+   "antworten": [
+    "Atemschutzgerät",
+    "Hitzeschutzkleidung",
+    "Feuerwehr-Haltegurt mit Feuerwehrbeil",
+    "Schnittschutzkleidung"
+   ],
+   "richtige": [
+    0,
+    1,
+    2
+   ],
+   "erklaerung": "Schnittschutzkleidung steht bei den Ergänzungen für den HILFELEISTUNGSeinsatz. Abweichungen sind nach der UVV „Feuerwehren“ auf Befehl des Einheitsführers möglich.",
+   "quelle": {
+    "werk": "FwDV 1",
+    "fundstelle": "Nr. 2.1.1",
+    "stand": "2006-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_001.pdf"
+   }
+  },
+  {
+   "gebiet": "loeschlehre",
+   "frage": "Woraus besteht die Mindestschutzausrüstung nach FwDV 1?",
+   "antworten": [
+    "Feuerwehrschutzanzug",
+    "Feuerwehrhelm mit Nackenschutz",
+    "Feuerwehrschutzhandschuhe",
+    "Feuerwehrschutzschuhwerk",
+    "Atemschutzgerät"
+   ],
+   "richtige": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "erklaerung": "Das Atemschutzgerät gehört zu den Ergänzungen, nicht zur Mindestschutzausrüstung.",
+   "quelle": {
+    "werk": "FwDV 1",
+    "fundstelle": "Nr. 2.1",
+    "stand": "2006-09",
+    "url": "https://www.lfs-bw.de/fileadmin/LFS-BW/themen/gesetze_vorschriften/fwdv/dokumente/FwDV_001.pdf"
+   }
+  },
+  {
+   "gebiet": "recht_organisation",
+   "frage": "Wovon ist die Feuerwehr nach § 35 StVO befreit?",
+   "antworten": [
+    "Von den Vorschriften der Straßenverkehrs-Ordnung, soweit das zur Erfüllung hoheitlicher Aufgaben dringend geboten ist",
+    "Von allen Vorschriften der Straßenverkehrs-Ordnung ohne Einschränkung",
+    "Nur von den Geschwindigkeitsbeschränkungen",
+    "Von den Vorschriften, sobald das blaue Blinklicht eingeschaltet ist"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Das sind die Sonderrechte. Sie hängen an der Aufgabe, nicht am Blaulicht — und sie dürfen nur unter gebührender Berücksichtigung der öffentlichen Sicherheit und Ordnung ausgeübt werden.",
+   "quelle": {
+    "werk": "StVO",
+    "fundstelle": "§ 35 Abs. 1 und Abs. 8",
+    "stand": "2026-01-30",
+    "url": "https://www.gesetze-im-internet.de/stvo_2013/"
+   }
+  },
+  {
+   "gebiet": "recht_organisation",
+   "frage": "Wann darf blaues Blinklicht zusammen mit dem Einsatzhorn verwendet werden?",
+   "antworten": [
+    "Wenn höchste Eile geboten ist, um Menschenleben zu retten oder schwere gesundheitliche Schäden abzuwenden",
+    "Um eine Gefahr für die öffentliche Sicherheit oder Ordnung abzuwenden",
+    "Um bedeutende Sachwerte zu erhalten",
+    "Bei jeder Alarmfahrt zum Gerätehaus"
+   ],
+   "richtige": [
+    0,
+    1,
+    2
+   ],
+   "erklaerung": "Die StVO nennt außerdem die Verfolgung flüchtiger Personen. Die Fahrt zum Gerätehaus ist keiner dieser Fälle.",
+   "quelle": {
+    "werk": "StVO",
+    "fundstelle": "§ 38 Abs. 1",
+    "stand": "2026-01-30",
+    "url": "https://www.gesetze-im-internet.de/stvo_2013/"
+   }
+  },
+  {
+   "gebiet": "recht_organisation",
+   "frage": "Was ordnet blaues Blinklicht zusammen mit dem Einsatzhorn an?",
+   "antworten": [
+    "„Alle übrigen Verkehrsteilnehmer haben sofort freie Bahn zu schaffen“",
+    "„Alle übrigen Verkehrsteilnehmer haben rechts heranzufahren und anzuhalten“",
+    "„Alle übrigen Verkehrsteilnehmer haben die Geschwindigkeit zu vermindern“",
+    "Es ordnet nichts an, es warnt nur"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Das ist das Wegerecht — es entsteht erst durch Blaulicht UND Einsatzhorn zusammen, nicht durch das Blaulicht allein.",
+   "quelle": {
+    "werk": "StVO",
+    "fundstelle": "§ 38 Abs. 1",
+    "stand": "2026-01-30",
+    "url": "https://www.gesetze-im-internet.de/stvo_2013/"
+   }
+  },
+  {
+   "gebiet": "recht_organisation",
+   "frage": "Wann darf blaues Blinklicht allein verwendet werden?",
+   "antworten": [
+    "Zur Warnung an Unfall- oder sonstigen Einsatzstellen",
+    "Bei Einsatzfahrten",
+    "Bei der Begleitung von Fahrzeugen oder geschlossenen Verbänden",
+    "Um freie Bahn zu erzwingen"
+   ],
+   "richtige": [
+    0,
+    1,
+    2
+   ],
+   "erklaerung": "Freie Bahn ordnet nur die Kombination aus Blaulicht und Einsatzhorn an.",
+   "quelle": {
+    "werk": "StVO",
+    "fundstelle": "§ 38 Abs. 2",
+    "stand": "2026-01-30",
+    "url": "https://www.gesetze-im-internet.de/stvo_2013/"
+   }
+  },
+  {
+   "gebiet": "recht_organisation",
+   "frage": "Wovor warnt gelbes Blinklicht?",
+   "antworten": [
+    "Vor Gefahren, etwa vor Arbeits- oder Unfallstellen",
+    "Vor einem sich nähernden Einsatzfahrzeug",
+    "Vor einer Straßensperrung",
+    "Vor Gefahrgut auf dem Fahrzeug"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Es kann ortsfest oder von Fahrzeugen aus verwendet werden, etwa auch vor ungewöhnlich langsamen oder breiten Fahrzeugen.",
+   "quelle": {
+    "werk": "StVO",
+    "fundstelle": "§ 38 Abs. 3",
+    "stand": "2026-01-30",
+    "url": "https://www.gesetze-im-internet.de/stvo_2013/"
+   }
+  },
+  {
+   "gebiet": "recht_organisation",
+   "frage": "Wer ein Einsatzfahrzeug der BOS ohne Beifahrer führt und zur Nutzung des BOS-Funks berechtigt ist — was darf er?",
+   "antworten": [
+    "Ein Funkgerät oder das Handteil eines Funkgerätes aufnehmen und halten",
+    "Nichts Besonderes; das Handyverbot gilt uneingeschränkt",
+    "Auch ein Mobiltelefon aufnehmen und halten",
+    "Nur bei stehendem Fahrzeug funken"
+   ],
+   "richtige": [
+    0
+   ],
+   "erklaerung": "Die Ausnahme gilt ausdrücklich für das BOS-Funkgerät, nicht für das private Mobiltelefon.",
+   "quelle": {
+    "werk": "StVO",
+    "fundstelle": "§ 35 Abs. 9",
+    "stand": "2026-01-30",
+    "url": "https://www.gesetze-im-internet.de/stvo_2013/"
+   }
+  }
+ ]
+}

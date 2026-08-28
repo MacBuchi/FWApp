@@ -12,6 +12,42 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.42.0] – 2026-08-28
+
+### Neu
+
+- **Funk, Technische Hilfeleistung und Löschlehre sind jetzt gefüllt.** Drei
+  Sachgebiete, die vorher leer oder fast leer waren, haben zusammen 47 neue
+  Fragen bekommen:
+  - **Funk** (18) aus der FwDV 810 „Sprech- und Datenfunkverkehr": Anruf und
+    Anrufantwort im Wortlaut, „Ich buchstabiere", „Ich berichtige", wann ein
+    Notruf ausgelöst werden darf und was dann im Netz passiert.
+  - **Technische Hilfeleistung** (17) aus der FwDV 3 und der FwDV 1: Aufgaben
+    der Trupps im Hilfeleistungseinsatz, Ordnung des Raumes — und die
+    Absicherung gegen den fließenden Verkehr mit ihren 200 Metern außerorts.
+  - **Löschlehre** (12) aus der FwDV 1 und der ASR A2.2: Brandklassen von A
+    bis F, die Handhabung der Strahlrohre und warum es keine Brandklasse E
+    mehr gibt.
+- **Sechs Fragen zum Verkehrsrecht** aus der Straßenverkehrs-Ordnung:
+  Sonderrecht und Wegerecht, blaues und gelbes Blinklicht. Der Unterschied
+  zwischen „ich darf" und „die anderen müssen" steht in zwei verschiedenen
+  Paragraphen, und das ist der Punkt.
+
+### Besser
+
+- **Jede Fundstelle ist antippbar.** Auch die bisherigen Fragen tragen jetzt
+  den Link zu ihrer Vorschrift — die Dienstvorschriften liegen bei der
+  Landesfeuerwehrschule, Gesetze beim Bund. Wer nachlesen will, tippt darauf
+  statt abzutippen.
+
+### Hinweis zu den Quellen
+
+Neu hinzugekommen sind die Straßenverkehrs-Ordnung (Rechtsverordnung des
+Bundes) und die ASR A2.2 „Maßnahmen gegen Brände", die das Bundesministerium
+für Arbeit und Soziales im Gemeinsamen Ministerialblatt bekannt macht. Beide
+sind amtliche Werke. Aus den Lehrstoffblättern der Landesfeuerwehrschule und
+aus DIN-Normtexten wird weiterhin **nichts** übernommen.
+
 ## [1.41.0] – 2026-08-28
 
 ### Neu

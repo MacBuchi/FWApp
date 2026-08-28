@@ -7,12 +7,13 @@
 /// brauchen mehr Felder, und sie in den alten Topf zu zwängen hieße, ihn zu
 /// beiden Zwecken halb passend zu machen.
 ///
-/// **Woher die Fragen stammen.** Aus den Feuerwehr-Dienstvorschriften und
-/// dem Unfallverhütungsrecht — selbst formuliert, mit Fundstelle. Die FwDV
-/// werden vom AFKzV erarbeitet und von den Ländern per Erlass eingeführt;
-/// als amtliche Werke sind sie nach § 5 UrhG nicht urheberrechtlich
-/// geschützt, die Quellenangabe bleibt trotzdem Pflicht und steht deshalb an
-/// jeder Frage.
+/// **Woher die Fragen stammen.** Aus den Feuerwehr-Dienstvorschriften, der
+/// Straßenverkehrs-Ordnung, den Technischen Regeln für Arbeitsstätten, dem
+/// Unfallverhütungsrecht und — im Landesteil — aus dem Feuerwehrgesetz und
+/// seinen Verwaltungsvorschriften. Alles selbst formuliert, mit Fundstelle.
+/// Sämtliche dieser Werke sind amtliche Werke nach § 5 UrhG und damit nicht
+/// urheberrechtlich geschützt; die Quellenangabe bleibt trotzdem Pflicht und
+/// steht deshalb an jeder Frage.
 ///
 /// ⚠️ **Nicht verwendet und nicht zu verwenden:** die Lehrstoffblätter der
 /// Landesfeuerwehrschule (erscheinen mit ISBN im Neckar-Verlag) und
@@ -36,7 +37,7 @@ import 'package:fwapp/features/knowledge/domain/wissensfrage.dart';
 /// niemand sehen kann, ist derselbe wie keiner. Der Geltungsbereich steht an
 /// jeder Frage, damit sichtbar ist, wo sie gilt.
 const kWissensAssets = <String>[
-  'assets/knowledge/fwdv.json',
+  'assets/knowledge/bund.json',
   'assets/knowledge/bw.json',
 ];
 

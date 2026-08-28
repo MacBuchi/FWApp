@@ -55,11 +55,13 @@ void main() {
       'assets/branding/': 'eigene Bildmarke',
       'assets/game/': 'selbst geschriebene Fragen und Aufgaben (Issue #160)',
       // ⚠️ Hier steckt eine urheberrechtliche Entscheidung, keine Formalie
-      // (Issue #174): Die Fragen sind SELBST FORMULIERT aus den
-      // Feuerwehr-Dienstvorschriften. Die FwDV werden vom AFKzV erarbeitet
-      // und von den Ländern per Erlass eingeführt — als amtliche Werke sind
-      // sie nach § 5 UrhG nicht urheberrechtlich geschützt; die
-      // Quellenangabe steht trotzdem an jeder Frage.
+      // (Issue #174): Die Fragen sind SELBST FORMULIERT aus amtlichen
+      // Werken — Feuerwehr-Dienstvorschriften, Straßenverkehrs-Ordnung,
+      // Technische Regeln für Arbeitsstätten, Unfallverhütungsrecht und im
+      // Landesteil das Feuerwehrgesetz samt Verwaltungsvorschriften. Alle
+      // sind nach § 5 UrhG nicht urheberrechtlich geschützt; die
+      // Quellenangabe steht trotzdem an jeder Frage. Welche Werke je Datei
+      // zulässig sind, prüft wissen_asset_test.dart namentlich nach.
       //
       // NICHT entnommen und nicht zu entnehmen: die Lehrstoffblätter der
       // Landesfeuerwehrschule (erscheinen mit ISBN im Neckar-Verlag) und

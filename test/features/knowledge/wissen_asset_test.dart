@@ -179,11 +179,20 @@ void main() {
     });
   }
 
+  // Bundesweit gilt, was ueberall dasselbe ist: die
+  // Feuerwehr-Dienstvorschriften, das Unfallverhuetungsrecht, die
+  // Strassenverkehrs-Ordnung und die Technischen Regeln fuer Arbeitsstaetten.
+  // Alle vier sind amtliche Werke nach § 5 UrhG.
+  //
+  // ⚠️ Diese Liste ist eine urheberrechtliche Entscheidung, keine Formalie.
+  // Wer ein Werk ergaenzt, hat vorher zu klaeren, ob es amtlich ist — die
+  // Lehrstoffblaetter der Landesfeuerwehrschule und DIN-Normtexte sind es
+  // NICHT.
   bestandPruefen(
-    'assets/knowledge/fwdv.json',
-    erlaubteWerke: RegExp(r'^(FwDV \d+|DGUV .+)$'),
+    'assets/knowledge/bund.json',
+    erlaubteWerke: RegExp(r'^(FwDV \d+|DGUV .+|StVO|ASR A2\.2)$'),
     geltung: Geltungsbereich.bund,
-    mindestens: 30,
+    mindestens: 80,
   );
 
   // Baden-Württemberg (Issue #174, Schritt 3). Die erlaubten Werke sind
@@ -235,7 +244,7 @@ void main() {
     test('der Fachbestand landet freigegeben und mit Quelle in der DB',
         () async {
       final fragen = parseWissensAsset(
-          await rootBundle.loadString('assets/knowledge/fwdv.json'));
+          await rootBundle.loadString('assets/knowledge/bund.json'));
       final n = await WissenSeeder(db).seedFachbestand(fragen);
 
       expect(n, fragen.length);
@@ -251,7 +260,7 @@ void main() {
 
     test('ein zweiter Lauf verdoppelt nichts', () async {
       final fragen = parseWissensAsset(
-          await rootBundle.loadString('assets/knowledge/fwdv.json'));
+          await rootBundle.loadString('assets/knowledge/bund.json'));
       await WissenSeeder(db).seedFachbestand(fragen);
       expect(await WissenSeeder(db).seedFachbestand(fragen), 0);
       expect(await db.wissenDao.getAll(), hasLength(fragen.length));

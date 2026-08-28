@@ -2,7 +2,7 @@ name: fwapp
 description: Feuerwehr-Lernapp – Fahrzeuge, Geräte, Beladepläne und Trainings-Spielmodi.
 publish_to: 'none'
 
-version: 1.41.0+66
+version: 1.42.0+67
 
 environment:
   sdk: ^3.7.0
@@ -151,7 +151,7 @@ flutter:
     # gelistet, nicht als Verzeichnis: Die Dateien werden namentlich
     # geladen (kWissensAssets), und eine fehlende soll beim Build
     # auffallen statt erst als leeres Sachgebiet auf dem Gerät.
-    - assets/knowledge/fwdv.json
+    - assets/knowledge/bund.json
     - assets/knowledge/bw.json
     # Fahrzeug-Vorlagen (Issue #55). Einzeln gelistet statt als Verzeichnis:
     # Ein Verzeichnis-Eintrag bündelt zwar alles, aber die Vorlagen werden

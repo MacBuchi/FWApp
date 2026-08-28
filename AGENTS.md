@@ -277,6 +277,21 @@ pauschales Formatieren in Feature-PRs.
   Quellenangabe). **Nicht:** die Lehrstoffblätter der Landesfeuerwehrschule
   (Neckar-Verlag, ISBN) und DIN-Normtexte. Der Sachverhalt aus einer Norm
   ist frei, ihr Text nicht.
+- ⚠️ **Welche Werke zulässig sind, entscheidet `wissen_asset_test.dart`,
+  nicht der Autor der Frage.** Je Bestandsdatei steht dort eine namentliche
+  Liste der erlaubten Werke — heute FwDV, DGUV, StVO und ASR A2.2 im Bund,
+  FwG BW und die beiden Verwaltungsvorschriften im Land. Ein neues Werk lässt
+  die CI rot werden, bis jemand die Liste ergänzt; genau dafür ist sie da.
+  Die Prüfung vor dem Ergänzen lautet: Ist es ein amtliches Werk nach § 5
+  UrhG? Grenzfall ASR A2.2 — ihre Brandklassen-Tabelle gibt DIN-EN-Inhalt
+  wieder, entnommen ist aber die amtlich bekannt gemachte Regel und aus ihr
+  nur der Sachverhalt. **Fahrzeugkunde bleibt bewusst leer**, statt aus der
+  DIN 14530 zu schöpfen; sie soll aus dem eigenen Fuhrpark entstehen.
+- ⚠️ **Der `stand` einer Vorschrift ist ihre AUSGABE, nicht ihr
+  Einführungsdatum.** Die Übersicht der Landesfeuerwehrschule BW nennt für die
+  FwDV 7 den 01.04.2005 — das PDF selbst sagt „Ausgabe August 2004". Im Asset
+  steht die Ausgabe, weil sie den Text bezeichnet und das Einführungsdatum nur
+  seine Geltung in einem Land.
 - ⚠️ **Ein Landesbestand wird trotzdem ÜBERALL ausgeliefert.** `bw.json`
   hängt in `kWissensAssets` neben `fwdv.json`; gefiltert wird nicht beim
   Laden, sondern sichtbar an der Frage („gilt in Baden-Württemberg"). Wer

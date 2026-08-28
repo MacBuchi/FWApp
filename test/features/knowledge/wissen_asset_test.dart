@@ -112,6 +112,7 @@ void main() {
     required Geltungsbereich geltung,
     String? land,
     required int mindestens,
+    Set<String> erlaubteKapitel = const {},
   }) {
     group('der ausgelieferte Bestand $pfad', () {
       late List<AssetFrage> fragen;
@@ -173,8 +174,34 @@ void main() {
       });
 
       test('keine Frage steht zweimal drin', () {
+        // ⚠️ Nicht bloß Kosmetik: `WissenSeeder` erkennt eine schon
+        // angelegte Frage AM TEXT. Zwei Fragen mit demselben Wortlaut —
+        // beim ABC-Einsatz beinahe passiert, wo nur das Bild sie
+        // unterschied — kämen nie beide in die Datenbank.
         final texte = fragen.map((f) => f.frage.toLowerCase()).toList();
         expect(texte.toSet(), hasLength(texte.length));
+      });
+
+      test('die Kapitel sind die vereinbarten', () {
+        // Freier Text im Asset, damit ein neues Kapitel keine
+        // Code-Änderung kostet — dafür wacht diese Liste über Tippfehler.
+        // „Dekontamination" und „Dekontaminierung" wären sonst zwei halb
+        // gefüllte Kapitel, und niemand sähe warum.
+        final gefunden = {
+          for (final f in fragen)
+            if (f.kapitel != null) f.kapitel!,
+        };
+        expect(gefunden, erlaubteKapitel,
+            reason: 'unerwartetes oder fehlendes Kapitel in $pfad');
+      });
+
+      test('jedes genannte Bild liegt auch im Bundle', () async {
+        // Ein Pfad, der ins Leere zeigt, fiele sonst erst auf dem Gerät auf
+        // — und bei einer Bildfrage IST das Bild die Frage.
+        for (final f in fragen.where((f) => f.bildPfad != null)) {
+          await expectLater(rootBundle.load(f.bildPfad!), completes,
+              reason: 'Bild fehlt: ${f.bildPfad} ("${f.frage}")');
+        }
       });
     });
   }
@@ -193,6 +220,25 @@ void main() {
     erlaubteWerke: RegExp(r'^(FwDV \d+|DGUV .+|StVO|ASR A2\.2)$'),
     geltung: Geltungsbereich.bund,
     mindestens: 80,
+  );
+
+  // ABC-Einsatz (Issue #174). Zwei Quellen, beide amtliche Werke: die
+  // FwDV 500 und das ADR, das in Deutschland als Anlageband zum
+  // Bundesgesetzblatt Teil II verkündet wird.
+  bestandPruefen(
+    'assets/knowledge/abc.json',
+    erlaubteWerke: RegExp(r'^(FwDV 500|ADR)$'),
+    geltung: Geltungsbereich.bund,
+    mindestens: 40,
+    erlaubteKapitel: const {
+      'Gefahrzettel und Kennzeichnung',
+      'Gefahrengruppen',
+      'Erstmaßnahmen und Bereiche',
+      'Schutzausrüstung im ABC-Einsatz',
+      'Dekontamination',
+      'Aufgaben im ABC-Einsatz',
+      'Strahlenschutz (A-Einsatz)',
+    },
   );
 
   // Baden-Württemberg (Issue #174, Schritt 3). Die erlaubten Werke sind

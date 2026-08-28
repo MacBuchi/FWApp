@@ -73,6 +73,8 @@ class WissenSync {
         quelleUrl: Value(r['quelle_url'] as String?),
         geltung: Value(r['geltung'] as String? ?? 'bund'),
         land: Value(r['land'] as String?),
+        kapitel: Value(r['kapitel'] as String?),
+        bildPfad: Value(r['bild_pfad'] as String?),
         erklaerung: Value(r['erklaerung'] as String?),
         herkunft: Value(r['herkunft'] as String),
         stand: Value(r['stand'] as String),
@@ -122,6 +124,8 @@ class WissenSync {
                 'quelle_url': f.quelleUrl,
                 'geltung': f.geltung,
                 'land': f.land,
+                'kapitel': f.kapitel,
+                'bild_pfad': f.bildPfad,
                 'erklaerung': f.erklaerung,
                 'herkunft': f.herkunft,
                 'stand': Fragenstand.eingereicht.schluessel,
@@ -181,6 +185,8 @@ class WissenSync {
         'quelle_url': ganzeZeile.quelleUrl,
         'geltung': ganzeZeile.geltung,
         'land': ganzeZeile.land,
+        'kapitel': ganzeZeile.kapitel,
+        'bild_pfad': ganzeZeile.bildPfad,
         'erklaerung': ganzeZeile.erklaerung,
       });
     }

@@ -95,6 +95,8 @@ Wissensfrage zuWissensfrage(WissensfrageData z) => Wissensfrage(
             ),
       geltung: Geltungsbereich.ausSchluessel(z.geltung),
       land: z.land,
+      kapitel: z.kapitel,
+      bildPfad: z.bildPfad,
       eingereichtVon: z.eingereichtVon,
     );
 
@@ -158,6 +160,7 @@ PartyFrage wissensfrageAlsPartyFrage(WissensfrageData z, Random zufall) {
       erklaerung: z.erklaerung,
       quelle: frage.quelle,
       geltungshinweis: hinweis,
+      bildPfad: z.bildPfad,
     );
   }
   final richtigerText =
@@ -172,6 +175,9 @@ PartyFrage wissensfrageAlsPartyFrage(WissensfrageData z, Random zufall) {
     erklaerung: z.erklaerung,
     quelle: frage.quelle,
     geltungshinweis: hinweis,
+    // Bei einem Gefahrzettel IST das Bild die Frage — ohne es steht am
+    // Tisch „Welche Klasse ist das?" ohne das „das".
+    bildPfad: z.bildPfad,
   );
 }
 
@@ -190,6 +196,7 @@ Future<int> reicheFrageEin(
   Fragenquelle? quelle,
   Geltungsbereich geltung = Geltungsbereich.bund,
   String? land,
+  String? kapitel,
   String? erklaerung,
   String? eingereichtVon,
   bool sofortFreigeben = false,
@@ -207,6 +214,9 @@ Future<int> reicheFrageEin(
           quelleUrl: Value(quelle?.url),
           geltung: Value(geltung.schluessel),
           land: Value(geltung == Geltungsbereich.land ? land : null),
+          kapitel: Value(kapitel?.trim().isEmpty ?? true
+              ? null
+              : kapitel!.trim()),
           erklaerung: Value(erklaerung?.trim().isEmpty ?? true
               ? null
               : erklaerung!.trim()),

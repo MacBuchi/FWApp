@@ -140,6 +140,20 @@ class Wissensfragen extends Table {
   /// Länderkürzel, nur bei `geltung = 'land'`.
   TextColumn get land => text().nullable()();
 
+  /// Unterkapitel innerhalb des Sachgebiets, im Klartext — „Gefahrzettel und
+  /// Kennzeichnung", „Dekontamination", „Strahlenschutz (A-Einsatz)".
+  ///
+  /// ⚠️ Freier Text und KEIN Aufzählungstyp, damit ein neues Kapitel eine
+  /// Zeile im Asset kostet und keine Code-Änderung. Gegen Tippfehler wacht
+  /// `wissen_asset_test.dart` mit einer namentlichen Liste je Datei — ein
+  /// verrutschter Buchstabe legte sonst still ein zweites Kapitel an.
+  TextColumn get kapitel => text().nullable()();
+
+  /// Bild zur Frage, z. B. `assets/knowledge/bilder/gefahrzettel_klasse_3.png`.
+  /// Bei manchen Fragen IST das Bild die Frage — ein Gefahrzettel lässt sich
+  /// nicht sinnvoll umschreiben.
+  TextColumn get bildPfad => text().nullable()();
+
   /// `mitgeliefert` | `eigen` — was ausgeliefert wurde, ist nicht löschbar.
   TextColumn get herkunft => text().withDefault(const Constant('eigen'))();
 
@@ -1020,7 +1034,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -1114,7 +1128,28 @@ class AppDatabase extends _$AppDatabase {
             // `richtig` fällt weg: Zwei Darstellungen derselben Sache laufen
             // auseinander. `alterTable` baut die Tabelle nach der heutigen
             // Definition neu und lässt die Spalte damit fallen.
-            await m.alterTable(TableMigration(wissensfragen));
+            //
+            // ⚠️ `newColumns` ist hier PFLICHT und wächst mit: „Die heutige
+            // Definition" ist wörtlich gemeint — sie trägt inzwischen auch
+            // `kapitel` und `bild_pfad` aus v11. Ohne diesen Hinweis baut
+            // drift eine Kopier-Abfrage, die beide aus der ALTEN Tabelle
+            // liest, und die Migration bricht mit „no such column: kapitel"
+            // ab. Wer später eine Spalte ergänzt, trägt sie hier nach.
+            await m.alterTable(TableMigration(
+              wissensfragen,
+              newColumns: [wissensfragen.kapitel, wissensfragen.bildPfad],
+            ));
+            }
+          }
+          if (from < 11) {
+            // Unterkapitel und Bild an der Frage (Issue #174, ABC-Einsatz).
+            //
+            // Genau v10, nicht `>= 9`: Wer von unterhalb v9 kommt, hat die
+            // Spalten aus `createTable`; wer von v9 kommt, aus dem Neubau
+            // im Schritt darüber. Übrig bleibt der Sprung von v10.
+            if (from == 10) {
+              await m.addColumn(wissensfragen, wissensfragen.kapitel);
+              await m.addColumn(wissensfragen, wissensfragen.bildPfad);
             }
           }
         },

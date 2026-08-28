@@ -38,6 +38,7 @@ import 'package:fwapp/features/knowledge/domain/wissensfrage.dart';
 /// jeder Frage, damit sichtbar ist, wo sie gilt.
 const kWissensAssets = <String>[
   'assets/knowledge/bund.json',
+  'assets/knowledge/abc.json',
   'assets/knowledge/bw.json',
 ];
 
@@ -51,6 +52,8 @@ class AssetFrage {
   final Fragenquelle? quelle;
   final Geltungsbereich geltung;
   final String? land;
+  final String? kapitel;
+  final String? bildPfad;
 
   const AssetFrage({
     required this.gebiet,
@@ -61,7 +64,16 @@ class AssetFrage {
     this.quelle,
     this.geltung = Geltungsbereich.bund,
     this.land,
+    this.kapitel,
+    this.bildPfad,
   });
+}
+
+/// Trimmt und macht aus einer leeren Angabe ein `null` — ein Kapitel namens
+/// „" wäre ein Filter, der auf nichts zeigt.
+String? leerZuNull(String? wert) {
+  final t = wert?.trim();
+  return (t == null || t.isEmpty) ? null : t;
 }
 
 /// Zerlegt eine Asset-Datei. Unbrauchbare Einträge fallen **einzeln** heraus
@@ -137,6 +149,8 @@ List<AssetFrage> parseWissensAsset(String roh) {
       quelle: quelle,
       geltung: geltung,
       land: geltung == Geltungsbereich.land ? land : null,
+      kapitel: leerZuNull(eintrag['kapitel'] as String?),
+      bildPfad: leerZuNull(eintrag['bild'] as String?),
     ));
   }
   return ergebnis;

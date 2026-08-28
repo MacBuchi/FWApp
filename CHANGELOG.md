@@ -12,6 +12,36 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.43.0] – 2026-08-28
+
+### Neu
+
+- **Der ABC-Einsatz ist da — 50 Fragen mit Bildern.** Das letzte große leere
+  Sachgebiet ist gefüllt, und weil „Gefahrgut" als ein Topf eine Liste wäre,
+  in der niemand gezielt übt, hat es jetzt **Unterkapitel**:
+  - **Gefahrzettel und Kennzeichnung** (15) — mit Bild. Elf Fragen zeigen
+    einen Gefahrzettel oder eine orangefarbene Warntafel und fragen, was er
+    bedeutet. Genau so steht man auch an der Einsatzstelle davor.
+  - **Gefahrengruppen** (6), **Erstmaßnahmen und Bereiche** (8) mit der
+    GAMS-Regel und den 50/100 Metern, **Schutzausrüstung** (5) mit den
+    Formen 1 bis 3, **Dekontamination** (7) mit den drei Dekon-Stufen,
+    **Aufgaben im ABC-Einsatz** (4) und **Strahlenschutz** (5).
+- **Fragen können jetzt ein Bild tragen.** Bei einem Gefahrzettel ist das
+  Bild die Frage — „rote Raute mit weißer Flamme" wäre schon die Antwort.
+  Das Bild steht in der Wissensdatenbank und im Party-Modus.
+- **Filter nach Unterkapitel.** Wählst du ein Sachgebiet mit Kapiteln, kommt
+  darunter eine zweite Zeile: „Dekontamination (7)", „Gefahrzettel und
+  Kennzeichnung (15)". Damit übt man den Teil, den man nicht kann, statt
+  einmal quer durch alles.
+
+### Hinweis zu den Quellen
+
+Die Fragen stammen aus der FwDV 500 „Einheiten im ABC-Einsatz" (Neufassung
+Januar 2022) und aus dem ADR, das in Deutschland im Bundesgesetzblatt
+verkündet wird — beides amtliche Werke. **Die Gefahrzettel sind selbst
+gezeichnet**, nach den Angaben des ADR (Symbol, Farbe, Hintergrund, Ziffer);
+es ist kein Bild irgendwo heruntergeladen.
+
 ## [1.42.0] – 2026-08-28
 
 ### Neu

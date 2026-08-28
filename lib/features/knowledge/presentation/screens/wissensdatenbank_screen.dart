@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
+import 'package:fwapp/core/utils/image_utils.dart';
 import 'package:fwapp/core/widgets/abteilung_switcher.dart';
 import 'package:fwapp/features/knowledge/domain/wissensfrage.dart';
 import 'package:fwapp/features/knowledge/presentation/providers/wissen_providers.dart';
@@ -29,6 +30,10 @@ class WissensdatenbankScreen extends ConsumerStatefulWidget {
 class _WissensdatenbankScreenState
     extends ConsumerState<WissensdatenbankScreen> {
   Wissensgebiet? _gebiet;
+
+  /// Gewähltes Unterkapitel. Nur sichtbar, solange ein Gebiet gewählt ist —
+  /// Kapitel gehören zu einem Gebiet und wären quer darüber sinnlos.
+  String? _kapitel;
 
   @override
   Widget build(BuildContext context) {
@@ -62,6 +67,7 @@ class _WissensdatenbankScreenState
     final freigegeben = alle
         .where((f) => f.stand == Fragenstand.freigegeben.schluessel)
         .where((f) => _gebiet == null || f.gebiet == _gebiet!.schluessel)
+        .where((f) => _kapitel == null || f.kapitel == _kapitel)
         .toList();
 
     return ListView(
@@ -75,6 +81,7 @@ class _WissensdatenbankScreenState
           const Divider(height: 32),
         ],
         _gebietsfilter(alle),
+        _kapitelfilter(alle),
         if (freigegeben.isEmpty)
           Padding(
             padding: const EdgeInsets.all(24),
@@ -117,14 +124,66 @@ class _WissensdatenbankScreenState
           FilterChip(
             label: Text('Alle (${zaehlung.values.fold(0, (a, b) => a + b)})'),
             selected: _gebiet == null,
-            onSelected: (_) => setState(() => _gebiet = null),
+            onSelected: (_) => setState(() {
+              _gebiet = null;
+              _kapitel = null;
+            }),
           ),
           for (final g in Wissensgebiet.values) ...[
             const SizedBox(width: 8),
             FilterChip(
               label: Text('${g.symbol} ${g.label} (${zaehlung[g.schluessel] ?? 0})'),
               selected: _gebiet == g,
-              onSelected: (_) => setState(() => _gebiet = g),
+              // ⚠️ Das Kapitel muss mit: Ein „Dekontamination"-Filter, der
+              // nach dem Wechsel zu „Funk" stehen bleibt, zeigt eine leere
+              // Liste, und der Grund dafür steht am anderen Ende des
+              // Schirms.
+              onSelected: (_) => setState(() {
+                _gebiet = g;
+                _kapitel = null;
+              }),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// Die Unterkapitel des gewählten Gebiets, mit Anzahl.
+  ///
+  /// Erst ab zwei Kapiteln sichtbar: Ein einzelner Knopf, der nichts
+  /// eingrenzt, ist kein Filter, sondern Beschriftung. Ohne gewähltes Gebiet
+  /// bleibt die Zeile ganz weg — quer über alle Gebiete stünden „Dekon" und
+  /// „Gefahrzettel" neben Sachgebieten, zu denen sie nicht gehören.
+  Widget _kapitelfilter(List<WissensfrageData> alle) {
+    if (_gebiet == null) return const SizedBox.shrink();
+    final zaehlung = <String, int>{};
+    for (final f in alle) {
+      if (f.stand != Fragenstand.freigegeben.schluessel) continue;
+      if (f.gebiet != _gebiet!.schluessel) continue;
+      final k = f.kapitel;
+      if (k != null) zaehlung[k] = (zaehlung[k] ?? 0) + 1;
+    }
+    if (zaehlung.length < 2) return const SizedBox.shrink();
+
+    final namen = zaehlung.keys.toList()..sort();
+    return SizedBox(
+      height: 48,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+        children: [
+          ChoiceChip(
+            label: const Text('Alle Kapitel'),
+            selected: _kapitel == null,
+            onSelected: (_) => setState(() => _kapitel = null),
+          ),
+          for (final k in namen) ...[
+            const SizedBox(width: 8),
+            ChoiceChip(
+              label: Text('$k (${zaehlung[k]})'),
+              selected: _kapitel == k,
+              onSelected: (_) => setState(() => _kapitel = k),
             ),
           ],
         ],
@@ -144,6 +203,7 @@ class _WissensdatenbankScreenState
             style: const TextStyle(fontWeight: FontWeight.w600)),
         subtitle: Text([
           f.gebiet.label,
+          if (f.kapitel != null) f.kapitel!,
           // Landesrecht wird benannt, Bundesweites nicht — was überall gilt,
           // braucht keinen Hinweis, was nur hier gilt schon.
           if (f.geltung == Geltungsbereich.land) f.geltungAnzeige,
@@ -156,6 +216,19 @@ class _WissensdatenbankScreenState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // Bei einem Gefahrzettel IST das Bild die Frage — ohne es
+                // steht da „Welche Gefahr zeigt dieser Gefahrzettel an?"
+                // ohne den Gefahrzettel.
+                if (f.bildPfad != null) ...[
+                  Center(
+                    child: resolveImage(
+                      path: f.bildPfad,
+                      height: 140,
+                      backgroundColor: null,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
                 for (var i = 0; i < f.antworten.length; i++)
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 2),

@@ -16,6 +16,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'direktzugriff.dart';
 import 'stack_sperre.dart';
 
 const _url = 'http://127.0.0.1:54321';
@@ -223,22 +224,43 @@ Future<void> main() async {
 
   test('an der RPC vorbei geht nichts — die Tabelle hat keine Schreib-Policy',
       () async {
-    // Auch der Kommandant kommt nur über die geprüfte Funktion hinein. Ohne
-    // Policy liefert PostgREST für den Insert einen 42501.
-    await expectLater(
-      kommandantClient.from('gesamtwehr_branding').insert({
+    // Auch der Kommandant kommt nur über die geprüfte Funktion hinein.
+    //
+    // Geprüft wird, dass nichts entsteht und sich nichts ändert — nicht, dass
+    // PostgREST einen Fehler schickt. Beides fällt auseinander, sobald der
+    // Stack `authenticated` doch ein Schreibrecht mitgibt: Der INSERT
+    // scheitert dann an der fehlenden INSERT-Policy, das UPDATE läuft still
+    // ins Leere, weil RLS die Zeile herausfiltert. Genau daran kippte dieser
+    // Test unter CLI 2.116.0 — ohne dass je etwas durchgegangen wäre (#185).
+    // Siehe direktzugriff.dart; das Recht selbst prüft
+    // tool/check_schema_grants.sql am laufenden Stack.
+    final vorher = await kommandantClient
+        .from('gesamtwehr_branding')
+        .select('title')
+        .eq('gesamtwehr_id', gesamtwehrId)
+        .maybeSingle();
+
+    await erwarteKeinenDurchgriff(
+      () => kommandantClient.from('gesamtwehr_branding').insert({
         'gesamtwehr_id': gesamtwehrId,
         'title': 'Direkt geschrieben',
       }),
-      throwsA(isA<PostgrestException>()),
     );
-    await expectLater(
-      kommandantClient
+    await erwarteKeinenDurchgriff(
+      () => kommandantClient
           .from('gesamtwehr_branding')
           .update({'title': 'Direkt geändert'}).eq(
               'gesamtwehr_id', gesamtwehrId),
-      throwsA(isA<PostgrestException>()),
     );
+
+    final nachher = await kommandantClient
+        .from('gesamtwehr_branding')
+        .select('title')
+        .eq('gesamtwehr_id', gesamtwehrId)
+        .maybeSingle();
+    expect(nachher?['title'], vorher?['title']);
+    expect(nachher?['title'], isNot('Direkt geschrieben'));
+    expect(nachher?['title'], isNot('Direkt geändert'));
   });
 
   test('NULL heißt gelöscht, nicht unverändert', () async {

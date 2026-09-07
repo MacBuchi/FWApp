@@ -147,18 +147,34 @@ jobs:
       # without one, which would drop coverage below the gate).
       - uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v3
         with:
-          # ⚠️ NICHT `latest`. Am 2026-08-26 um 19:51 erschien CLI v2.116.0;
-          # der nächste CI-Lauf zog sie und ließ zwei RLS-Zusicherungen
-          # umkippen (`branding_e2e_test`, `profil_e2e_test`) — auf
-          # unverändertem `main`, ohne dass jemand etwas committet hatte.
-          # Der Stack, den `supabase start` hochzieht, ist eine Abhängigkeit
-          # wie jede andere; dieses Repo pinnt jede Action per SHA, und für
-          # den Stack darunter gilt dasselbe. Beim Anheben: erst prüfen, ob
-          # die Integrationstests noch grün sind, siehe Issue #185.
-          version: 2.115.0
+          # ⚠️ NICHT `latest`. Der Stack, den `supabase start` hochzieht, ist
+          # eine Abhängigkeit wie jede andere; dieses Repo pinnt jede Action
+          # per SHA, und für den Stack darunter gilt dasselbe.
+          #
+          # Der Sprung von 2.115.0 auf 2.116.0 warf am 2026-08-26 zwei
+          # RLS-Zusicherungen um (`branding_e2e_test`, `profil_e2e_test`) —
+          # auf unverändertem `main`. Aufgeklärt in #185: Durchgegangen ist
+          # nie etwas; die Tests hingen an der Fehlermeldung eines fehlenden
+          # Rechts statt an der Unversehrtheit der Daten. Seit
+          # 20260907120000 steht der Entzug im Schema, die Tests prüfen die
+          # Wirkung, und der Schritt unten liest den Rechtestand am
+          # laufenden Stack nach. Beim nächsten Anheben: derselbe Weg.
+          version: 2.116.0
 
       - name: Start local Supabase stack
         run: supabase start
+
+      # Liest nach, was der Stack den Rollen tatsächlich gegeben hat — die
+      # Frage aus #185, die sich aus Release Notes nicht beantworten lässt.
+      # Der Bericht landet im Log, ein zurückgekehrtes Schreibrecht bricht ab.
+      - name: Verify write privileges on RPC-only tables
+        run: |
+          # psql läuft IM Container, aus demselben Grund wie pg_dump in
+          # supabase-preview.yml: Der Client des Runners kann älter sein als
+          # der Postgres des Stacks und die Verbindung verweigern.
+          db=$(docker ps --format '{{.Names}}' | grep '^supabase_db_' | head -1)
+          docker exec -i "$db" psql -U postgres -d postgres \
+            -v ON_ERROR_STOP=1 < tool/check_schema_grants.sql
 
       - name: Create sync test users
         run: bash tool/setup_local_supabase.sh

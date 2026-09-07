@@ -22,6 +22,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/features/profil/domain/avatar_konfiguration.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'direktzugriff.dart';
 import 'stack_sperre.dart';
 
 const _url = 'http://127.0.0.1:54321';
@@ -179,11 +180,17 @@ Future<void> main() async {
         () async {
       // profiles hat keine Update-Policy — geschrieben wird nur über RPCs.
       // Ohne diese Zeile wäre der Rest hier Theater.
-      await expectLater(
-        truppfuehrer
+      //
+      // Maßstab ist die unversehrte Zeile, nicht die Fehlermeldung: Fehlt
+      // `authenticated` das UPDATE-Recht, kommt 42501; ist es da, filtert RLS
+      // die fremde Zeile weg und das UPDATE trifft still nichts. Die frühere
+      // Fassung erwartete allein den Wurf und kippte deshalb unter CLI
+      // 2.116.0 (#185). Den Rechtestand selbst prüft
+      // tool/check_schema_grants.sql.
+      await erwarteKeinenDurchgriff(
+        () => truppfuehrer
             .from('profiles')
             .update({'anzeigename': 'Übernommen'}).eq('id', wartId),
-        throwsA(anything),
       );
       expect((await profilVon(wartId))['anzeigename'], isNot('Übernommen'));
     });

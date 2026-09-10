@@ -345,6 +345,42 @@ pauschales Formatieren in Feature-PRs.
   `wissen_seeder.dart` — bewusst aus dem Asset und nicht aus einer
   Migration, weil die Einordnung einer Frage redaktionell ist und
   korrigierbar bleiben muss.
+- ⚠️ **Jede neue Tabelle im `public`-Schema braucht einen expliziten
+  `revoke` in ihrer Migration** — sonst verteilt der Stack seine
+  Default-Privileges, und die sind je CLI-Version verschieden: 2.116.0 (der
+  CI-Pin) gibt jeder frischen Tabelle `DELETE, INSERT, TRUNCATE, UPDATE` für
+  `anon` **und** `authenticated`, 2.109.1 immerhin noch `TRUNCATE,
+  REFERENCES, TRIGGER`. Das Muster steht in
+  [20260910160000](supabase/migrations/20260910160000_lernbereiche_abschalten.sql):
+  `grant select … to authenticated` + `grant all … to service_role`, dann
+  `revoke insert, update, delete, truncate, references, trigger … from anon,
+  authenticated, public` und `revoke select … from anon, public`. Dazu RLS an
+  und **mindestens eine Policy**.
+  [tool/check_schema_grants.sql](tool/check_schema_grants.sql) prüft das ganze
+  Schema in beide Richtungen (#198) und macht die CI rot, wenn der Entzug
+  fehlt — es hat genau diese beiden Tabellen bei ihrem ersten Lauf erwischt.
+  Wird eine Tabelle wirklich direkt vom Client beschrieben, gehört sie
+  **namentlich mit Begründung** in die Ausnahmeliste dort; der bequeme Weg ist
+  aber eine `security definer`-Funktion, dann bleibt die Liste kurz.
+- ⚠️ **Funktionsparameter nicht wie eine Spalte nennen.** `melde_frage_hinweis`
+  hieß zuerst `(gw, frage, …)` — und `quiz_questions` hat eine Spalte `frage`.
+  In der `not exists`-Prüfung war der Name damit mehrdeutig, und PL/pgSQL
+  bricht mit `42702` ab: **erst zur Laufzeit, beim ersten echten Aufruf**, nie
+  beim Anlegen. Deshalb tragen die Parameter dieser Funktionen ein `p_`
+  (`p_gebiet`, `p_kapitel`, `p_frage`). Gefunden hat das
+  `lernbereiche_e2e_test.dart`, nicht der Migrationslauf.
+- ⚠️ **Was die Wehr abgeschaltet hat, filtert die DAO — nicht die
+  Oberfläche.** `getSpielbare()`/`watchSpielbare()` lassen abgeschaltete
+  Gebiete und Kapitel weg, weil der Party-Modus die DAO **direkt** fragt; eine
+  Prüfung, die nur ein Bildschirm kennt, gilt fürs Spiel nicht. Die
+  Wissensdatenbank nimmt dagegen `watchAll()` und markiert nur — „nicht mehr
+  gefragt, aber auffindbar" (Marcus, 2026-09-10).
+  ⚠️ Im Anti-Join steht `a.kapitel.isNull() | a.kapitel.equalsExp(f.kapitel)`,
+  und dass `NULL = NULL` in SQL **nicht** wahr ist, ist hier Absicht: Ein
+  abgeschaltetes Kapitel darf die Fragen OHNE Kapitel desselben Gebiets nicht
+  mitreißen. Wer das für einen Fehler hält und „repariert", schaltet mit
+  „Dekontamination" das halbe Gefahrgut ab. `lernbereiche_test.dart` wacht
+  darüber.
 - ⚠️ **`ref.read(provider.future)` ohne Zuhörer wird NIE fertig.** Provider
   sind in Riverpod 3 ab Werk auto-dispose: Ein `read` erzeugt den Provider
   und entsorgt ihn sofort wieder, das Future bleibt hängen — ohne Fehler,

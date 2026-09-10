@@ -13,6 +13,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/core/database/app_database.dart';
+import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/features/knowledge/presentation/screens/wissensdatenbank_screen.dart';
 
 import '../../helpers/test_database.dart';
@@ -40,14 +41,27 @@ void main() {
         stand: const Value('freigegeben'),
       ));
 
-  Future<void> pumpe(WidgetTester tester) async {
+  Future<void> pumpe(WidgetTester tester, {bool darfFreigeben = true}) async {
     tester.view.physicalSize = const Size(1200, 2400);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(
-        buildTestApp(db: db, home: const WissensdatenbankScreen()));
+    await tester.pumpWidget(buildTestApp(
+      db: db,
+      home: const WissensdatenbankScreen(),
+      overrides: [canEditProvider.overrideWithValue(darfFreigeben)],
+    ));
     await tester.pumpAndSettle();
   }
+
+  /// Schaltet einen Bereich im lokalen Spiegel ab — so, wie es ein Zug vom
+  /// Server täte.
+  Future<void> abschalten(String gebiet, {String? kapitel}) =>
+      db.wissenDao.ersetzeAbgeschaltet([
+        AbgeschalteteLernbereicheCompanion.insert(
+          gebiet: gebiet,
+          kapitel: Value(kapitel),
+        ),
+      ]);
 
   /// Wählt ein Sachgebiet über seinen Filter-Knopf.
   ///
@@ -148,6 +162,104 @@ void main() {
     // sein. Bliebe der Filter stehen, wäre die Liste leer.
     await gebietWaehlen(tester, 'Funk');
     expect(find.text('Eine Frage zum Sprechfunk'), findsOneWidget);
+
+    await endTestApp(tester);
+  });
+
+  // ── Lernbereiche abschalten (Marcus, 2026-08-28) ────────────────────────
+
+  testWidgets('der Gerätewart bekommt den Schalter erst mit gewähltem Gebiet',
+      (tester) async {
+    await anlegen(frage: 'Was ist die Dekon-Stufe I?');
+    await pumpe(tester);
+
+    // Ohne Gebiet gibt es nichts abzuschalten: „Alles" abzuwählen wäre kein
+    // Wunsch, sondern ein Versehen.
+    expect(find.byType(SwitchListTile), findsNothing);
+
+    await gebietWaehlen(tester, 'Gefahrgut');
+    expect(find.text('„Gefahrgut" wird abgefragt'), findsOneWidget);
+
+    await endTestApp(tester);
+  });
+
+  testWidgets('wer nicht freigeben darf, sieht den Schalter nicht',
+      (tester) async {
+    await anlegen(frage: 'Was ist die Dekon-Stufe I?');
+    await pumpe(tester, darfFreigeben: false);
+    await gebietWaehlen(tester, 'Gefahrgut');
+
+    expect(find.byType(SwitchListTile), findsNothing);
+
+    await endTestApp(tester);
+  });
+
+  testWidgets('ein abgeschaltetes Gebiet steht am Schalter und an der Frage',
+      (tester) async {
+    await anlegen(frage: 'Was ist die Dekon-Stufe I?');
+    await abschalten('gefahrgut');
+    await pumpe(tester);
+    await gebietWaehlen(tester, 'Gefahrgut');
+
+    expect(find.text('„Gefahrgut" wird nicht abgefragt'), findsOneWidget);
+    // Die Markierung an der Frage ist der Teil, der die Verwirrung
+    // verhindert: Ohne sie sieht die Frage aus wie jede andere, und niemand
+    // versteht, warum sie im Quiz nie kommt.
+    expect(find.textContaining('abgeschaltet'), findsWidgets);
+
+    await endTestApp(tester);
+  });
+
+  testWidgets('bei abgeschaltetem Gebiet meint der Schalter nicht das Kapitel',
+      (tester) async {
+    // Ein Kapitel-Schalter unter einem abgeschalteten Gebiet wäre eine Lüge:
+    // Er könnte nichts einschalten, was das Gebiet nicht wieder freigibt.
+    await anlegen(frage: 'Frage A', kapitel: 'Dekontamination');
+    await anlegen(frage: 'Frage B', kapitel: 'Gefahrzettel und Kennzeichnung');
+    await abschalten('gefahrgut');
+    await pumpe(tester);
+    await gebietWaehlen(tester, 'Gefahrgut');
+
+    await tester.tap(find.textContaining('Dekontamination (').first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('„Gefahrgut" wird nicht abgefragt'), findsOneWidget);
+    expect(find.text('„Dekontamination" wird abgefragt'), findsNothing);
+
+    await endTestApp(tester);
+  });
+
+  // ── Hinweise (Issue #194) ───────────────────────────────────────────────
+
+  testWidgets('jede Frage trägt einen Hinweis-Knopf — auch die mitgelieferte',
+      (tester) async {
+    // Gerade an einer mitgelieferten Frage ist er der einzige Weg, einen
+    // Fehler loszuwerden: Löschen darf sie niemand.
+    await anlegen(frage: 'Welcher Kanal ist der Anrufkanal?');
+    await pumpe(tester);
+
+    await tester.tap(find.text('Welcher Kanal ist der Anrufkanal?'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Hinweis'), findsOneWidget);
+
+    await endTestApp(tester);
+  });
+
+  testWidgets('der Hinweis-Dialog sagt, dass es öffentlich wird',
+      (tester) async {
+    // Der Hinweis auf eine MITGELIEFERTE Frage endet in einem Issue im
+    // öffentlichen Repo. Wer das nicht weiß, schreibt Dinge hinein, die dort
+    // nicht stehen sollen.
+    await anlegen(frage: 'Welcher Kanal ist der Anrufkanal?');
+    await pumpe(tester);
+
+    await tester.tap(find.text('Welcher Kanal ist der Anrufkanal?'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Hinweis'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('öffentlich'), findsOneWidget);
 
     await endTestApp(tester);
   });

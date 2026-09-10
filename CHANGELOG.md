@@ -12,6 +12,29 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.44.0] – 2026-09-10
+
+### Neu
+
+- **Der Gerätewart bestimmt, was abgefragt wird.** Wer keine
+  Atemschutzgeräteträger hat, schaltet „Atemschutz" ab; wer keinen A-Einsatz
+  fährt, nur das Kapitel „Strahlenschutz". Der Schalter steht in der
+  Wissensdatenbank unter dem gewählten Gebiet und gilt für die **ganze Wehr**,
+  nicht nur für das eigene Handy. Abgeschaltete Fragen kommen im Quiz und im
+  Party-Modus nicht mehr dran — nachlesen kann man sie weiterhin, sie sind
+  nur als „abgeschaltet" gekennzeichnet. Wissen wird nicht versteckt, es wird
+  nur nicht abgefragt.
+
+- **Jede Frage lässt sich hinterfragen.** Unter jeder Frage steht jetzt ein
+  Knopf „Hinweis". Damit meldet jeder mit Konto, was an einer Frage nicht
+  stimmt — eine veraltete Antwort, ein Tippfehler, eine Fundstelle, die es so
+  nicht mehr gibt. Wohin das geht, hängt an der Frage: Bei einer
+  **mitgelieferten** Frage, die in jeder Wehr dieselbe ist, geht der Hinweis
+  an die Entwicklung; bei einer **eigenen** Frage eurer Wehr an euren
+  Gerätewart, und er bleibt in der Wehr. Der Dialog sagt vorher, welcher der
+  beiden Wege es ist. Offene Hinweise stehen beim Gerätewart ganz oben in der
+  Wissensdatenbank, gleich neben dem, was auf Freigabe wartet.
+
 ## [1.43.0] – 2026-08-28
 
 ### Neu

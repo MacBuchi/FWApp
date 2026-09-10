@@ -209,6 +209,133 @@ class WissenSync {
     );
   }
 
+  // ── Abgeschaltete Lernbereiche (Marcus, 2026-08-28) ──────────────────────
+  //
+  // Ein voller Zug, der den lokalen Spiegel ERSETZT. Anders als bei den
+  // Fragen braucht es dafür kein `deleted_at`: Geschrieben wird hier
+  // ausschließlich über die RPC, es gibt also keinen lokalen Stand, der auf
+  // sein Hochladen wartet und den ein voller Zug überfahren könnte. Eine
+  // Zeile, die nicht mehr kommt, ist wieder eingeschaltet — genau das soll
+  // sie sein.
+
+  /// Holt, was diese Wehr abgeschaltet hat.
+  Future<int> zieheLernbereiche(String gesamtwehrId) async {
+    final c = client;
+    if (c == null) return 0;
+
+    final zeilen = List<Map<String, dynamic>>.from(await c
+        .from('abgeschaltete_lernbereiche')
+        .select()
+        .eq('gesamtwehr_id', gesamtwehrId));
+
+    await db.wissenDao.ersetzeAbgeschaltet([
+      for (final r in zeilen)
+        AbgeschalteteLernbereicheCompanion.insert(
+          gebiet: r['gebiet'] as String,
+          kapitel: Value(r['kapitel'] as String?),
+          remoteId: Value(r['id'] as String?),
+        ),
+    ]);
+    return zeilen.length;
+  }
+
+  /// Schaltet ein Gebiet ([kapitel] `null`) oder ein Kapitel ab oder wieder
+  /// ein.
+  ///
+  /// Wirft, wenn es nicht geht — und das ist Absicht. Die Entscheidung gilt
+  /// für die ganze Wehr; sie „offline schon mal lokal" zu übernehmen hieße,
+  /// zwei Geräte mit verschiedener Wahrheit lernen zu lassen. Der Aufrufer
+  /// zeigt die Meldung.
+  Future<void> setzeLernbereich(
+    String gesamtwehrId, {
+    required String gebiet,
+    String? kapitel,
+    required bool aus,
+  }) async {
+    final c = client;
+    if (c == null) {
+      throw StateError('Dafür braucht es eine Verbindung zur Wehr.');
+    }
+    await c.rpc('setze_lernbereich', params: {
+      'gw': gesamtwehrId,
+      'p_gebiet': gebiet,
+      'p_kapitel': kapitel,
+      'aus': aus,
+    });
+    await zieheLernbereiche(gesamtwehrId);
+  }
+
+  // ── Hinweise an Fragen (Issue #194) ──────────────────────────────────────
+
+  /// Holt die Hinweise der Wehr. Ebenfalls ein voller Zug mit Ersetzen.
+  Future<int> zieheHinweise(String gesamtwehrId) async {
+    final c = client;
+    if (c == null) return 0;
+
+    final zeilen = List<Map<String, dynamic>>.from(await c
+        .from('frage_hinweise')
+        .select()
+        .eq('gesamtwehr_id', gesamtwehrId));
+
+    await db.wissenDao.ersetzeHinweise([
+      for (final r in zeilen)
+        FragenhinweiseCompanion.insert(
+          frageRemoteId: r['frage_id'] as String,
+          hinweis: r['hinweis'] as String,
+          vonName: Value(r['von_name'] as String?),
+          createdAt: Value(
+              DateTime.tryParse(r['created_at'] as String? ?? '') ??
+                  DateTime.now()),
+          erledigtAm: Value(r['erledigt_am'] == null
+              ? null
+              : DateTime.tryParse(r['erledigt_am'] as String)),
+          remoteId: Value(r['id'] as String?),
+        ),
+    ]);
+    return zeilen.length;
+  }
+
+  /// Meldet einen Hinweis zu einer EIGENEN Frage der Wehr.
+  ///
+  /// [frageRemoteId] ist die UUID der Serverzeile, nicht die lokale Nummer:
+  /// Eine Frage, die noch nie hochgeladen wurde, hat keine — und für die
+  /// gibt es hier auch nichts zu melden, sie steht ja nur auf diesem Gerät.
+  Future<void> meldeHinweis(
+    String gesamtwehrId, {
+    required String frageRemoteId,
+    required String text,
+    String? melderName,
+  }) async {
+    final c = client;
+    if (c == null) {
+      throw StateError('Dafür braucht es eine Verbindung zur Wehr.');
+    }
+    await c.rpc('melde_frage_hinweis', params: {
+      'gw': gesamtwehrId,
+      'p_frage': frageRemoteId,
+      'text_hinweis': text,
+      'melder_name': melderName,
+    });
+    await zieheHinweise(gesamtwehrId);
+  }
+
+  /// Hakt einen Hinweis ab — oder nimmt das zurück.
+  Future<void> erledigeHinweis(
+    String gesamtwehrId, {
+    required String hinweisRemoteId,
+    bool erledigt = true,
+  }) async {
+    final c = client;
+    if (c == null) {
+      throw StateError('Dafür braucht es eine Verbindung zur Wehr.');
+    }
+    await c.rpc('erledige_frage_hinweis', params: {
+      'hinweis_id': hinweisRemoteId,
+      'erledigt': erledigt,
+    });
+    await zieheHinweise(gesamtwehrId);
+  }
+
   /// Archiviert statt zu löschen — siehe Kopf.
   Future<void> archiviere(WissensfrageData f, String gesamtwehrId) async {
     final c = client;

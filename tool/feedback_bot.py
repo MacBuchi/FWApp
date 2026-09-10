@@ -24,18 +24,22 @@ from demo_wehr import GESAMTWEHR_SLUG
 
 # Meldungsart -> (Titel-Präfix, GitHub-Label). `katalog` ist der Vorschlag
 # für den mitgelieferten Gerätekatalog (Issue #103), `fahrzeug` der für eine
-# fehlende Fahrzeug-Vorlage (Issue #145); die Labels müssen im Repo
-# existieren, sonst lehnt `gh issue create` den Aufruf ab.
+# fehlende Fahrzeug-Vorlage (Issue #145), `frage` der Hinweis auf eine
+# MITGELIEFERTE Quizfrage (Issue #194) — Hinweise auf eigene Fragen einer
+# Wehr kommen hier nie an, die gehen über `melde_frage_hinweis` an ihren
+# Gerätewart; die Labels müssen im Repo existieren, sonst lehnt
+# `gh issue create` den Aufruf ab.
 KINDS = {
     "feature": ("Feature request: ", "enhancement"),
     "bug": ("Bug report: ", "bug"),
     "katalog": ("Katalog-Vorschlag: ", "katalog-vorschlag"),
     "fahrzeug": ("Fahrzeug-Vorschlag: ", "fahrzeug-vorschlag"),
+    "frage": ("Frage-Hinweis: ", "frage-hinweis"),
 }
 
 # Bei diesen Arten trägt die ERSTE ZEILE den Namen und sonst nichts (siehe
 # die Hinweise im Feedback-Dialog) — daraus wird die Issue-Überschrift.
-FIRST_LINE_TITLE = ("katalog", "fahrzeug")
+FIRST_LINE_TITLE = ("katalog", "fahrzeug", "frage")
 
 
 def run(*cmd: str) -> str:

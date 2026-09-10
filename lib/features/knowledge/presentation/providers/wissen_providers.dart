@@ -74,6 +74,127 @@ final fragenJeGebietProvider = Provider<Map<String, int>>((ref) {
   return zaehlung;
 });
 
+/// Was diese Wehr abgewählt hat (Marcus, 2026-08-28).
+final abgeschalteteLernbereicheProvider =
+    StreamProvider<List<AbgeschalteterLernbereich>>((ref) =>
+        ref.watch(wissenDaoProvider).watchAbgeschaltet());
+
+/// Ist dieser Bereich abgeschaltet?
+///
+/// [kapitel] `null` fragt nach dem ganzen Gebiet. Eine Frage IN einem Kapitel
+/// gilt auch dann als abgeschaltet, wenn ihr ganzes Gebiet abgeschaltet ist —
+/// deshalb die zwei Zweige und nicht ein Gleichheitsvergleich.
+bool istAbgeschaltet(
+  List<AbgeschalteterLernbereich> bereiche,
+  String gebiet, {
+  String? kapitel,
+}) =>
+    bereiche.any((b) =>
+        b.gebiet == gebiet &&
+        (b.kapitel == null || (kapitel != null && b.kapitel == kapitel)));
+
+/// Hinweise, die noch niemand abgehakt hat (Issue #194).
+final offeneHinweiseProvider = StreamProvider<List<Fragenhinweis>>((ref) =>
+    ref.watch(wissenDaoProvider).watchOffeneHinweise());
+
+/// Die Hinweise zu genau einer Frage.
+final hinweiseZuFrageProvider =
+    StreamProvider.family<List<Fragenhinweis>, String>((ref, frageRemoteId) =>
+        ref.watch(wissenDaoProvider).watchHinweise(frageRemoteId));
+
+/// Schaltet ein Gebiet ([kapitel] `null`) oder ein Kapitel ab oder wieder ein.
+///
+/// Wirft, wenn keine Wehr da ist oder der Server ablehnt — der Aufrufer zeigt
+/// die Meldung. Bewusst kein stiller Fehlschlag: Der Gerätewart hat gerade
+/// eine Entscheidung für die ganze Wehr getroffen und muss wissen, ob sie
+/// angekommen ist.
+Future<void> schalteLernbereich(
+  WidgetRef ref, {
+  required String gebiet,
+  String? kapitel,
+  required bool aus,
+}) async {
+  final wehr = ref.read(wissenGesamtwehrProvider);
+  if (wehr == null) {
+    throw StateError(
+        'Ohne Gesamtwehr gibt es nichts abzuschalten — die Fragen bleiben '
+        'auf diesem Gerät.');
+  }
+  await ref.read(wissenSyncProvider).setzeLernbereich(
+        wehr,
+        gebiet: gebiet,
+        kapitel: kapitel,
+        aus: aus,
+      );
+}
+
+/// Meldet einen Hinweis zu einer EIGENEN Frage (Issue #194).
+///
+/// Der andere Weg — mitgelieferte Fragen über den Feedback-Bot — läuft nicht
+/// hier durch, sondern über `submitFeedback`; siehe [hinweisWegFuer].
+Future<void> meldeFragenhinweis(
+  WidgetRef ref, {
+  required String frageRemoteId,
+  required String text,
+  String? melderName,
+}) async {
+  final wehr = ref.read(wissenGesamtwehrProvider);
+  if (wehr == null) {
+    throw StateError('Ohne Gesamtwehr gibt es niemanden, der den Hinweis '
+        'bekommt.');
+  }
+  await ref.read(wissenSyncProvider).meldeHinweis(
+        wehr,
+        frageRemoteId: frageRemoteId,
+        text: text,
+        melderName: melderName,
+      );
+}
+
+/// Hakt einen Hinweis ab — oder nimmt das zurück.
+Future<void> erledigeFragenhinweis(
+  WidgetRef ref,
+  Fragenhinweis h, {
+  bool erledigt = true,
+}) async {
+  final wehr = ref.read(wissenGesamtwehrProvider);
+  if (wehr == null || h.remoteId == null) return;
+  await ref.read(wissenSyncProvider).erledigeHinweis(
+        wehr,
+        hinweisRemoteId: h.remoteId!,
+        erledigt: erledigt,
+      );
+}
+
+/// Wohin ein Hinweis zu dieser Frage geht.
+///
+/// Die Unterscheidung ist Marcus' Vorgabe aus #194 und keine Bequemlichkeit:
+/// Eine **mitgelieferte** Frage steht auf jedem Gerät im Asset, hat auf dem
+/// Server also gar keine Zeile — und ein Fehler darin betrifft alle Wehren.
+/// Der gehört ins Repo, gesammelt vom Feedback-Bot. Eine **eigene** Frage
+/// gehört dieser Wehr allein; ihr Hinweis hat in einem öffentlichen Issue
+/// nichts verloren und landet beim Gerätewart.
+enum Hinweisweg {
+  /// Über `feedback` an den Bot, der daraus ein Issue macht.
+  bot,
+
+  /// Über `frage_hinweise` an den Gerätewart der Wehr.
+  geraetewart,
+
+  /// Weder noch: Die Frage steht nur auf diesem Gerät (noch nie hochgeladen,
+  /// oder Lokalbetrieb ohne Wehr). Es gibt niemanden, dem man sie melden
+  /// könnte.
+  nurLokal,
+}
+
+Hinweisweg hinweisWegFuer(WissensfrageData f, {required bool hatWehr}) {
+  if (f.herkunft == Fragenherkunft.mitgeliefert.schluessel) {
+    return Hinweisweg.bot;
+  }
+  if (!hatWehr || f.remoteId == null) return Hinweisweg.nurLokal;
+  return Hinweisweg.geraetewart;
+}
+
 /// Übersetzt eine Datenbankzeile in das Modell der Oberfläche.
 Wissensfrage zuWissensfrage(WissensfrageData z) => Wissensfrage(
       id: z.id,

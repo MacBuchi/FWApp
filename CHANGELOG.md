@@ -12,6 +12,21 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.46.0] – 2026-09-11
+
+### Neu
+
+- **Fahrzeugkunde aus eurem eigenen Fuhrpark.** Der Party-Modus hat eine
+  vierte Kategorie: **„Welcher Wagen?"** — „Auf welchem Fahrzeug liegt das?"
+  und „Welches Kennzeichen hat dieses Fahrzeug?". Die Fragen entstehen beim
+  Spielstart aus eurem echten Bestand, nicht aus einer Normtabelle: Wo der
+  Spreizer liegt, weiß nur eure App.
+
+  Gefragt wird nur, was eindeutig ist. Ein B-Druckschlauch liegt auf jedem
+  Wagen — solche Geräte kommen gar nicht erst vor, weil die Frage sonst
+  mehrere richtige Antworten hätte. Unter drei Fahrzeugen bleibt die Kategorie
+  ganz weg; bei zwei Wagen wäre die falsche Antwort immer der jeweils andere.
+
 ## [1.45.0] – 2026-09-11
 
 ### Neu

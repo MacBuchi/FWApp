@@ -28,6 +28,12 @@ enum PartyFrageArt {
   /// „Was ist das?" — Foto des Geräts, Antworten sind Gerätenamen.
   bild,
 
+  /// Fahrzeugkunde aus dem eigenen Fuhrpark: „Auf welchem Fahrzeug liegt
+  /// das?" und „Welches Kennzeichen hat …?". Siehe `fahrzeugfragen.dart` —
+  /// bewusst erzeugt und nicht gespeichert, weil der Fuhrpark jeder Wehr
+  /// gehört und sich bei jedem Import ändert.
+  fahrzeug,
+
   /// Aus [assets/game/party.json]: Wissen und Klischees, ohne eigene Daten.
   unerwartet,
 }
@@ -40,6 +46,7 @@ extension PartyFrageArtName on PartyFrageArt {
   String get bezeichnung => switch (this) {
         PartyFrageArt.fach => 'Wo liegt was?',
         PartyFrageArt.bild => 'Was ist das?',
+        PartyFrageArt.fahrzeug => 'Welcher Wagen?',
         PartyFrageArt.unerwartet => 'Unerwartetes',
       };
 }
@@ -164,6 +171,7 @@ List<PartyFrage> mischePartie({
   required List<PartyFrage> fach,
   required List<PartyFrage> bild,
   required List<PartyFrage> unerwartet,
+  List<PartyFrage> fahrzeug = const [],
   required int anzahl,
   required int proRunde,
   required Random zufall,
@@ -176,6 +184,7 @@ List<PartyFrage> mischePartie({
     PartyFrageArt.unerwartet: [...unerwartet]..shuffle(zufall),
     PartyFrageArt.fach: [...fach]..shuffle(zufall),
     PartyFrageArt.bild: [...bild]..shuffle(zufall),
+    PartyFrageArt.fahrzeug: [...fahrzeug]..shuffle(zufall),
   };
 
   /// Nimmt [wieViele] Fragen aus dem Topf und entfernt sie daraus.
@@ -187,9 +196,17 @@ List<PartyFrage> mischePartie({
   }
 
   final runden = <List<PartyFrage>>[];
-  // Fach und Bild wechseln sich in den übrigen Runden ab: Wer nur Fächer
-  // bekäme, hätte einen halben Modus vor sich.
-  var wechsel = PartyFrageArt.fach;
+  // Die Bestands-Kategorien wechseln sich in den übrigen Runden ab: Wer nur
+  // Fächer bekäme, hätte einen halben Modus vor sich. Seit „Welcher Wagen?"
+  // dazugekommen ist, sind es drei im Kreis statt zwei im Wechsel — eine
+  // Kategorie, die leer ist (kein Foto, zu kleiner Fuhrpark), wird unten
+  // ohnehin übersprungen.
+  const reihum = [
+    PartyFrageArt.fach,
+    PartyFrageArt.bild,
+    PartyFrageArt.fahrzeug,
+  ];
+  var wechsel = reihum.first;
 
   for (var r = 0; r * rundenlaenge < anzahl; r++) {
     final rest = anzahl - r * rundenlaenge;
@@ -213,8 +230,7 @@ List<PartyFrage> mischePartie({
     if (art == null) break;
 
     if (art != PartyFrageArt.unerwartet) {
-      wechsel =
-          art == PartyFrageArt.fach ? PartyFrageArt.bild : PartyFrageArt.fach;
+      wechsel = reihum[(reihum.indexOf(art) + 1) % reihum.length];
     }
     runden.add(entnimm(art, soll));
   }

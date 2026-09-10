@@ -218,4 +218,61 @@ void main() {
       expect(partie.map((f) => f.art).toSet(), hasLength(1));
     });
   });
+
+  // ── Fahrzeugkunde als vierte Kategorie ────────────────────────────────────
+
+  test('„Welcher Wagen?" kommt in der Rotation vor', () {
+    // Vor dieser Kategorie wechselten sich nur Fach und Bild ab. Wer die
+    // Rotation nicht mitzieht, hat eine Kategorie gebaut, die nie drankommt —
+    // und das fiele erst am Kameradschaftsabend auf.
+    final partie = mischePartie(
+      fach: topf(PartyFrageArt.fach, 'F', 30),
+      bild: topf(PartyFrageArt.bild, 'B', 30),
+      fahrzeug: topf(PartyFrageArt.fahrzeug, 'W', 30),
+      unerwartet: topf(PartyFrageArt.unerwartet, 'U', 30),
+      anzahl: 24,
+      proRunde: 3,
+      zufall: zufall,
+    );
+
+    expect(partie.map((f) => f.art), contains(PartyFrageArt.fahrzeug));
+  });
+
+  test('auch mit Fahrzeugfragen bleibt eine Runde bei EINER Kategorie', () {
+    final partie = mischePartie(
+      fach: topf(PartyFrageArt.fach, 'F', 30),
+      bild: topf(PartyFrageArt.bild, 'B', 30),
+      fahrzeug: topf(PartyFrageArt.fahrzeug, 'W', 30),
+      unerwartet: topf(PartyFrageArt.unerwartet, 'U', 30),
+      anzahl: 24,
+      proRunde: 4,
+      zufall: zufall,
+    );
+
+    for (final runde in runden(partie, 4)) {
+      if (runde.length < 4) continue; // der angehängte Rest zählt nicht
+      expect(runde.map((f) => f.art).toSet(), hasLength(1),
+          reason: 'Eine Runde, eine Kategorie (Issue #172).');
+    }
+  });
+
+  test('ein leerer Fuhrpark-Topf ändert nichts am Rest', () {
+    // Der Regelfall bei zwei Fahrzeugen: `baueFahrzeugfragen` liefert nichts,
+    // und die Partie muss trotzdem stehen.
+    final partie = mischePartie(
+      fach: topf(PartyFrageArt.fach, 'F', 30),
+      bild: topf(PartyFrageArt.bild, 'B', 30),
+      fahrzeug: const [],
+      unerwartet: topf(PartyFrageArt.unerwartet, 'U', 30),
+      anzahl: 12,
+      proRunde: 3,
+      zufall: zufall,
+    );
+    expect(partie, hasLength(12));
+    expect(partie.map((f) => f.art), isNot(contains(PartyFrageArt.fahrzeug)));
+  });
+
+  test('„Welcher Wagen?" heißt am Übergabe-Schirm auch so', () {
+    expect(PartyFrageArt.fahrzeug.bezeichnung, 'Welcher Wagen?');
+  });
 }

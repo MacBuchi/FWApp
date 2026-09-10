@@ -383,6 +383,20 @@ pauschales Formatieren in Feature-PRs.
   fachfremden Ablenker nicht, fällt das Gerät aus.
   `geraetefragen_test.dart` prüft beide Regeln am Fixture **und** die Wirkung
   an allen 110 ausgelieferten Geräten.
+- ⚠️ **Fuhrpark-Fragen werden ERZEUGT, Katalog-Fragen GESPEICHERT.** Der
+  Unterschied ist kein Zufall: Der mitgelieferte Katalog ist auf jedem Gerät
+  derselbe — stabil, korrigierbar, deshalb Zeilen in der Wissensdatenbank
+  (`geraetefragen.dart` → Seeder). Der Fuhrpark gehört jeder Wehr allein und
+  ändert sich bei jedem Import; gespeicherte Fragen darüber würden veralten,
+  müssten abgeglichen werden und lägen als hunderte Zeilen auf dem Server, die
+  beschreiben, was die App ohnehin weiß. `fahrzeugfragen.dart` baut sie
+  deshalb beim Spielstart, wie „In welchem Fach liegt das?" seit Issue #160.
+  Wer das je umdreht, hat beim nächsten Import einen Abgleich am Hals.
+  ⚠️ Dieselbe Sperre wie bei den Katalog-Fragen: **Nur Geräte, die es genau
+  EINMAL im Fuhrpark gibt.** Ein B-Schlauch liegt auf jedem Wagen — „Auf
+  welchem Fahrzeug liegt das?" hätte dann drei richtige Antworten.
+  `fahrzeugfragen_test.dart` wacht darüber, ebenso über doppelt erfasste
+  Kennzeichen.
 - ⚠️ **Gewichten heißt: der Prüfungsstoff bleibt unangetastet.**
   `waehleNachBestand` lässt Fragen **ohne** Gerätebezug (Rechtskunde, ABC,
   Löschlehre — der weitaus größte Teil) vollständig durch und wählt nur unter

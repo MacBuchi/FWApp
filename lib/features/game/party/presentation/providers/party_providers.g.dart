@@ -79,7 +79,7 @@ final class PartyTopfProvider
   }
 }
 
-String _$partyTopfHash() => r'63647566c87d027e3ae128e5bc372e0e93c991aa';
+String _$partyTopfHash() => r'b22d2b35bc6ae255d027b4cd89d6732c752e1339';
 
 /// Baut die Fragen aus dem Bestand: „In welchem Fach?" und „Was ist das?".
 ///
@@ -162,7 +162,7 @@ final class PartySpielProvider
   }
 }
 
-String _$partySpielHash() => r'9c255392e496aab84065c96d42ee9b3ca03f0112';
+String _$partySpielHash() => r'7be569d9b99d0aa731479c36f5a4e18cefe842b8';
 
 /// Die laufende Partie. `null` heißt: es läuft keine.
 ///

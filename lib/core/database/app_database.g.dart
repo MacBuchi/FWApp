@@ -195,6 +195,9 @@ class LearningDaoManager {
 
 mixin _$WissenDaoMixin on DatabaseAccessor<AppDatabase> {
   $WissensfragenTable get wissensfragen => attachedDatabase.wissensfragen;
+  $AbgeschalteteLernbereicheTable get abgeschalteteLernbereiche =>
+      attachedDatabase.abgeschalteteLernbereiche;
+  $FragenhinweiseTable get fragenhinweise => attachedDatabase.fragenhinweise;
   WissenDaoManager get managers => WissenDaoManager(this);
 }
 
@@ -203,6 +206,16 @@ class WissenDaoManager {
   WissenDaoManager(this._db);
   $$WissensfragenTableTableManager get wissensfragen =>
       $$WissensfragenTableTableManager(_db.attachedDatabase, _db.wissensfragen);
+  $$AbgeschalteteLernbereicheTableTableManager get abgeschalteteLernbereiche =>
+      $$AbgeschalteteLernbereicheTableTableManager(
+        _db.attachedDatabase,
+        _db.abgeschalteteLernbereiche,
+      );
+  $$FragenhinweiseTableTableManager get fragenhinweise =>
+      $$FragenhinweiseTableTableManager(
+        _db.attachedDatabase,
+        _db.fragenhinweise,
+      );
 }
 
 mixin _$AttachmentDaoMixin on DatabaseAccessor<AppDatabase> {
@@ -8509,6 +8522,803 @@ class WissensfragenCompanion extends UpdateCompanion<WissensfrageData> {
   }
 }
 
+class $AbgeschalteteLernbereicheTable extends AbgeschalteteLernbereiche
+    with TableInfo<$AbgeschalteteLernbereicheTable, AbgeschalteterLernbereich> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AbgeschalteteLernbereicheTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _gebietMeta = const VerificationMeta('gebiet');
+  @override
+  late final GeneratedColumn<String> gebiet = GeneratedColumn<String>(
+    'gebiet',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _kapitelMeta = const VerificationMeta(
+    'kapitel',
+  );
+  @override
+  late final GeneratedColumn<String> kapitel = GeneratedColumn<String>(
+    'kapitel',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _remoteIdMeta = const VerificationMeta(
+    'remoteId',
+  );
+  @override
+  late final GeneratedColumn<String> remoteId = GeneratedColumn<String>(
+    'remote_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, gebiet, kapitel, remoteId];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'abgeschaltete_lernbereiche';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AbgeschalteterLernbereich> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('gebiet')) {
+      context.handle(
+        _gebietMeta,
+        gebiet.isAcceptableOrUnknown(data['gebiet']!, _gebietMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_gebietMeta);
+    }
+    if (data.containsKey('kapitel')) {
+      context.handle(
+        _kapitelMeta,
+        kapitel.isAcceptableOrUnknown(data['kapitel']!, _kapitelMeta),
+      );
+    }
+    if (data.containsKey('remote_id')) {
+      context.handle(
+        _remoteIdMeta,
+        remoteId.isAcceptableOrUnknown(data['remote_id']!, _remoteIdMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  AbgeschalteterLernbereich map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AbgeschalteterLernbereich(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}id'],
+          )!,
+      gebiet:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}gebiet'],
+          )!,
+      kapitel: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kapitel'],
+      ),
+      remoteId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}remote_id'],
+      ),
+    );
+  }
+
+  @override
+  $AbgeschalteteLernbereicheTable createAlias(String alias) {
+    return $AbgeschalteteLernbereicheTable(attachedDatabase, alias);
+  }
+}
+
+class AbgeschalteterLernbereich extends DataClass
+    implements Insertable<AbgeschalteterLernbereich> {
+  final int id;
+
+  /// Schlüssel aus `Wissensgebiet` — `gefahrgut`, `atemschutz`, …
+  final String gebiet;
+
+  /// Das Unterkapitel im Klartext, wie an der Frage. `null` heißt: das
+  /// **ganze Gebiet** ist abgeschaltet.
+  final String? kapitel;
+
+  /// Die UUID der Serverzeile — der Schlüssel zum Wiedereinschalten.
+  final String? remoteId;
+  const AbgeschalteterLernbereich({
+    required this.id,
+    required this.gebiet,
+    this.kapitel,
+    this.remoteId,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['gebiet'] = Variable<String>(gebiet);
+    if (!nullToAbsent || kapitel != null) {
+      map['kapitel'] = Variable<String>(kapitel);
+    }
+    if (!nullToAbsent || remoteId != null) {
+      map['remote_id'] = Variable<String>(remoteId);
+    }
+    return map;
+  }
+
+  AbgeschalteteLernbereicheCompanion toCompanion(bool nullToAbsent) {
+    return AbgeschalteteLernbereicheCompanion(
+      id: Value(id),
+      gebiet: Value(gebiet),
+      kapitel:
+          kapitel == null && nullToAbsent
+              ? const Value.absent()
+              : Value(kapitel),
+      remoteId:
+          remoteId == null && nullToAbsent
+              ? const Value.absent()
+              : Value(remoteId),
+    );
+  }
+
+  factory AbgeschalteterLernbereich.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AbgeschalteterLernbereich(
+      id: serializer.fromJson<int>(json['id']),
+      gebiet: serializer.fromJson<String>(json['gebiet']),
+      kapitel: serializer.fromJson<String?>(json['kapitel']),
+      remoteId: serializer.fromJson<String?>(json['remoteId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'gebiet': serializer.toJson<String>(gebiet),
+      'kapitel': serializer.toJson<String?>(kapitel),
+      'remoteId': serializer.toJson<String?>(remoteId),
+    };
+  }
+
+  AbgeschalteterLernbereich copyWith({
+    int? id,
+    String? gebiet,
+    Value<String?> kapitel = const Value.absent(),
+    Value<String?> remoteId = const Value.absent(),
+  }) => AbgeschalteterLernbereich(
+    id: id ?? this.id,
+    gebiet: gebiet ?? this.gebiet,
+    kapitel: kapitel.present ? kapitel.value : this.kapitel,
+    remoteId: remoteId.present ? remoteId.value : this.remoteId,
+  );
+  AbgeschalteterLernbereich copyWithCompanion(
+    AbgeschalteteLernbereicheCompanion data,
+  ) {
+    return AbgeschalteterLernbereich(
+      id: data.id.present ? data.id.value : this.id,
+      gebiet: data.gebiet.present ? data.gebiet.value : this.gebiet,
+      kapitel: data.kapitel.present ? data.kapitel.value : this.kapitel,
+      remoteId: data.remoteId.present ? data.remoteId.value : this.remoteId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AbgeschalteterLernbereich(')
+          ..write('id: $id, ')
+          ..write('gebiet: $gebiet, ')
+          ..write('kapitel: $kapitel, ')
+          ..write('remoteId: $remoteId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, gebiet, kapitel, remoteId);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AbgeschalteterLernbereich &&
+          other.id == this.id &&
+          other.gebiet == this.gebiet &&
+          other.kapitel == this.kapitel &&
+          other.remoteId == this.remoteId);
+}
+
+class AbgeschalteteLernbereicheCompanion
+    extends UpdateCompanion<AbgeschalteterLernbereich> {
+  final Value<int> id;
+  final Value<String> gebiet;
+  final Value<String?> kapitel;
+  final Value<String?> remoteId;
+  const AbgeschalteteLernbereicheCompanion({
+    this.id = const Value.absent(),
+    this.gebiet = const Value.absent(),
+    this.kapitel = const Value.absent(),
+    this.remoteId = const Value.absent(),
+  });
+  AbgeschalteteLernbereicheCompanion.insert({
+    this.id = const Value.absent(),
+    required String gebiet,
+    this.kapitel = const Value.absent(),
+    this.remoteId = const Value.absent(),
+  }) : gebiet = Value(gebiet);
+  static Insertable<AbgeschalteterLernbereich> custom({
+    Expression<int>? id,
+    Expression<String>? gebiet,
+    Expression<String>? kapitel,
+    Expression<String>? remoteId,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (gebiet != null) 'gebiet': gebiet,
+      if (kapitel != null) 'kapitel': kapitel,
+      if (remoteId != null) 'remote_id': remoteId,
+    });
+  }
+
+  AbgeschalteteLernbereicheCompanion copyWith({
+    Value<int>? id,
+    Value<String>? gebiet,
+    Value<String?>? kapitel,
+    Value<String?>? remoteId,
+  }) {
+    return AbgeschalteteLernbereicheCompanion(
+      id: id ?? this.id,
+      gebiet: gebiet ?? this.gebiet,
+      kapitel: kapitel ?? this.kapitel,
+      remoteId: remoteId ?? this.remoteId,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (gebiet.present) {
+      map['gebiet'] = Variable<String>(gebiet.value);
+    }
+    if (kapitel.present) {
+      map['kapitel'] = Variable<String>(kapitel.value);
+    }
+    if (remoteId.present) {
+      map['remote_id'] = Variable<String>(remoteId.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AbgeschalteteLernbereicheCompanion(')
+          ..write('id: $id, ')
+          ..write('gebiet: $gebiet, ')
+          ..write('kapitel: $kapitel, ')
+          ..write('remoteId: $remoteId')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $FragenhinweiseTable extends Fragenhinweise
+    with TableInfo<$FragenhinweiseTable, Fragenhinweis> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FragenhinweiseTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _remoteIdMeta = const VerificationMeta(
+    'remoteId',
+  );
+  @override
+  late final GeneratedColumn<String> remoteId = GeneratedColumn<String>(
+    'remote_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _frageRemoteIdMeta = const VerificationMeta(
+    'frageRemoteId',
+  );
+  @override
+  late final GeneratedColumn<String> frageRemoteId = GeneratedColumn<String>(
+    'frage_remote_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _hinweisMeta = const VerificationMeta(
+    'hinweis',
+  );
+  @override
+  late final GeneratedColumn<String> hinweis = GeneratedColumn<String>(
+    'hinweis',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _vonNameMeta = const VerificationMeta(
+    'vonName',
+  );
+  @override
+  late final GeneratedColumn<String> vonName = GeneratedColumn<String>(
+    'von_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _erledigtAmMeta = const VerificationMeta(
+    'erledigtAm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> erledigtAm = GeneratedColumn<DateTime>(
+    'erledigt_am',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    remoteId,
+    frageRemoteId,
+    hinweis,
+    vonName,
+    createdAt,
+    erledigtAm,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'fragenhinweise';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Fragenhinweis> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('remote_id')) {
+      context.handle(
+        _remoteIdMeta,
+        remoteId.isAcceptableOrUnknown(data['remote_id']!, _remoteIdMeta),
+      );
+    }
+    if (data.containsKey('frage_remote_id')) {
+      context.handle(
+        _frageRemoteIdMeta,
+        frageRemoteId.isAcceptableOrUnknown(
+          data['frage_remote_id']!,
+          _frageRemoteIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_frageRemoteIdMeta);
+    }
+    if (data.containsKey('hinweis')) {
+      context.handle(
+        _hinweisMeta,
+        hinweis.isAcceptableOrUnknown(data['hinweis']!, _hinweisMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_hinweisMeta);
+    }
+    if (data.containsKey('von_name')) {
+      context.handle(
+        _vonNameMeta,
+        vonName.isAcceptableOrUnknown(data['von_name']!, _vonNameMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('erledigt_am')) {
+      context.handle(
+        _erledigtAmMeta,
+        erledigtAm.isAcceptableOrUnknown(data['erledigt_am']!, _erledigtAmMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Fragenhinweis map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Fragenhinweis(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}id'],
+          )!,
+      remoteId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}remote_id'],
+      ),
+      frageRemoteId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}frage_remote_id'],
+          )!,
+      hinweis:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}hinweis'],
+          )!,
+      vonName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}von_name'],
+      ),
+      createdAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}created_at'],
+          )!,
+      erledigtAm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}erledigt_am'],
+      ),
+    );
+  }
+
+  @override
+  $FragenhinweiseTable createAlias(String alias) {
+    return $FragenhinweiseTable(attachedDatabase, alias);
+  }
+}
+
+class Fragenhinweis extends DataClass implements Insertable<Fragenhinweis> {
+  final int id;
+
+  /// UUID der Serverzeile.
+  final String? remoteId;
+
+  /// UUID der Frage, auf die sich der Hinweis bezieht — der Wert aus
+  /// `Wissensfragen.remoteId`, NICHT die lokale Zeilennummer. Der Hinweis
+  /// kommt vom Server und kennt nur dessen Schlüssel.
+  final String frageRemoteId;
+  final String hinweis;
+
+  /// Anzeigename des Meldenden, rein zur Nachvollziehbarkeit.
+  final String? vonName;
+  final DateTime createdAt;
+
+  /// Abgehakt vom Gerätewart. `null` = liegt offen.
+  final DateTime? erledigtAm;
+  const Fragenhinweis({
+    required this.id,
+    this.remoteId,
+    required this.frageRemoteId,
+    required this.hinweis,
+    this.vonName,
+    required this.createdAt,
+    this.erledigtAm,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    if (!nullToAbsent || remoteId != null) {
+      map['remote_id'] = Variable<String>(remoteId);
+    }
+    map['frage_remote_id'] = Variable<String>(frageRemoteId);
+    map['hinweis'] = Variable<String>(hinweis);
+    if (!nullToAbsent || vonName != null) {
+      map['von_name'] = Variable<String>(vonName);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || erledigtAm != null) {
+      map['erledigt_am'] = Variable<DateTime>(erledigtAm);
+    }
+    return map;
+  }
+
+  FragenhinweiseCompanion toCompanion(bool nullToAbsent) {
+    return FragenhinweiseCompanion(
+      id: Value(id),
+      remoteId:
+          remoteId == null && nullToAbsent
+              ? const Value.absent()
+              : Value(remoteId),
+      frageRemoteId: Value(frageRemoteId),
+      hinweis: Value(hinweis),
+      vonName:
+          vonName == null && nullToAbsent
+              ? const Value.absent()
+              : Value(vonName),
+      createdAt: Value(createdAt),
+      erledigtAm:
+          erledigtAm == null && nullToAbsent
+              ? const Value.absent()
+              : Value(erledigtAm),
+    );
+  }
+
+  factory Fragenhinweis.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Fragenhinweis(
+      id: serializer.fromJson<int>(json['id']),
+      remoteId: serializer.fromJson<String?>(json['remoteId']),
+      frageRemoteId: serializer.fromJson<String>(json['frageRemoteId']),
+      hinweis: serializer.fromJson<String>(json['hinweis']),
+      vonName: serializer.fromJson<String?>(json['vonName']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      erledigtAm: serializer.fromJson<DateTime?>(json['erledigtAm']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'remoteId': serializer.toJson<String?>(remoteId),
+      'frageRemoteId': serializer.toJson<String>(frageRemoteId),
+      'hinweis': serializer.toJson<String>(hinweis),
+      'vonName': serializer.toJson<String?>(vonName),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'erledigtAm': serializer.toJson<DateTime?>(erledigtAm),
+    };
+  }
+
+  Fragenhinweis copyWith({
+    int? id,
+    Value<String?> remoteId = const Value.absent(),
+    String? frageRemoteId,
+    String? hinweis,
+    Value<String?> vonName = const Value.absent(),
+    DateTime? createdAt,
+    Value<DateTime?> erledigtAm = const Value.absent(),
+  }) => Fragenhinweis(
+    id: id ?? this.id,
+    remoteId: remoteId.present ? remoteId.value : this.remoteId,
+    frageRemoteId: frageRemoteId ?? this.frageRemoteId,
+    hinweis: hinweis ?? this.hinweis,
+    vonName: vonName.present ? vonName.value : this.vonName,
+    createdAt: createdAt ?? this.createdAt,
+    erledigtAm: erledigtAm.present ? erledigtAm.value : this.erledigtAm,
+  );
+  Fragenhinweis copyWithCompanion(FragenhinweiseCompanion data) {
+    return Fragenhinweis(
+      id: data.id.present ? data.id.value : this.id,
+      remoteId: data.remoteId.present ? data.remoteId.value : this.remoteId,
+      frageRemoteId:
+          data.frageRemoteId.present
+              ? data.frageRemoteId.value
+              : this.frageRemoteId,
+      hinweis: data.hinweis.present ? data.hinweis.value : this.hinweis,
+      vonName: data.vonName.present ? data.vonName.value : this.vonName,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      erledigtAm:
+          data.erledigtAm.present ? data.erledigtAm.value : this.erledigtAm,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Fragenhinweis(')
+          ..write('id: $id, ')
+          ..write('remoteId: $remoteId, ')
+          ..write('frageRemoteId: $frageRemoteId, ')
+          ..write('hinweis: $hinweis, ')
+          ..write('vonName: $vonName, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('erledigtAm: $erledigtAm')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    remoteId,
+    frageRemoteId,
+    hinweis,
+    vonName,
+    createdAt,
+    erledigtAm,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Fragenhinweis &&
+          other.id == this.id &&
+          other.remoteId == this.remoteId &&
+          other.frageRemoteId == this.frageRemoteId &&
+          other.hinweis == this.hinweis &&
+          other.vonName == this.vonName &&
+          other.createdAt == this.createdAt &&
+          other.erledigtAm == this.erledigtAm);
+}
+
+class FragenhinweiseCompanion extends UpdateCompanion<Fragenhinweis> {
+  final Value<int> id;
+  final Value<String?> remoteId;
+  final Value<String> frageRemoteId;
+  final Value<String> hinweis;
+  final Value<String?> vonName;
+  final Value<DateTime> createdAt;
+  final Value<DateTime?> erledigtAm;
+  const FragenhinweiseCompanion({
+    this.id = const Value.absent(),
+    this.remoteId = const Value.absent(),
+    this.frageRemoteId = const Value.absent(),
+    this.hinweis = const Value.absent(),
+    this.vonName = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.erledigtAm = const Value.absent(),
+  });
+  FragenhinweiseCompanion.insert({
+    this.id = const Value.absent(),
+    this.remoteId = const Value.absent(),
+    required String frageRemoteId,
+    required String hinweis,
+    this.vonName = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.erledigtAm = const Value.absent(),
+  }) : frageRemoteId = Value(frageRemoteId),
+       hinweis = Value(hinweis);
+  static Insertable<Fragenhinweis> custom({
+    Expression<int>? id,
+    Expression<String>? remoteId,
+    Expression<String>? frageRemoteId,
+    Expression<String>? hinweis,
+    Expression<String>? vonName,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? erledigtAm,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (remoteId != null) 'remote_id': remoteId,
+      if (frageRemoteId != null) 'frage_remote_id': frageRemoteId,
+      if (hinweis != null) 'hinweis': hinweis,
+      if (vonName != null) 'von_name': vonName,
+      if (createdAt != null) 'created_at': createdAt,
+      if (erledigtAm != null) 'erledigt_am': erledigtAm,
+    });
+  }
+
+  FragenhinweiseCompanion copyWith({
+    Value<int>? id,
+    Value<String?>? remoteId,
+    Value<String>? frageRemoteId,
+    Value<String>? hinweis,
+    Value<String?>? vonName,
+    Value<DateTime>? createdAt,
+    Value<DateTime?>? erledigtAm,
+  }) {
+    return FragenhinweiseCompanion(
+      id: id ?? this.id,
+      remoteId: remoteId ?? this.remoteId,
+      frageRemoteId: frageRemoteId ?? this.frageRemoteId,
+      hinweis: hinweis ?? this.hinweis,
+      vonName: vonName ?? this.vonName,
+      createdAt: createdAt ?? this.createdAt,
+      erledigtAm: erledigtAm ?? this.erledigtAm,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (remoteId.present) {
+      map['remote_id'] = Variable<String>(remoteId.value);
+    }
+    if (frageRemoteId.present) {
+      map['frage_remote_id'] = Variable<String>(frageRemoteId.value);
+    }
+    if (hinweis.present) {
+      map['hinweis'] = Variable<String>(hinweis.value);
+    }
+    if (vonName.present) {
+      map['von_name'] = Variable<String>(vonName.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (erledigtAm.present) {
+      map['erledigt_am'] = Variable<DateTime>(erledigtAm.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FragenhinweiseCompanion(')
+          ..write('id: $id, ')
+          ..write('remoteId: $remoteId, ')
+          ..write('frageRemoteId: $frageRemoteId, ')
+          ..write('hinweis: $hinweis, ')
+          ..write('vonName: $vonName, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('erledigtAm: $erledigtAm')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -8536,6 +9346,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $VehicleAttachmentsTable vehicleAttachments =
       $VehicleAttachmentsTable(this);
   late final $WissensfragenTable wissensfragen = $WissensfragenTable(this);
+  late final $AbgeschalteteLernbereicheTable abgeschalteteLernbereiche =
+      $AbgeschalteteLernbereicheTable(this);
+  late final $FragenhinweiseTable fragenhinweise = $FragenhinweiseTable(this);
   late final VehicleDao vehicleDao = VehicleDao(this as AppDatabase);
   late final CompartmentDao compartmentDao = CompartmentDao(
     this as AppDatabase,
@@ -8568,6 +9381,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     inventoryChecks,
     vehicleAttachments,
     wissensfragen,
+    abgeschalteteLernbereiche,
+    fragenhinweise,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -15857,6 +16672,456 @@ typedef $$WissensfragenTableProcessedTableManager =
       WissensfrageData,
       PrefetchHooks Function()
     >;
+typedef $$AbgeschalteteLernbereicheTableCreateCompanionBuilder =
+    AbgeschalteteLernbereicheCompanion Function({
+      Value<int> id,
+      required String gebiet,
+      Value<String?> kapitel,
+      Value<String?> remoteId,
+    });
+typedef $$AbgeschalteteLernbereicheTableUpdateCompanionBuilder =
+    AbgeschalteteLernbereicheCompanion Function({
+      Value<int> id,
+      Value<String> gebiet,
+      Value<String?> kapitel,
+      Value<String?> remoteId,
+    });
+
+class $$AbgeschalteteLernbereicheTableFilterComposer
+    extends Composer<_$AppDatabase, $AbgeschalteteLernbereicheTable> {
+  $$AbgeschalteteLernbereicheTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get gebiet => $composableBuilder(
+    column: $table.gebiet,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get kapitel => $composableBuilder(
+    column: $table.kapitel,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$AbgeschalteteLernbereicheTableOrderingComposer
+    extends Composer<_$AppDatabase, $AbgeschalteteLernbereicheTable> {
+  $$AbgeschalteteLernbereicheTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get gebiet => $composableBuilder(
+    column: $table.gebiet,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kapitel => $composableBuilder(
+    column: $table.kapitel,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$AbgeschalteteLernbereicheTableAnnotationComposer
+    extends Composer<_$AppDatabase, $AbgeschalteteLernbereicheTable> {
+  $$AbgeschalteteLernbereicheTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get gebiet =>
+      $composableBuilder(column: $table.gebiet, builder: (column) => column);
+
+  GeneratedColumn<String> get kapitel =>
+      $composableBuilder(column: $table.kapitel, builder: (column) => column);
+
+  GeneratedColumn<String> get remoteId =>
+      $composableBuilder(column: $table.remoteId, builder: (column) => column);
+}
+
+class $$AbgeschalteteLernbereicheTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $AbgeschalteteLernbereicheTable,
+          AbgeschalteterLernbereich,
+          $$AbgeschalteteLernbereicheTableFilterComposer,
+          $$AbgeschalteteLernbereicheTableOrderingComposer,
+          $$AbgeschalteteLernbereicheTableAnnotationComposer,
+          $$AbgeschalteteLernbereicheTableCreateCompanionBuilder,
+          $$AbgeschalteteLernbereicheTableUpdateCompanionBuilder,
+          (
+            AbgeschalteterLernbereich,
+            BaseReferences<
+              _$AppDatabase,
+              $AbgeschalteteLernbereicheTable,
+              AbgeschalteterLernbereich
+            >,
+          ),
+          AbgeschalteterLernbereich,
+          PrefetchHooks Function()
+        > {
+  $$AbgeschalteteLernbereicheTableTableManager(
+    _$AppDatabase db,
+    $AbgeschalteteLernbereicheTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$AbgeschalteteLernbereicheTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer:
+              () => $$AbgeschalteteLernbereicheTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer:
+              () => $$AbgeschalteteLernbereicheTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> gebiet = const Value.absent(),
+                Value<String?> kapitel = const Value.absent(),
+                Value<String?> remoteId = const Value.absent(),
+              }) => AbgeschalteteLernbereicheCompanion(
+                id: id,
+                gebiet: gebiet,
+                kapitel: kapitel,
+                remoteId: remoteId,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String gebiet,
+                Value<String?> kapitel = const Value.absent(),
+                Value<String?> remoteId = const Value.absent(),
+              }) => AbgeschalteteLernbereicheCompanion.insert(
+                id: id,
+                gebiet: gebiet,
+                kapitel: kapitel,
+                remoteId: remoteId,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          BaseReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$AbgeschalteteLernbereicheTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $AbgeschalteteLernbereicheTable,
+      AbgeschalteterLernbereich,
+      $$AbgeschalteteLernbereicheTableFilterComposer,
+      $$AbgeschalteteLernbereicheTableOrderingComposer,
+      $$AbgeschalteteLernbereicheTableAnnotationComposer,
+      $$AbgeschalteteLernbereicheTableCreateCompanionBuilder,
+      $$AbgeschalteteLernbereicheTableUpdateCompanionBuilder,
+      (
+        AbgeschalteterLernbereich,
+        BaseReferences<
+          _$AppDatabase,
+          $AbgeschalteteLernbereicheTable,
+          AbgeschalteterLernbereich
+        >,
+      ),
+      AbgeschalteterLernbereich,
+      PrefetchHooks Function()
+    >;
+typedef $$FragenhinweiseTableCreateCompanionBuilder =
+    FragenhinweiseCompanion Function({
+      Value<int> id,
+      Value<String?> remoteId,
+      required String frageRemoteId,
+      required String hinweis,
+      Value<String?> vonName,
+      Value<DateTime> createdAt,
+      Value<DateTime?> erledigtAm,
+    });
+typedef $$FragenhinweiseTableUpdateCompanionBuilder =
+    FragenhinweiseCompanion Function({
+      Value<int> id,
+      Value<String?> remoteId,
+      Value<String> frageRemoteId,
+      Value<String> hinweis,
+      Value<String?> vonName,
+      Value<DateTime> createdAt,
+      Value<DateTime?> erledigtAm,
+    });
+
+class $$FragenhinweiseTableFilterComposer
+    extends Composer<_$AppDatabase, $FragenhinweiseTable> {
+  $$FragenhinweiseTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get frageRemoteId => $composableBuilder(
+    column: $table.frageRemoteId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get hinweis => $composableBuilder(
+    column: $table.hinweis,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get vonName => $composableBuilder(
+    column: $table.vonName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get erledigtAm => $composableBuilder(
+    column: $table.erledigtAm,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$FragenhinweiseTableOrderingComposer
+    extends Composer<_$AppDatabase, $FragenhinweiseTable> {
+  $$FragenhinweiseTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get frageRemoteId => $composableBuilder(
+    column: $table.frageRemoteId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get hinweis => $composableBuilder(
+    column: $table.hinweis,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get vonName => $composableBuilder(
+    column: $table.vonName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get erledigtAm => $composableBuilder(
+    column: $table.erledigtAm,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$FragenhinweiseTableAnnotationComposer
+    extends Composer<_$AppDatabase, $FragenhinweiseTable> {
+  $$FragenhinweiseTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get remoteId =>
+      $composableBuilder(column: $table.remoteId, builder: (column) => column);
+
+  GeneratedColumn<String> get frageRemoteId => $composableBuilder(
+    column: $table.frageRemoteId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get hinweis =>
+      $composableBuilder(column: $table.hinweis, builder: (column) => column);
+
+  GeneratedColumn<String> get vonName =>
+      $composableBuilder(column: $table.vonName, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get erledigtAm => $composableBuilder(
+    column: $table.erledigtAm,
+    builder: (column) => column,
+  );
+}
+
+class $$FragenhinweiseTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $FragenhinweiseTable,
+          Fragenhinweis,
+          $$FragenhinweiseTableFilterComposer,
+          $$FragenhinweiseTableOrderingComposer,
+          $$FragenhinweiseTableAnnotationComposer,
+          $$FragenhinweiseTableCreateCompanionBuilder,
+          $$FragenhinweiseTableUpdateCompanionBuilder,
+          (
+            Fragenhinweis,
+            BaseReferences<_$AppDatabase, $FragenhinweiseTable, Fragenhinweis>,
+          ),
+          Fragenhinweis,
+          PrefetchHooks Function()
+        > {
+  $$FragenhinweiseTableTableManager(
+    _$AppDatabase db,
+    $FragenhinweiseTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$FragenhinweiseTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () =>
+                  $$FragenhinweiseTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer:
+              () => $$FragenhinweiseTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String?> remoteId = const Value.absent(),
+                Value<String> frageRemoteId = const Value.absent(),
+                Value<String> hinweis = const Value.absent(),
+                Value<String?> vonName = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime?> erledigtAm = const Value.absent(),
+              }) => FragenhinweiseCompanion(
+                id: id,
+                remoteId: remoteId,
+                frageRemoteId: frageRemoteId,
+                hinweis: hinweis,
+                vonName: vonName,
+                createdAt: createdAt,
+                erledigtAm: erledigtAm,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String?> remoteId = const Value.absent(),
+                required String frageRemoteId,
+                required String hinweis,
+                Value<String?> vonName = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime?> erledigtAm = const Value.absent(),
+              }) => FragenhinweiseCompanion.insert(
+                id: id,
+                remoteId: remoteId,
+                frageRemoteId: frageRemoteId,
+                hinweis: hinweis,
+                vonName: vonName,
+                createdAt: createdAt,
+                erledigtAm: erledigtAm,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          BaseReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$FragenhinweiseTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $FragenhinweiseTable,
+      Fragenhinweis,
+      $$FragenhinweiseTableFilterComposer,
+      $$FragenhinweiseTableOrderingComposer,
+      $$FragenhinweiseTableAnnotationComposer,
+      $$FragenhinweiseTableCreateCompanionBuilder,
+      $$FragenhinweiseTableUpdateCompanionBuilder,
+      (
+        Fragenhinweis,
+        BaseReferences<_$AppDatabase, $FragenhinweiseTable, Fragenhinweis>,
+      ),
+      Fragenhinweis,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -15891,4 +17156,11 @@ class $AppDatabaseManager {
       $$VehicleAttachmentsTableTableManager(_db, _db.vehicleAttachments);
   $$WissensfragenTableTableManager get wissensfragen =>
       $$WissensfragenTableTableManager(_db, _db.wissensfragen);
+  $$AbgeschalteteLernbereicheTableTableManager get abgeschalteteLernbereiche =>
+      $$AbgeschalteteLernbereicheTableTableManager(
+        _db,
+        _db.abgeschalteteLernbereiche,
+      );
+  $$FragenhinweiseTableTableManager get fragenhinweise =>
+      $$FragenhinweiseTableTableManager(_db, _db.fragenhinweise);
 }

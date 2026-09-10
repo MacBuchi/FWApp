@@ -116,6 +116,14 @@
     {
       "name": "20260910120000_schreibrechte_alle_tabellen.sql",
       "sha256": "1b140f60daa205db8ed9e97c3bef7372f7489c25b67f41119d2f0055ed39d9d9"
+    },
+    {
+      "name": "20260910160000_lernbereiche_abschalten.sql",
+      "sha256": "13457f885d0d2bf46f56930b80c9915d3d7d182e937159f555b420c75375ccf0"
+    },
+    {
+      "name": "20260910170000_frage_hinweise.sql",
+      "sha256": "178c7359c64909e598856dc5dcfefab37bfe1600c2481c9ab66708a64f7ee97e"
     }
   ],
   "functions": {

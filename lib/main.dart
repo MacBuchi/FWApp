@@ -215,6 +215,13 @@ class _FWAppState extends ConsumerState<FWApp> {
           await wissen.schiebe(wehr);
           if (!mounted) return;
           await wissen.ziehe(wehr);
+          if (!mounted) return;
+          // Was die Wehr abgewählt hat, muss VOR dem ersten Spiel hier sein —
+          // sonst kommt beim ersten Start nach dem Abschalten noch einmal die
+          // Frage, die niemand mehr sehen wollte.
+          await wissen.zieheLernbereiche(wehr);
+          if (!mounted) return;
+          await wissen.zieheHinweise(wehr);
         }
         if (!mounted) return;
         // Warm the offline image cache in the background (M2).

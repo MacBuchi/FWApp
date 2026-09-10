@@ -65,6 +65,7 @@ Future<void> showFeedbackDialog(BuildContext context, WidgetRef ref) async {
         FeedbackType.feature => 'Danke für deinen Wunsch! 💡',
         FeedbackType.fahrzeug => 'Danke für den Fahrzeug-Vorschlag! 🚒',
         FeedbackType.katalog => 'Danke für den Geräte-Vorschlag! 🧰',
+        FeedbackType.frage => 'Danke für den Hinweis zur Frage! ❓',
       })));
     }
   } catch (_) {
@@ -532,6 +533,12 @@ class _FeedbackDialogState extends State<_FeedbackDialog> {
   /// Anzeige-Reihenfolge: erst die zwei klassischen Meldungen, dann die
   /// beiden Inhalts-Vorschläge (Issue #145) — Chips statt SegmentedButton,
   /// weil vier Segmente auf Telefonbreite nicht nebeneinander passen.
+  ///
+  /// ⚠️ `FeedbackType.frage` steht bewusst NICHT hier: Ein Hinweis zu einer
+  /// Quizfrage ergibt nur AN der Frage Sinn — dort weiß die App, um welche
+  /// es geht, und trägt sie als erste Zeile ein (#194). Aus diesem Dialog
+  /// heraus käme ein Issue ohne Frage. Die Zweige unten führen die Art
+  /// trotzdem, damit ein späteres Aufnehmen nichts Halbfertiges vorfindet.
   static const _arten = [
     FeedbackType.feature,
     FeedbackType.bug,
@@ -544,6 +551,7 @@ class _FeedbackDialogState extends State<_FeedbackDialog> {
         FeedbackType.bug => '🐛 Fehler',
         FeedbackType.fahrzeug => '🚒 Fahrzeug-Vorlage',
         FeedbackType.katalog => '🧰 Standard-Gerät',
+        FeedbackType.frage => '❓ Quizfrage',
       };
 
   /// Bei den Vorschlägen ist die ERSTE ZEILE der Name — der Bot baut daraus
@@ -563,6 +571,9 @@ class _FeedbackDialogState extends State<_FeedbackDialog> {
         FeedbackType.katalog =>
           'Welches Gerät fehlt im mitgelieferten Katalog? Die erste '
               'Zeile ist der Gerätename — sie wird die Überschrift.',
+        FeedbackType.frage =>
+          'Was stimmt an der Frage nicht? Die erste Zeile ist die Frage '
+              'selbst — sie wird die Überschrift.',
       };
 
   String get _feldLabel => switch (_type) {
@@ -570,6 +581,7 @@ class _FeedbackDialogState extends State<_FeedbackDialog> {
         FeedbackType.feature => 'Dein Wunsch',
         FeedbackType.fahrzeug => 'Fahrzeugtyp und Geräteräume',
         FeedbackType.katalog => 'Gerätename und Details',
+        FeedbackType.frage => 'Frage und was daran nicht stimmt',
       };
 
   String get _feldHint => switch (_type) {
@@ -579,6 +591,8 @@ class _FeedbackDialogState extends State<_FeedbackDialog> {
         FeedbackType.fahrzeug => 'z. B. „GW-T“ — darunter die Fächer',
         FeedbackType.katalog =>
           'z. B. „Akku-Rettungsschere“ — Details darunter',
+        FeedbackType.frage =>
+          'z. B. „Wie hoch ist der Nenndruck?“ — Hinweis darunter',
       };
 
   @override

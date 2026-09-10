@@ -174,6 +174,66 @@ class Wissensfragen extends Table {
       dateTime().withDefault(currentDateAndTime)();
 }
 
+/// Was diese Wehr NICHT abgefragt haben will (Marcus, 2026-08-28).
+///
+/// **Ein reiner Spiegel.** Geschrieben wird ausschließlich über die RPC
+/// `setze_lernbereich`; hier steht nur, was der Server zuletzt gemeldet hat.
+/// Deshalb gibt es kein `dirty`: Es gibt keinen lokalen Stand, der auf sein
+/// Hochladen wartet. Ein Zug ersetzt die Menge vollständig — eine Zeile, die
+/// nicht mehr kommt, ist wieder eingeschaltet, und genau das soll sie sein.
+///
+/// **Warum die Entscheidung nicht am Gerät hängt.** Sie gilt für die ganze
+/// Wehr. Wäre sie eine lokale Einstellung, übte einer weiter Stoff, den die
+/// Wehr abgewählt hat, und niemand verstünde warum.
+@DataClassName('AbgeschalteterLernbereich')
+class AbgeschalteteLernbereiche extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  /// Schlüssel aus `Wissensgebiet` — `gefahrgut`, `atemschutz`, …
+  TextColumn get gebiet => text()();
+
+  /// Das Unterkapitel im Klartext, wie an der Frage. `null` heißt: das
+  /// **ganze Gebiet** ist abgeschaltet.
+  TextColumn get kapitel => text().nullable()();
+
+  /// Die UUID der Serverzeile — der Schlüssel zum Wiedereinschalten.
+  TextColumn get remoteId => text().nullable()();
+}
+
+/// Hinweise und Änderungswünsche an einer Frage (Issue #194).
+///
+/// Nur für **eigene** Fragen der Wehr. Ein Hinweis auf eine mitgelieferte
+/// Frage geht nicht hierher, sondern über `feedback` an den Bot: Die Frage
+/// steht auf jedem Gerät im Asset, hat auf dem Server also gar keine Zeile,
+/// auf die ein Hinweis zeigen könnte — und ein Fehler darin betrifft alle
+/// Wehren, nicht nur diese.
+///
+/// Ebenfalls ein reiner Spiegel, geschrieben über `melde_frage_hinweis` und
+/// `erledige_frage_hinweis`.
+@DataClassName('Fragenhinweis')
+class Fragenhinweise extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  /// UUID der Serverzeile.
+  TextColumn get remoteId => text().nullable()();
+
+  /// UUID der Frage, auf die sich der Hinweis bezieht — der Wert aus
+  /// `Wissensfragen.remoteId`, NICHT die lokale Zeilennummer. Der Hinweis
+  /// kommt vom Server und kennt nur dessen Schlüssel.
+  TextColumn get frageRemoteId => text()();
+
+  TextColumn get hinweis => text()();
+
+  /// Anzeigename des Meldenden, rein zur Nachvollziehbarkeit.
+  TextColumn get vonName => text().nullable()();
+
+  DateTimeColumn get createdAt =>
+      dateTime().withDefault(currentDateAndTime)();
+
+  /// Abgehakt vom Gerätewart. `null` = liegt offen.
+  DateTimeColumn get erledigtAm => dateTime().nullable()();
+}
+
 @DataClassName('EquipmentItemData')
 class EquipmentItems extends Table {
   IntColumn get id => integer().autoIncrement()();
@@ -879,7 +939,8 @@ class LearningDao extends DatabaseAccessor<AppDatabase>
 // ─────────────────────────────────────────────────────────────
 
 /// Die Wissensdatenbank (Issue #174).
-@DriftAccessor(tables: [Wissensfragen])
+@DriftAccessor(
+    tables: [Wissensfragen, AbgeschalteteLernbereiche, Fragenhinweise])
 class WissenDao extends DatabaseAccessor<AppDatabase>
     with _$WissenDaoMixin {
   WissenDao(super.db);
@@ -890,10 +951,34 @@ class WissenDao extends DatabaseAccessor<AppDatabase>
 
   Future<List<WissensfrageData>> getAll() => select(wissensfragen).get();
 
+  /// Ob die Frage in einem Bereich liegt, den diese Wehr abgewählt hat.
+  ///
+  /// Zwei Fälle in einem Ausdruck: Eine Zeile mit `kapitel IS NULL` schaltet
+  /// das **ganze Gebiet** ab, eine mit Kapitel nur dieses.
+  ///
+  /// ⚠️ `equalsExp` auf zwei Spalten vergleicht in SQL mit `=`, und `NULL =
+  /// NULL` ist nicht wahr, sondern unbekannt. Das ist hier genau richtig: Ein
+  /// abgeschaltetes Kapitel darf die Fragen OHNE Kapitel desselben Gebiets
+  /// nicht mitreißen. Wer das für einen Fehler hält und `isNull`-Gleichheit
+  /// nachrüstet, schaltet mit „Dekontamination" das halbe Gefahrgut ab.
+  Expression<bool> _abgeschaltet($WissensfragenTable f) => existsQuery(
+        select(abgeschalteteLernbereiche)
+          ..where((a) =>
+              a.gebiet.equalsExp(f.gebiet) &
+              (a.kapitel.isNull() | a.kapitel.equalsExp(f.kapitel))),
+      );
+
   /// Nur, was wirklich gestellt werden darf.
+  ///
+  /// „Freigegeben" allein reicht seit dem Abschalten von Lernbereichen nicht
+  /// mehr: Eine Wehr ohne Atemschutzgeräteträger hat „Atemschutz" abgewählt,
+  /// und dann darf die Frage auch nicht kommen. Der Filter sitzt hier und
+  /// nicht in der Oberfläche, weil der Party-Modus die DAO direkt fragt —
+  /// eine Prüfung, die nur ein Bildschirm kennt, gilt für das Spiel nicht.
   Future<List<WissensfrageData>> getSpielbare({String? gebiet}) =>
       (select(wissensfragen)
             ..where((t) => t.stand.equals('freigegeben'))
+            ..where((t) => _abgeschaltet(t).not())
             ..where((t) => gebiet == null
                 ? const Constant(true)
                 : t.gebiet.equals(gebiet)))
@@ -906,8 +991,33 @@ class WissenDao extends DatabaseAccessor<AppDatabase>
   /// Emission verworfen — wer sein `.future` abwartet, wartet dann ewig.
   /// Genau daran hing der Start einer Partie fest, bis es auffiel.
   Stream<List<WissensfrageData>> watchSpielbare() => (select(wissensfragen)
-        ..where((t) => t.stand.equals('freigegeben')))
+        ..where((t) => t.stand.equals('freigegeben'))
+        ..where((t) => _abgeschaltet(t).not()))
       .watch();
+
+  /// Die abgeschalteten Lernbereiche, live.
+  ///
+  /// ⚠️ Die Wissensdatenbank fragt NICHT hierüber, was sie anzeigt — sie
+  /// nimmt [watchAll] und markiert das Abgeschaltete. „Nicht mehr gefragt,
+  /// aber auffindbar" (Marcus, 2026-09-10) heißt genau das: Der Filter
+  /// gehört ins Spiel ([getSpielbare]), nicht in die Übersicht. Dieser Strom
+  /// dient der Anzeige der Schalter selbst.
+  Stream<List<AbgeschalteterLernbereich>> watchAbgeschaltet() =>
+      select(abgeschalteteLernbereiche).watch();
+
+  Future<List<AbgeschalteterLernbereich>> getAbgeschaltet() =>
+      select(abgeschalteteLernbereiche).get();
+
+  /// Ersetzt den Spiegel vollständig — siehe den Kopf der Tabelle.
+  Future<void> ersetzeAbgeschaltet(
+      List<AbgeschalteteLernbereicheCompanion> zeilen) async {
+    await transaction(() async {
+      await delete(abgeschalteteLernbereiche).go();
+      for (final z in zeilen) {
+        await into(abgeschalteteLernbereiche).insert(z);
+      }
+    });
+  }
 
   Stream<List<WissensfrageData>> watchOffen() => (select(wissensfragen)
         ..where((t) => t.stand.equals('eingereicht'))
@@ -943,6 +1053,29 @@ class WissenDao extends DatabaseAccessor<AppDatabase>
 
   Future<int> deleteFrage(int id) =>
       (delete(wissensfragen)..where((t) => t.id.equals(id))).go();
+
+  /// Alle Hinweise zu einer Frage, neueste zuerst.
+  Stream<List<Fragenhinweis>> watchHinweise(String frageRemoteId) =>
+      (select(fragenhinweise)
+            ..where((t) => t.frageRemoteId.equals(frageRemoteId))
+            ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
+          .watch();
+
+  /// Was offen liegt — der Stapel des Gerätewarts.
+  Stream<List<Fragenhinweis>> watchOffeneHinweise() =>
+      (select(fragenhinweise)
+            ..where((t) => t.erledigtAm.isNull())
+            ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
+          .watch();
+
+  Future<void> ersetzeHinweise(List<FragenhinweiseCompanion> zeilen) async {
+    await transaction(() async {
+      await delete(fragenhinweise).go();
+      for (final z in zeilen) {
+        await into(fragenhinweise).insert(z);
+      }
+    });
+  }
 
   /// Wie viele Fragen je Gebiet — Grundlage der Übersicht.
   Future<Map<String, int>> zaehleJeGebiet({bool nurFreigegeben = true}) async {
@@ -1016,6 +1149,8 @@ class AttachmentDao extends DatabaseAccessor<AppDatabase>
     InventoryChecks,
     VehicleAttachments,
     Wissensfragen,
+    AbgeschalteteLernbereiche,
+    Fragenhinweise,
   ],
   daos: [
     VehicleDao,
@@ -1034,7 +1169,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -1151,6 +1286,15 @@ class AppDatabase extends _$AppDatabase {
               await m.addColumn(wissensfragen, wissensfragen.kapitel);
               await m.addColumn(wissensfragen, wissensfragen.bildPfad);
             }
+          }
+          if (from < 12) {
+            // Abgeschaltete Lernbereiche (Marcus 2026-08-28) und Hinweise an
+            // Fragen (Issue #194). Beide Tabellen entstehen leer und sind
+            // reine Spiegel — den Inhalt bringt der erste Abgleich. Deshalb
+            // kein Backfill: Vor dieser Version war nichts abgeschaltet, und
+            // das ist der richtige Ausgangszustand.
+            await m.createTable(abgeschalteteLernbereiche);
+            await m.createTable(fragenhinweise);
           }
         },
         beforeOpen: (details) async {

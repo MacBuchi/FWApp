@@ -7,13 +7,18 @@ import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// `katalog` ist der Vorschlag für den GLOBALEN Gerätekatalog (Issue #103),
-/// `fahrzeug` der für eine fehlende Fahrzeug-Vorlage (Issue #145) — derselbe
-/// Weg wie Wunsch und Fehler, nur mit eigenem Label im Issue. Bei beiden
-/// Vorschlägen trägt die ERSTE ZEILE den Namen: Daraus baut der Bot die
-/// Überschrift. Der Server prüft die vier Werte per Check-Constraint; ein
-/// fünfter braucht deshalb IMMER eine Migration, sonst scheitert das Insert
-/// stumm mit „Senden fehlgeschlagen".
-enum FeedbackType { feature, bug, katalog, fahrzeug }
+/// `fahrzeug` der für eine fehlende Fahrzeug-Vorlage (Issue #145), `frage`
+/// der Hinweis auf eine MITGELIEFERTE Quizfrage (Issue #194) — derselbe Weg
+/// wie Wunsch und Fehler, nur mit eigenem Label im Issue. Bei allen dreien
+/// trägt die ERSTE ZEILE den Namen bzw. die Frage: Daraus baut der Bot die
+/// Überschrift. Der Server prüft die Werte per Check-Constraint; ein weiterer
+/// braucht deshalb IMMER eine Migration, sonst scheitert das Insert stumm mit
+/// „Senden fehlgeschlagen".
+///
+/// ⚠️ `frage` gilt NUR für mitgelieferte Fragen. Ein Hinweis auf eine eigene
+/// Frage der Wehr geht nicht hier durch, sondern über `melde_frage_hinweis`
+/// an den Gerätewart — er hat in einem öffentlichen Issue nichts verloren.
+enum FeedbackType { feature, bug, katalog, fahrzeug, frage }
 
 /// Server-Constraint der `feedback`-Tabelle:
 /// `check (char_length(message) between 3 and 2000)`.

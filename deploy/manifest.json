@@ -112,6 +112,10 @@
     {
       "name": "20260907120000_schreibrechte_explizit_entziehen.sql",
       "sha256": "ad5dfd9a817d8751a9724e8e9b9aa954390f06874a8e5757ea63ce470bcaf356"
+    },
+    {
+      "name": "20260910120000_schreibrechte_alle_tabellen.sql",
+      "sha256": "1b140f60daa205db8ed9e97c3bef7372f7489c25b67f41119d2f0055ed39d9d9"
     }
   ],
   "functions": {

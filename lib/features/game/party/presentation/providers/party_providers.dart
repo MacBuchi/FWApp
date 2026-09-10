@@ -256,8 +256,22 @@ class PartySpiel extends _$PartySpiel {
     // `nurEinfachauswahl`: Seit die Wissensdatenbank Mehrfachantworten kennt
     // (Issue #174), passt nicht mehr jede Frage an den Tisch — reihum
     // mehrere Kästchen anzukreuzen ist kein Spielzug.
-    final wissen =
-        nurEinfachauswahl(await ref.read(wissenDaoProvider).getSpielbare());
+    // `waehleNachBestand`: Fragen zu Geräten, die diese Wehr wirklich hat,
+    // kommen bevorzugt dran — gewichtet, nicht gefiltert. Fragen ohne
+    // Gerätebezug (Rechtskunde, ABC, Löschlehre) bleiben unangetastet; das
+    // ist der weitaus größte Teil und darf nicht verdrängt werden.
+    final wissen = waehleNachBestand(
+      nurEinfachauswahl(await ref.read(wissenDaoProvider).getSpielbare()),
+      // ⚠️ Die DAO direkt, NICHT `ref.read(eigenerBestandProvider.future)` —
+      // aus demselben Grund wie eine Zeile darüber: Ein `read` ohne Zuhörer
+      // erzeugt den Provider und entsorgt ihn sofort, das Future käme nie
+      // zurück und der Start der Partie stünde still.
+      {
+        for (final e in await ref.read(equipmentDaoProvider).getAll())
+          if (e.libraryEquipmentId case final id?) id,
+      },
+      _zufall,
+    );
 
     final fragen = mischePartie(
       fach: topf.fach,

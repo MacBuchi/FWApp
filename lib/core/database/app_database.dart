@@ -154,6 +154,21 @@ class Wissensfragen extends Table {
   /// nicht sinnvoll umschreiben.
   TextColumn get bildPfad => text().nullable()();
 
+  /// Das Katalog-Gerät, um das es geht — `std_b_druckschlauch_20m` und so
+  /// fort, derselbe Schlüssel wie `EquipmentItems.libraryEquipmentId`.
+  /// `null` heißt: Die Frage hängt an keinem bestimmten Gerät (Rechtskunde,
+  /// ABC-Einsatz, Löschlehre — der weitaus größte Teil).
+  ///
+  /// **Wozu.** Damit die App den eigenen Fuhrpark kennt: Im Spiel kommen
+  /// Fragen zu Geräten, die die Wehr tatsächlich hat, bevorzugt dran
+  /// (`waehleNachBestand`). In der Wissensdatenbank bleibt alles sichtbar
+  /// und wird nur gekennzeichnet — gewichten, nicht filtern.
+  ///
+  /// ⚠️ Bewusst der KATALOG-Schlüssel und nicht die lokale Zeilennummer:
+  /// Die Frage ist mitgeliefert und auf jedem Gerät dieselbe, die lokale
+  /// `EquipmentItems.id` ist es nicht.
+  TextColumn get geraet => text().nullable()();
+
   /// `mitgeliefert` | `eigen` — was ausgeliefert wurde, ist nicht löschbar.
   TextColumn get herkunft => text().withDefault(const Constant('eigen'))();
 
@@ -1169,7 +1184,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 12;
+  int get schemaVersion => 13;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -1266,13 +1281,18 @@ class AppDatabase extends _$AppDatabase {
             //
             // ⚠️ `newColumns` ist hier PFLICHT und wächst mit: „Die heutige
             // Definition" ist wörtlich gemeint — sie trägt inzwischen auch
-            // `kapitel` und `bild_pfad` aus v11. Ohne diesen Hinweis baut
-            // drift eine Kopier-Abfrage, die beide aus der ALTEN Tabelle
-            // liest, und die Migration bricht mit „no such column: kapitel"
-            // ab. Wer später eine Spalte ergänzt, trägt sie hier nach.
+            // `kapitel` und `bild_pfad` aus v11 und `geraet` aus v13. Ohne
+            // diesen Hinweis baut drift eine Kopier-Abfrage, die sie aus der
+            // ALTEN Tabelle liest, und die Migration bricht mit „no such
+            // column: kapitel" ab. Wer später eine Spalte ergänzt, trägt sie
+            // hier nach — `migration_test.dart` fängt das Vergessen.
             await m.alterTable(TableMigration(
               wissensfragen,
-              newColumns: [wissensfragen.kapitel, wissensfragen.bildPfad],
+              newColumns: [
+                wissensfragen.kapitel,
+                wissensfragen.bildPfad,
+                wissensfragen.geraet,
+              ],
             ));
             }
           }
@@ -1295,6 +1315,25 @@ class AppDatabase extends _$AppDatabase {
             // das ist der richtige Ausgangszustand.
             await m.createTable(abgeschalteteLernbereiche);
             await m.createTable(fragenhinweise);
+          }
+          if (from < 13) {
+            // Der Gerätebezug an der Frage (Fuhrpark-Fragen). Nullable ohne
+            // Backfill: Bestandsfragen hängen an keinem Gerät, und das ist
+            // für sie der richtige Wert — der Generator legt die neuen
+            // Fragen beim nächsten Start dazu.
+            //
+            // ⚠️ Genau ab v10 — die Grenze ist nicht willkürlich:
+            //   * unter v9 entsteht die Tabelle per `createTable` und trägt
+            //     die heutige Definition, `geraet` also schon;
+            //   * von v9 aus läuft der `alterTable`-Neubau in Schritt 10, und
+            //     der baut sie ebenfalls nach der heutigen Definition;
+            //   * übrig bleiben v10, v11 und v12.
+            // Ohne diese Grenze bricht der Sprung von v9 mit „duplicate
+            // column name: geraet" ab. Genau das hat der Migrationstest
+            // gemeldet, bevor es ein Gerät konnte.
+            if (from >= 10) {
+              await m.addColumn(wissensfragen, wissensfragen.geraet);
+            }
           }
         },
         beforeOpen: (details) async {

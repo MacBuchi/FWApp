@@ -124,6 +124,10 @@
     {
       "name": "20260910170000_frage_hinweise.sql",
       "sha256": "178c7359c64909e598856dc5dcfefab37bfe1600c2481c9ab66708a64f7ee97e"
+    },
+    {
+      "name": "20260911090000_wissen_geraetebezug.sql",
+      "sha256": "5fb7220f0cda656d2299b9858534d095a8fdf9319cd62a7eae4da995ff089060"
     }
   ],
   "functions": {

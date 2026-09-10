@@ -20,6 +20,8 @@ import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/logging/app_logger.dart';
 import 'package:fwapp/core/utils/json_utils.dart';
 import 'package:fwapp/features/game/party/data/party_inhalte.dart';
+import 'package:fwapp/core/database/standard_catalog.dart';
+import 'package:fwapp/features/knowledge/data/geraetefragen.dart';
 import 'package:fwapp/features/knowledge/data/wissen_asset.dart';
 import 'package:fwapp/features/knowledge/domain/wissensfrage.dart';
 
@@ -72,6 +74,60 @@ class WissenSeeder {
       // Ohne Grundstock ist die App ärmer, aber nicht kaputt — der
       // Party-Modus fällt auf seine Beladungsfragen zurück.
       appLog.w('Wissens-Grundstock nicht anlegbar', error: e, stackTrace: s);
+      return 0;
+    }
+  }
+
+  /// Legt die Fragen an, die den Fuhrpark kennen.
+  ///
+  /// Erzeugt aus dem mitgelieferten Katalog (siehe `geraetefragen.dart`),
+  /// also **auf jedem Gerät identisch** — deshalb `mitgeliefert` und deshalb
+  /// nie hochgeladen: Sie für jede Wehr ein zweites Mal zu speichern wäre
+  /// derselbe Fehler, den `wissen_sync.dart` schon für den Party-Topf
+  /// vermeidet.
+  ///
+  /// Erkannt wird wie bei den Geschwistern am Fragetext. Wächst der Katalog,
+  /// kommen die neuen Fragen beim nächsten Start dazu; wer eine korrigiert
+  /// hat, behält seine Fassung.
+  ///
+  /// ⚠️ Angelegt werden sie für den GANZEN Katalog, nicht nur für den eigenen
+  /// Bestand — gewichtet wird erst im Spiel (`waehleNachBestand`). Wer hier
+  /// filterte, hätte die Fragen bei jedem Import neu zu erzeugen, und in der
+  /// Wissensdatenbank stünde nichts über das Gerät, das die Nachbarwehr
+  /// mitbringt.
+  Future<int> seedGeraetefragen(StandardCatalog katalog) async {
+    try {
+      final vorhanden = {
+        for (final f in await _db.wissenDao.getAll()) _schluessel(f.frage),
+      };
+
+      var angelegt = 0;
+      for (final g in baueGeraetefragen(katalog)) {
+        if (!vorhanden.add(_schluessel(g.frage))) continue;
+        // Gemischt wird beim Anlegen und nicht beim Erzeugen: Der Generator
+        // bleibt damit prüfbar, und die richtige Antwort steht trotzdem nicht
+        // auf jedem Gerät an derselben Stelle.
+        final antworten = [g.richtige, ...g.falsche]..shuffle();
+        await _db.wissenDao.insertFrage(WissensfragenCompanion.insert(
+          gebiet: kGeraetefragenGebiet.schluessel,
+          frage: g.frage,
+          antwortenJson: Value(stringListToJson(antworten)),
+          richtigeJson: Value(jsonEncode([antworten.indexOf(g.richtige)])),
+          erklaerung: Value(g.erklaerung),
+          herkunft: Value(Fragenherkunft.mitgeliefert.schluessel),
+          stand: Value(Fragenstand.freigegeben.schluessel),
+          quelleWerk: Value(kGeraetefragenQuelle.werk),
+          quelleFundstelle: Value(kGeraetefragenQuelle.fundstelle),
+          geraet: Value(g.geraet),
+        ));
+        angelegt++;
+      }
+      if (angelegt > 0) {
+        appLog.i('Wissensdatenbank: $angelegt Gerätefragen angelegt.');
+      }
+      return angelegt;
+    } catch (e, s) {
+      appLog.w('Gerätefragen nicht anlegbar', error: e, stackTrace: s);
       return 0;
     }
   }

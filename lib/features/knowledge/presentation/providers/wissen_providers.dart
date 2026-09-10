@@ -241,6 +241,63 @@ Set<int> indizesAusJson(String json) {
 String indizesZuJson(Set<int> indizes) =>
     jsonEncode((indizes.toList()..sort()));
 
+/// Wie viele Fragen über FREMDE Geräte höchstens auf eine über ein eigenes
+/// kommen.
+///
+/// Ein Drittel, und die Zahl ist eine Abwägung, keine Messung: Ganz
+/// wegzulassen wäre Filtern statt Gewichten — Gerät der Nachbarwehr sieht man
+/// bei jeder überörtlichen Hilfe, und die Wissensdatenbank zeigt es ohnehin.
+/// Gleichberechtigt hereinzulassen hieße andererseits, dass eine Wehr mit
+/// zwölf Geräten überwiegend nach den achtundneunzig gefragt wird, die sie
+/// nicht hat. Wer das anders will, ändert diese eine Zahl.
+const kFremdeGeraeteAnteil = 3;
+
+/// Gewichtet die Fragen nach dem, was die Wehr wirklich hat.
+///
+/// **Gewichten, nicht filtern** (Marcus' Entscheidung): Fragen ohne
+/// Gerätebezug — Rechtskunde, ABC-Einsatz, Löschlehre, also der weitaus
+/// größte Teil des Prüfungsstoffs — bleiben **unangetastet**. Nur unter den
+/// Gerätefragen wird ausgewählt: die zum eigenen Bestand alle, die übrigen
+/// gedeckelt auf [kFremdeGeraeteAnteil].
+///
+/// ⚠️ Hat die Wehr gar nichts erfasst (frische Installation, Lokalbetrieb),
+/// zählen ALLE Gerätefragen als eigene. Sonst verlöre ausgerechnet die leere
+/// App über hundert Fragen — und niemand verstünde, warum das Spiel dünn
+/// anfängt und nach dem ersten Import plötzlich voll ist.
+List<WissensfrageData> waehleNachBestand(
+  List<WissensfrageData> fragen,
+  Set<String> bestand,
+  Random zufall,
+) {
+  final ohneBezug = <WissensfrageData>[];
+  final eigene = <WissensfrageData>[];
+  final fremde = <WissensfrageData>[];
+
+  for (final f in fragen) {
+    final g = f.geraet;
+    if (g == null) {
+      ohneBezug.add(f);
+    } else if (bestand.isEmpty || bestand.contains(g)) {
+      eigene.add(f);
+    } else {
+      fremde.add(f);
+    }
+  }
+
+  final erlaubt = eigene.length ~/ kFremdeGeraeteAnteil;
+  final gezogen = ([...fremde]..shuffle(zufall)).take(erlaubt);
+  return [...ohneBezug, ...eigene, ...gezogen];
+}
+
+/// Die Katalog-IDs, die auf den Fahrzeugen dieser Wehr wirklich liegen.
+final eigenerBestandProvider = FutureProvider<Set<String>>((ref) async {
+  final geraete = await ref.watch(equipmentDaoProvider).getAll();
+  return {
+    for (final e in geraete)
+      if (e.libraryEquipmentId case final id?) id,
+  };
+});
+
 /// Macht aus einer Wissensfrage eine Spielfrage des Party-Modus.
 ///
 /// ⚠️ **Die Antworten werden gemischt, und das ist Pflicht.** `mischePartie`

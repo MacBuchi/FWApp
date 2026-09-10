@@ -12,6 +12,27 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.45.0] – 2026-09-11
+
+### Neu
+
+- **Die App kennt jetzt euren Fuhrpark.** Aus dem mitgelieferten Gerätekatalog
+  entstehen über hundert neue Fragen der Form „Wofür wird ein B-Druckschlauch
+  typischerweise eingesetzt?" — und im Spiel kommen die zu **euren** Geräten
+  bevorzugt dran. Nicht ausschließlich: Gerät, das ihr nicht habt, seht ihr
+  bei jeder überörtlichen Hilfe, also mischt sich davon etwas darunter. In der
+  Wissensdatenbank steht an jeder solchen Frage, ob das Gerät in eurem Bestand
+  liegt.
+
+  Der übrige Prüfungsstoff — Rechtskunde, ABC-Einsatz, Löschlehre, Funk —
+  bleibt davon **völlig unberührt**. Er wird nicht seltener, nur weil jetzt
+  Gerätefragen dazugekommen sind.
+
+  Die Antworten stammen wörtlich aus dem Katalog und sind nicht neu erfunden.
+  Sollte trotzdem eine Frage unglücklich sein: Seit v1.44.0 kann der
+  Gerätewart sie abschalten, und jede und jeder kann einen Hinweis dazu
+  abgeben.
+
 ## [1.44.0] – 2026-09-10
 
 ### Neu

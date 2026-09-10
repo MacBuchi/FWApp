@@ -75,6 +75,7 @@ class WissenSync {
         land: Value(r['land'] as String?),
         kapitel: Value(r['kapitel'] as String?),
         bildPfad: Value(r['bild_pfad'] as String?),
+        geraet: Value(r['geraet'] as String?),
         erklaerung: Value(r['erklaerung'] as String?),
         herkunft: Value(r['herkunft'] as String),
         stand: Value(r['stand'] as String),
@@ -126,6 +127,7 @@ class WissenSync {
                 'land': f.land,
                 'kapitel': f.kapitel,
                 'bild_pfad': f.bildPfad,
+                'geraet': f.geraet,
                 'erklaerung': f.erklaerung,
                 'herkunft': f.herkunft,
                 'stand': Fragenstand.eingereicht.schluessel,
@@ -187,6 +189,7 @@ class WissenSync {
         'land': ganzeZeile.land,
         'kapitel': ganzeZeile.kapitel,
         'bild_pfad': ganzeZeile.bildPfad,
+        'geraet': ganzeZeile.geraet,
         'erklaerung': ganzeZeile.erklaerung,
       });
     }

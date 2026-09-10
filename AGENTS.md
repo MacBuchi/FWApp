@@ -369,6 +369,37 @@ pauschales Formatieren in Feature-PRs.
   beim Anlegen. Deshalb tragen die Parameter dieser Funktionen ein `p_`
   (`p_gebiet`, `p_kapitel`, `p_frage`). Gefunden hat das
   `lernbereiche_e2e_test.dart`, nicht der Migrationslauf.
+- ⚠️ **Erzeugte Gerätefragen: die richtige Antwort wird nie erfunden.**
+  `geraetefragen.dart` baut die Fragen aus `typical_use` des mitgelieferten
+  Katalogs — die richtige Antwort steht damit **per Konstruktion** schon
+  geprüft im Asset. Erfunden wird nur die Auswahl der Ablenker, und dafür
+  gelten zwei Regeln, die beide einen Grund haben:
+  **(1)** Eine Verwendung, die bei mehr als einem Gerät steht, ist generisch
+  („Jeder Einsatz") und taugt weder als Antwort noch als Ablenker.
+  **(2)** Ablenker kommen nur von Geräten, deren `equipment_functions` mit
+  denen des gefragten Geräts **keinen einzigen Eintrag teilen** — zwei Lampen
+  haben austauschbare Verwendungen, und die Frage hätte sonst zwei richtige
+  Antworten. Lieber gar keine Frage als eine unbeantwortbare: Reichen die
+  fachfremden Ablenker nicht, fällt das Gerät aus.
+  `geraetefragen_test.dart` prüft beide Regeln am Fixture **und** die Wirkung
+  an allen 110 ausgelieferten Geräten.
+- ⚠️ **Gewichten heißt: der Prüfungsstoff bleibt unangetastet.**
+  `waehleNachBestand` lässt Fragen **ohne** Gerätebezug (Rechtskunde, ABC,
+  Löschlehre — der weitaus größte Teil) vollständig durch und wählt nur unter
+  den Gerätefragen aus: eigene alle, fremde gedeckelt auf
+  `kFremdeGeraeteAnteil`. Wer das je „vereinfacht", macht aus einer Lern-App
+  ein Gerätequiz — und zwar unbemerkt, weil die Fragen in der
+  Wissensdatenbank ja weiter stehen. `bestand_gewichtung_test.dart` wacht
+  darüber. **Ohne erfassten Bestand zählt alles als eigen**, sonst verlöre die
+  frisch installierte App über hundert Fragen.
+- ⚠️ **Eine neue Spalte an `wissensfragen` braucht ZWEI Eintragungen.** Sie
+  muss in `newColumns` des `alterTable` aus Schritt 10 (sonst bricht der
+  Sprung von v9 mit „no such column") **und** ihr `addColumn` braucht die
+  richtige Untergrenze (sonst bricht derselbe Sprung mit „duplicate column
+  name", weil der Neubau in Schritt 10 sie schon angelegt hat). Für `geraet`
+  aus v13 heißt das `if (from >= 10)`. Beide Fehler meldet
+  `migration_test.dart` — er ist der Grund, warum sie nie ein Gerät erreicht
+  haben.
 - ⚠️ **Was die Wehr abgeschaltet hat, filtert die DAO — nicht die
   Oberfläche.** `getSpielbare()`/`watchSpielbare()` lassen abgeschaltete
   Gebiete und Kapitel weg, weil der Party-Modus die DAO **direkt** fragt; eine

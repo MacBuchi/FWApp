@@ -72,6 +72,10 @@ class _WissensdatenbankScreenState
     final abgeschaltet =
         ref.watch(abgeschalteteLernbereicheProvider).value ?? const [];
     final hinweise = ref.watch(offeneHinweiseProvider).value ?? const [];
+    // Der eigene Bestand, um Gerätefragen zu kennzeichnen. Solange er lädt,
+    // ist `null` — dann steht an der Frage kein Bestands-Hinweis, statt
+    // fälschlich „nicht im Bestand" zu behaupten.
+    final bestand = ref.watch(eigenerBestandProvider).value;
 
     return Scaffold(
       appBar: AppBar(
@@ -88,7 +92,8 @@ class _WissensdatenbankScreenState
       body: alleAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Fehler: $e')),
-        data: (alle) => _inhalt(alle, darfFreigeben, abgeschaltet, hinweise),
+        data: (alle) =>
+            _inhalt(alle, darfFreigeben, abgeschaltet, hinweise, bestand),
       ),
     );
   }
@@ -98,6 +103,7 @@ class _WissensdatenbankScreenState
     bool darfFreigeben,
     List<AbgeschalteterLernbereich> abgeschaltet,
     List<Fragenhinweis> hinweise,
+    Set<String>? bestand,
   ) {
     final offen = alle
         .where((f) => f.stand == Fragenstand.eingereicht.schluessel)
@@ -116,7 +122,7 @@ class _WissensdatenbankScreenState
               ? '${offen.length} wartet auf deine Freigabe'
               : '${offen.length} eingereicht, wartet auf Freigabe'),
           ...offen.map((f) => _zeile(f, darfFreigeben, abgeschaltet,
-              offen: true)),
+              bestand, offen: true)),
           const Divider(height: 32),
         ],
         // Der Hinweis-Stapel steht aus demselben Grund oben wie der
@@ -145,7 +151,8 @@ class _WissensdatenbankScreenState
             ),
           )
         else
-          ...freigegeben.map((f) => _zeile(f, darfFreigeben, abgeschaltet)),
+          ...freigegeben
+              .map((f) => _zeile(f, darfFreigeben, abgeschaltet, bestand)),
       ],
     );
   }
@@ -360,11 +367,17 @@ class _WissensdatenbankScreenState
   }
 
   Widget _zeile(WissensfrageData z, bool darfFreigeben,
-      List<AbgeschalteterLernbereich> abgeschaltet,
+      List<AbgeschalteterLernbereich> abgeschaltet, Set<String>? bestand,
       {bool offen = false}) {
     final f = zuWissensfrage(z);
     final theme = Theme.of(context);
     final aus = istAbgeschaltet(abgeschaltet, z.gebiet, kapitel: z.kapitel);
+    // Nur bei Fragen MIT Gerätebezug und nur, wenn der Bestand schon da ist.
+    // „Nicht in eurem Bestand" ist eine Aussage über die Wehr — die trifft
+    // man nicht, solange man den Bestand noch gar nicht kennt.
+    final imBestand = z.geraet == null || bestand == null
+        ? null
+        : bestand.contains(z.geraet);
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       child: ExpansionTile(
@@ -382,6 +395,11 @@ class _WissensdatenbankScreenState
           // Ohne diese Markierung sieht die Frage aus wie jede andere, und
           // niemand versteht, warum sie im Quiz nie kommt.
           if (aus) 'abgeschaltet',
+          // Dasselbe Argument für den Gerätebezug: Wer nicht sieht, dass eine
+          // Frage an einem Gerät hängt, das die Wehr gar nicht hat, hält ihr
+          // seltenes Auftauchen für Zufall.
+          if (imBestand == true) 'in eurem Bestand',
+          if (imBestand == false) 'nicht in eurem Bestand',
         ].join(' · '), style: theme.textTheme.bodySmall),
         children: [
           Padding(

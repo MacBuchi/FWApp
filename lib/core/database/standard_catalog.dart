@@ -52,6 +52,20 @@ class StandardCatalog {
   /// Leerer Katalog — für Tests und als Rückfall, wenn das Asset fehlt.
   StandardCatalog.empty() : _byId = const {};
 
+  /// Katalog aus einer Liste von Einträgen — für Tests.
+  ///
+  /// Es gibt ihn, weil die Regeln des Fragen-Generators
+  /// (`geraetefragen.dart`) an konstruierten Grenzfällen zu prüfen sind: zwei
+  /// Geräte derselben Funktionsgruppe, eine generische Verwendung, zu wenige
+  /// fachfremde Ablenker. Mit dem echten Katalog allein ließe sich keiner
+  /// dieser Fälle gezielt herstellen — und geprüft werden muss trotzdem
+  /// **beides**: die Regel am Fixture und ihre Wirkung an den 110
+  /// ausgelieferten Geräten.
+  StandardCatalog.ausEintraegen(List<Map<String, dynamic>> items)
+      : _byId = {
+          for (final item in items) item['id'] as String: item,
+        };
+
   /// Alle Katalog-IDs in Dateireihenfolge.
   Iterable<String> get ids => _byId.keys;
 

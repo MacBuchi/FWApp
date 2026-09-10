@@ -12,7 +12,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/features/game/party/data/party_inhalte.dart';
+import 'package:fwapp/core/database/standard_catalog.dart';
+import 'package:fwapp/core/utils/json_utils.dart';
 import 'package:fwapp/features/knowledge/data/wissen_seeder.dart';
+import 'package:fwapp/features/knowledge/presentation/providers/wissen_providers.dart';
 import 'package:fwapp/features/knowledge/domain/wissensfrage.dart';
 
 import '../../helpers/test_database.dart';
@@ -112,5 +115,73 @@ void main() {
     // Und der Grundstock landet vollständig in der Datenbank.
     final n = await WissenSeeder(db).seedIfNeeded(geparst);
     expect(n, geparst.fragen.length);
+  });
+
+  // ── Fragen, die den Fuhrpark kennen ──────────────────────────────────────
+
+  group('seedGeraetefragen', () {
+    StandardCatalog katalog() => StandardCatalog.ausEintraegen([
+          for (var i = 0; i < 5; i++)
+            {
+              'id': 'std_$i',
+              'name': 'Gerät $i',
+              'equipment_functions': ['G$i'],
+              'typical_use': ['Verwendung $i'],
+              'description': 'Beschreibung $i.',
+            },
+        ]);
+
+    test('legt sie mit Gerätebezug, Quelle und freigegeben an', () async {
+      final angelegt = await WissenSeeder(db).seedGeraetefragen(katalog());
+      expect(angelegt, 5);
+
+      final f = (await db.wissenDao.getAll())
+          .firstWhere((x) => x.geraet == 'std_0');
+      expect(f.gebiet, Wissensgebiet.geraetekunde.schluessel);
+      expect(f.herkunft, Fragenherkunft.mitgeliefert.schluessel);
+      // Ausgeliefertes ist geprüft — es wartet auf niemanden.
+      expect(f.stand, Fragenstand.freigegeben.schluessel);
+      expect(f.quelleWerk, 'Mitgelieferter Gerätekatalog');
+      expect(f.antwortenJson, contains('Verwendung 0'));
+    });
+
+    test('die markierte Antwort ist wirklich die richtige', () async {
+      // Beim Anlegen werden die Antworten gemischt — wenn der Index dabei
+      // nicht mitwandert, ist jede erzeugte Frage falsch, und zwar
+      // unauffällig.
+      await WissenSeeder(db).seedGeraetefragen(katalog());
+      for (final f in await db.wissenDao.getAll()) {
+        final antworten = jsonToStringList(f.antwortenJson);
+        final richtige = indizesAusJson(f.richtigeJson);
+        expect(richtige, hasLength(1));
+        final nummer = f.geraet!.split('_').last;
+        expect(antworten[richtige.single], 'Verwendung $nummer',
+            reason: f.frage);
+      }
+    });
+
+    test('ein zweiter Lauf verdoppelt nichts', () async {
+      await WissenSeeder(db).seedGeraetefragen(katalog());
+      expect(await WissenSeeder(db).seedGeraetefragen(katalog()), 0);
+      expect(await db.wissenDao.getAll(), hasLength(5));
+    });
+
+    test('eine von Hand geänderte Frage bleibt unangetastet', () async {
+      await WissenSeeder(db).seedGeraetefragen(katalog());
+      final f = (await db.wissenDao.getAll())
+          .firstWhere((x) => x.geraet == 'std_0');
+      await db.wissenDao.aendere(
+          f.id, const WissensfragenCompanion(erklaerung: Value('Korrigiert')));
+
+      await WissenSeeder(db).seedGeraetefragen(katalog());
+
+      final danach = (await db.wissenDao.getById(f.id))!;
+      expect(danach.erklaerung, 'Korrigiert');
+    });
+
+    test('ein leerer Katalog legt nichts an und wirft nicht', () async {
+      expect(await WissenSeeder(db).seedGeraetefragen(StandardCatalog.empty()),
+          0);
+    });
   });
 }

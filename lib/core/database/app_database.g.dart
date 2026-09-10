@@ -7460,6 +7460,15 @@ class $WissensfragenTable extends Wissensfragen
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _geraetMeta = const VerificationMeta('geraet');
+  @override
+  late final GeneratedColumn<String> geraet = GeneratedColumn<String>(
+    'geraet',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _herkunftMeta = const VerificationMeta(
     'herkunft',
   );
@@ -7557,6 +7566,7 @@ class $WissensfragenTable extends Wissensfragen
     land,
     kapitel,
     bildPfad,
+    geraet,
     herkunft,
     stand,
     eingereichtVon,
@@ -7672,6 +7682,12 @@ class $WissensfragenTable extends Wissensfragen
       context.handle(
         _bildPfadMeta,
         bildPfad.isAcceptableOrUnknown(data['bild_pfad']!, _bildPfadMeta),
+      );
+    }
+    if (data.containsKey('geraet')) {
+      context.handle(
+        _geraetMeta,
+        geraet.isAcceptableOrUnknown(data['geraet']!, _geraetMeta),
       );
     }
     if (data.containsKey('herkunft')) {
@@ -7793,6 +7809,10 @@ class $WissensfragenTable extends Wissensfragen
         DriftSqlType.string,
         data['${effectivePrefix}bild_pfad'],
       ),
+      geraet: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}geraet'],
+      ),
       herkunft:
           attachedDatabase.typeMapping.read(
             DriftSqlType.string,
@@ -7886,6 +7906,21 @@ class WissensfrageData extends DataClass
   /// nicht sinnvoll umschreiben.
   final String? bildPfad;
 
+  /// Das Katalog-Gerät, um das es geht — `std_b_druckschlauch_20m` und so
+  /// fort, derselbe Schlüssel wie `EquipmentItems.libraryEquipmentId`.
+  /// `null` heißt: Die Frage hängt an keinem bestimmten Gerät (Rechtskunde,
+  /// ABC-Einsatz, Löschlehre — der weitaus größte Teil).
+  ///
+  /// **Wozu.** Damit die App den eigenen Fuhrpark kennt: Im Spiel kommen
+  /// Fragen zu Geräten, die die Wehr tatsächlich hat, bevorzugt dran
+  /// (`waehleNachBestand`). In der Wissensdatenbank bleibt alles sichtbar
+  /// und wird nur gekennzeichnet — gewichten, nicht filtern.
+  ///
+  /// ⚠️ Bewusst der KATALOG-Schlüssel und nicht die lokale Zeilennummer:
+  /// Die Frage ist mitgeliefert und auf jedem Gerät dieselbe, die lokale
+  /// `EquipmentItems.id` ist es nicht.
+  final String? geraet;
+
   /// `mitgeliefert` | `eigen` — was ausgeliefert wurde, ist nicht löschbar.
   final String herkunft;
 
@@ -7916,6 +7951,7 @@ class WissensfrageData extends DataClass
     this.land,
     this.kapitel,
     this.bildPfad,
+    this.geraet,
     required this.herkunft,
     required this.stand,
     this.eingereichtVon,
@@ -7956,6 +7992,9 @@ class WissensfrageData extends DataClass
     }
     if (!nullToAbsent || bildPfad != null) {
       map['bild_pfad'] = Variable<String>(bildPfad);
+    }
+    if (!nullToAbsent || geraet != null) {
+      map['geraet'] = Variable<String>(geraet);
     }
     map['herkunft'] = Variable<String>(herkunft);
     map['stand'] = Variable<String>(stand);
@@ -8010,6 +8049,8 @@ class WissensfrageData extends DataClass
           bildPfad == null && nullToAbsent
               ? const Value.absent()
               : Value(bildPfad),
+      geraet:
+          geraet == null && nullToAbsent ? const Value.absent() : Value(geraet),
       herkunft: Value(herkunft),
       stand: Value(stand),
       eingereichtVon:
@@ -8049,6 +8090,7 @@ class WissensfrageData extends DataClass
       land: serializer.fromJson<String?>(json['land']),
       kapitel: serializer.fromJson<String?>(json['kapitel']),
       bildPfad: serializer.fromJson<String?>(json['bildPfad']),
+      geraet: serializer.fromJson<String?>(json['geraet']),
       herkunft: serializer.fromJson<String>(json['herkunft']),
       stand: serializer.fromJson<String>(json['stand']),
       eingereichtVon: serializer.fromJson<String?>(json['eingereichtVon']),
@@ -8076,6 +8118,7 @@ class WissensfrageData extends DataClass
       'land': serializer.toJson<String?>(land),
       'kapitel': serializer.toJson<String?>(kapitel),
       'bildPfad': serializer.toJson<String?>(bildPfad),
+      'geraet': serializer.toJson<String?>(geraet),
       'herkunft': serializer.toJson<String>(herkunft),
       'stand': serializer.toJson<String>(stand),
       'eingereichtVon': serializer.toJson<String?>(eingereichtVon),
@@ -8101,6 +8144,7 @@ class WissensfrageData extends DataClass
     Value<String?> land = const Value.absent(),
     Value<String?> kapitel = const Value.absent(),
     Value<String?> bildPfad = const Value.absent(),
+    Value<String?> geraet = const Value.absent(),
     String? herkunft,
     String? stand,
     Value<String?> eingereichtVon = const Value.absent(),
@@ -8126,6 +8170,7 @@ class WissensfrageData extends DataClass
     land: land.present ? land.value : this.land,
     kapitel: kapitel.present ? kapitel.value : this.kapitel,
     bildPfad: bildPfad.present ? bildPfad.value : this.bildPfad,
+    geraet: geraet.present ? geraet.value : this.geraet,
     herkunft: herkunft ?? this.herkunft,
     stand: stand ?? this.stand,
     eingereichtVon:
@@ -8164,6 +8209,7 @@ class WissensfrageData extends DataClass
       land: data.land.present ? data.land.value : this.land,
       kapitel: data.kapitel.present ? data.kapitel.value : this.kapitel,
       bildPfad: data.bildPfad.present ? data.bildPfad.value : this.bildPfad,
+      geraet: data.geraet.present ? data.geraet.value : this.geraet,
       herkunft: data.herkunft.present ? data.herkunft.value : this.herkunft,
       stand: data.stand.present ? data.stand.value : this.stand,
       eingereichtVon:
@@ -8197,6 +8243,7 @@ class WissensfrageData extends DataClass
           ..write('land: $land, ')
           ..write('kapitel: $kapitel, ')
           ..write('bildPfad: $bildPfad, ')
+          ..write('geraet: $geraet, ')
           ..write('herkunft: $herkunft, ')
           ..write('stand: $stand, ')
           ..write('eingereichtVon: $eingereichtVon, ')
@@ -8224,6 +8271,7 @@ class WissensfrageData extends DataClass
     land,
     kapitel,
     bildPfad,
+    geraet,
     herkunft,
     stand,
     eingereichtVon,
@@ -8250,6 +8298,7 @@ class WissensfrageData extends DataClass
           other.land == this.land &&
           other.kapitel == this.kapitel &&
           other.bildPfad == this.bildPfad &&
+          other.geraet == this.geraet &&
           other.herkunft == this.herkunft &&
           other.stand == this.stand &&
           other.eingereichtVon == this.eingereichtVon &&
@@ -8274,6 +8323,7 @@ class WissensfragenCompanion extends UpdateCompanion<WissensfrageData> {
   final Value<String?> land;
   final Value<String?> kapitel;
   final Value<String?> bildPfad;
+  final Value<String?> geraet;
   final Value<String> herkunft;
   final Value<String> stand;
   final Value<String?> eingereichtVon;
@@ -8296,6 +8346,7 @@ class WissensfragenCompanion extends UpdateCompanion<WissensfrageData> {
     this.land = const Value.absent(),
     this.kapitel = const Value.absent(),
     this.bildPfad = const Value.absent(),
+    this.geraet = const Value.absent(),
     this.herkunft = const Value.absent(),
     this.stand = const Value.absent(),
     this.eingereichtVon = const Value.absent(),
@@ -8319,6 +8370,7 @@ class WissensfragenCompanion extends UpdateCompanion<WissensfrageData> {
     this.land = const Value.absent(),
     this.kapitel = const Value.absent(),
     this.bildPfad = const Value.absent(),
+    this.geraet = const Value.absent(),
     this.herkunft = const Value.absent(),
     this.stand = const Value.absent(),
     this.eingereichtVon = const Value.absent(),
@@ -8343,6 +8395,7 @@ class WissensfragenCompanion extends UpdateCompanion<WissensfrageData> {
     Expression<String>? land,
     Expression<String>? kapitel,
     Expression<String>? bildPfad,
+    Expression<String>? geraet,
     Expression<String>? herkunft,
     Expression<String>? stand,
     Expression<String>? eingereichtVon,
@@ -8366,6 +8419,7 @@ class WissensfragenCompanion extends UpdateCompanion<WissensfrageData> {
       if (land != null) 'land': land,
       if (kapitel != null) 'kapitel': kapitel,
       if (bildPfad != null) 'bild_pfad': bildPfad,
+      if (geraet != null) 'geraet': geraet,
       if (herkunft != null) 'herkunft': herkunft,
       if (stand != null) 'stand': stand,
       if (eingereichtVon != null) 'eingereicht_von': eingereichtVon,
@@ -8391,6 +8445,7 @@ class WissensfragenCompanion extends UpdateCompanion<WissensfrageData> {
     Value<String?>? land,
     Value<String?>? kapitel,
     Value<String?>? bildPfad,
+    Value<String?>? geraet,
     Value<String>? herkunft,
     Value<String>? stand,
     Value<String?>? eingereichtVon,
@@ -8414,6 +8469,7 @@ class WissensfragenCompanion extends UpdateCompanion<WissensfrageData> {
       land: land ?? this.land,
       kapitel: kapitel ?? this.kapitel,
       bildPfad: bildPfad ?? this.bildPfad,
+      geraet: geraet ?? this.geraet,
       herkunft: herkunft ?? this.herkunft,
       stand: stand ?? this.stand,
       eingereichtVon: eingereichtVon ?? this.eingereichtVon,
@@ -8469,6 +8525,9 @@ class WissensfragenCompanion extends UpdateCompanion<WissensfrageData> {
     if (bildPfad.present) {
       map['bild_pfad'] = Variable<String>(bildPfad.value);
     }
+    if (geraet.present) {
+      map['geraet'] = Variable<String>(geraet.value);
+    }
     if (herkunft.present) {
       map['herkunft'] = Variable<String>(herkunft.value);
     }
@@ -8510,6 +8569,7 @@ class WissensfragenCompanion extends UpdateCompanion<WissensfrageData> {
           ..write('land: $land, ')
           ..write('kapitel: $kapitel, ')
           ..write('bildPfad: $bildPfad, ')
+          ..write('geraet: $geraet, ')
           ..write('herkunft: $herkunft, ')
           ..write('stand: $stand, ')
           ..write('eingereichtVon: $eingereichtVon, ')
@@ -16159,6 +16219,7 @@ typedef $$WissensfragenTableCreateCompanionBuilder =
       Value<String?> land,
       Value<String?> kapitel,
       Value<String?> bildPfad,
+      Value<String?> geraet,
       Value<String> herkunft,
       Value<String> stand,
       Value<String?> eingereichtVon,
@@ -16183,6 +16244,7 @@ typedef $$WissensfragenTableUpdateCompanionBuilder =
       Value<String?> land,
       Value<String?> kapitel,
       Value<String?> bildPfad,
+      Value<String?> geraet,
       Value<String> herkunft,
       Value<String> stand,
       Value<String?> eingereichtVon,
@@ -16268,6 +16330,11 @@ class $$WissensfragenTableFilterComposer
 
   ColumnFilters<String> get bildPfad => $composableBuilder(
     column: $table.bildPfad,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get geraet => $composableBuilder(
+    column: $table.geraet,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -16386,6 +16453,11 @@ class $$WissensfragenTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get geraet => $composableBuilder(
+    column: $table.geraet,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get herkunft => $composableBuilder(
     column: $table.herkunft,
     builder: (column) => ColumnOrderings(column),
@@ -16485,6 +16557,9 @@ class $$WissensfragenTableAnnotationComposer
   GeneratedColumn<String> get bildPfad =>
       $composableBuilder(column: $table.bildPfad, builder: (column) => column);
 
+  GeneratedColumn<String> get geraet =>
+      $composableBuilder(column: $table.geraet, builder: (column) => column);
+
   GeneratedColumn<String> get herkunft =>
       $composableBuilder(column: $table.herkunft, builder: (column) => column);
 
@@ -16564,6 +16639,7 @@ class $$WissensfragenTableTableManager
                 Value<String?> land = const Value.absent(),
                 Value<String?> kapitel = const Value.absent(),
                 Value<String?> bildPfad = const Value.absent(),
+                Value<String?> geraet = const Value.absent(),
                 Value<String> herkunft = const Value.absent(),
                 Value<String> stand = const Value.absent(),
                 Value<String?> eingereichtVon = const Value.absent(),
@@ -16586,6 +16662,7 @@ class $$WissensfragenTableTableManager
                 land: land,
                 kapitel: kapitel,
                 bildPfad: bildPfad,
+                geraet: geraet,
                 herkunft: herkunft,
                 stand: stand,
                 eingereichtVon: eingereichtVon,
@@ -16610,6 +16687,7 @@ class $$WissensfragenTableTableManager
                 Value<String?> land = const Value.absent(),
                 Value<String?> kapitel = const Value.absent(),
                 Value<String?> bildPfad = const Value.absent(),
+                Value<String?> geraet = const Value.absent(),
                 Value<String> herkunft = const Value.absent(),
                 Value<String> stand = const Value.absent(),
                 Value<String?> eingereichtVon = const Value.absent(),
@@ -16632,6 +16710,7 @@ class $$WissensfragenTableTableManager
                 land: land,
                 kapitel: kapitel,
                 bildPfad: bildPfad,
+                geraet: geraet,
                 herkunft: herkunft,
                 stand: stand,
                 eingereichtVon: eingereichtVon,

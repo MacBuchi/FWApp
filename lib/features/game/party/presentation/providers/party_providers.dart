@@ -19,6 +19,7 @@ import 'package:fwapp/core/database/database_providers.dart';
 import 'package:fwapp/core/utils/json_utils.dart';
 import 'package:fwapp/features/compartment/presentation/fach_antwort.dart';
 import 'package:fwapp/features/game/party/data/party_inhalte.dart';
+import 'package:fwapp/features/game/party/domain/fahrzeugfragen.dart';
 import 'package:fwapp/features/game/party/domain/party_frage.dart';
 import 'package:fwapp/features/knowledge/presentation/providers/wissen_providers.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -128,14 +129,21 @@ class PartyStand {
       spieler.where((x) => x.punkte > s.punkte).length + 1;
 }
 
-/// Fach- und Bildfragen aus dem eigenen Bestand.
+/// Fach-, Bild- und Fahrzeugfragen aus dem eigenen Bestand.
 class PartyTopf {
   final List<PartyFrage> fach;
   final List<PartyFrage> bild;
 
-  const PartyTopf({this.fach = const [], this.bild = const []});
+  /// Fahrzeugkunde aus dem eigenen Fuhrpark — siehe `fahrzeugfragen.dart`.
+  final List<PartyFrage> fahrzeug;
 
-  bool get istLeer => fach.isEmpty && bild.isEmpty;
+  const PartyTopf({
+    this.fach = const [],
+    this.bild = const [],
+    this.fahrzeug = const [],
+  });
+
+  bool get istLeer => fach.isEmpty && bild.isEmpty && fahrzeug.isEmpty;
 }
 
 /// Baut die Fragen aus dem Bestand: „In welchem Fach?" und „Was ist das?".
@@ -213,7 +221,35 @@ Future<PartyTopf> partyTopf(Ref ref, int? vehicleId) async {
     }
   }
 
-  return PartyTopf(fach: fach, bild: bild);
+  // Fahrzeugkunde aus dem eigenen Fuhrpark. Bewusst über ALLE Fahrzeuge und
+  // nicht nur über das gewählte: „Auf welchem Fahrzeug liegt das?" ist ohne
+  // die anderen Wagen keine Frage.
+  final staende = <FahrzeugStand>[];
+  for (final v in fahrzeuge) {
+    final geraete = <GeraetAufFahrzeug>[];
+    for (final c in await db.compartmentDao.getByVehicle(v.id)) {
+      for (final a in await db.assignmentDao.getByCompartment(c.id)) {
+        final eq = await db.equipmentDao.getById(a.equipmentId);
+        if (eq == null) continue;
+        geraete.add(GeraetAufFahrzeug(
+          name: eq.name,
+          bildPfad: eq.imagePath,
+          funktionen: jsonToStringList(eq.equipmentFunctionsJson),
+        ));
+      }
+    }
+    staende.add(FahrzeugStand(
+      name: v.name,
+      kennzeichen: v.licensePlate,
+      geraete: geraete,
+    ));
+  }
+
+  return PartyTopf(
+    fach: fach,
+    bild: bild,
+    fahrzeug: baueFahrzeugfragen(staende, Random()),
+  );
 }
 
 /// Die laufende Partie. `null` heißt: es läuft keine.
@@ -276,6 +312,7 @@ class PartySpiel extends _$PartySpiel {
     final fragen = mischePartie(
       fach: topf.fach,
       bild: topf.bild,
+      fahrzeug: topf.fahrzeug,
       unerwartet: wissen
           .map((f) => wissensfrageAlsPartyFrage(f, _zufall))
           .toList(),

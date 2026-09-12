@@ -383,6 +383,22 @@ pauschales Formatieren in Feature-PRs.
   fachfremden Ablenker nicht, fällt das Gerät aus.
   `geraetefragen_test.dart` prüft beide Regeln am Fixture **und** die Wirkung
   an allen 110 ausgelieferten Geräten.
+- ⚠️ **Der Fragen-Import hat ein FESTES Format, der Beladelisten-Import einen
+  Zuordnungs-Assistenten** — und das ist kein Versehen. Der Assistent
+  (`import_wizard_screen.dart`) liest fremde Exporte, deren Spalten niemand
+  vorgibt. Beim Fragen-Import kommt die Vorlage aus dieser App
+  (`vorlageCsv()`); ein Assistent für selbst ausgegebene Spalten wäre eine
+  Zuordnung von etwas auf sich selbst. Den **Parser** teilen sich beide
+  (`ImportParser.parse` — CSV mit Trennzeichen-Erkennung und Latin-1-Rückfall,
+  dazu Excel).
+  ⚠️ **Menschen zählen ab eins, die Spalte `richtige` ab null.** Die
+  Umrechnung in `_leseRichtige` ist der klassische Fehler um genau eins — wer
+  ihn macht, importiert vierzig Fragen mit systematisch falscher Lösung, und
+  das sieht plausibel aus. `fragen_import_test.dart` schreibt die Erwartung
+  deshalb aus („„1" meint die ERSTE Antwort").
+  ⚠️ Die Antwortspalten werden **nach ihrer Nummer** sortiert, nicht
+  alphabetisch: Sonst landet `antwort10` zwischen `antwort1` und `antwort2`,
+  und `richtig` zeigt auf die falsche Antwort.
 - ⚠️ **Fuhrpark-Fragen werden ERZEUGT, Katalog-Fragen GESPEICHERT.** Der
   Unterschied ist kein Zufall: Der mitgelieferte Katalog ist auf jedem Gerät
   derselbe — stabil, korrigierbar, deshalb Zeilen in der Wissensdatenbank

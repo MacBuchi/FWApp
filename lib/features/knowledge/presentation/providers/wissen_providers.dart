@@ -15,6 +15,7 @@ import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/database/database_providers.dart';
 import 'package:fwapp/core/sync/abteilung_providers.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
+import 'package:fwapp/features/knowledge/data/fragen_import.dart';
 import 'package:fwapp/features/knowledge/data/wissen_sync.dart';
 import 'package:fwapp/core/utils/json_utils.dart';
 import 'package:fwapp/features/game/party/domain/party_frage.dart';
@@ -409,6 +410,57 @@ Future<int> reicheFrageEin(
   await _abgleichen(ref);
   return id;
 }
+
+/// Übernimmt eingelesene Fragen in den Bestand (CSV/Excel-Import).
+///
+/// ⚠️ **Ein Abgleich am Ende, nicht einer je Frage.** `reicheFrageEin` stößt
+/// nach jeder einzelnen Frage einen Sync an — bei vierzig Zeilen wären das
+/// vierzig Runden zum Server, und der Import stünde minutenlang. Hier wird
+/// erst alles lokal angelegt und dann einmal geschoben.
+///
+/// Übernommen wird als **freigegeben**: Importieren darf nur, wer auch
+/// freigeben darf (Gerätewart aufwärts), und sich selbst zu genehmigen, was
+/// man gerade eingelesen hat, wäre eine leere Geste. Dieselbe Regel wie im
+/// Formular (`sofortFreigeben: darfFreigeben`).
+Future<int> uebernehmeImport(
+  WidgetRef ref,
+  List<ImportierteFrage> fragen, {
+  String? eingereichtVon,
+}) async {
+  final dao = ref.read(wissenDaoProvider);
+  var angelegt = 0;
+  for (final f in fragen) {
+    await dao.insertFrage(WissensfragenCompanion.insert(
+      gebiet: f.gebiet.schluessel,
+      frage: f.frage,
+      antwortenJson: Value(stringListToJson(f.antworten)),
+      richtigeJson: Value(indizesZuJson(f.richtige)),
+      erklaerung: Value(f.erklaerung),
+      kapitel: Value(f.kapitel),
+      quelleWerk: Value(f.quelle?.werk),
+      quelleFundstelle: Value(f.quelle?.fundstelle),
+      quelleStand: Value(f.quelle?.stand),
+      quelleUrl: Value(f.quelle?.url),
+      geltung: Value(f.geltung.schluessel),
+      land: Value(f.land),
+      geraet: Value(f.geraet),
+      herkunft: Value(Fragenherkunft.eigen.schluessel),
+      stand: Value(Fragenstand.freigegeben.schluessel),
+      eingereichtVon: Value(eingereichtVon),
+      dirty: const Value(true),
+    ));
+    angelegt++;
+  }
+  await _abgleichen(ref);
+  return angelegt;
+}
+
+/// Die Wortlaute, die es schon gibt — Grundlage der Doppelten-Erkennung beim
+/// Import.
+Future<Set<String>> vorhandeneFragenSchluessel(WidgetRef ref) async => {
+      for (final f in await ref.read(wissenDaoProvider).getAll())
+        schluesselFuer(f.frage),
+    };
 
 /// Setzt den Stand einer Frage — freigeben oder ablehnen.
 Future<void> setzeStand(

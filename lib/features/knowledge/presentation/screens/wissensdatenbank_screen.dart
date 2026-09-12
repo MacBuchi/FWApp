@@ -16,6 +16,7 @@ import 'package:fwapp/core/utils/image_utils.dart';
 import 'package:fwapp/core/widgets/abteilung_switcher.dart';
 import 'package:fwapp/features/knowledge/domain/wissensfrage.dart';
 import 'package:fwapp/features/knowledge/presentation/providers/wissen_providers.dart';
+import 'package:fwapp/features/knowledge/presentation/screens/fragen_import_screen.dart';
 import 'package:fwapp/features/knowledge/presentation/widgets/frage_formular.dart';
 import 'package:fwapp/features/knowledge/presentation/widgets/hinweis_dialog.dart';
 import 'package:fwapp/features/knowledge/presentation/widgets/quellen_zeile.dart';
@@ -80,7 +81,20 @@ class _WissensdatenbankScreenState
     return Scaffold(
       appBar: AppBar(
         title: const Text('Wissensdatenbank'),
-        actions: const [AbteilungAction()],
+        actions: [
+          // Nur für den Gerätewart: Ein Import legt Fragen gleich freigegeben
+          // an, und das ist genau das Recht, das ihn vom Mitglied trennt.
+          // Wer nur einreichen darf, nimmt das Formular.
+          if (darfFreigeben)
+            IconButton(
+              tooltip: 'Fragen importieren',
+              icon: const Icon(Icons.upload_file),
+              onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) => const FragenImportScreen(),
+              )),
+            ),
+          const AbteilungAction(),
+        ],
       ),
       // Einreichen darf jeder mit Konto — das war die ausdrückliche Vorgabe.
       // Kein Rechte-Gate am Knopf, das Gate sitzt bei der Freigabe.

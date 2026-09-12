@@ -483,6 +483,17 @@ pauschales Formatieren in Feature-PRs.
 - **Migrationstests** für Drift
   ([test/core/database/migration_test.dart](test/core/database/migration_test.dart))
   samt Schema-Snapshots unter `test/core/database/generated/`.
+- ⚠️ **Arbeitsteilung bei den E2E-Tests:** `lernbereiche_e2e_test.dart` und
+  die übrigen beweisen die **Server-Regeln** (RLS, Rechte, Policies) und
+  sprechen die RPCs dafür direkt an. `wissen_sync_e2e_test.dart` beweist die
+  **Client-Logik** und fährt dafür `WissenSync` selbst — das ist der Grund,
+  warum die Datei existiert: Sie stand bei 0 % Coverage, obwohl sie zuletzt
+  zweimal gewachsen ist und als einzige Datenverlust verursachen kann. Ihre
+  wichtigste Zusicherung ist, dass ein Zug eine lokal geänderte (`dirty`)
+  Frage NICHT überschreibt; die Zeile dafür wurde per Mutationsprobe
+  nachgewiesen (Schutz entfernt → genau dieser Test rot).
+  Ein **Fake** wäre hier das falsche Werkzeug: Er bildete nach, was der
+  Server tut, und prüfte damit die eigene Annahme statt den Server.
 - **E2E gegen den echten Supabase-Stack**
   ([test/integration/sync_e2e_test.dart](test/integration/sync_e2e_test.dart)):
   überspringt sich ohne laufenden Stack selbst, in CI läuft er. Alles, was RLS,

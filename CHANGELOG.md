@@ -12,6 +12,26 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.47.0] – 2026-09-12
+
+### Neu
+
+- **Fragen als Tabelle einlesen.** Der Gerätewart kann Fragen jetzt aus einer
+  CSV- oder Excel-Datei übernehmen, statt sie einzeln durch das Formular zu
+  geben — in der Wissensdatenbank oben rechts. Wer vierzig Fragen aus einem
+  Lernzielkatalog überträgt, braucht dafür keinen Abend mehr.
+
+  Es gibt eine **Vorlage zum Herunterladen**, die schon zwei ausgefüllte
+  Beispiele enthält: eines mit Quellenangabe, eines mit zwei richtigen
+  Antworten. In der Spalte „richtig" darf stehen, was man ohnehin schreibt —
+  `1`, `a`, `b)` oder `a, c` für mehrere.
+
+  Eine Datei mit einem Tippfehler ist kein Fehlschlag: Die guten Zeilen werden
+  angeboten, die anderen mit **ihrer Zeilennummer aus der
+  Tabellenkalkulation** genannt. Fragen, die es schon gibt, werden erkannt und
+  nicht doppelt angelegt — auch dann, wenn sie zweimal in derselben Datei
+  stehen.
+
 ## [1.46.0] – 2026-09-11
 
 ### Neu

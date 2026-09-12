@@ -263,4 +263,22 @@ void main() {
 
     await endTestApp(tester);
   });
+
+  // ── Import (nur Gerätewart) ─────────────────────────────────────────────
+
+  testWidgets('der Gerätewart bekommt den Import-Knopf', (tester) async {
+    await anlegen(frage: 'Irgendeine Frage?');
+    await pumpe(tester);
+    expect(find.byTooltip('Fragen importieren'), findsOneWidget);
+    await endTestApp(tester);
+  });
+
+  testWidgets('wer nur einreichen darf, bekommt ihn nicht', (tester) async {
+    // Ein Import legt Fragen gleich freigegeben an — das ist genau das Recht,
+    // das den Gerätewart vom Mitglied trennt.
+    await anlegen(frage: 'Irgendeine Frage?');
+    await pumpe(tester, darfFreigeben: false);
+    expect(find.byTooltip('Fragen importieren'), findsNothing);
+    await endTestApp(tester);
+  });
 }

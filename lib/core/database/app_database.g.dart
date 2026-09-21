@@ -218,6 +218,37 @@ class WissenDaoManager {
       );
 }
 
+mixin _$TagDaoMixin on DatabaseAccessor<AppDatabase> {
+  $EquipmentItemsTable get equipmentItems => attachedDatabase.equipmentItems;
+  $VehiclesTable get vehicles => attachedDatabase.vehicles;
+  $CompartmentsTable get compartments => attachedDatabase.compartments;
+  $EquipmentInstancesTable get equipmentInstances =>
+      attachedDatabase.equipmentInstances;
+  $EquipmentTagsTable get equipmentTags => attachedDatabase.equipmentTags;
+  TagDaoManager get managers => TagDaoManager(this);
+}
+
+class TagDaoManager {
+  final _$TagDaoMixin _db;
+  TagDaoManager(this._db);
+  $$EquipmentItemsTableTableManager get equipmentItems =>
+      $$EquipmentItemsTableTableManager(
+        _db.attachedDatabase,
+        _db.equipmentItems,
+      );
+  $$VehiclesTableTableManager get vehicles =>
+      $$VehiclesTableTableManager(_db.attachedDatabase, _db.vehicles);
+  $$CompartmentsTableTableManager get compartments =>
+      $$CompartmentsTableTableManager(_db.attachedDatabase, _db.compartments);
+  $$EquipmentInstancesTableTableManager get equipmentInstances =>
+      $$EquipmentInstancesTableTableManager(
+        _db.attachedDatabase,
+        _db.equipmentInstances,
+      );
+  $$EquipmentTagsTableTableManager get equipmentTags =>
+      $$EquipmentTagsTableTableManager(_db.attachedDatabase, _db.equipmentTags);
+}
+
 mixin _$AttachmentDaoMixin on DatabaseAccessor<AppDatabase> {
   $VehiclesTable get vehicles => attachedDatabase.vehicles;
   $VehicleAttachmentsTable get vehicleAttachments =>
@@ -9379,6 +9410,419 @@ class FragenhinweiseCompanion extends UpdateCompanion<Fragenhinweis> {
   }
 }
 
+class $EquipmentTagsTable extends EquipmentTags
+    with TableInfo<$EquipmentTagsTable, EquipmentTagData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $EquipmentTagsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _instanceIdMeta = const VerificationMeta(
+    'instanceId',
+  );
+  @override
+  late final GeneratedColumn<int> instanceId = GeneratedColumn<int>(
+    'instance_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES equipment_instances (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _codeMeta = const VerificationMeta('code');
+  @override
+  late final GeneratedColumn<String> code = GeneratedColumn<String>(
+    'code',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+    'kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('qr'),
+  );
+  static const VerificationMeta _selfIssuedMeta = const VerificationMeta(
+    'selfIssued',
+  );
+  @override
+  late final GeneratedColumn<bool> selfIssued = GeneratedColumn<bool>(
+    'self_issued',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("self_issued" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    instanceId,
+    code,
+    kind,
+    selfIssued,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'equipment_tags';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<EquipmentTagData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('instance_id')) {
+      context.handle(
+        _instanceIdMeta,
+        instanceId.isAcceptableOrUnknown(data['instance_id']!, _instanceIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_instanceIdMeta);
+    }
+    if (data.containsKey('code')) {
+      context.handle(
+        _codeMeta,
+        code.isAcceptableOrUnknown(data['code']!, _codeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_codeMeta);
+    }
+    if (data.containsKey('kind')) {
+      context.handle(
+        _kindMeta,
+        kind.isAcceptableOrUnknown(data['kind']!, _kindMeta),
+      );
+    }
+    if (data.containsKey('self_issued')) {
+      context.handle(
+        _selfIssuedMeta,
+        selfIssued.isAcceptableOrUnknown(data['self_issued']!, _selfIssuedMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  EquipmentTagData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return EquipmentTagData(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}id'],
+          )!,
+      instanceId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}instance_id'],
+          )!,
+      code:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}code'],
+          )!,
+      kind:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}kind'],
+          )!,
+      selfIssued:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}self_issued'],
+          )!,
+      createdAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}created_at'],
+          )!,
+    );
+  }
+
+  @override
+  $EquipmentTagsTable createAlias(String alias) {
+    return $EquipmentTagsTable(attachedDatabase, alias);
+  }
+}
+
+class EquipmentTagData extends DataClass
+    implements Insertable<EquipmentTagData> {
+  final int id;
+  final int instanceId;
+
+  /// Der Code, wie ihn ein Lesegerät liefert — **normalisiert** abgelegt
+  /// (siehe `normalisiereTagCode`). Eindeutig: Ein Code zeigt auf genau
+  /// einen Gegenstand, sonst ist das Scannen mehrdeutig.
+  final String code;
+  final String kind;
+
+  /// Ob die App den Code vergeben hat (zum Ausdrucken) oder ob er von außen
+  /// kam. Nur für die Anzeige — der Ablauf ist derselbe.
+  final bool selfIssued;
+  final DateTime createdAt;
+  const EquipmentTagData({
+    required this.id,
+    required this.instanceId,
+    required this.code,
+    required this.kind,
+    required this.selfIssued,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['instance_id'] = Variable<int>(instanceId);
+    map['code'] = Variable<String>(code);
+    map['kind'] = Variable<String>(kind);
+    map['self_issued'] = Variable<bool>(selfIssued);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  EquipmentTagsCompanion toCompanion(bool nullToAbsent) {
+    return EquipmentTagsCompanion(
+      id: Value(id),
+      instanceId: Value(instanceId),
+      code: Value(code),
+      kind: Value(kind),
+      selfIssued: Value(selfIssued),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory EquipmentTagData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return EquipmentTagData(
+      id: serializer.fromJson<int>(json['id']),
+      instanceId: serializer.fromJson<int>(json['instanceId']),
+      code: serializer.fromJson<String>(json['code']),
+      kind: serializer.fromJson<String>(json['kind']),
+      selfIssued: serializer.fromJson<bool>(json['selfIssued']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'instanceId': serializer.toJson<int>(instanceId),
+      'code': serializer.toJson<String>(code),
+      'kind': serializer.toJson<String>(kind),
+      'selfIssued': serializer.toJson<bool>(selfIssued),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  EquipmentTagData copyWith({
+    int? id,
+    int? instanceId,
+    String? code,
+    String? kind,
+    bool? selfIssued,
+    DateTime? createdAt,
+  }) => EquipmentTagData(
+    id: id ?? this.id,
+    instanceId: instanceId ?? this.instanceId,
+    code: code ?? this.code,
+    kind: kind ?? this.kind,
+    selfIssued: selfIssued ?? this.selfIssued,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  EquipmentTagData copyWithCompanion(EquipmentTagsCompanion data) {
+    return EquipmentTagData(
+      id: data.id.present ? data.id.value : this.id,
+      instanceId:
+          data.instanceId.present ? data.instanceId.value : this.instanceId,
+      code: data.code.present ? data.code.value : this.code,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      selfIssued:
+          data.selfIssued.present ? data.selfIssued.value : this.selfIssued,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EquipmentTagData(')
+          ..write('id: $id, ')
+          ..write('instanceId: $instanceId, ')
+          ..write('code: $code, ')
+          ..write('kind: $kind, ')
+          ..write('selfIssued: $selfIssued, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, instanceId, code, kind, selfIssued, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is EquipmentTagData &&
+          other.id == this.id &&
+          other.instanceId == this.instanceId &&
+          other.code == this.code &&
+          other.kind == this.kind &&
+          other.selfIssued == this.selfIssued &&
+          other.createdAt == this.createdAt);
+}
+
+class EquipmentTagsCompanion extends UpdateCompanion<EquipmentTagData> {
+  final Value<int> id;
+  final Value<int> instanceId;
+  final Value<String> code;
+  final Value<String> kind;
+  final Value<bool> selfIssued;
+  final Value<DateTime> createdAt;
+  const EquipmentTagsCompanion({
+    this.id = const Value.absent(),
+    this.instanceId = const Value.absent(),
+    this.code = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.selfIssued = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  EquipmentTagsCompanion.insert({
+    this.id = const Value.absent(),
+    required int instanceId,
+    required String code,
+    this.kind = const Value.absent(),
+    this.selfIssued = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  }) : instanceId = Value(instanceId),
+       code = Value(code);
+  static Insertable<EquipmentTagData> custom({
+    Expression<int>? id,
+    Expression<int>? instanceId,
+    Expression<String>? code,
+    Expression<String>? kind,
+    Expression<bool>? selfIssued,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (instanceId != null) 'instance_id': instanceId,
+      if (code != null) 'code': code,
+      if (kind != null) 'kind': kind,
+      if (selfIssued != null) 'self_issued': selfIssued,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  EquipmentTagsCompanion copyWith({
+    Value<int>? id,
+    Value<int>? instanceId,
+    Value<String>? code,
+    Value<String>? kind,
+    Value<bool>? selfIssued,
+    Value<DateTime>? createdAt,
+  }) {
+    return EquipmentTagsCompanion(
+      id: id ?? this.id,
+      instanceId: instanceId ?? this.instanceId,
+      code: code ?? this.code,
+      kind: kind ?? this.kind,
+      selfIssued: selfIssued ?? this.selfIssued,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (instanceId.present) {
+      map['instance_id'] = Variable<int>(instanceId.value);
+    }
+    if (code.present) {
+      map['code'] = Variable<String>(code.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (selfIssued.present) {
+      map['self_issued'] = Variable<bool>(selfIssued.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EquipmentTagsCompanion(')
+          ..write('id: $id, ')
+          ..write('instanceId: $instanceId, ')
+          ..write('code: $code, ')
+          ..write('kind: $kind, ')
+          ..write('selfIssued: $selfIssued, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -9409,6 +9853,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $AbgeschalteteLernbereicheTable abgeschalteteLernbereiche =
       $AbgeschalteteLernbereicheTable(this);
   late final $FragenhinweiseTable fragenhinweise = $FragenhinweiseTable(this);
+  late final $EquipmentTagsTable equipmentTags = $EquipmentTagsTable(this);
   late final VehicleDao vehicleDao = VehicleDao(this as AppDatabase);
   late final CompartmentDao compartmentDao = CompartmentDao(
     this as AppDatabase,
@@ -9421,6 +9866,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final InventoryDao inventoryDao = InventoryDao(this as AppDatabase);
   late final AttachmentDao attachmentDao = AttachmentDao(this as AppDatabase);
   late final WissenDao wissenDao = WissenDao(this as AppDatabase);
+  late final TagDao tagDao = TagDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -9443,6 +9889,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     wissensfragen,
     abgeschalteteLernbereiche,
     fragenhinweise,
+    equipmentTags,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -9543,6 +9990,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('vehicle_attachments', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'equipment_instances',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('equipment_tags', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -12674,6 +13128,24 @@ final class $$EquipmentInstancesTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$EquipmentTagsTable, List<EquipmentTagData>>
+  _equipmentTagsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.equipmentTags,
+    aliasName: 'equipment_instances__id__equipment_tags__instance_id',
+  );
+
+  $$EquipmentTagsTableProcessedTableManager get equipmentTagsRefs {
+    final manager = $$EquipmentTagsTableTableManager(
+      $_db,
+      $_db.equipmentTags,
+    ).filter((f) => f.instanceId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_equipmentTagsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$EquipmentInstancesTableFilterComposer
@@ -12795,6 +13267,31 @@ class $$EquipmentInstancesTableFilterComposer
           }) => $$InspectionSchedulesTableFilterComposer(
             $db: $db,
             $table: $db.inspectionSchedules,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> equipmentTagsRefs(
+    Expression<bool> Function($$EquipmentTagsTableFilterComposer f) f,
+  ) {
+    final $$EquipmentTagsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.equipmentTags,
+      getReferencedColumn: (t) => t.instanceId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EquipmentTagsTableFilterComposer(
+            $db: $db,
+            $table: $db.equipmentTags,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -13029,6 +13526,31 @@ class $$EquipmentInstancesTableAnnotationComposer
         );
     return f(composer);
   }
+
+  Expression<T> equipmentTagsRefs<T extends Object>(
+    Expression<T> Function($$EquipmentTagsTableAnnotationComposer a) f,
+  ) {
+    final $$EquipmentTagsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.equipmentTags,
+      getReferencedColumn: (t) => t.instanceId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EquipmentTagsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.equipmentTags,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$EquipmentInstancesTableTableManager
@@ -13049,6 +13571,7 @@ class $$EquipmentInstancesTableTableManager
             bool vehicleId,
             bool compartmentId,
             bool inspectionSchedulesRefs,
+            bool equipmentTagsRefs,
           })
         > {
   $$EquipmentInstancesTableTableManager(
@@ -13131,11 +13654,13 @@ class $$EquipmentInstancesTableTableManager
             vehicleId = false,
             compartmentId = false,
             inspectionSchedulesRefs = false,
+            equipmentTagsRefs = false,
           }) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [
                 if (inspectionSchedulesRefs) db.inspectionSchedules,
+                if (equipmentTagsRefs) db.equipmentTags,
               ],
               addJoins: <
                 T extends TableManagerState<
@@ -13221,6 +13746,28 @@ class $$EquipmentInstancesTableTableManager
                           ),
                       typedResults: items,
                     ),
+                  if (equipmentTagsRefs)
+                    await $_getPrefetchedData<
+                      EquipmentInstanceData,
+                      $EquipmentInstancesTable,
+                      EquipmentTagData
+                    >(
+                      currentTable: table,
+                      referencedTable: $$EquipmentInstancesTableReferences
+                          ._equipmentTagsRefsTable(db),
+                      managerFromTypedResult:
+                          (p0) =>
+                              $$EquipmentInstancesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).equipmentTagsRefs,
+                      referencedItemsForCurrentItem:
+                          (item, referencedItems) => referencedItems.where(
+                            (e) => e.instanceId == item.id,
+                          ),
+                      typedResults: items,
+                    ),
                 ];
               },
             );
@@ -13246,6 +13793,7 @@ typedef $$EquipmentInstancesTableProcessedTableManager =
         bool vehicleId,
         bool compartmentId,
         bool inspectionSchedulesRefs,
+        bool equipmentTagsRefs,
       })
     >;
 typedef $$InspectionSchedulesTableCreateCompanionBuilder =
@@ -17251,6 +17799,353 @@ typedef $$FragenhinweiseTableProcessedTableManager =
       Fragenhinweis,
       PrefetchHooks Function()
     >;
+typedef $$EquipmentTagsTableCreateCompanionBuilder =
+    EquipmentTagsCompanion Function({
+      Value<int> id,
+      required int instanceId,
+      required String code,
+      Value<String> kind,
+      Value<bool> selfIssued,
+      Value<DateTime> createdAt,
+    });
+typedef $$EquipmentTagsTableUpdateCompanionBuilder =
+    EquipmentTagsCompanion Function({
+      Value<int> id,
+      Value<int> instanceId,
+      Value<String> code,
+      Value<String> kind,
+      Value<bool> selfIssued,
+      Value<DateTime> createdAt,
+    });
+
+final class $$EquipmentTagsTableReferences
+    extends
+        BaseReferences<_$AppDatabase, $EquipmentTagsTable, EquipmentTagData> {
+  $$EquipmentTagsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $EquipmentInstancesTable _instanceIdTable(_$AppDatabase db) => db
+      .equipmentInstances
+      .createAlias('equipment_tags__instance_id__equipment_instances__id');
+
+  $$EquipmentInstancesTableProcessedTableManager get instanceId {
+    final $_column = $_itemColumn<int>('instance_id')!;
+
+    final manager = $$EquipmentInstancesTableTableManager(
+      $_db,
+      $_db.equipmentInstances,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_instanceIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$EquipmentTagsTableFilterComposer
+    extends Composer<_$AppDatabase, $EquipmentTagsTable> {
+  $$EquipmentTagsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get code => $composableBuilder(
+    column: $table.code,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get selfIssued => $composableBuilder(
+    column: $table.selfIssued,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$EquipmentInstancesTableFilterComposer get instanceId {
+    final $$EquipmentInstancesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.instanceId,
+      referencedTable: $db.equipmentInstances,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EquipmentInstancesTableFilterComposer(
+            $db: $db,
+            $table: $db.equipmentInstances,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$EquipmentTagsTableOrderingComposer
+    extends Composer<_$AppDatabase, $EquipmentTagsTable> {
+  $$EquipmentTagsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get code => $composableBuilder(
+    column: $table.code,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get selfIssued => $composableBuilder(
+    column: $table.selfIssued,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$EquipmentInstancesTableOrderingComposer get instanceId {
+    final $$EquipmentInstancesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.instanceId,
+      referencedTable: $db.equipmentInstances,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EquipmentInstancesTableOrderingComposer(
+            $db: $db,
+            $table: $db.equipmentInstances,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$EquipmentTagsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $EquipmentTagsTable> {
+  $$EquipmentTagsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get code =>
+      $composableBuilder(column: $table.code, builder: (column) => column);
+
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<bool> get selfIssued => $composableBuilder(
+    column: $table.selfIssued,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$EquipmentInstancesTableAnnotationComposer get instanceId {
+    final $$EquipmentInstancesTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.instanceId,
+          referencedTable: $db.equipmentInstances,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$EquipmentInstancesTableAnnotationComposer(
+                $db: $db,
+                $table: $db.equipmentInstances,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+}
+
+class $$EquipmentTagsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $EquipmentTagsTable,
+          EquipmentTagData,
+          $$EquipmentTagsTableFilterComposer,
+          $$EquipmentTagsTableOrderingComposer,
+          $$EquipmentTagsTableAnnotationComposer,
+          $$EquipmentTagsTableCreateCompanionBuilder,
+          $$EquipmentTagsTableUpdateCompanionBuilder,
+          (EquipmentTagData, $$EquipmentTagsTableReferences),
+          EquipmentTagData,
+          PrefetchHooks Function({bool instanceId})
+        > {
+  $$EquipmentTagsTableTableManager(_$AppDatabase db, $EquipmentTagsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$EquipmentTagsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () =>
+                  $$EquipmentTagsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer:
+              () => $$EquipmentTagsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> instanceId = const Value.absent(),
+                Value<String> code = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                Value<bool> selfIssued = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => EquipmentTagsCompanion(
+                id: id,
+                instanceId: instanceId,
+                code: code,
+                kind: kind,
+                selfIssued: selfIssued,
+                createdAt: createdAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int instanceId,
+                required String code,
+                Value<String> kind = const Value.absent(),
+                Value<bool> selfIssued = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => EquipmentTagsCompanion.insert(
+                id: id,
+                instanceId: instanceId,
+                code: code,
+                kind: kind,
+                selfIssued: selfIssued,
+                createdAt: createdAt,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable<$EquipmentTagsTable, EquipmentTagData>(
+                            table,
+                          ),
+                          $$EquipmentTagsTableReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: ({instanceId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                T extends TableManagerState<
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic
+                >
+              >(state) {
+                if (instanceId) {
+                  state =
+                      state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.instanceId,
+                            referencedTable: $$EquipmentTagsTableReferences
+                                ._instanceIdTable(db),
+                            referencedColumn:
+                                $$EquipmentTagsTableReferences
+                                    ._instanceIdTable(db)
+                                    .id,
+                          )
+                          as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$EquipmentTagsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $EquipmentTagsTable,
+      EquipmentTagData,
+      $$EquipmentTagsTableFilterComposer,
+      $$EquipmentTagsTableOrderingComposer,
+      $$EquipmentTagsTableAnnotationComposer,
+      $$EquipmentTagsTableCreateCompanionBuilder,
+      $$EquipmentTagsTableUpdateCompanionBuilder,
+      (EquipmentTagData, $$EquipmentTagsTableReferences),
+      EquipmentTagData,
+      PrefetchHooks Function({bool instanceId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -17292,4 +18187,6 @@ class $AppDatabaseManager {
       );
   $$FragenhinweiseTableTableManager get fragenhinweise =>
       $$FragenhinweiseTableTableManager(_db, _db.fragenhinweise);
+  $$EquipmentTagsTableTableManager get equipmentTags =>
+      $$EquipmentTagsTableTableManager(_db, _db.equipmentTags);
 }

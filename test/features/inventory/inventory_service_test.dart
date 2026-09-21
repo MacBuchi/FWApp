@@ -111,6 +111,99 @@ void main() {
     expect(abweichungen.first.status, InventoryChecks.statusRepair);
   });
 
+  group('Abhaken per Code (#177/#179)', () {
+    /// Legt eine Einheit des Geräts [name] mit Code [code] an.
+    Future<void> tagge(String name, String code, {int? fach}) async {
+      final eq = (await db.equipmentDao.getAll())
+          .firstWhere((e) => e.name == name);
+      final instanz = await db.into(db.equipmentInstances).insert(
+          EquipmentInstancesCompanion.insert(
+              equipmentId: Value(eq.id).value,
+              compartmentId: Value(fach ?? compartmentId)));
+      await db.tagDao.insertTag(
+          EquipmentTagsCompanion.insert(instanceId: instanz, code: code));
+    }
+
+    test('ein Code hakt sein Gerät ab', () async {
+      await tagge('Spineboard', 'FW-AAAAAAA');
+      final sessionId = await service.startOrResume(vehicleId);
+
+      final ergebnis = await service.hakeCodeAb(sessionId, 'FW-AAAAAAA');
+      expect(ergebnis, isA<Abgehakt>());
+      final a = ergebnis as Abgehakt;
+      expect(a.geraet, 'Spineboard');
+      expect(a.fach, 'G1');
+      expect(a.ist, 1);
+      expect(a.soll, 1);
+
+      final check = (await db.inventoryDao.getChecks(sessionId))
+          .firstWhere((c) => c.equipmentName == 'Spineboard');
+      expect(check.status, InventoryChecks.statusOk);
+      expect(check.actualQuantity, 1);
+    });
+
+    test('der Code darf getippt sein, wie er will', () async {
+      // Derselbe Weg wie beim Scanner: normalisiert wird im Dienst.
+      await tagge('Spineboard', 'FW-AAAAAAA');
+      final sessionId = await service.startOrResume(vehicleId);
+      expect(await service.hakeCodeAb(sessionId, '  fw-aaaaaaa\n'),
+          isA<Abgehakt>());
+    });
+
+    test('bei Soll 2 gilt erst der zweite Scan als vollständig', () async {
+      // Sonst meldete das erste von zwei Stücken das Fach als fertig.
+      await tagge('Feuerlöscher', 'FW-BBBBBBB');
+      await tagge('Feuerlöscher', 'FW-CCCCCCC');
+      final sessionId = await service.startOrResume(vehicleId);
+
+      final erst = await service.hakeCodeAb(sessionId, 'FW-BBBBBBB');
+      expect((erst as Abgehakt).ist, 1);
+      var check = (await db.inventoryDao.getChecks(sessionId))
+          .firstWhere((c) => c.equipmentName == 'Feuerlöscher');
+      expect(check.status, InventoryChecks.statusOpen,
+          reason: 'Ein Stück von zwei ist noch nicht vollständig.');
+      expect(check.actualQuantity, 1);
+
+      final zweit = await service.hakeCodeAb(sessionId, 'FW-CCCCCCC');
+      expect((zweit as Abgehakt).ist, 2);
+      check = (await db.inventoryDao.getChecks(sessionId))
+          .firstWhere((c) => c.equipmentName == 'Feuerlöscher');
+      expect(check.status, InventoryChecks.statusOk);
+    });
+
+    test('ein unbekannter Code hakt nichts ab', () async {
+      final sessionId = await service.startOrResume(vehicleId);
+      expect(await service.hakeCodeAb(sessionId, 'FW-ZZZZZZZ'),
+          isA<CodeUnbekannt>());
+      final checks = await db.inventoryDao.getChecks(sessionId);
+      expect(checks.every((c) => c.status == InventoryChecks.statusOpen),
+          isTrue);
+    });
+
+    test('ein Gerät von einem anderen Fahrzeug wird benannt, nicht gezählt',
+        () async {
+      // Der Fall, den man vor dem Fach wirklich hat: falscher Aufkleber
+      // gegriffen. „Nichts passiert" wäre die schlechteste Antwort.
+      final anderes = await db.equipmentDao
+          .insertEquipment(EquipmentItemsCompanion.insert(name: 'Wärmebildkamera'));
+      final instanz = await db.into(db.equipmentInstances).insert(
+          EquipmentInstancesCompanion.insert(equipmentId: anderes));
+      await db.tagDao.insertTag(EquipmentTagsCompanion.insert(
+          instanceId: instanz, code: 'FW-DDDDDDD'));
+
+      final sessionId = await service.startOrResume(vehicleId);
+      final ergebnis = await service.hakeCodeAb(sessionId, 'FW-DDDDDDD');
+      expect(ergebnis, isA<CodeNichtInDieserInventur>());
+      expect((ergebnis as CodeNichtInDieserInventur).geraet,
+          'Wärmebildkamera');
+    });
+
+    test('eine leere Eingabe ist kein Fund', () async {
+      final sessionId = await service.startOrResume(vehicleId);
+      expect(await service.hakeCodeAb(sessionId, '   '), isA<CodeLeer>());
+    });
+  });
+
   test('finish schließt die Session (kein Resume mehr)', () async {
     final sessionId = await service.startOrResume(vehicleId);
     await service.finish(sessionId, doneBy: 'Marcus');

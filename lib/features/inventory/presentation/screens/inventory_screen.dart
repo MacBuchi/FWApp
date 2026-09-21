@@ -71,6 +71,11 @@ class InventoryRunScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Inventur'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.qr_code_scanner),
+            tooltip: 'Code eingeben',
+            onPressed: () => _codeEingeben(context, ref, sessionId),
+          ),
           checksAsync.maybeWhen(
             data: (checks) {
               final summary = InventorySummary.from(checks);
@@ -92,6 +97,72 @@ class InventoryRunScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Fragt einen Code ab und hakt das Gerät ab, auf dem er klebt.
+///
+/// Das Feld bleibt nach jeder Eingabe offen und leert sich: Beim Abarbeiten
+/// eines Fachs kommen die Codes hintereinander, und ein Dialog, den man
+/// zwanzigmal neu öffnet, ist ein Dialog, den niemand benutzt. Bis zur
+/// Kamera (#179, zweiter Schritt) ist dieses Feld der Leser — ein
+/// Handscanner am Gerät tippt hier ohnehin hinein.
+Future<void> _codeEingeben(
+    BuildContext context, WidgetRef ref, int sessionId) async {
+  final controller = TextEditingController();
+  final dienst = ref.read(inventoryServiceProvider);
+
+  await showDialog<void>(
+    context: context,
+    builder: (ctx) {
+      String? letzteMeldung;
+      return StatefulBuilder(
+        builder: (ctx, setState) => AlertDialog(
+          title: const Text('Code eingeben'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: controller,
+                  autofocus: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Code',
+                    helperText: 'Nach jedem Code bleibt das Feld offen.',
+                  ),
+                  onSubmitted: (wert) async {
+                    final ergebnis =
+                        await dienst.hakeCodeAb(sessionId, wert);
+                    controller.clear();
+                    setState(() => letzteMeldung = switch (ergebnis) {
+                          Abgehakt(:final geraet, :final fach, :final ist,
+                                  :final soll) =>
+                            '$geraet · $fach — $ist von $soll',
+                          CodeUnbekannt() =>
+                            'Dieser Code klebt auf keinem erfassten Gerät.',
+                          CodeNichtInDieserInventur(:final geraet) =>
+                            '$geraet gehört nicht zu diesem Fahrzeug.',
+                          CodeLeer() => 'Da stand kein Code.',
+                        });
+                  },
+                ),
+                if (letzteMeldung != null) ...[
+                  const SizedBox(height: 12),
+                  Text(letzteMeldung!,
+                      style: Theme.of(ctx).textTheme.bodySmall),
+                ],
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Fertig')),
+          ],
+        ),
+      );
+    },
+  );
 }
 
 class _InventoryBody extends ConsumerWidget {

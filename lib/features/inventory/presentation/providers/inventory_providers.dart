@@ -8,6 +8,7 @@ import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/database/database_providers.dart';
+import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';
 
 /// Live checks of a session (stream).
 final inventoryChecksProvider =
@@ -21,6 +22,7 @@ class InventorySummary {
   final int ok;
   final int missing;
   final int damaged;
+  final int repair;
 
   const InventorySummary({
     required this.total,
@@ -28,10 +30,11 @@ class InventorySummary {
     required this.ok,
     required this.missing,
     required this.damaged,
+    required this.repair,
   });
 
   factory InventorySummary.from(List<InventoryCheckData> checks) {
-    var ok = 0, missing = 0, damaged = 0, checked = 0;
+    var ok = 0, missing = 0, damaged = 0, repair = 0, checked = 0;
     for (final c in checks) {
       if (c.status == InventoryChecks.statusOpen) continue;
       checked++;
@@ -42,6 +45,8 @@ class InventorySummary {
           missing++;
         case InventoryChecks.statusDamaged:
           damaged++;
+        case InventoryChecks.statusRepair:
+          repair++;
       }
     }
     return InventorySummary(
@@ -49,12 +54,50 @@ class InventorySummary {
         checked: checked,
         ok: ok,
         missing: missing,
-        damaged: damaged);
+        damaged: damaged,
+        repair: repair);
   }
 
   bool get complete => total > 0 && checked == total;
-  bool get hasIssues => missing > 0 || damaged > 0;
+
+  /// Zählt „in Reparatur" bewusst MIT: Der Gerätewart muss auch das
+  /// nachhalten, und im Fach liegt das Gerät so wenig wie ein fehlendes.
+  bool get hasIssues => missing > 0 || damaged > 0 || repair > 0;
+
+  /// Die Zustände, die im Bericht als Abweichung erscheinen.
+  static const abweichendeStatus = {
+    InventoryChecks.statusMissing,
+    InventoryChecks.statusDamaged,
+    InventoryChecks.statusRepair,
+  };
 }
+
+/// Kopfdaten des Berichts — alles, was nicht in den Prüfzeilen steht.
+class InventurBerichtKopf {
+  final String fahrzeug;
+
+  /// Der Zeitpunkt, der im Bericht steht: der Abschluss, solange es einen
+  /// gibt, sonst der Beginn. Der Bericht lässt sich teilen, BEVOR die
+  /// Inventur abgeschlossen ist — dann ist das Startdatum die einzige
+  /// ehrliche Angabe.
+  final DateTime zeitpunkt;
+
+  const InventurBerichtKopf({required this.fahrzeug, required this.zeitpunkt});
+}
+
+final inventurBerichtKopfProvider =
+    FutureProvider.family<InventurBerichtKopf, int>((ref, sessionId) async {
+  final session = await ref.watch(inventoryDaoProvider).getSession(sessionId);
+  if (session == null) {
+    return InventurBerichtKopf(fahrzeug: '', zeitpunkt: DateTime.now());
+  }
+  final fahrzeug =
+      await ref.watch(vehicleDetailProvider(session.vehicleId).future);
+  return InventurBerichtKopf(
+    fahrzeug: fahrzeug?.name ?? 'Fahrzeug ${session.vehicleId}',
+    zeitpunkt: session.finishedAt ?? session.startedAt,
+  );
+});
 
 class InventoryService {
   final AppDatabase db;

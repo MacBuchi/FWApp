@@ -10,6 +10,7 @@ import 'package:fwapp/core/widgets/abteilung_switcher.dart';
 import 'package:fwapp/features/compartment/domain/entities/compartment.dart';
 import 'package:fwapp/features/compartment/presentation/providers/compartment_providers.dart';
 import 'package:fwapp/features/inventory/presentation/providers/inventory_providers.dart';
+import 'package:fwapp/features/inventory/presentation/widgets/status_darstellung.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';
 import 'package:fwapp/features/vehicle/presentation/widgets/vehicle_cutaway_view.dart';
 
@@ -127,8 +128,8 @@ class _InventoryBody extends ConsumerWidget {
                               c.status != InventoryChecks.statusOpen)
                           .length;
                       final hasIssue = items.any((c) =>
-                          c.status == InventoryChecks.statusMissing ||
-                          c.status == InventoryChecks.statusDamaged);
+                          InventorySummary.abweichendeStatus
+                              .contains(c.status));
                       tileStates[comp.id] = CutawayTileState(
                         status: items.isEmpty
                             ? CutawayTileStatus.normal
@@ -155,7 +156,7 @@ class _InventoryBody extends ConsumerWidget {
                             showDragHandle: true,
                             builder: (_) => _CompartmentCheckSheet(
                               compartment: comp,
-                              checks: byCompartment[comp.id] ?? const [],
+                              sessionId: sessionId,
                             ),
                           ),
                         ),
@@ -238,14 +239,27 @@ class _Pill extends StatelessWidget {
       );
 }
 
+/// Die Geräte eines Fachs zum Abhaken.
+///
+/// ⚠️ **Beobachtet den Provider selbst**, statt die Liste beim Öffnen
+/// übergeben zu bekommen. Das Blatt ist eine eigene Route: Eine mitgegebene
+/// Liste ist ab dem ersten Häkchen veraltet, und dann hakt der Gerätewart ein
+/// Fach durch, ohne dass sich vor seinen Augen etwas ändert — Fortschritt und
+/// Fachkachel dahinter zählen mit, die Zeile darunter bleibt grau.
 class _CompartmentCheckSheet extends ConsumerWidget {
   final Compartment compartment;
-  final List<InventoryCheckData> checks;
+  final int sessionId;
   const _CompartmentCheckSheet(
-      {required this.compartment, required this.checks});
+      {required this.compartment, required this.sessionId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final checks = ref
+            .watch(inventoryChecksProvider(sessionId))
+            .value
+            ?.where((c) => c.compartmentId == compartment.id)
+            .toList() ??
+        const <InventoryCheckData>[];
     return SafeArea(
       child: DraggableScrollableSheet(
         expand: false,
@@ -284,13 +298,7 @@ class _CheckTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final service = ref.read(inventoryServiceProvider);
-    final (Color color, IconData icon) = switch (check.status) {
-      InventoryChecks.statusOk => (Colors.green, Icons.check_circle),
-      InventoryChecks.statusMissing => (Colors.red, Icons.cancel),
-      InventoryChecks.statusDamaged =>
-        (Colors.orange, Icons.warning),
-      _ => (Colors.grey, Icons.radio_button_unchecked),
-    };
+    final (color, icon) = statusDarstellung(check.status);
 
     return Card(
       child: ListTile(
@@ -314,9 +322,9 @@ class _CheckTile extends ConsumerWidget {
             ),
             IconButton(
               icon: const Icon(Icons.report_gmailerrorred),
-              color: check.status == InventoryChecks.statusMissing ||
-                      check.status == InventoryChecks.statusDamaged
-                  ? Colors.red
+              color: InventorySummary.abweichendeStatus
+                      .contains(check.status)
+                  ? color
                   : null,
               tooltip: 'Mangel',
               onPressed: () => _reportIssue(context, service),
@@ -330,33 +338,45 @@ class _CheckTile extends ConsumerWidget {
   Future<void> _reportIssue(
       BuildContext context, InventoryService service) async {
     final noteController = TextEditingController(text: check.note);
-    var status = InventoryChecks.statusMissing;
+    // Beim zweiten Öffnen steht der bereits vermerkte Zustand da — sonst
+    // setzt ein Blick in die Notiz das Gerät stillschweigend auf „fehlt".
+    var status = InventorySummary.abweichendeStatus.contains(check.status)
+        ? check.status
+        : InventoryChecks.statusMissing;
     final result = await showDialog<bool>(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setState) => AlertDialog(
           title: Text('Mangel: ${check.equipmentName}'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SegmentedButton<String>(
-                segments: const [
-                  ButtonSegment(
-                      value: InventoryChecks.statusMissing,
-                      label: Text('Fehlt')),
-                  ButtonSegment(
-                      value: InventoryChecks.statusDamaged,
-                      label: Text('Beschädigt')),
-                ],
-                selected: {status},
-                onSelectionChanged: (s) => setState(() => status = s.first),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: noteController,
-                decoration: const InputDecoration(labelText: 'Notiz'),
-              ),
-            ],
+          // Drei Zustände und ein Textfeld: ohne Scrollbereich überlappen
+          // auf kleinen Bildschirmen Knöpfe und Feld (AGENTS.md).
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SegmentedButton<String>(
+                  showSelectedIcon: false,
+                  segments: const [
+                    ButtonSegment(
+                        value: InventoryChecks.statusMissing,
+                        label: Text('Fehlt')),
+                    ButtonSegment(
+                        value: InventoryChecks.statusDamaged,
+                        label: Text('Beschädigt')),
+                    ButtonSegment(
+                        value: InventoryChecks.statusRepair,
+                        label: Text('In Reparatur')),
+                  ],
+                  selected: {status},
+                  onSelectionChanged: (s) => setState(() => status = s.first),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: noteController,
+                  decoration: const InputDecoration(labelText: 'Notiz'),
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(

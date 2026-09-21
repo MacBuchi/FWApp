@@ -420,6 +420,15 @@ class InventoryChecks extends Table {
   static const statusMissing = 'missing';
   static const statusDamaged = 'damaged';
 
+  /// Das Gerät ist da, aber gerade nicht am Fahrzeug (Issue #178). Bewusst
+  /// KEIN Mangel im Sinne von „fehlt": Wer eine Schere zur Prüfung gegeben
+  /// hat, hat kein Loch in der Beladung, sondern einen bekannten Vorgang.
+  /// Im Bericht steht es deshalb getrennt.
+  ///
+  /// Eine Migration braucht das nicht: `status` ist eine Textspalte ohne
+  /// CHECK, und Inventurdaten sind rein lokal (kein Server-Gegenstück).
+  static const statusRepair = 'repair';
+
   IntColumn get id => integer().autoIncrement()();
   IntColumn get sessionId =>
       integer().references(InventorySessions, #id, onDelete: KeyAction.cascade)();

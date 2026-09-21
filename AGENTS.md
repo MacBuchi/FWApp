@@ -128,13 +128,20 @@ Es gilt die GitHub-Guideline des DocuHub. FWApp-spezifisch bzw. betont:
 
 ```text
 Flutter SDK: /Volumes/MacStore/Programming/Flutter/SDK/flutter   (PATH exportieren!)
-Flutter-Version: 3.44.8  — identisch in ci.yml und release.yml gepinnt
+Flutter-Version: 3.47.5  — identisch in ci.yml, release.yml und security.yml gepinnt
 Java 17 für Android-Builds (neuere JDKs kann das Flutter-Gradle-Plugin nicht)
 ```
 
 Bei lokalem Flutter-Upgrade **beide Workflows nachziehen**, AGP/Kotlin von Hand
 mitprüfen. Das SDK teilen sich alle Flutter-Projekte des Portfolios — ein
 Upgrade betrifft sie mit.
+
+⚠️ **Der `analyzer.exclude`-Block in `analysis_options.yaml` gehört dorthin.**
+`flutter pub get` schreibt ihn seit Dart 3.13 selbst hinein („Upgrading
+analysis_options.yaml to exclude build and platform directories"). Wer ihn
+entfernt, bekommt ihn im CI-Lauf zurück — und weil der Codegen-Guard direkt
+nach `pub get` ein `git diff --exit-code` macht, bricht die CI dort mit
+„Generated files are stale" ab, obwohl kein generierter Code betroffen ist.
 
 ⚠️ **Kein `dart format` über Bestandsdateien.** Das Repo ist alt formatiert
 (Dart-3.7-Formatter, nie migriert); `dart format .` will 114 Dateien umbauen

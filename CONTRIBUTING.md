@@ -13,8 +13,8 @@ fest, wo die FWApp bewusst davon abweicht.
 
 ## Entwicklungs-Setup
 
-- Flutter 3.44.8 (stable), Dart ≥ 3.12 — dieselbe Version ist in
-  `ci.yml` und `release.yml` gepinnt
+- Flutter 3.47.5 (stable), Dart ≥ 3.13 — dieselbe Version ist in
+  `ci.yml`, `release.yml` und `security.yml` gepinnt
 - Java 17 für Android-Builds (neuere JDKs werden vom Flutter-Gradle-Plugin
   nicht unterstützt): `flutter config --jdk-dir=<pfad-zu-jdk-17>`
 - Docker + [Supabase CLI](https://supabase.com/docs/guides/cli), falls du am

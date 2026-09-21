@@ -12,6 +12,14 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.47.1] – 2026-09-21
+
+### Geändert
+
+- Unterbau auf Flutter 3.47.5 gehoben. Für die Bedienung ändert sich nichts;
+  die App läuft auf aktuellerer Technik und bleibt damit sicherheitstechnisch
+  versorgt.
+
 ## [1.47.0] – 2026-09-12
 
 ### Neu

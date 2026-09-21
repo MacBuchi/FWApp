@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'equipment_item.dart';
@@ -9,6 +9,7 @@ part of 'equipment_item.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -29,16 +30,21 @@ $EquipmentItemCopyWith<EquipmentItem> get copyWith => _$EquipmentItemCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is EquipmentItem&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.shortName, shortName) || other.shortName == shortName)&&const DeepCollectionEquality().equals(other.equipmentFunctions, equipmentFunctions)&&const DeepCollectionEquality().equals(other.deploymentScenarios, deploymentScenarios)&&(identical(other.description, description) || other.description == description)&&(identical(other.imagePath, imagePath) || other.imagePath == imagePath)&&(identical(other.trainingUrl, trainingUrl) || other.trainingUrl == trainingUrl)&&(identical(other.libraryEquipmentId, libraryEquipmentId) || other.libraryEquipmentId == libraryEquipmentId)&&(identical(other.isCustom, isCustom) || other.isCustom == isCustom)&&const DeepCollectionEquality().equals(other.extraAttributes, extraAttributes)&&const DeepCollectionEquality().equals(other.trainingQuestions, trainingQuestions)&&const DeepCollectionEquality().equals(other.typicalUse, typicalUse)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.remoteTypeId, remoteTypeId) || other.remoteTypeId == remoteTypeId)&&(identical(other.typeDirty, typeDirty) || other.typeDirty == typeDirty));
+  final _this = this as EquipmentItem;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is EquipmentItem&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.shortName, _this.shortName) || other.shortName == _this.shortName)&&const DeepCollectionEquality().equals(other.equipmentFunctions, _this.equipmentFunctions)&&const DeepCollectionEquality().equals(other.deploymentScenarios, _this.deploymentScenarios)&&(identical(other.description, _this.description) || other.description == _this.description)&&(identical(other.imagePath, _this.imagePath) || other.imagePath == _this.imagePath)&&(identical(other.trainingUrl, _this.trainingUrl) || other.trainingUrl == _this.trainingUrl)&&(identical(other.libraryEquipmentId, _this.libraryEquipmentId) || other.libraryEquipmentId == _this.libraryEquipmentId)&&(identical(other.isCustom, _this.isCustom) || other.isCustom == _this.isCustom)&&const DeepCollectionEquality().equals(other.extraAttributes, _this.extraAttributes)&&const DeepCollectionEquality().equals(other.trainingQuestions, _this.trainingQuestions)&&const DeepCollectionEquality().equals(other.typicalUse, _this.typicalUse)&&(identical(other.updatedAt, _this.updatedAt) || other.updatedAt == _this.updatedAt)&&(identical(other.remoteTypeId, _this.remoteTypeId) || other.remoteTypeId == _this.remoteTypeId)&&(identical(other.typeDirty, _this.typeDirty) || other.typeDirty == _this.typeDirty));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,shortName,const DeepCollectionEquality().hash(equipmentFunctions),const DeepCollectionEquality().hash(deploymentScenarios),description,imagePath,trainingUrl,libraryEquipmentId,isCustom,const DeepCollectionEquality().hash(extraAttributes),const DeepCollectionEquality().hash(trainingQuestions),const DeepCollectionEquality().hash(typicalUse),updatedAt,remoteTypeId,typeDirty);
+int get hashCode {
+  final _this = this as EquipmentItem;
+  return Object.hash(runtimeType,_this.id,_this.name,_this.shortName,const DeepCollectionEquality().hash(_this.equipmentFunctions),const DeepCollectionEquality().hash(_this.deploymentScenarios),_this.description,_this.imagePath,_this.trainingUrl,_this.libraryEquipmentId,_this.isCustom,const DeepCollectionEquality().hash(_this.extraAttributes),const DeepCollectionEquality().hash(_this.trainingQuestions),const DeepCollectionEquality().hash(_this.typicalUse),_this.updatedAt,_this.remoteTypeId,_this.typeDirty);
+}
 
 @override
 String toString() {
-  return 'EquipmentItem(id: $id, name: $name, shortName: $shortName, equipmentFunctions: $equipmentFunctions, deploymentScenarios: $deploymentScenarios, description: $description, imagePath: $imagePath, trainingUrl: $trainingUrl, libraryEquipmentId: $libraryEquipmentId, isCustom: $isCustom, extraAttributes: $extraAttributes, trainingQuestions: $trainingQuestions, typicalUse: $typicalUse, updatedAt: $updatedAt, remoteTypeId: $remoteTypeId, typeDirty: $typeDirty)';
+  final _this = this as EquipmentItem;
+  return 'EquipmentItem(id: ${_this.id}, name: ${_this.name}, shortName: ${_this.shortName}, equipmentFunctions: ${_this.equipmentFunctions}, deploymentScenarios: ${_this.deploymentScenarios}, description: ${_this.description}, imagePath: ${_this.imagePath}, trainingUrl: ${_this.trainingUrl}, libraryEquipmentId: ${_this.libraryEquipmentId}, isCustom: ${_this.isCustom}, extraAttributes: ${_this.extraAttributes}, trainingQuestions: ${_this.trainingQuestions}, typicalUse: ${_this.typicalUse}, updatedAt: ${_this.updatedAt}, remoteTypeId: ${_this.remoteTypeId}, typeDirty: ${_this.typeDirty})';
 }
 
 
@@ -67,7 +73,7 @@ class _$EquipmentItemCopyWithImpl<$Res>
 /// Create a copy of EquipmentItem
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? shortName = freezed,Object? equipmentFunctions = null,Object? deploymentScenarios = null,Object? description = null,Object? imagePath = freezed,Object? trainingUrl = freezed,Object? libraryEquipmentId = freezed,Object? isCustom = null,Object? extraAttributes = null,Object? trainingQuestions = null,Object? typicalUse = null,Object? updatedAt = null,Object? remoteTypeId = freezed,Object? typeDirty = null,}) {
-  return _then(_self.copyWith(
+  return _then(EquipmentItem(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,shortName: freezed == shortName ? _self.shortName : shortName // ignore: cast_nullable_to_non_nullable
@@ -225,7 +231,7 @@ return $default(_that.id,_that.name,_that.shortName,_that.equipmentFunctions,_th
 
 
 class _EquipmentItem implements EquipmentItem {
-  const _EquipmentItem({required this.id, required this.name, this.shortName, required final  List<String> equipmentFunctions, required final  List<String> deploymentScenarios, required this.description, this.imagePath, this.trainingUrl, this.libraryEquipmentId, required this.isCustom, required final  Map<String, dynamic> extraAttributes, final  List<String> trainingQuestions = const [], final  List<String> typicalUse = const [], required this.updatedAt, this.remoteTypeId, this.typeDirty = false}): _equipmentFunctions = equipmentFunctions,_deploymentScenarios = deploymentScenarios,_extraAttributes = extraAttributes,_trainingQuestions = trainingQuestions,_typicalUse = typicalUse;
+  const _EquipmentItem({required this.id, required this.name, this.shortName, required  List<String> equipmentFunctions, required  List<String> deploymentScenarios, required this.description, this.imagePath, this.trainingUrl, this.libraryEquipmentId, required this.isCustom, required  Map<String, dynamic> extraAttributes,  List<String> trainingQuestions = const [],  List<String> typicalUse = const [], required this.updatedAt, this.remoteTypeId, this.typeDirty = false}): _equipmentFunctions = equipmentFunctions,_deploymentScenarios = deploymentScenarios,_extraAttributes = extraAttributes,_trainingQuestions = trainingQuestions,_typicalUse = typicalUse;
   
 
 @override final  int id;
@@ -289,16 +295,18 @@ _$EquipmentItemCopyWith<_EquipmentItem> get copyWith => __$EquipmentItemCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _EquipmentItem&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.shortName, shortName) || other.shortName == shortName)&&const DeepCollectionEquality().equals(other._equipmentFunctions, _equipmentFunctions)&&const DeepCollectionEquality().equals(other._deploymentScenarios, _deploymentScenarios)&&(identical(other.description, description) || other.description == description)&&(identical(other.imagePath, imagePath) || other.imagePath == imagePath)&&(identical(other.trainingUrl, trainingUrl) || other.trainingUrl == trainingUrl)&&(identical(other.libraryEquipmentId, libraryEquipmentId) || other.libraryEquipmentId == libraryEquipmentId)&&(identical(other.isCustom, isCustom) || other.isCustom == isCustom)&&const DeepCollectionEquality().equals(other._extraAttributes, _extraAttributes)&&const DeepCollectionEquality().equals(other._trainingQuestions, _trainingQuestions)&&const DeepCollectionEquality().equals(other._typicalUse, _typicalUse)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.remoteTypeId, remoteTypeId) || other.remoteTypeId == remoteTypeId)&&(identical(other.typeDirty, typeDirty) || other.typeDirty == typeDirty));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _EquipmentItem&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.shortName, shortName) || other.shortName == shortName)&&const DeepCollectionEquality().equals(other.equipmentFunctions, _equipmentFunctions)&&const DeepCollectionEquality().equals(other.deploymentScenarios, _deploymentScenarios)&&(identical(other.description, description) || other.description == description)&&(identical(other.imagePath, imagePath) || other.imagePath == imagePath)&&(identical(other.trainingUrl, trainingUrl) || other.trainingUrl == trainingUrl)&&(identical(other.libraryEquipmentId, libraryEquipmentId) || other.libraryEquipmentId == libraryEquipmentId)&&(identical(other.isCustom, isCustom) || other.isCustom == isCustom)&&const DeepCollectionEquality().equals(other.extraAttributes, _extraAttributes)&&const DeepCollectionEquality().equals(other.trainingQuestions, _trainingQuestions)&&const DeepCollectionEquality().equals(other.typicalUse, _typicalUse)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.remoteTypeId, remoteTypeId) || other.remoteTypeId == remoteTypeId)&&(identical(other.typeDirty, typeDirty) || other.typeDirty == typeDirty));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,shortName,const DeepCollectionEquality().hash(_equipmentFunctions),const DeepCollectionEquality().hash(_deploymentScenarios),description,imagePath,trainingUrl,libraryEquipmentId,isCustom,const DeepCollectionEquality().hash(_extraAttributes),const DeepCollectionEquality().hash(_trainingQuestions),const DeepCollectionEquality().hash(_typicalUse),updatedAt,remoteTypeId,typeDirty);
+int get hashCode {
+    return Object.hash(runtimeType,id,name,shortName,const DeepCollectionEquality().hash(_equipmentFunctions),const DeepCollectionEquality().hash(_deploymentScenarios),description,imagePath,trainingUrl,libraryEquipmentId,isCustom,const DeepCollectionEquality().hash(_extraAttributes),const DeepCollectionEquality().hash(_trainingQuestions),const DeepCollectionEquality().hash(_typicalUse),updatedAt,remoteTypeId,typeDirty);
+}
 
 @override
 String toString() {
-  return 'EquipmentItem(id: $id, name: $name, shortName: $shortName, equipmentFunctions: $equipmentFunctions, deploymentScenarios: $deploymentScenarios, description: $description, imagePath: $imagePath, trainingUrl: $trainingUrl, libraryEquipmentId: $libraryEquipmentId, isCustom: $isCustom, extraAttributes: $extraAttributes, trainingQuestions: $trainingQuestions, typicalUse: $typicalUse, updatedAt: $updatedAt, remoteTypeId: $remoteTypeId, typeDirty: $typeDirty)';
+    return 'EquipmentItem(id: $id, name: $name, shortName: $shortName, equipmentFunctions: $equipmentFunctions, deploymentScenarios: $deploymentScenarios, description: $description, imagePath: $imagePath, trainingUrl: $trainingUrl, libraryEquipmentId: $libraryEquipmentId, isCustom: $isCustom, extraAttributes: $extraAttributes, trainingQuestions: $trainingQuestions, typicalUse: $typicalUse, updatedAt: $updatedAt, remoteTypeId: $remoteTypeId, typeDirty: $typeDirty)';
 }
 
 

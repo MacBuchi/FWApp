@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'compartment.dart';
@@ -9,6 +9,7 @@ part of 'compartment.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -35,16 +36,21 @@ $CompartmentCopyWith<Compartment> get copyWith => _$CompartmentCopyWithImpl<Comp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Compartment&&(identical(other.id, id) || other.id == id)&&(identical(other.vehicleId, vehicleId) || other.vehicleId == vehicleId)&&(identical(other.label, label) || other.label == label)&&(identical(other.position, position) || other.position == position)&&(identical(other.gridRow, gridRow) || other.gridRow == gridRow)&&(identical(other.gridCol, gridCol) || other.gridCol == gridCol)&&(identical(other.gridColSpan, gridColSpan) || other.gridColSpan == gridColSpan)&&(identical(other.seite, seite) || other.seite == seite)&&(identical(other.laengsposition, laengsposition) || other.laengsposition == laengsposition)&&(identical(other.imagePath, imagePath) || other.imagePath == imagePath)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  final _this = this as Compartment;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Compartment&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.vehicleId, _this.vehicleId) || other.vehicleId == _this.vehicleId)&&(identical(other.label, _this.label) || other.label == _this.label)&&(identical(other.position, _this.position) || other.position == _this.position)&&(identical(other.gridRow, _this.gridRow) || other.gridRow == _this.gridRow)&&(identical(other.gridCol, _this.gridCol) || other.gridCol == _this.gridCol)&&(identical(other.gridColSpan, _this.gridColSpan) || other.gridColSpan == _this.gridColSpan)&&(identical(other.seite, _this.seite) || other.seite == _this.seite)&&(identical(other.laengsposition, _this.laengsposition) || other.laengsposition == _this.laengsposition)&&(identical(other.imagePath, _this.imagePath) || other.imagePath == _this.imagePath)&&(identical(other.updatedAt, _this.updatedAt) || other.updatedAt == _this.updatedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,vehicleId,label,position,gridRow,gridCol,gridColSpan,seite,laengsposition,imagePath,updatedAt);
+int get hashCode {
+  final _this = this as Compartment;
+  return Object.hash(runtimeType,_this.id,_this.vehicleId,_this.label,_this.position,_this.gridRow,_this.gridCol,_this.gridColSpan,_this.seite,_this.laengsposition,_this.imagePath,_this.updatedAt);
+}
 
 @override
 String toString() {
-  return 'Compartment(id: $id, vehicleId: $vehicleId, label: $label, position: $position, gridRow: $gridRow, gridCol: $gridCol, gridColSpan: $gridColSpan, seite: $seite, laengsposition: $laengsposition, imagePath: $imagePath, updatedAt: $updatedAt)';
+  final _this = this as Compartment;
+  return 'Compartment(id: ${_this.id}, vehicleId: ${_this.vehicleId}, label: ${_this.label}, position: ${_this.position}, gridRow: ${_this.gridRow}, gridCol: ${_this.gridCol}, gridColSpan: ${_this.gridColSpan}, seite: ${_this.seite}, laengsposition: ${_this.laengsposition}, imagePath: ${_this.imagePath}, updatedAt: ${_this.updatedAt})';
 }
 
 
@@ -73,7 +79,7 @@ class _$CompartmentCopyWithImpl<$Res>
 /// Create a copy of Compartment
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? vehicleId = null,Object? label = null,Object? position = null,Object? gridRow = freezed,Object? gridCol = freezed,Object? gridColSpan = null,Object? seite = freezed,Object? laengsposition = freezed,Object? imagePath = freezed,Object? updatedAt = null,}) {
-  return _then(_self.copyWith(
+  return _then(Compartment(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,vehicleId: null == vehicleId ? _self.vehicleId : vehicleId // ignore: cast_nullable_to_non_nullable
 as int,label: null == label ? _self.label : label // ignore: cast_nullable_to_non_nullable
@@ -261,16 +267,18 @@ _$CompartmentCopyWith<_Compartment> get copyWith => __$CompartmentCopyWithImpl<_
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Compartment&&(identical(other.id, id) || other.id == id)&&(identical(other.vehicleId, vehicleId) || other.vehicleId == vehicleId)&&(identical(other.label, label) || other.label == label)&&(identical(other.position, position) || other.position == position)&&(identical(other.gridRow, gridRow) || other.gridRow == gridRow)&&(identical(other.gridCol, gridCol) || other.gridCol == gridCol)&&(identical(other.gridColSpan, gridColSpan) || other.gridColSpan == gridColSpan)&&(identical(other.seite, seite) || other.seite == seite)&&(identical(other.laengsposition, laengsposition) || other.laengsposition == laengsposition)&&(identical(other.imagePath, imagePath) || other.imagePath == imagePath)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Compartment&&(identical(other.id, id) || other.id == id)&&(identical(other.vehicleId, vehicleId) || other.vehicleId == vehicleId)&&(identical(other.label, label) || other.label == label)&&(identical(other.position, position) || other.position == position)&&(identical(other.gridRow, gridRow) || other.gridRow == gridRow)&&(identical(other.gridCol, gridCol) || other.gridCol == gridCol)&&(identical(other.gridColSpan, gridColSpan) || other.gridColSpan == gridColSpan)&&(identical(other.seite, seite) || other.seite == seite)&&(identical(other.laengsposition, laengsposition) || other.laengsposition == laengsposition)&&(identical(other.imagePath, imagePath) || other.imagePath == imagePath)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,vehicleId,label,position,gridRow,gridCol,gridColSpan,seite,laengsposition,imagePath,updatedAt);
+int get hashCode {
+    return Object.hash(runtimeType,id,vehicleId,label,position,gridRow,gridCol,gridColSpan,seite,laengsposition,imagePath,updatedAt);
+}
 
 @override
 String toString() {
-  return 'Compartment(id: $id, vehicleId: $vehicleId, label: $label, position: $position, gridRow: $gridRow, gridCol: $gridCol, gridColSpan: $gridColSpan, seite: $seite, laengsposition: $laengsposition, imagePath: $imagePath, updatedAt: $updatedAt)';
+    return 'Compartment(id: $id, vehicleId: $vehicleId, label: $label, position: $position, gridRow: $gridRow, gridCol: $gridCol, gridColSpan: $gridColSpan, seite: $seite, laengsposition: $laengsposition, imagePath: $imagePath, updatedAt: $updatedAt)';
 }
 
 

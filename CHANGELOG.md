@@ -12,6 +12,14 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.47.2] – 2026-09-21
+
+### Geändert
+
+- Bibliotheken auf den aktuellen Stand gebracht — Dateiauswahl, Teilen-Blatt,
+  Navigation und Bild-Zwischenspeicher. Für die Bedienung ändert sich nichts;
+  die App bleibt damit sicherheitstechnisch versorgt.
+
 ## [1.47.1] – 2026-09-21
 
 ### Geändert

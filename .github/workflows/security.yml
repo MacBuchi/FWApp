@@ -62,15 +62,31 @@ jobs:
       security-events: write
     uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@6e4298ebc4db23e847df9b2e2de2939d6f066c67 # v2.5.1
 
-  # Der Lizenz-Riegel auf dem PR-Diff. Prüft ausschließlich die NEU
+  # Der Schwachstellen-Riegel auf dem PR-Diff. Prüft ausschließlich die NEU
   # hinzukommenden Abhängigkeiten (GitHubs Dependency Graph wertet
   # pubspec.yaml + pubspec.lock aus — Dart wird unterstützt, die Lockfile
   # ist eingecheckt).
   #
-  # Bewusst eine DENY- und keine ALLOW-Liste: Eine Allowliste macht jede
-  # unbekannte oder nicht auflösbare Lizenz zum Merge-Blocker, und genau das
-  # passiert bei pub-Paketen regelmäßig. Verboten ist damit nur, was mit der
-  # Auslieferung wirklich kollidiert.
+  # **Lizenzen prüft dieser Job bewusst NICHT (mehr).** Bis #199 stand hier
+  # `deny-licenses: GPL-2.0, GPL-3.0, AGPL-3.0, SSPL-1.0`. Der Kommentar
+  # daneben begründete die Deny-Form damit, dass eine Allowliste jede nicht
+  # auflösbare Lizenz zum Merge-Blocker macht — nur tut die Deny-Form das
+  # genauso: Die Action bricht ab, sobald sie EINE Lizenz im Diff nicht
+  # validieren kann, unabhängig davon, ob die verboten wäre.
+  #
+  # Gemessen am Toolchain-Bump auf Flutter 3.47.5: GitHub liefert für
+  # `test`, `test_api`, `test_core` und `vector_math` die Lizenz als
+  # `bsd-3-clause` in Kleinschreibung (kein gültiger SPDX-Bezeichner) und
+  # für `matcher` gar keine. Fünf Pakete aus dem Flutter-SDK, allesamt
+  # BSD-3-Clause, und der Job war rot. Das ist eine Datenqualitätsfrage im
+  # pub-Ökosystem, die bei jedem weiteren Lock-Update neu auftritt.
+  #
+  # Verloren geht dabei nichts: `tool/license_config.yaml` (Job „Lizenzen
+  # (Gesamtbestand)") verbietet dieselben vier Lizenzen PLUS LGPL und die
+  # NC-Varianten, liest dafür die echten LICENSE-Dateien aus dem pub-Cache
+  # statt fremder Metadaten und sieht den GESAMTEN Baum statt nur des
+  # Diffs — inklusive eines Lizenzwechsels in einer bestehenden transitiven
+  # Abhängigkeit, den dieser Job ohnehin nie bemerkt hätte.
   #
   # **VORBEDINGUNG, und sie ist eine Repo-Einstellung, kein Code:** Der
   # Dependency Graph muss unter Settings → Code security eingeschaltet sein
@@ -90,7 +106,6 @@ jobs:
       - uses: actions/dependency-review-action@v5
         with:
           fail-on-severity: high
-          deny-licenses: GPL-2.0, GPL-3.0, AGPL-3.0, SSPL-1.0
           comment-summary-in-pr: never
 
   # Geheimnis-Suche über den Arbeitsbaum. Die Ausnahmen und ihre Begründung
@@ -136,10 +151,12 @@ jobs:
       - name: Geheimnisse suchen
         run: gitleaks dir . --no-banner --redact -c .gitleaks.toml
 
-  # Das Gegenstück zu dependency-review: Der prüft nur, was ein PR NEU
-  # hinzufügt, und würde einen Lizenzwechsel in einer bestehenden
-  # transitiven Abhängigkeit nie bemerken. Dieser Job prüft den GANZEN
-  # Baum — Regeln und Begründungen in tool/license_config.yaml.
+  # Seit #199 der EINZIGE Lizenz-Riegel (siehe dependency-review oben, das
+  # an GitHubs pub-Metadaten scheiterte). Dieser Job prüft den GANZEN Baum
+  # gegen die echten LICENSE-Dateien und bemerkt damit auch einen
+  # Lizenzwechsel in einer bestehenden transitiven Abhängigkeit, den eine
+  # Diff-Prüfung nie sieht — Regeln und Begründungen in
+  # tool/license_config.yaml.
   #
   # `dart pub global activate` statt dev_dependency: `pubspec.yaml` zählt
   # hier zu den ausgelieferten Pfaden (Version Guard), eine Zeile dort
@@ -167,7 +184,7 @@ jobs:
       - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           channel: stable
-          flutter-version: 3.44.8
+          flutter-version: 3.47.5
           cache: true
       # Die Pakete müssen im Cache liegen: Das Werkzeug liest die echten
       # LICENSE-Dateien, nicht irgendwelche Metadaten.

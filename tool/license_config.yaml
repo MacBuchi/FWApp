@@ -2,10 +2,13 @@
 # .github/workflows/security.yml → Job „Lizenzen (Gesamtbestand)").
 #
 # Das Werkzeug liest die ECHTEN LICENSE-Dateien aus dem pub-Cache, nicht
-# irgendwelche Metadaten Dritter. Das ist der Unterschied zu
-# `dependency-review`: Der sieht nur, was ein PR neu hinzufügt, und würde
-# einen Lizenzwechsel in einer bestehenden transitiven Abhängigkeit nie
-# bemerken.
+# irgendwelche Metadaten Dritter. Seit #199 ist das der einzige
+# Lizenz-Riegel: `dependency-review` prüft nur noch Schwachstellen, weil es
+# an genau jenen Metadaten scheiterte (`bsd-3-clause` kleingeschrieben für
+# vier SDK-Pakete, gar keine Angabe für ein fünftes). Diese Prüfung hier
+# sieht ohnehin mehr — den GANZEN Baum statt nur dessen, was ein PR neu
+# hinzufügt, also auch einen Lizenzwechsel in einer bestehenden
+# transitiven Abhängigkeit.
 #
 # Die Liste ist gegen den echten Baum abgestimmt (199 Pakete, Stand
 # 2026-08-07): 125× BSD-3-Clause, 42× MIT, 15× Apache-2.0, 6× BSD-2-Clause,

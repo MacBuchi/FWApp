@@ -676,6 +676,14 @@ pauschales Formatieren in Feature-PRs.
   Stelle, die es überhaupt meldet. Bis #199 standen beide exakt auf 2.34.0,
   weil `drift_dev` ab 2.34.4 `analyzer ^13` verlangte; `freezed` 4 verlangt
   `analyzer ^14` und hat den Grund aufgelöst. Seitdem Caret-Bereiche.
+- ⚠️ **`supabase_flutter` ab 2.17 exportiert ein eigenes `TableUpdate`**
+  (über `storage_client`, für Iceberg-Tabellen). Das kollidiert mit drifts
+  gleichnamigem Typ, und zwar als **Compile-Fehler** (`ambiguous_import`) in
+  `lib/core/sync/sync_service.dart`. Dort steht deshalb
+  `import '...supabase_flutter.dart' hide TableUpdate;` — gemeint ist immer
+  drifts Typ, es geht um `db.tableUpdates(...)`. Ein quellbrechender
+  Konflikt in einem MINOR-Update; wer den Import-Zusatz „aufräumt", bricht
+  den Build.
 - ⚠️ **`sqlite3_flutter_libs` ist entfernt, nicht vergessen worden.** Ab
   `sqlite3` 3.x kommen die nativen Libs über Build-Hooks aus `sqlite3` selbst;
   `sqlite3_flutter_libs 0.6.0+eol` ist eine leere Hülle. Wer den EOL-Bump

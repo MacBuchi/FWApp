@@ -9,7 +9,12 @@ import 'package:drift/drift.dart';
 import 'package:fwapp/core/app_version.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/logging/app_logger.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+// `hide TableUpdate`: supabase_flutter 2.17 exportiert über den
+// storage_client einen eigenen `TableUpdate` (Iceberg-Tabellen), der mit
+// drifts gleichnamigem Typ kollidiert — gemeint ist hier IMMER drifts, es
+// geht um `db.tableUpdates(...)`. Ein quellbrechender Konflikt in einem
+// Minor-Update; ohne das Ausblenden bricht der Build mit `ambiguous_import`.
+import 'package:supabase_flutter/supabase_flutter.dart' hide TableUpdate;
 
 /// Drift tables mirrored to Supabase (SQL names, parent→child order).
 ///

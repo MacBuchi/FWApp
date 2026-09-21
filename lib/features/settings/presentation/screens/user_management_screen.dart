@@ -21,7 +21,7 @@ import 'package:fwapp/features/settings/domain/zugang_teilen.dart';
 import 'package:fwapp/features/settings/domain/zustellung.dart';
 import 'package:fwapp/features/settings/presentation/providers/einladung_providers.dart';
 import 'package:fwapp/features/settings/presentation/providers/user_admin_providers.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:fwapp/core/sharing/teilen.dart';
 
 class UserManagementScreen extends ConsumerWidget {
   const UserManagementScreen({super.key});
@@ -253,28 +253,6 @@ Future<void> _zugangszettelAnlegen(
   });
 }
 
-/// Teilt [text] über das Teilen-Blatt des Systems (Issue #165).
-///
-/// ⚠️ **`mailToFallbackEnabled: false` ist Absicht.** Ohne Web-Share-API —
-/// also in jedem Desktop-Browser — öffnet share_plus sonst einen
-/// MAIL-Entwurf, ausgerechnet den Weg, den dieser Knopf ersetzen soll. Ohne
-/// den Rückfall wirft das Paket stattdessen, und dann ist die Zwischenablage
-/// die ehrlichere Antwort: Der Text ist da, der Nutzer weiß es, und er fügt
-/// ihn dort ein, wo er ihn haben will.
-Future<void> _teilen(BuildContext context, String text) async {
-  final messenger = ScaffoldMessenger.of(context);
-  try {
-    await SharePlus.instance
-        .share(ShareParams(text: text, mailToFallbackEnabled: false));
-  } catch (_) {
-    await Clipboard.setData(ClipboardData(text: text));
-    messenger.showSnackBar(const SnackBar(
-      content: Text('Teilen geht hier nicht — der Text liegt in der '
-          'Zwischenablage.'),
-    ));
-  }
-}
-
 /// Zeigt die Zugangsdaten GENAU EINMAL an (fürs Übertragen auf den
 /// Zugangszettel) — das Passwort ist danach nirgends mehr ablesbar.
 Future<void> _showCredentials(
@@ -313,7 +291,7 @@ Future<void> _showCredentials(
         TextButton.icon(
           icon: const Icon(Icons.share),
           label: const Text('Teilen'),
-          onPressed: () => _teilen(
+          onPressed: () => teile(
               ctx, zugangsNachricht(nutzername: username, passwort: password)),
         ),
         FilledButton(
@@ -358,7 +336,7 @@ class _EinladungenAbschnitt extends ConsumerWidget {
               // dahinter (Issue #165). Steht bewusst VOR „Einladen" — es ist
               // der kleinere Schritt, und meistens der erste.
               IconButton(
-                onPressed: () => _teilen(context, demoNachricht()),
+                onPressed: () => teile(context, demoNachricht()),
                 icon: const Icon(Icons.visibility_outlined),
                 tooltip: 'Demo-Zugang teilen',
               ),

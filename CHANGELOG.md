@@ -12,6 +12,31 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.48.0] – 2026-09-21
+
+### Neu
+
+- **Der Inventurbericht geht jetzt als Datei raus.** Am Ende einer Inventur
+  liegt oben rechts ein Teilen-Knopf: Der Bericht wandert als CSV-Datei ins
+  Teilen-Blatt — an eine Mail, in einen Messenger oder in die Dateiablage.
+  Der Dateiname trägt Fahrzeug und Datum, die Tabelle öffnet sich in Excel
+  mit richtigen Umlauten, und jede Zeile nennt Fach, Gerät, Soll, Ist,
+  Zustand und Notiz.
+
+- **„In Reparatur" als eigener Zustand.** Bisher blieb bei einem Gerät, das
+  zur Prüfung gegeben wurde, nur die Wahl zwischen „fehlt" und „beschädigt" —
+  beides sagt etwas Falsches. Der neue Zustand steht in der Prüfliste, in der
+  Zusammenfassung und im Bericht, und er gilt als geprüft: Eine komplett
+  durchgegangene Inventur gilt damit auch dann als fertig, wenn etwas beim
+  Prüfdienst liegt.
+
+### Geändert
+
+- Beim erneuten Öffnen eines Mangels steht der bereits vermerkte Zustand da.
+  Vorher sprang die Auswahl zurück auf „fehlt" — wer nur die Notiz nachlesen
+  wollte, hat ein beschädigtes Gerät stillschweigend zu einem fehlenden
+  gemacht.
+
 ## [1.47.2] – 2026-09-21
 
 ### Geändert

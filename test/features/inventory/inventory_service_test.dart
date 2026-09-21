@@ -76,6 +76,41 @@ void main() {
         'nicht auffindbar');
   });
 
+  test('„in Reparatur" zählt als geprüft und als Abweichung', () async {
+    // Der Zustand kam mit #178 dazu. Er darf nicht in `checked` fehlen —
+    // sonst gilt eine vollständig durchgegangene Inventur als unfertig und
+    // der Gerätewart sucht ein Gerät, das er selbst weggegeben hat.
+    final sessionId = await service.startOrResume(vehicleId);
+    final checks = await db.inventoryDao.getChecks(sessionId);
+    await service.setStatus(checks[0].id, InventoryChecks.statusOk);
+    await service.setStatus(checks[1].id, InventoryChecks.statusRepair,
+        note: 'bei der Prüfstelle');
+
+    final summary =
+        InventorySummary.from(await db.inventoryDao.getChecks(sessionId));
+    expect(summary.repair, 1);
+    expect(summary.checked, 2);
+    expect(summary.complete, isTrue);
+    expect(summary.hasIssues, isTrue);
+    // Und es ist KEIN fehlendes Gerät — die beiden dürfen nicht verschmelzen.
+    expect(summary.missing, 0);
+    expect(summary.damaged, 0);
+  });
+
+  test('ein Gerät in Reparatur erscheint im Bericht', () async {
+    // Gegen den Fehler, der beim Hinzufügen eines Zustands am leichtesten
+    // passiert: Die Aggregation kennt ihn, die Mängelliste filtert ihn weg.
+    final sessionId = await service.startOrResume(vehicleId);
+    final checks = await db.inventoryDao.getChecks(sessionId);
+    await service.setStatus(checks[0].id, InventoryChecks.statusRepair);
+
+    final updated = await db.inventoryDao.getChecks(sessionId);
+    final abweichungen = updated
+        .where((c) => InventorySummary.abweichendeStatus.contains(c.status));
+    expect(abweichungen, hasLength(1));
+    expect(abweichungen.first.status, InventoryChecks.statusRepair);
+  });
+
   test('finish schließt die Session (kein Resume mehr)', () async {
     final sessionId = await service.startOrResume(vehicleId);
     await service.finish(sessionId, doneBy: 'Marcus');

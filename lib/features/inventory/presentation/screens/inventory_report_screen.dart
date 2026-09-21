@@ -1,12 +1,20 @@
 /// inventory_report_screen.dart – Abschluss der Inventur: Zusammenfassung,
-/// Mängelliste, Export in die Zwischenablage, Session abschließen.
+/// Mängelliste, Bericht als CSV-Datei teilen, Session abschließen.
+///
+/// **Warum der Bericht als Datei geht und nicht nur als Text** (Issue #178):
+/// Wer eine Inventur belegen muss, hängt sie an eine Mail oder legt sie ab.
+/// Die Zwischenablage bleibt als Rückfall, wenn das Teilen-Blatt fehlt — in
+/// jedem Desktop-Browser ist das der Normalfall.
 library;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fwapp/core/database/app_database.dart';
+import 'package:fwapp/core/sharing/teilen.dart';
+import 'package:fwapp/features/inventory/data/inventory_export.dart';
 import 'package:fwapp/features/inventory/presentation/providers/inventory_providers.dart';
+import 'package:fwapp/features/inventory/presentation/widgets/status_darstellung.dart';
 
 class InventoryReportScreen extends ConsumerWidget {
   final int sessionId;
@@ -20,6 +28,11 @@ class InventoryReportScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Inventur – Abschluss'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.share),
+            tooltip: 'Als CSV teilen',
+            onPressed: () => _teileCsv(context, ref),
+          ),
           IconButton(
             icon: const Icon(Icons.copy),
             tooltip: 'Bericht kopieren',
@@ -37,8 +50,7 @@ class InventoryReportScreen extends ConsumerWidget {
               .toList();
           final issues = checks
               .where((c) =>
-                  c.status == InventoryChecks.statusMissing ||
-                  c.status == InventoryChecks.statusDamaged)
+                  InventorySummary.abweichendeStatus.contains(c.status))
               .toList();
 
           return ListView(
@@ -62,6 +74,9 @@ class InventoryReportScreen extends ConsumerWidget {
                       if (summary.damaged > 0)
                         Text('${summary.damaged} beschädigt',
                             style: TextStyle(color: Colors.orange.shade800)),
+                      if (summary.repair > 0)
+                        Text('${summary.repair} in Reparatur',
+                            style: TextStyle(color: Colors.blue.shade700)),
                     ],
                   ),
                 ),
@@ -75,25 +90,20 @@ class InventoryReportScreen extends ConsumerWidget {
               if (issues.isNotEmpty) ...[
                 const SizedBox(height: 16),
                 Text('Mängel', style: Theme.of(context).textTheme.titleMedium),
-                ...issues.map((c) => Card(
-                      child: ListTile(
-                        leading: Icon(
-                            c.status == InventoryChecks.statusMissing
-                                ? Icons.cancel
-                                : Icons.warning,
-                            color: c.status == InventoryChecks.statusMissing
-                                ? Colors.red
-                                : Colors.orange),
-                        title: Text(c.equipmentName),
-                        subtitle: Text([
-                          c.compartmentLabel,
-                          c.status == InventoryChecks.statusMissing
-                              ? 'fehlt'
-                              : 'beschädigt',
-                          if (c.note.isNotEmpty) c.note,
-                        ].join(' · ')),
-                      ),
-                    )),
+                ...issues.map((c) {
+                  final (farbe, symbol) = statusDarstellung(c.status);
+                  return Card(
+                    child: ListTile(
+                      leading: Icon(symbol, color: farbe),
+                      title: Text(c.equipmentName),
+                      subtitle: Text([
+                        c.compartmentLabel,
+                        statusText(c.status),
+                        if (c.note.isNotEmpty) c.note,
+                      ].join(' · ')),
+                    ),
+                  );
+                }),
               ],
               const SizedBox(height: 24),
               FilledButton.icon(
@@ -105,6 +115,33 @@ class InventoryReportScreen extends ConsumerWidget {
           );
         },
       ),
+    );
+  }
+
+  /// Teilt den Bericht als CSV-Datei — der Weg zur Mail mit Anhang (#178).
+  ///
+  /// Das Teilen-Blatt des Systems entscheidet, wohin: Mail, Messenger,
+  /// Dateiablage. Eine eigene Mail-Funktion hätte einen Mailserver und eine
+  /// Adressverwaltung gebraucht, für ein Ergebnis, das der Nutzer ohnehin
+  /// selbst adressiert.
+  Future<void> _teileCsv(BuildContext context, WidgetRef ref) async {
+    final checks =
+        ref.read(inventoryChecksProvider(sessionId)).value ?? const [];
+    final kopf = await ref.read(inventurBerichtKopfProvider(sessionId).future);
+    if (!context.mounted) return;
+    await teile(
+      context,
+      inventurCsv(
+        fahrzeug: kopf.fahrzeug,
+        zeitpunkt: kopf.zeitpunkt,
+        checks: checks,
+      ),
+      dateiname: inventurDateiname(
+        fahrzeug: kopf.fahrzeug,
+        zeitpunkt: kopf.zeitpunkt,
+      ),
+      betreff: 'Inventur ${kopf.fahrzeug}',
+      sacheImRueckfall: 'der Bericht',
     );
   }
 
@@ -123,15 +160,15 @@ class InventoryReportScreen extends ConsumerWidget {
     final buffer = StringBuffer('Inventurbericht\n');
     buffer.writeln('${summary.checked}/${summary.total} geprüft · '
         '${summary.ok} i.O. · ${summary.missing} fehlt · '
-        '${summary.damaged} beschädigt\n');
-    final issues = checks.where((c) =>
-        c.status == InventoryChecks.statusMissing ||
-        c.status == InventoryChecks.statusDamaged);
+        '${summary.damaged} beschädigt · '
+        '${summary.repair} in Reparatur\n');
+    final issues = checks.where(
+        (c) => InventorySummary.abweichendeStatus.contains(c.status));
     if (issues.isNotEmpty) {
       buffer.writeln('Mängel:');
       for (final c in issues) {
         buffer.writeln('  - ${c.compartmentLabel} · ${c.equipmentName} · '
-            '${c.status == InventoryChecks.statusMissing ? 'fehlt' : 'beschädigt'}'
+            '${statusText(c.status)}'
             '${c.note.isNotEmpty ? ' (${c.note})' : ''}');
       }
     }

@@ -296,6 +296,46 @@ final class WissenDaoProvider
 
 String _$wissenDaoHash() => r'6e1237f73b9e4924e92d71d0ac17f344573de327';
 
+@ProviderFor(tagDao)
+final tagDaoProvider = TagDaoProvider._();
+
+final class TagDaoProvider extends $FunctionalProvider<TagDao, TagDao, TagDao>
+    with $Provider<TagDao> {
+  TagDaoProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'tagDaoProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$tagDaoHash();
+
+  @$internal
+  @override
+  $ProviderElement<TagDao> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  TagDao create(Ref ref) {
+    return tagDao(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(TagDao value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<TagDao>(value),
+    );
+  }
+}
+
+String _$tagDaoHash() => r'bf147fd241d9a53571fa6051e39d9492eba993f6';
+
 @ProviderFor(quizDao)
 final quizDaoProvider = QuizDaoProvider._();
 

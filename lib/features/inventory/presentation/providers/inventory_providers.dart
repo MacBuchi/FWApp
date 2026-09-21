@@ -8,6 +8,7 @@ import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/database/database_providers.dart';
+import 'package:fwapp/features/inventory/data/tag_code.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';
 
 /// Live checks of a session (stream).
@@ -99,6 +100,39 @@ final inventurBerichtKopfProvider =
   );
 });
 
+/// Was beim Abhaken per Code herauskam.
+sealed class AbhakErgebnis {
+  const AbhakErgebnis();
+}
+
+/// Abgehakt — mit dem, was der Nutzer zur Bestätigung sehen will.
+class Abgehakt extends AbhakErgebnis {
+  final String geraet;
+  final String fach;
+
+  /// Wie viele Stück jetzt gezählt sind, und wie viele es sein sollen.
+  final int ist;
+  final int soll;
+  const Abgehakt(this.geraet, this.fach, this.ist, this.soll);
+}
+
+/// Der Code ist an keiner Einheit hinterlegt.
+class CodeUnbekannt extends AbhakErgebnis {
+  const CodeUnbekannt();
+}
+
+/// Der Code gehört zu einem Gerät, das in dieser Inventur nicht vorkommt —
+/// anderes Fahrzeug, oder seit dem Start der Sitzung umgeräumt.
+class CodeNichtInDieserInventur extends AbhakErgebnis {
+  final String geraet;
+  const CodeNichtInDieserInventur(this.geraet);
+}
+
+/// Es stand nichts Verwertbares da.
+class CodeLeer extends AbhakErgebnis {
+  const CodeLeer();
+}
+
 class InventoryService {
   final AppDatabase db;
   InventoryService(this.db);
@@ -142,6 +176,51 @@ class InventoryService {
           note: note == null ? const Value.absent() : Value(note),
         ),
       );
+
+  /// Hakt das Gerät ab, auf dem [roh] klebt (Issues #177/#179).
+  ///
+  /// **Zählt hoch statt zu setzen.** Bei „Soll 4" wird viermal gescannt, und
+  /// jeder Scan ist ein gefundenes Stück. Auf „vollständig" springt die Zeile
+  /// erst, wenn das Soll erreicht ist — vorher bleibt sie offen, sonst
+  /// meldete der erste von vier Pressluftatmern das Fach als fertig.
+  ///
+  /// Das Zählen läuft über die EINHEIT, nicht über die Zeile: Zweimal
+  /// denselben Aufkleber zu scannen erhöht nichts, weil dieselbe Einheit
+  /// nicht zweimal daliegt.
+  Future<AbhakErgebnis> hakeCodeAb(int sessionId, String roh) async {
+    final code = normalisiereTagCode(roh);
+    if (code == null) return const CodeLeer();
+
+    final tag = await db.tagDao.findByCode(code);
+    if (tag == null) return const CodeUnbekannt();
+    final einheit = await db.tagDao.getInstanceById(tag.instanceId);
+    if (einheit == null) return const CodeUnbekannt();
+    final geraetename =
+        (await db.equipmentDao.getById(einheit.equipmentId))?.name ??
+            'Gerät ${einheit.equipmentId}';
+
+    final checks = await db.inventoryDao.getChecks(sessionId);
+    final passend = checks.where((c) => c.equipmentId == einheit.equipmentId);
+    if (passend.isEmpty) return CodeNichtInDieserInventur(geraetename);
+
+    // Das Fach der Einheit gewinnt, wenn es eines gibt — dasselbe Gerät kann
+    // in zwei Fächern liegen, und dann ist die Einheit die genauere Angabe.
+    final check = passend.firstWhere(
+      (c) => c.compartmentId == einheit.compartmentId,
+      orElse: () => passend.first,
+    );
+
+    final ist = (check.actualQuantity ?? 0) + 1;
+    final vollstaendig = ist >= check.targetQuantity;
+    await setStatus(
+      check.id,
+      vollstaendig ? InventoryChecks.statusOk : InventoryChecks.statusOpen,
+      actualQuantity: ist,
+      note: check.note,
+    );
+    return Abgehakt(
+        geraetename, check.compartmentLabel, ist, check.targetQuantity);
+  }
 
   Future<void> finish(int sessionId, {String doneBy = ''}) =>
       db.inventoryDao.finishSession(sessionId, doneBy: doneBy);

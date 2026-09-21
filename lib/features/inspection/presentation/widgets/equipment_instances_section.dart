@@ -8,6 +8,7 @@ import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/features/inspection/domain/entities/equipment_instance.dart';
 import 'package:fwapp/features/inspection/domain/entities/inspection_schedule.dart';
 import 'package:fwapp/features/inspection/presentation/providers/inspection_providers.dart';
+import 'package:fwapp/features/inventory/presentation/widgets/tag_abschnitt.dart';
 import 'package:fwapp/features/inspection/presentation/widgets/mark_done_dialog.dart';
 import 'package:fwapp/features/vehicle/domain/entities/vehicle.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';
@@ -139,6 +140,19 @@ class _InstanceCard extends ConsumerWidget {
                 ...schedules.map((s) => _ScheduleTile(schedule: s)),
               ],
             ),
+          ),
+          const Divider(height: 1),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text('Codes',
+                  style: TextStyle(fontWeight: FontWeight.w600)),
+            ),
+          ),
+          TagAbschnitt(
+            instanceId: instance.id,
+            bearbeitbar: ref.watch(canEditProvider),
           ),
           if (ref.watch(canEditProvider))
             OverflowBar(

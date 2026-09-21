@@ -12,6 +12,29 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.49.0] – 2026-09-22
+
+### Neu
+
+- **Geräte bekommen einen Code, und die Inventur hakt danach ab.** Bei jeder
+  Geräte-Einheit unter *Prüftermine* steht jetzt ein Abschnitt **Codes**. Dort
+  kannst du entweder einen **eigenen Code vergeben** — zum Ausdrucken und
+  Aufkleben — oder den Code **eintragen, der schon auf dem Gerät steht**, etwa
+  den Barcode des Herstellers. Ein Gegenstand darf mehrere Codes tragen.
+
+  In der Inventur liegt oben rechts **Code eingeben**: Code rein, und das
+  Gerät ist abgehakt. Das Feld bleibt offen und leert sich, damit ein Fach in
+  einem Rutsch durchgeht. Bei mehreren Stück zählt jeder Code ein Stück —
+  „vollständig" wird die Zeile erst, wenn das Soll erreicht ist.
+
+  Gehört der Code zu einem Gerät eines anderen Fahrzeugs, sagt die App, um
+  welches es sich handelt, statt einfach nichts zu tun.
+
+  Noch nicht dabei: die **Kamera**. Bis dahin tippst du den Code ein — oder
+  ein Handscanner tut es für dich, der schreibt ohnehin in dieses Feld.
+  Die Codes liegen vorerst nur auf diesem Gerät und werden noch nicht mit
+  dem Server abgeglichen.
+
 ## [1.48.1] – 2026-09-21
 
 ### Geändert

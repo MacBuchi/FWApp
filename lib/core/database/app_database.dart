@@ -331,6 +331,46 @@ class EquipmentInstances extends Table {
       dateTime().withDefault(currentDateAndTime)();
 }
 
+/// Ein maschinenlesbarer Code an EINER physischen Einheit (Issues #177/#179).
+///
+/// **Warum an der Instanz und nicht am Gerätetyp.** Ein Aufkleber sitzt auf
+/// einem Gegenstand. Zwei Strahlrohre im selben Fach sind zwei Gegenstände
+/// mit zwei Codes — am Typ „Strahlrohr C" ließe sich das nicht auseinander-
+/// halten, und genau darauf zielt das Abhaken beim Scannen.
+///
+/// **Warum eine eigene Tabelle und nicht `EquipmentInstances.identifier`.**
+/// Das Feld dort ist eine Beschriftung für Menschen („Flasche 3",
+/// Seriennummer), nicht eindeutig und nur eines pro Einheit. Ein Gegenstand
+/// kann aber mehrere Codes tragen — der aufgedruckte Hersteller-Barcode und
+/// später ein NFC-Tag (#176) am selben Pressluftatmer.
+@DataClassName('EquipmentTagData')
+class EquipmentTags extends Table {
+  static const kindQr = 'qr';
+  static const kindBarcode = 'barcode';
+  static const kindNfc = 'nfc';
+
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get instanceId => integer()
+      .references(EquipmentInstances, #id, onDelete: KeyAction.cascade)();
+
+  /// Der Code, wie ihn ein Lesegerät liefert — **normalisiert** abgelegt
+  /// (siehe `normalisiereTagCode`). Eindeutig: Ein Code zeigt auf genau
+  /// einen Gegenstand, sonst ist das Scannen mehrdeutig.
+  TextColumn get code => text().unique()();
+
+  // Literal statt `kindQr`: drift schreibt den Ausdruck wörtlich in den
+  // generierten Code, und dort steht die Konstante unqualifiziert —
+  // `unqualified_reference_to_non_local_static_member`. `InventoryChecks`
+  // macht es oben aus demselben Grund so.
+  TextColumn get kind => text().withDefault(const Constant('qr'))();
+
+  /// Ob die App den Code vergeben hat (zum Ausdrucken) oder ob er von außen
+  /// kam. Nur für die Anzeige — der Ablauf ist derselbe.
+  BoolColumn get selfIssued => boolean().withDefault(const Constant(false))();
+
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+}
+
 /// A recurring Prüfung (kind='recurring', intervalMonths set) or a one-shot
 /// Ablaufdatum (kind='expiry'). dueAt is stored denormalized and updated when
 /// an inspection is logged, so due queries never compute dates.
@@ -1116,6 +1156,44 @@ class WissenDao extends DatabaseAccessor<AppDatabase>
   }
 }
 
+/// Codes an Geräte-Einheiten (Issues #177/#179).
+@DriftAccessor(tables: [EquipmentTags, EquipmentInstances])
+class TagDao extends DatabaseAccessor<AppDatabase> with _$TagDaoMixin {
+  TagDao(super.db);
+
+  Stream<List<EquipmentTagData>> watchByInstance(int instanceId) =>
+      (select(equipmentTags)
+            ..where((t) => t.instanceId.equals(instanceId))
+            ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
+          .watch();
+
+  Future<List<EquipmentTagData>> getByInstance(int instanceId) =>
+      (select(equipmentTags)..where((t) => t.instanceId.equals(instanceId)))
+          .get();
+
+  /// Schlägt einen gelesenen Code nach. Erwartet ihn **normalisiert**.
+  Future<EquipmentTagData?> findByCode(String code) =>
+      (select(equipmentTags)..where((t) => t.code.equals(code)))
+          .getSingleOrNull();
+
+  Future<int> insertTag(EquipmentTagsCompanion t) =>
+      into(equipmentTags).insert(t);
+
+  Future<int> deleteTag(int id) =>
+      (delete(equipmentTags)..where((t) => t.id.equals(id))).go();
+
+  /// Alle vergebenen Codes — für die Kollisionsprüfung beim Erzeugen.
+  Future<Set<String>> alleCodes() async =>
+      (await select(equipmentTags).get()).map((t) => t.code).toSet();
+
+  /// Die Einheit, an der ein Code hängt. Liegt hier und nicht im
+  /// `InspectionDao`, weil dieser Accessor die Tabelle ohnehin führt — der
+  /// Umweg über einen zweiten DAO brächte nichts.
+  Future<EquipmentInstanceData?> getInstanceById(int id) =>
+      (select(equipmentInstances)..where((t) => t.id.equals(id)))
+          .getSingleOrNull();
+}
+
 /// Unterlagen am Fahrzeug (Issue #182).
 @DriftAccessor(tables: [VehicleAttachments])
 class AttachmentDao extends DatabaseAccessor<AppDatabase>
@@ -1175,6 +1253,7 @@ class AttachmentDao extends DatabaseAccessor<AppDatabase>
     Wissensfragen,
     AbgeschalteteLernbereiche,
     Fragenhinweise,
+    EquipmentTags,
   ],
   daos: [
     VehicleDao,
@@ -1187,13 +1266,14 @@ class AttachmentDao extends DatabaseAccessor<AppDatabase>
     InventoryDao,
     AttachmentDao,
     WissenDao,
+    TagDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 14;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -1343,6 +1423,13 @@ class AppDatabase extends _$AppDatabase {
             if (from >= 10) {
               await m.addColumn(wissensfragen, wissensfragen.geraet);
             }
+          }
+          if (from < 14) {
+            // Codes an Geräte-Einheiten (#177/#179). Die Tabelle entsteht
+            // leer und bleibt es, bis jemand einen Tag vergibt — es gibt
+            // nichts zurückzurechnen: Vor dieser Version klebte kein Code
+            // auf irgendetwas.
+            await m.createTable(equipmentTags);
           }
         },
         beforeOpen: (details) async {

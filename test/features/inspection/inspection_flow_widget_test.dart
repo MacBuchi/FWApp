@@ -51,6 +51,13 @@ void main() {
     // Prüfung anlegen (wiederkehrend, Standardintervall 12 Monate).
     await tester.tap(find.text('PA 1'));
     await tester.pumpAndSettle();
+    // ⚠️ `ensureVisible` ist Pflicht, nicht Zierde: Die aufgeklappte
+    // Instanz-Karte trägt seit den Codes (#177) mehr Inhalt, und der Knopf
+    // rutscht damit unter den sichtbaren Bereich. Ein `tap` darauf geht dann
+    // ins Leere — ohne Fehlermeldung. Der Test scheitert erst eine Zeile
+    // später daran, dass der Dialog nicht da ist.
+    await tester.ensureVisible(find.text('Prüfung hinzufügen'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Prüfung hinzufügen'));
     await tester.pumpAndSettle();
     await tester.enterText(

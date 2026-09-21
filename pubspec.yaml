@@ -31,7 +31,7 @@ dependencies:
   # sqlite3 3.x liefert die nativen SQLite-Libs selbst ueber Build-Hooks.
   # sqlite3_flutter_libs ist damit hinfaellig (0.6.0+eol ist eine leere
   # Huelle) und wurde bewusst entfernt, nicht hochgezogen.
-  sqlite3: ^3.5.0
+  sqlite3: ^3.6.0
   path_provider: ^2.1.5
   path: ^1.9.1
 
@@ -63,13 +63,13 @@ dependencies:
   excel: ^4.0.6
 
   # Cloud sync (optional)
-  supabase_flutter: ^2.8.4
+  supabase_flutter: ^2.17.2
 
   # Localisation
   intl: ^0.20.2
 
   # Utilities
-  logger: ^2.5.0
+  logger: ^2.8.0
   # In-App-Update: lädt das Release-APK und öffnet den Android-Installer.
   ota_update: ^7.0.0
   uuid: ^4.5.1

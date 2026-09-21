@@ -669,20 +669,27 @@ pauschales Formatieren in Feature-PRs.
   `Ref` – Helfern den Client als Parameter geben statt `Ref`.
 - ⚠️ **Drift `replace()`** wirft bei partiellen Companions → `patchEquipment` /
   `write()` nutzen.
-- ⚠️ **`drift` und `drift_dev` sind exakt gepinnt und gehören zusammen.**
-  `drift_dev` hängt bei 2.34.0 fest (ab 2.34.4 verlangt es `analyzer ^13`, den
-  `riverpod_generator`/`freezed` hier nicht mitgehen), und `drift` 2.34.1+
-  ändert die `drift3_preview`-API, die `drift_dev` 2.34.0 benutzt. Das schlägt
-  **nicht** in `flutter analyze` auf, sondern erst als Compile-Fehler beim
-  Laden von `test/core/database/migration_test.dart`. Nur gemeinsam anheben.
+- ⚠️ **`drift` und `drift_dev` gehören zusammen** und müssen dieselbe Version
+  haben. Ein Auseinanderlaufen schlägt **nicht** in `flutter analyze` auf,
+  sondern erst als Compile-Fehler beim Laden von
+  `test/core/database/migration_test.dart` — der Test ist damit die einzige
+  Stelle, die es überhaupt meldet. Bis #199 standen beide exakt auf 2.34.0,
+  weil `drift_dev` ab 2.34.4 `analyzer ^13` verlangte; `freezed` 4 verlangt
+  `analyzer ^14` und hat den Grund aufgelöst. Seitdem Caret-Bereiche.
 - ⚠️ **`sqlite3_flutter_libs` ist entfernt, nicht vergessen worden.** Ab
   `sqlite3` 3.x kommen die nativen Libs über Build-Hooks aus `sqlite3` selbst;
   `sqlite3_flutter_libs 0.6.0+eol` ist eine leere Hülle. Wer den EOL-Bump
   blind übernimmt, verliert `libsqlite3.so` im APK — und merkt es erst zur
   Laufzeit auf dem Gerät, nicht im Build. Gegenprobe:
   `unzip -l build/app/outputs/flutter-apk/app-*.apk | grep libsqlite3`.
-- ⚠️ **`file_picker` ab 11:** `FilePicker.platform.pickFiles(...)` gibt es
-  nicht mehr, die Methoden sind jetzt statisch → `FilePicker.pickFiles(...)`.
+- ⚠️ **`file_picker`:** ab 11 sind die Methoden statisch
+  (`FilePicker.platform.pickFiles(...)` → `FilePicker.pickFiles(...)`), ab 13
+  gibt `pickFiles` direkt eine `List<PlatformFile>` zurück statt eines
+  nullbaren Ergebnisses mit `.files` — bei Abbruch ist sie leer. `withData`
+  und `PlatformFile.bytes` sind weg, stattdessen `await datei.readAsBytes()`.
+  Das ist ein zusätzliches `await` in Widget-Code: `mounted` danach prüfen.
+  Der frühere Umweg über `datei.path` mit `dart:io` entfällt ersatzlos, er
+  lief auf Web ohnehin ins Leere.
 - ⚠️ **`ReorderableListView.onReorder` ist deprecated** → `onReorderItem`. Das
   ist kein reines Umbenennen: `onReorderItem` rechnet das `newIndex--` für das
   entnommene Element bereits selbst heraus. Wer die eigene Korrekturzeile

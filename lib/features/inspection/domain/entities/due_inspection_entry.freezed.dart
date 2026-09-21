@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'due_inspection_entry.dart';
@@ -9,6 +9,7 @@ part of 'due_inspection_entry.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -25,16 +26,21 @@ $DueInspectionEntryCopyWith<DueInspectionEntry> get copyWith => _$DueInspectionE
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DueInspectionEntry&&(identical(other.schedule, schedule) || other.schedule == schedule)&&(identical(other.instance, instance) || other.instance == instance)&&(identical(other.equipmentName, equipmentName) || other.equipmentName == equipmentName)&&(identical(other.equipmentImagePath, equipmentImagePath) || other.equipmentImagePath == equipmentImagePath)&&(identical(other.vehicleName, vehicleName) || other.vehicleName == vehicleName));
+  final _this = this as DueInspectionEntry;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DueInspectionEntry&&(identical(other.schedule, _this.schedule) || other.schedule == _this.schedule)&&(identical(other.instance, _this.instance) || other.instance == _this.instance)&&(identical(other.equipmentName, _this.equipmentName) || other.equipmentName == _this.equipmentName)&&(identical(other.equipmentImagePath, _this.equipmentImagePath) || other.equipmentImagePath == _this.equipmentImagePath)&&(identical(other.vehicleName, _this.vehicleName) || other.vehicleName == _this.vehicleName));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,schedule,instance,equipmentName,equipmentImagePath,vehicleName);
+int get hashCode {
+  final _this = this as DueInspectionEntry;
+  return Object.hash(runtimeType,_this.schedule,_this.instance,_this.equipmentName,_this.equipmentImagePath,_this.vehicleName);
+}
 
 @override
 String toString() {
-  return 'DueInspectionEntry(schedule: $schedule, instance: $instance, equipmentName: $equipmentName, equipmentImagePath: $equipmentImagePath, vehicleName: $vehicleName)';
+  final _this = this as DueInspectionEntry;
+  return 'DueInspectionEntry(schedule: ${_this.schedule}, instance: ${_this.instance}, equipmentName: ${_this.equipmentName}, equipmentImagePath: ${_this.equipmentImagePath}, vehicleName: ${_this.vehicleName})';
 }
 
 
@@ -63,7 +69,7 @@ class _$DueInspectionEntryCopyWithImpl<$Res>
 /// Create a copy of DueInspectionEntry
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? schedule = null,Object? instance = null,Object? equipmentName = null,Object? equipmentImagePath = freezed,Object? vehicleName = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(DueInspectionEntry(
 schedule: null == schedule ? _self.schedule : schedule // ignore: cast_nullable_to_non_nullable
 as InspectionSchedule,instance: null == instance ? _self.instance : instance // ignore: cast_nullable_to_non_nullable
 as EquipmentInstance,equipmentName: null == equipmentName ? _self.equipmentName : equipmentName // ignore: cast_nullable_to_non_nullable
@@ -247,16 +253,18 @@ _$DueInspectionEntryCopyWith<_DueInspectionEntry> get copyWith => __$DueInspecti
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DueInspectionEntry&&(identical(other.schedule, schedule) || other.schedule == schedule)&&(identical(other.instance, instance) || other.instance == instance)&&(identical(other.equipmentName, equipmentName) || other.equipmentName == equipmentName)&&(identical(other.equipmentImagePath, equipmentImagePath) || other.equipmentImagePath == equipmentImagePath)&&(identical(other.vehicleName, vehicleName) || other.vehicleName == vehicleName));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _DueInspectionEntry&&(identical(other.schedule, schedule) || other.schedule == schedule)&&(identical(other.instance, instance) || other.instance == instance)&&(identical(other.equipmentName, equipmentName) || other.equipmentName == equipmentName)&&(identical(other.equipmentImagePath, equipmentImagePath) || other.equipmentImagePath == equipmentImagePath)&&(identical(other.vehicleName, vehicleName) || other.vehicleName == vehicleName));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,schedule,instance,equipmentName,equipmentImagePath,vehicleName);
+int get hashCode {
+    return Object.hash(runtimeType,schedule,instance,equipmentName,equipmentImagePath,vehicleName);
+}
 
 @override
 String toString() {
-  return 'DueInspectionEntry(schedule: $schedule, instance: $instance, equipmentName: $equipmentName, equipmentImagePath: $equipmentImagePath, vehicleName: $vehicleName)';
+    return 'DueInspectionEntry(schedule: $schedule, instance: $instance, equipmentName: $equipmentName, equipmentImagePath: $equipmentImagePath, vehicleName: $vehicleName)';
 }
 
 

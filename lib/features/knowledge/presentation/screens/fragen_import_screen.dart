@@ -152,10 +152,9 @@ class _FragenImportState extends ConsumerState<FragenImportScreen> {
     final gewaehlt = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: const ['csv', 'txt', 'xlsx', 'xls'],
-      withData: true,
     );
-    final datei = gewaehlt?.files.firstOrNull;
-    if (datei == null || datei.bytes == null) return;
+    final datei = gewaehlt.firstOrNull;
+    if (datei == null) return;
 
     setState(() {
       _laeuft = true;
@@ -163,7 +162,12 @@ class _FragenImportState extends ConsumerState<FragenImportScreen> {
       _ergebnis = null;
     });
     try {
-      final geparst = ImportParser.parse(datei.name, datei.bytes!);
+      // file_picker 13 liefert die Bytes nicht mehr mit der Auswahl, sondern
+      // liest auf Verlangen. Der Lesefehler landet damit im catch unten, wo
+      // vorher ein stilles `bytes == null` stand.
+      final rohdaten = await datei.readAsBytes();
+      if (!mounted) return;
+      final geparst = ImportParser.parse(datei.name, rohdaten);
       final vorhanden = await vorhandeneFragenSchluessel(ref);
       // Die erste Tabelle: Eine Excel-Mappe kann mehrere Blätter haben, und
       // ein Blattwähler wäre hier Zierde — die Vorlage hat genau eines.

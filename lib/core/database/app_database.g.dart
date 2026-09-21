@@ -10130,7 +10130,7 @@ class $$VehiclesTableTableManager
                   p0
                       .map(
                         (e) => (
-                          e.readTable(table),
+                          e.readTable<$VehiclesTable, VehicleData>(table),
                           $$VehiclesTableReferences(db, table, e),
                         ),
                       )
@@ -10812,7 +10812,9 @@ class $$CompartmentsTableTableManager
                   p0
                       .map(
                         (e) => (
-                          e.readTable(table),
+                          e.readTable<$CompartmentsTable, CompartmentData>(
+                            table,
+                          ),
                           $$CompartmentsTableReferences(db, table, e),
                         ),
                       )
@@ -11658,7 +11660,9 @@ class $$EquipmentItemsTableTableManager
                   p0
                       .map(
                         (e) => (
-                          e.readTable(table),
+                          e.readTable<$EquipmentItemsTable, EquipmentItemData>(
+                            table,
+                          ),
                           $$EquipmentItemsTableReferences(db, table, e),
                         ),
                       )
@@ -12139,7 +12143,10 @@ class $$EquipmentAssignmentsTableTableManager
                   p0
                       .map(
                         (e) => (
-                          e.readTable(table),
+                          e.readTable<
+                            $EquipmentAssignmentsTable,
+                            AssignmentData
+                          >(table),
                           $$EquipmentAssignmentsTableReferences(db, table, e),
                         ),
                       )
@@ -12491,7 +12498,7 @@ class $$QuizResultsTableTableManager
                   p0
                       .map(
                         (e) => (
-                          e.readTable(table),
+                          e.readTable<$QuizResultsTable, QuizResultData>(table),
                           $$QuizResultsTableReferences(db, table, e),
                         ),
                       )
@@ -13111,7 +13118,10 @@ class $$EquipmentInstancesTableTableManager
                   p0
                       .map(
                         (e) => (
-                          e.readTable(table),
+                          e.readTable<
+                            $EquipmentInstancesTable,
+                            EquipmentInstanceData
+                          >(table),
                           $$EquipmentInstancesTableReferences(db, table, e),
                         ),
                       )
@@ -13658,7 +13668,10 @@ class $$InspectionSchedulesTableTableManager
                   p0
                       .map(
                         (e) => (
-                          e.readTable(table),
+                          e.readTable<
+                            $InspectionSchedulesTable,
+                            InspectionScheduleData
+                          >(table),
                           $$InspectionSchedulesTableReferences(db, table, e),
                         ),
                       )
@@ -14012,7 +14025,9 @@ class $$InspectionLogTableTableManager
                   p0
                       .map(
                         (e) => (
-                          e.readTable(table),
+                          e.readTable<$InspectionLogTable, InspectionLogData>(
+                            table,
+                          ),
                           $$InspectionLogTableReferences(db, table, e),
                         ),
                       )
@@ -14308,7 +14323,7 @@ class $$UserAliasesTableTableManager
                   p0
                       .map(
                         (e) => (
-                          e.readTable(table),
+                          e.readTable<$UserAliasesTable, UserAliasData>(table),
                           $$UserAliasesTableReferences(db, table, e),
                         ),
                       )
@@ -14554,8 +14569,12 @@ class $$SyncMetaTableTableManager
                   p0
                       .map(
                         (e) => (
-                          e.readTable(table),
-                          BaseReferences(db, table, e),
+                          e.readTable<$SyncMetaTable, SyncMetaData>(table),
+                          BaseReferences<
+                            _$AppDatabase,
+                            $SyncMetaTable,
+                            SyncMetaData
+                          >(db, table, e),
                         ),
                       )
                       .toList(),
@@ -14855,7 +14874,10 @@ class $$LearningProgressTableTableManager
                   p0
                       .map(
                         (e) => (
-                          e.readTable(table),
+                          e.readTable<
+                            $LearningProgressTable,
+                            LearningProgressData
+                          >(table),
                           $$LearningProgressTableReferences(db, table, e),
                         ),
                       )
@@ -15260,7 +15282,10 @@ class $$InventorySessionsTableTableManager
                   p0
                       .map(
                         (e) => (
-                          e.readTable(table),
+                          e.readTable<
+                            $InventorySessionsTable,
+                            InventorySessionData
+                          >(table),
                           $$InventorySessionsTableReferences(db, table, e),
                         ),
                       )
@@ -15728,7 +15753,10 @@ class $$InventoryChecksTableTableManager
                   p0
                       .map(
                         (e) => (
-                          e.readTable(table),
+                          e.readTable<
+                            $InventoryChecksTable,
+                            InventoryCheckData
+                          >(table),
                           $$InventoryChecksTableReferences(db, table, e),
                         ),
                       )
@@ -16139,7 +16167,10 @@ class $$VehicleAttachmentsTableTableManager
                   p0
                       .map(
                         (e) => (
-                          e.readTable(table),
+                          e.readTable<
+                            $VehicleAttachmentsTable,
+                            VehicleAttachmentData
+                          >(table),
                           $$VehicleAttachmentsTableReferences(db, table, e),
                         ),
                       )
@@ -16724,8 +16755,14 @@ class $$WissensfragenTableTableManager
                   p0
                       .map(
                         (e) => (
-                          e.readTable(table),
-                          BaseReferences(db, table, e),
+                          e.readTable<$WissensfragenTable, WissensfrageData>(
+                            table,
+                          ),
+                          BaseReferences<
+                            _$AppDatabase,
+                            $WissensfragenTable,
+                            WissensfrageData
+                          >(db, table, e),
                         ),
                       )
                       .toList(),
@@ -16921,8 +16958,15 @@ class $$AbgeschalteteLernbereicheTableTableManager
                   p0
                       .map(
                         (e) => (
-                          e.readTable(table),
-                          BaseReferences(db, table, e),
+                          e.readTable<
+                            $AbgeschalteteLernbereicheTable,
+                            AbgeschalteterLernbereich
+                          >(table),
+                          BaseReferences<
+                            _$AppDatabase,
+                            $AbgeschalteteLernbereicheTable,
+                            AbgeschalteterLernbereich
+                          >(db, table, e),
                         ),
                       )
                       .toList(),
@@ -17174,8 +17218,14 @@ class $$FragenhinweiseTableTableManager
                   p0
                       .map(
                         (e) => (
-                          e.readTable(table),
-                          BaseReferences(db, table, e),
+                          e.readTable<$FragenhinweiseTable, Fragenhinweis>(
+                            table,
+                          ),
+                          BaseReferences<
+                            _$AppDatabase,
+                            $FragenhinweiseTable,
+                            Fragenhinweis
+                          >(db, table, e),
                         ),
                       )
                       .toList(),

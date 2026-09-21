@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'equipment_assignment.dart';
@@ -9,6 +9,7 @@ part of 'equipment_assignment.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -25,16 +26,21 @@ $EquipmentAssignmentCopyWith<EquipmentAssignment> get copyWith => _$EquipmentAss
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is EquipmentAssignment&&(identical(other.id, id) || other.id == id)&&(identical(other.compartmentId, compartmentId) || other.compartmentId == compartmentId)&&(identical(other.equipmentId, equipmentId) || other.equipmentId == equipmentId)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  final _this = this as EquipmentAssignment;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is EquipmentAssignment&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.compartmentId, _this.compartmentId) || other.compartmentId == _this.compartmentId)&&(identical(other.equipmentId, _this.equipmentId) || other.equipmentId == _this.equipmentId)&&(identical(other.quantity, _this.quantity) || other.quantity == _this.quantity)&&(identical(other.updatedAt, _this.updatedAt) || other.updatedAt == _this.updatedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,compartmentId,equipmentId,quantity,updatedAt);
+int get hashCode {
+  final _this = this as EquipmentAssignment;
+  return Object.hash(runtimeType,_this.id,_this.compartmentId,_this.equipmentId,_this.quantity,_this.updatedAt);
+}
 
 @override
 String toString() {
-  return 'EquipmentAssignment(id: $id, compartmentId: $compartmentId, equipmentId: $equipmentId, quantity: $quantity, updatedAt: $updatedAt)';
+  final _this = this as EquipmentAssignment;
+  return 'EquipmentAssignment(id: ${_this.id}, compartmentId: ${_this.compartmentId}, equipmentId: ${_this.equipmentId}, quantity: ${_this.quantity}, updatedAt: ${_this.updatedAt})';
 }
 
 
@@ -63,7 +69,7 @@ class _$EquipmentAssignmentCopyWithImpl<$Res>
 /// Create a copy of EquipmentAssignment
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? compartmentId = null,Object? equipmentId = null,Object? quantity = null,Object? updatedAt = null,}) {
-  return _then(_self.copyWith(
+  return _then(EquipmentAssignment(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,compartmentId: null == compartmentId ? _self.compartmentId : compartmentId // ignore: cast_nullable_to_non_nullable
 as int,equipmentId: null == equipmentId ? _self.equipmentId : equipmentId // ignore: cast_nullable_to_non_nullable
@@ -229,16 +235,18 @@ _$EquipmentAssignmentCopyWith<_EquipmentAssignment> get copyWith => __$Equipment
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _EquipmentAssignment&&(identical(other.id, id) || other.id == id)&&(identical(other.compartmentId, compartmentId) || other.compartmentId == compartmentId)&&(identical(other.equipmentId, equipmentId) || other.equipmentId == equipmentId)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _EquipmentAssignment&&(identical(other.id, id) || other.id == id)&&(identical(other.compartmentId, compartmentId) || other.compartmentId == compartmentId)&&(identical(other.equipmentId, equipmentId) || other.equipmentId == equipmentId)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,compartmentId,equipmentId,quantity,updatedAt);
+int get hashCode {
+    return Object.hash(runtimeType,id,compartmentId,equipmentId,quantity,updatedAt);
+}
 
 @override
 String toString() {
-  return 'EquipmentAssignment(id: $id, compartmentId: $compartmentId, equipmentId: $equipmentId, quantity: $quantity, updatedAt: $updatedAt)';
+    return 'EquipmentAssignment(id: $id, compartmentId: $compartmentId, equipmentId: $equipmentId, quantity: $quantity, updatedAt: $updatedAt)';
 }
 
 

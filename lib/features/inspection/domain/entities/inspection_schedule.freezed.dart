@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'inspection_schedule.dart';
@@ -9,6 +9,7 @@ part of 'inspection_schedule.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -25,16 +26,21 @@ $InspectionScheduleCopyWith<InspectionSchedule> get copyWith => _$InspectionSche
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is InspectionSchedule&&(identical(other.id, id) || other.id == id)&&(identical(other.instanceId, instanceId) || other.instanceId == instanceId)&&(identical(other.kind, kind) || other.kind == kind)&&(identical(other.title, title) || other.title == title)&&(identical(other.intervalMonths, intervalMonths) || other.intervalMonths == intervalMonths)&&(identical(other.lastDoneAt, lastDoneAt) || other.lastDoneAt == lastDoneAt)&&(identical(other.dueAt, dueAt) || other.dueAt == dueAt)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  final _this = this as InspectionSchedule;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is InspectionSchedule&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.instanceId, _this.instanceId) || other.instanceId == _this.instanceId)&&(identical(other.kind, _this.kind) || other.kind == _this.kind)&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.intervalMonths, _this.intervalMonths) || other.intervalMonths == _this.intervalMonths)&&(identical(other.lastDoneAt, _this.lastDoneAt) || other.lastDoneAt == _this.lastDoneAt)&&(identical(other.dueAt, _this.dueAt) || other.dueAt == _this.dueAt)&&(identical(other.notes, _this.notes) || other.notes == _this.notes)&&(identical(other.updatedAt, _this.updatedAt) || other.updatedAt == _this.updatedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,instanceId,kind,title,intervalMonths,lastDoneAt,dueAt,notes,updatedAt);
+int get hashCode {
+  final _this = this as InspectionSchedule;
+  return Object.hash(runtimeType,_this.id,_this.instanceId,_this.kind,_this.title,_this.intervalMonths,_this.lastDoneAt,_this.dueAt,_this.notes,_this.updatedAt);
+}
 
 @override
 String toString() {
-  return 'InspectionSchedule(id: $id, instanceId: $instanceId, kind: $kind, title: $title, intervalMonths: $intervalMonths, lastDoneAt: $lastDoneAt, dueAt: $dueAt, notes: $notes, updatedAt: $updatedAt)';
+  final _this = this as InspectionSchedule;
+  return 'InspectionSchedule(id: ${_this.id}, instanceId: ${_this.instanceId}, kind: ${_this.kind}, title: ${_this.title}, intervalMonths: ${_this.intervalMonths}, lastDoneAt: ${_this.lastDoneAt}, dueAt: ${_this.dueAt}, notes: ${_this.notes}, updatedAt: ${_this.updatedAt})';
 }
 
 
@@ -63,7 +69,7 @@ class _$InspectionScheduleCopyWithImpl<$Res>
 /// Create a copy of InspectionSchedule
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? instanceId = null,Object? kind = null,Object? title = null,Object? intervalMonths = freezed,Object? lastDoneAt = freezed,Object? dueAt = null,Object? notes = null,Object? updatedAt = null,}) {
-  return _then(_self.copyWith(
+  return _then(InspectionSchedule(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,instanceId: null == instanceId ? _self.instanceId : instanceId // ignore: cast_nullable_to_non_nullable
 as int,kind: null == kind ? _self.kind : kind // ignore: cast_nullable_to_non_nullable
@@ -237,16 +243,18 @@ _$InspectionScheduleCopyWith<_InspectionSchedule> get copyWith => __$InspectionS
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _InspectionSchedule&&(identical(other.id, id) || other.id == id)&&(identical(other.instanceId, instanceId) || other.instanceId == instanceId)&&(identical(other.kind, kind) || other.kind == kind)&&(identical(other.title, title) || other.title == title)&&(identical(other.intervalMonths, intervalMonths) || other.intervalMonths == intervalMonths)&&(identical(other.lastDoneAt, lastDoneAt) || other.lastDoneAt == lastDoneAt)&&(identical(other.dueAt, dueAt) || other.dueAt == dueAt)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _InspectionSchedule&&(identical(other.id, id) || other.id == id)&&(identical(other.instanceId, instanceId) || other.instanceId == instanceId)&&(identical(other.kind, kind) || other.kind == kind)&&(identical(other.title, title) || other.title == title)&&(identical(other.intervalMonths, intervalMonths) || other.intervalMonths == intervalMonths)&&(identical(other.lastDoneAt, lastDoneAt) || other.lastDoneAt == lastDoneAt)&&(identical(other.dueAt, dueAt) || other.dueAt == dueAt)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,instanceId,kind,title,intervalMonths,lastDoneAt,dueAt,notes,updatedAt);
+int get hashCode {
+    return Object.hash(runtimeType,id,instanceId,kind,title,intervalMonths,lastDoneAt,dueAt,notes,updatedAt);
+}
 
 @override
 String toString() {
-  return 'InspectionSchedule(id: $id, instanceId: $instanceId, kind: $kind, title: $title, intervalMonths: $intervalMonths, lastDoneAt: $lastDoneAt, dueAt: $dueAt, notes: $notes, updatedAt: $updatedAt)';
+    return 'InspectionSchedule(id: $id, instanceId: $instanceId, kind: $kind, title: $title, intervalMonths: $intervalMonths, lastDoneAt: $lastDoneAt, dueAt: $dueAt, notes: $notes, updatedAt: $updatedAt)';
 }
 
 
@@ -306,16 +314,21 @@ $InspectionLogEntryCopyWith<InspectionLogEntry> get copyWith => _$InspectionLogE
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is InspectionLogEntry&&(identical(other.id, id) || other.id == id)&&(identical(other.scheduleId, scheduleId) || other.scheduleId == scheduleId)&&(identical(other.doneAt, doneAt) || other.doneAt == doneAt)&&(identical(other.doneBy, doneBy) || other.doneBy == doneBy)&&(identical(other.note, note) || other.note == note));
+  final _this = this as InspectionLogEntry;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is InspectionLogEntry&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.scheduleId, _this.scheduleId) || other.scheduleId == _this.scheduleId)&&(identical(other.doneAt, _this.doneAt) || other.doneAt == _this.doneAt)&&(identical(other.doneBy, _this.doneBy) || other.doneBy == _this.doneBy)&&(identical(other.note, _this.note) || other.note == _this.note));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,scheduleId,doneAt,doneBy,note);
+int get hashCode {
+  final _this = this as InspectionLogEntry;
+  return Object.hash(runtimeType,_this.id,_this.scheduleId,_this.doneAt,_this.doneBy,_this.note);
+}
 
 @override
 String toString() {
-  return 'InspectionLogEntry(id: $id, scheduleId: $scheduleId, doneAt: $doneAt, doneBy: $doneBy, note: $note)';
+  final _this = this as InspectionLogEntry;
+  return 'InspectionLogEntry(id: ${_this.id}, scheduleId: ${_this.scheduleId}, doneAt: ${_this.doneAt}, doneBy: ${_this.doneBy}, note: ${_this.note})';
 }
 
 
@@ -344,7 +357,7 @@ class _$InspectionLogEntryCopyWithImpl<$Res>
 /// Create a copy of InspectionLogEntry
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? scheduleId = null,Object? doneAt = null,Object? doneBy = null,Object? note = null,}) {
-  return _then(_self.copyWith(
+  return _then(InspectionLogEntry(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,scheduleId: null == scheduleId ? _self.scheduleId : scheduleId // ignore: cast_nullable_to_non_nullable
 as int,doneAt: null == doneAt ? _self.doneAt : doneAt // ignore: cast_nullable_to_non_nullable
@@ -510,16 +523,18 @@ _$InspectionLogEntryCopyWith<_InspectionLogEntry> get copyWith => __$InspectionL
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _InspectionLogEntry&&(identical(other.id, id) || other.id == id)&&(identical(other.scheduleId, scheduleId) || other.scheduleId == scheduleId)&&(identical(other.doneAt, doneAt) || other.doneAt == doneAt)&&(identical(other.doneBy, doneBy) || other.doneBy == doneBy)&&(identical(other.note, note) || other.note == note));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _InspectionLogEntry&&(identical(other.id, id) || other.id == id)&&(identical(other.scheduleId, scheduleId) || other.scheduleId == scheduleId)&&(identical(other.doneAt, doneAt) || other.doneAt == doneAt)&&(identical(other.doneBy, doneBy) || other.doneBy == doneBy)&&(identical(other.note, note) || other.note == note));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,scheduleId,doneAt,doneBy,note);
+int get hashCode {
+    return Object.hash(runtimeType,id,scheduleId,doneAt,doneBy,note);
+}
 
 @override
 String toString() {
-  return 'InspectionLogEntry(id: $id, scheduleId: $scheduleId, doneAt: $doneAt, doneBy: $doneBy, note: $note)';
+    return 'InspectionLogEntry(id: $id, scheduleId: $scheduleId, doneAt: $doneAt, doneBy: $doneBy, note: $note)';
 }
 
 

@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'equipment_instance.dart';
@@ -9,6 +9,7 @@ part of 'equipment_instance.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -25,16 +26,21 @@ $EquipmentInstanceCopyWith<EquipmentInstance> get copyWith => _$EquipmentInstanc
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is EquipmentInstance&&(identical(other.id, id) || other.id == id)&&(identical(other.equipmentId, equipmentId) || other.equipmentId == equipmentId)&&(identical(other.vehicleId, vehicleId) || other.vehicleId == vehicleId)&&(identical(other.compartmentId, compartmentId) || other.compartmentId == compartmentId)&&(identical(other.identifier, identifier) || other.identifier == identifier)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  final _this = this as EquipmentInstance;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is EquipmentInstance&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.equipmentId, _this.equipmentId) || other.equipmentId == _this.equipmentId)&&(identical(other.vehicleId, _this.vehicleId) || other.vehicleId == _this.vehicleId)&&(identical(other.compartmentId, _this.compartmentId) || other.compartmentId == _this.compartmentId)&&(identical(other.identifier, _this.identifier) || other.identifier == _this.identifier)&&(identical(other.notes, _this.notes) || other.notes == _this.notes)&&(identical(other.isActive, _this.isActive) || other.isActive == _this.isActive)&&(identical(other.updatedAt, _this.updatedAt) || other.updatedAt == _this.updatedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,equipmentId,vehicleId,compartmentId,identifier,notes,isActive,updatedAt);
+int get hashCode {
+  final _this = this as EquipmentInstance;
+  return Object.hash(runtimeType,_this.id,_this.equipmentId,_this.vehicleId,_this.compartmentId,_this.identifier,_this.notes,_this.isActive,_this.updatedAt);
+}
 
 @override
 String toString() {
-  return 'EquipmentInstance(id: $id, equipmentId: $equipmentId, vehicleId: $vehicleId, compartmentId: $compartmentId, identifier: $identifier, notes: $notes, isActive: $isActive, updatedAt: $updatedAt)';
+  final _this = this as EquipmentInstance;
+  return 'EquipmentInstance(id: ${_this.id}, equipmentId: ${_this.equipmentId}, vehicleId: ${_this.vehicleId}, compartmentId: ${_this.compartmentId}, identifier: ${_this.identifier}, notes: ${_this.notes}, isActive: ${_this.isActive}, updatedAt: ${_this.updatedAt})';
 }
 
 
@@ -63,7 +69,7 @@ class _$EquipmentInstanceCopyWithImpl<$Res>
 /// Create a copy of EquipmentInstance
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? equipmentId = null,Object? vehicleId = freezed,Object? compartmentId = freezed,Object? identifier = freezed,Object? notes = null,Object? isActive = null,Object? updatedAt = null,}) {
-  return _then(_self.copyWith(
+  return _then(EquipmentInstance(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,equipmentId: null == equipmentId ? _self.equipmentId : equipmentId // ignore: cast_nullable_to_non_nullable
 as int,vehicleId: freezed == vehicleId ? _self.vehicleId : vehicleId // ignore: cast_nullable_to_non_nullable
@@ -235,16 +241,18 @@ _$EquipmentInstanceCopyWith<_EquipmentInstance> get copyWith => __$EquipmentInst
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _EquipmentInstance&&(identical(other.id, id) || other.id == id)&&(identical(other.equipmentId, equipmentId) || other.equipmentId == equipmentId)&&(identical(other.vehicleId, vehicleId) || other.vehicleId == vehicleId)&&(identical(other.compartmentId, compartmentId) || other.compartmentId == compartmentId)&&(identical(other.identifier, identifier) || other.identifier == identifier)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _EquipmentInstance&&(identical(other.id, id) || other.id == id)&&(identical(other.equipmentId, equipmentId) || other.equipmentId == equipmentId)&&(identical(other.vehicleId, vehicleId) || other.vehicleId == vehicleId)&&(identical(other.compartmentId, compartmentId) || other.compartmentId == compartmentId)&&(identical(other.identifier, identifier) || other.identifier == identifier)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,equipmentId,vehicleId,compartmentId,identifier,notes,isActive,updatedAt);
+int get hashCode {
+    return Object.hash(runtimeType,id,equipmentId,vehicleId,compartmentId,identifier,notes,isActive,updatedAt);
+}
 
 @override
 String toString() {
-  return 'EquipmentInstance(id: $id, equipmentId: $equipmentId, vehicleId: $vehicleId, compartmentId: $compartmentId, identifier: $identifier, notes: $notes, isActive: $isActive, updatedAt: $updatedAt)';
+    return 'EquipmentInstance(id: $id, equipmentId: $equipmentId, vehicleId: $vehicleId, compartmentId: $compartmentId, identifier: $identifier, notes: $notes, isActive: $isActive, updatedAt: $updatedAt)';
 }
 
 

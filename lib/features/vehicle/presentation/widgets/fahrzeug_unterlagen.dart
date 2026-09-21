@@ -152,20 +152,18 @@ class _FahrzeugUnterlagenState extends ConsumerState<FahrzeugUnterlagen> {
     final auswahl = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: const ['pdf', 'jpg', 'jpeg', 'png', 'webp'],
-      withData: true,
     );
-    final datei = auswahl?.files.singleOrNull;
+    final datei = auswahl.singleOrNull;
     if (datei == null || !mounted) return;
-
-    final bytes = datei.bytes ??
-        (datei.path == null ? null : await File(datei.path!).readAsBytes());
-    if (bytes == null) {
-      _sagen('Die Datei ließ sich nicht lesen.');
-      return;
-    }
 
     setState(() => _laeuft = true);
     try {
+      // file_picker 13 liest die Datei selbst, plattformunabhängig. Das
+      // ersetzt den früheren Zweig über `datei.path`, der auf Web ohnehin
+      // ins Leere lief; ein Lesefehler ist jetzt eine Ausnahme statt eines
+      // stillen `null`.
+      final bytes = await datei.readAsBytes();
+      if (!mounted) return;
       await ref.read(anhangSpeicherProvider).hinzufuegen(
             vehicleId: widget.vehicleId,
             dateiname: datei.name,

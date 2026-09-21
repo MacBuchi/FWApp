@@ -154,13 +154,12 @@ class _FileStep extends ConsumerWidget {
                   final picked = await FilePicker.pickFiles(
                     type: FileType.custom,
                     allowedExtensions: ['xlsx', 'xls', 'csv', 'txt'],
-                    withData: true,
                   );
-                  final file = picked?.files.firstOrNull;
-                  if (file == null || file.bytes == null) return;
+                  final file = picked.firstOrNull;
+                  if (file == null) return;
                   await ref
                       .read(importWizardProvider.notifier)
-                      .loadFile(file.name, file.bytes!);
+                      .loadFile(file.name, await file.readAsBytes());
                 },
         ),
       ],

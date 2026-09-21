@@ -14,14 +14,13 @@
 library;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:fwapp/features/import/data/import_parser.dart';
 import 'package:fwapp/features/knowledge/data/fragen_import.dart';
 import 'package:fwapp/features/knowledge/presentation/providers/wissen_providers.dart';
 import 'package:fwapp/features/profil/presentation/providers/profil_providers.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:fwapp/core/sharing/teilen.dart';
 
 class FragenImportScreen extends ConsumerStatefulWidget {
   const FragenImportScreen({super.key});
@@ -127,26 +126,12 @@ class _FragenImportState extends ConsumerState<FragenImportScreen> {
         aufUebernehmen: _uebernehmen,
       );
 
-  Future<void> _vorlageTeilen() async {
-    final messenger = ScaffoldMessenger.of(context);
-    // ⚠️ `mailToFallbackEnabled: false` aus demselben Grund wie in der
-    // Nutzerverwaltung: Ohne Web-Share-API öffnet share_plus sonst einen
-    // Mail-Entwurf. Ohne den Rückfall wirft es, und dann ist die
-    // Zwischenablage die ehrlichere Antwort.
-    try {
-      await SharePlus.instance.share(ShareParams(
-        text: vorlageCsv(),
-        fileNameOverrides: const ['fragen-vorlage.csv'],
-        mailToFallbackEnabled: false,
-      ));
-    } catch (_) {
-      await Clipboard.setData(ClipboardData(text: vorlageCsv()));
-      messenger.showSnackBar(const SnackBar(
-        content: Text('Teilen geht hier nicht — die Vorlage liegt in der '
-            'Zwischenablage.'),
-      ));
-    }
-  }
+  Future<void> _vorlageTeilen() => teile(
+        context,
+        vorlageCsv(),
+        dateiname: 'fragen-vorlage.csv',
+        sacheImRueckfall: 'die Vorlage',
+      );
 
   Future<void> _dateiWaehlen() async {
     final gewaehlt = await FilePicker.pickFiles(

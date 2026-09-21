@@ -28,6 +28,8 @@ InventoryCheckData _check({
       actualQuantity: ist,
       status: status,
       note: note,
+      // Für den Export ohne Belang — er liest Soll, Ist und Zustand.
+      countedInstancesJson: '[]',
     );
 
 /// Liest die erzeugte Datei so, wie eine Tabellenkalkulation sie läse.

@@ -4,10 +4,13 @@
 /// Inventurdaten sind rein lokal und werden nicht synchronisiert
 /// (siehe CONTRIBUTING.md „Schichtung je Feature").
 library;
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/database/database_providers.dart';
+import 'package:fwapp/core/logging/app_logger.dart';
 import 'package:fwapp/features/inventory/data/tag_code.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';
 
@@ -116,6 +119,18 @@ class Abgehakt extends AbhakErgebnis {
   const Abgehakt(this.geraet, this.fach, this.ist, this.soll);
 }
 
+/// Diese Einheit war schon gezählt — derselbe Aufkleber ein zweites Mal.
+///
+/// Kein Fehler, sondern der Normalfall beim Scannen: Die Kamera liest
+/// denselben Code, solange er im Bild ist.
+class SchonGezaehlt extends AbhakErgebnis {
+  final String geraet;
+  final String fach;
+  final int ist;
+  final int soll;
+  const SchonGezaehlt(this.geraet, this.fach, this.ist, this.soll);
+}
+
 /// Der Code ist an keiner Einheit hinterlegt.
 class CodeUnbekannt extends AbhakErgebnis {
   const CodeUnbekannt();
@@ -210,16 +225,42 @@ class InventoryService {
       orElse: () => passend.first,
     );
 
-    final ist = (check.actualQuantity ?? 0) + 1;
+    // Die Menge der schon gezählten Einheiten ist die Wahrheit, nicht die
+    // Zahl daneben: Nur so ist derselbe Aufkleber zweimal derselbe.
+    final gezaehlt = _leseEinheiten(check.countedInstancesJson);
+    if (gezaehlt.contains(einheit.id)) {
+      return SchonGezaehlt(geraetename, check.compartmentLabel,
+          gezaehlt.length, check.targetQuantity);
+    }
+    gezaehlt.add(einheit.id);
+
+    final ist = gezaehlt.length;
     final vollstaendig = ist >= check.targetQuantity;
-    await setStatus(
+    await db.inventoryDao.updateCheck(
       check.id,
-      vollstaendig ? InventoryChecks.statusOk : InventoryChecks.statusOpen,
-      actualQuantity: ist,
-      note: check.note,
+      InventoryChecksCompanion(
+        status: Value(vollstaendig
+            ? InventoryChecks.statusOk
+            : InventoryChecks.statusOpen),
+        actualQuantity: Value(ist),
+        countedInstancesJson: Value(jsonEncode(gezaehlt.toList()..sort())),
+      ),
     );
     return Abgehakt(
         geraetename, check.compartmentLabel, ist, check.targetQuantity);
+  }
+
+  /// Liest die Einheiten-Menge. Ein kaputter oder leerer Wert ist eine leere
+  /// Menge, kein Absturz mitten in einer Inventur.
+  Set<int> _leseEinheiten(String json) {
+    try {
+      final roh = jsonDecode(json);
+      if (roh is! List) return <int>{};
+      return roh.whereType<int>().toSet();
+    } catch (e) {
+      appLog.w('Gezählte Einheiten unlesbar, beginne leer', error: e);
+      return <int>{};
+    }
   }
 
   Future<void> finish(int sessionId, {String doneBy = ''}) =>

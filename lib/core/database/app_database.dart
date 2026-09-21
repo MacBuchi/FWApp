@@ -480,6 +480,22 @@ class InventoryChecks extends Table {
   IntColumn get actualQuantity => integer().nullable()();
   TextColumn get status => text().withDefault(const Constant('open'))();
   TextColumn get note => text().withDefault(const Constant(''))();
+
+  /// IDs der Einheiten, die für diese Zeile schon gezählt wurden, als
+  /// JSON-Liste (Issue #179).
+  ///
+  /// **Warum das mitgeschrieben wird und nicht nur eine Zahl.** Beim Scannen
+  /// liefert die Kamera denselben Code, solange er im Bild ist. Ein reiner
+  /// Zähler steigt dann weiter, und wer die Kamera ruhig hält, meldet ein
+  /// Fach als vollständig, das es nicht ist — live nachgestellt, bevor es
+  /// jemandem im Geräteraum passiert ist. Mit den Einheiten als MENGE ist
+  /// derselbe Aufkleber zweimal genau das: derselbe.
+  ///
+  /// Nur der Scan-/Code-Weg pflegt das Feld. Wer von Hand abhakt, setzt
+  /// weiterhin Status und Stückzahl direkt — dort gibt es keine Einheit,
+  /// auf die man sich beziehen könnte.
+  TextColumn get countedInstancesJson =>
+      text().withDefault(const Constant('[]'))();
 }
 
 /// Per-equipment learning progress (Sprachlernapp-Prinzip). Local-only —
@@ -1273,7 +1289,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 14;
+  int get schemaVersion => 15;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -1430,6 +1446,24 @@ class AppDatabase extends _$AppDatabase {
             // nichts zurückzurechnen: Vor dieser Version klebte kein Code
             // auf irgendetwas.
             await m.createTable(equipmentTags);
+          }
+          if (from < 15) {
+            // Welche Einheiten für eine Prüfzeile schon gezählt wurden
+            // (#179). Laufende Inventuren starten mit einer leeren Menge —
+            // das ist richtig: Vor dieser Version wurde nicht über Einheiten
+            // gezählt, es gibt nichts zurückzurechnen. Die bereits
+            // eingetragene Stückzahl bleibt unangetastet.
+            //
+            // ⚠️ Nur ab v4 — dieselbe Falle wie bei `wissensfragen` in v10:
+            // `createTable(inventoryChecks)` im Schritt 4 legt IMMER die
+            // heutige Definition an, inklusive dieser Spalte. Wer von
+            // unterhalb v4 kommt, hat sie damit schon, und ein zweites
+            // `addColumn` bricht mit „duplicate column name" ab. Genau das
+            // hat der Migrationstest gemeldet, bevor es ein Gerät konnte.
+            if (from >= 4) {
+              await m.addColumn(
+                  inventoryChecks, inventoryChecks.countedInstancesJson);
+            }
           }
         },
         beforeOpen: (details) async {

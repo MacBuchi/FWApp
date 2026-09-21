@@ -2,7 +2,7 @@ name: fwapp
 description: Feuerwehr-Lernapp – Fahrzeuge, Geräte, Beladepläne und Trainings-Spielmodi.
 publish_to: 'none'
 
-version: 1.49.0+77
+version: 1.50.0+78
 
 environment:
   sdk: ^3.7.0
@@ -58,6 +58,17 @@ dependencies:
   image: ^4.3.0
   cross_file: ^0.3.4
   http: ^1.2.0
+
+  # Codes scannen und anzeigen (Issues #177/#179).
+  #
+  # `mobile_scanner` bringt die Kamera mit — auf Android/iOS nativ, im
+  # Browser über getUserMedia. Der Web-Pfad ist ein ANDERER als auf dem
+  # Gerät (AGENTS.md, Kamera): Was im Browser läuft, ist kein Beleg für das
+  # Handy, und umgekehrt.
+  mobile_scanner: ^7.4.2
+  # Nur zum Anzeigen eines vergebenen Codes zum Ausdrucken. Rendert nach
+  # Widget, nicht nach Bilddatei — deshalb kein Pfad, keine Ablage.
+  qr_flutter: ^4.1.0
 
   # Excel import
   excel: ^4.0.6

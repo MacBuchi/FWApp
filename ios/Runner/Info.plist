@@ -9,7 +9,7 @@
 	<key>CFBundleDisplayName</key>
 	<string>FWApp</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Zum Fotografieren der Geräte für den Beladeplan.</string>
+	<string>Zum Fotografieren der Geräte für den Beladeplan und zum Scannen der Codes bei der Inventur.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Zum Auswählen vorhandener Gerätefotos.</string>
 	<key>CFBundleExecutable</key>

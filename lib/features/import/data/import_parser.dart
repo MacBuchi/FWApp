@@ -1,6 +1,7 @@
 /// import_parser.dart – Parses Beladeliste files (xlsx/xls via `excel`,
 /// CSV with delimiter auto-detection) into raw string tables.
 library;
+
 import 'dart:convert';
 
 import 'package:csv/csv.dart';
@@ -13,7 +14,9 @@ class ImportParser {
     final lower = fileName.toLowerCase();
     if (lower.endsWith('.csv') || lower.endsWith('.txt')) {
       return ParsedImportFile(
-          fileName: fileName, tables: [_parseCsv(fileName, bytes)]);
+        fileName: fileName,
+        tables: [_parseCsv(fileName, bytes)],
+      );
     }
     return ParsedImportFile(fileName: fileName, tables: _parseExcel(bytes));
   }
@@ -22,11 +25,14 @@ class ImportParser {
     final excel = Excel.decodeBytes(bytes);
     final tables = <ImportTable>[];
     for (final entry in excel.tables.entries) {
-      final rows = entry.value.rows
-          .map((row) =>
-              row.map((c) => c?.value?.toString().trim() ?? '').toList())
-          .where((cells) => cells.any((c) => c.isNotEmpty))
-          .toList();
+      final rows =
+          entry.value.rows
+              .map(
+                (row) =>
+                    row.map((c) => c?.value?.toString().trim() ?? '').toList(),
+              )
+              .where((cells) => cells.any((c) => c.isNotEmpty))
+              .toList();
       if (rows.isNotEmpty) {
         tables.add(ImportTable(name: entry.key, rows: rows));
       }
@@ -42,10 +48,11 @@ class ImportParser {
     text = text.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
     final delimiter = detectDelimiter(text);
     final parsed = CsvDecoder(fieldDelimiter: delimiter).convert(text);
-    final rows = parsed
-        .map((row) => row.map((c) => c.toString().trim()).toList())
-        .where((cells) => cells.any((c) => c.isNotEmpty))
-        .toList();
+    final rows =
+        parsed
+            .map((row) => row.map((c) => c.toString().trim()).toList())
+            .where((cells) => cells.any((c) => c.isNotEmpty))
+            .toList();
     if (rows.isEmpty) {
       throw const FormatException('Die CSV-Datei enthält keine Daten.');
     }
@@ -71,17 +78,13 @@ class ImportParser {
   /// German lists are usually semicolon-separated; pick the delimiter that
   /// occurs most consistently in the first lines.
   static String detectDelimiter(String text) {
-    final lines = text
-        .split('\n')
-        .where((l) => l.trim().isNotEmpty)
-        .take(10)
-        .toList();
+    final lines =
+        text.split('\n').where((l) => l.trim().isNotEmpty).take(10).toList();
     if (lines.isEmpty) return ';';
     var best = ';';
     var bestCount = -1;
     for (final candidate in [';', ',', '\t']) {
-      final counts =
-          lines.map((l) => candidate.allMatches(l).length).toList();
+      final counts = lines.map((l) => candidate.allMatches(l).length).toList();
       final min = counts.reduce((a, b) => a < b ? a : b);
       if (min > bestCount) {
         bestCount = min;
@@ -95,21 +98,34 @@ class ImportParser {
 
   static const _vehicleHints = ['fahrzeug', 'vehicle', 'kfz'];
   static const _compartmentHints = [
-    'fach', 'lagerort', 'compartment', 'bereich', 'ort'
+    'fach',
+    'lagerort',
+    'compartment',
+    'bereich',
+    'ort',
   ];
   static const _equipmentHints = [
-    'gegenstand', 'gerät', 'geraet', 'equipment', 'bezeichnung', 'name',
-    'material'
+    'gegenstand',
+    'gerät',
+    'geraet',
+    'equipment',
+    'bezeichnung',
+    'name',
+    'material',
   ];
   static const _quantityHints = [
-    'stückzahl', 'stueckzahl', 'menge', 'anzahl', 'quantity', 'stk'
+    'stückzahl',
+    'stueckzahl',
+    'menge',
+    'anzahl',
+    'quantity',
+    'stk',
   ];
 
   /// Guesses a mapping from the header row. Returns null columns for what it
   /// cannot find; the UI lets the user correct everything.
   static ColumnMapping detectMapping(List<String> headerRow) {
-    final header =
-        headerRow.map((h) => h.toLowerCase().trim()).toList();
+    final header = headerRow.map((h) => h.toLowerCase().trim()).toList();
     int? find(List<String> hints) {
       for (final hint in hints) {
         final i = header.indexWhere((h) => h.contains(hint));
@@ -128,14 +144,20 @@ class ImportParser {
       compartmentColumn: compartment ?? -1,
       equipmentColumn: equipment ?? -1,
       quantityColumn: quantity,
-      firstRowIsHeader: vehicle != null || compartment != null ||
-          equipment != null || quantity != null,
+      firstRowIsHeader:
+          vehicle != null ||
+          compartment != null ||
+          equipment != null ||
+          quantity != null,
     );
   }
 
   /// Applies [mapping] to [table], producing clean rows (empty rows and rows
   /// without an equipment name are dropped).
-  static List<ImportRow> applyMapping(ImportTable table, ColumnMapping mapping) {
+  static List<ImportRow> applyMapping(
+    ImportTable table,
+    ColumnMapping mapping,
+  ) {
     final rows = <ImportRow>[];
     final start = mapping.firstRowIsHeader ? 1 : 0;
     String cell(List<String> cells, int? column) =>
@@ -147,22 +169,24 @@ class ImportParser {
       final cells = table.rows[i];
       final equipmentName = cell(cells, mapping.equipmentColumn);
       if (equipmentName.isEmpty) continue;
-      final vehicleName = mapping.vehicleColumn != null
-          ? cell(cells, mapping.vehicleColumn)
-          : mapping.fixedVehicleName.trim();
+      final vehicleName =
+          mapping.vehicleColumn != null
+              ? cell(cells, mapping.vehicleColumn)
+              : mapping.fixedVehicleName.trim();
       final compartmentLabel = cell(cells, mapping.compartmentColumn);
       if (vehicleName.isEmpty || compartmentLabel.isEmpty) continue;
       final quantityRaw = cell(cells, mapping.quantityColumn);
-      final quantity = int.tryParse(
-              quantityRaw.replaceAll(RegExp(r'[^0-9-]'), '')) ??
-          1;
-      rows.add(ImportRow(
-        sourceRowIndex: i,
-        vehicleName: vehicleName,
-        compartmentLabel: compartmentLabel,
-        equipmentName: equipmentName,
-        quantity: quantity < 1 ? 1 : quantity,
-      ));
+      final quantity =
+          int.tryParse(quantityRaw.replaceAll(RegExp(r'[^0-9-]'), '')) ?? 1;
+      rows.add(
+        ImportRow(
+          sourceRowIndex: i,
+          vehicleName: vehicleName,
+          compartmentLabel: compartmentLabel,
+          equipmentName: equipmentName,
+          quantity: quantity < 1 ? 1 : quantity,
+        ),
+      );
     }
     return rows;
   }

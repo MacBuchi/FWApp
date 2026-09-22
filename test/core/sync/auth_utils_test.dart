@@ -1,6 +1,7 @@
 /// auth_utils_test.dart – Nutzername→E-Mail-Mapping, Username-Validierung
 /// und Initialpasswort-Generator (M7 Etappe 3).
 library;
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/core/sync/auth_utils.dart';
 
@@ -16,8 +17,7 @@ void main() {
 
     test('vollständige E-Mail bleibt unverändert (nur lowercase)', () {
       expect(loginInputToEmail('Admin@FW.local'), 'admin@fw.local');
-      expect(
-          loginInputToEmail('wer@example.org'), 'wer@example.org');
+      expect(loginInputToEmail('wer@example.org'), 'wer@example.org');
     });
 
     test('leere Eingabe bleibt leer', () {
@@ -69,20 +69,25 @@ void main() {
 
   group('authErrorText', () {
     test('erkennt falsche Zugangsdaten über den Code', () {
-      expect(authErrorText('Invalid login credentials',
-              code: 'invalid_credentials'),
-          contains('Zugangszettel'));
+      expect(
+        authErrorText('Invalid login credentials', code: 'invalid_credentials'),
+        contains('Zugangszettel'),
+      );
     });
 
     test('erkennt sie auch ohne Code (ältere Server)', () {
-      expect(authErrorText('Invalid login credentials'),
-          contains('Zugangszettel'));
+      expect(
+        authErrorText('Invalid login credentials'),
+        contains('Zugangszettel'),
+      );
     });
 
     test('übersetzt Sperre und Ratenbegrenzung', () {
       expect(authErrorText('x', code: 'user_banned'), contains('gesperrt'));
-      expect(authErrorText('x', code: 'over_request_rate_limit'),
-          contains('Zu viele Versuche'));
+      expect(
+        authErrorText('x', code: 'over_request_rate_limit'),
+        contains('Zu viele Versuche'),
+      );
     });
 
     test('reicht Unbekanntes wörtlich durch', () {
@@ -96,8 +101,10 @@ void main() {
     });
 
     test('verlangt Übereinstimmung', () {
-      expect(validateNewPassword('geheim123', 'geheim124'),
-          contains('nicht überein'));
+      expect(
+        validateNewPassword('geheim123', 'geheim124'),
+        contains('nicht überein'),
+      );
     });
 
     test('lässt ein gültiges Passwort durch', () {

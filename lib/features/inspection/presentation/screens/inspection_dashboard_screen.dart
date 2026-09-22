@@ -1,6 +1,7 @@
 /// inspection_dashboard_screen.dart – Gerätewart dashboard: overdue and
 /// soon-due Prüfungen/Ablaufdaten across the whole fleet.
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
@@ -35,8 +36,10 @@ class InspectionDashboardScreen extends ConsumerWidget {
                   children: [
                     Icon(Icons.verified, size: 64, color: Colors.green),
                     SizedBox(height: 16),
-                    Text('Keine fälligen Prüfungen in den nächsten 30 Tagen.',
-                        textAlign: TextAlign.center),
+                    Text(
+                      'Keine fälligen Prüfungen in den nächsten 30 Tagen.',
+                      textAlign: TextAlign.center,
+                    ),
                   ],
                 ),
               ),
@@ -50,18 +53,18 @@ class InspectionDashboardScreen extends ConsumerWidget {
             children: [
               if (overdue.isNotEmpty) ...[
                 _SectionHeader(
-                    label: 'Überfällig (${overdue.length})',
-                    color: Colors.red.shade700),
-                ...overdue.map((e) =>
-                    _DueTile(entry: e, isOverdue: true)),
+                  label: 'Überfällig (${overdue.length})',
+                  color: Colors.red.shade700,
+                ),
+                ...overdue.map((e) => _DueTile(entry: e, isOverdue: true)),
                 const SizedBox(height: 16),
               ],
               if (dueSoon.isNotEmpty) ...[
                 _SectionHeader(
-                    label: 'Bald fällig (${dueSoon.length})',
-                    color: Colors.orange.shade800),
-                ...dueSoon.map((e) =>
-                    _DueTile(entry: e, isOverdue: false)),
+                  label: 'Bald fällig (${dueSoon.length})',
+                  color: Colors.orange.shade800,
+                ),
+                ...dueSoon.map((e) => _DueTile(entry: e, isOverdue: false)),
               ],
             ],
           );
@@ -78,13 +81,15 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Text(label,
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(color: color, fontWeight: FontWeight.bold)),
-      );
+    padding: const EdgeInsets.symmetric(vertical: 8),
+    child: Text(
+      label,
+      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+        color: color,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+  );
 }
 
 class _DueTile extends ConsumerWidget {
@@ -120,22 +125,26 @@ class _DueTile extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text(_formatDate(schedule.dueAt),
-                style: TextStyle(
-                    color: isOverdue
-                        ? Colors.red.shade700
-                        : Colors.orange.shade800,
-                    fontWeight: FontWeight.bold)),
+            Text(
+              _formatDate(schedule.dueAt),
+              style: TextStyle(
+                color: isOverdue ? Colors.red.shade700 : Colors.orange.shade800,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             if (ref.watch(canEditProvider))
               TextButton(
                 style: TextButton.styleFrom(
-                    padding: EdgeInsets.zero,
-                    minimumSize: const Size(60, 28),
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+                  padding: EdgeInsets.zero,
+                  minimumSize: const Size(60, 28),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
                 onPressed: () => markScheduleDone(context, ref, schedule),
-                child: Text(schedule.kind == InspectionKind.expiry
-                    ? 'Ersetzt'
-                    : 'Erledigt'),
+                child: Text(
+                  schedule.kind == InspectionKind.expiry
+                      ? 'Ersetzt'
+                      : 'Erledigt',
+                ),
               ),
           ],
         ),

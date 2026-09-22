@@ -90,30 +90,30 @@ String bestandCsv({
     required EquipmentItemData? geraet,
     required int anzahl,
     EquipmentInstanceData? einheit,
-  }) =>
-      [
-        fahrzeug,
-        kennzeichen,
-        fach,
-        geraet?.name ?? '',
-        geraet?.shortName ?? '',
-        '$anzahl',
-        einheit?.identifier ?? '',
-        // Leerzeichen als Trenner ist hier eindeutig: `normalisiereTagCode`
-        // wirft JEDEN Leerraum aus einem Code, auch den mittendrin.
-        (codesNachEinheit[einheit?.id] ?? const []).join(' '),
-        (pruefungNachEinheit[einheit?.id] ?? const [])
-            .map((p) => '${p.title}: ${csvDatum(p.dueAt)}')
-            .join(' | '),
-        einheit?.notes ?? '',
-      ];
+  }) => [
+    fahrzeug,
+    kennzeichen,
+    fach,
+    geraet?.name ?? '',
+    geraet?.shortName ?? '',
+    '$anzahl',
+    einheit?.identifier ?? '',
+    // Leerzeichen als Trenner ist hier eindeutig: `normalisiereTagCode`
+    // wirft JEDEN Leerraum aus einem Code, auch den mittendrin.
+    (codesNachEinheit[einheit?.id] ?? const []).join(' '),
+    (pruefungNachEinheit[einheit?.id] ?? const [])
+        .map((p) => '${p.title}: ${csvDatum(p.dueAt)}')
+        .join(' | '),
+    einheit?.notes ?? '',
+  ];
 
   final zeilen = <List<String>>[kBestandCsvKopf];
   final verbuchteEinheiten = <int>{};
 
   for (final f in fahrzeuge) {
-    final meineFaecher = faecher.where((c) => c.vehicleId == f.id).toList()
-      ..sort((a, b) => a.position.compareTo(b.position));
+    final meineFaecher =
+        faecher.where((c) => c.vehicleId == f.id).toList()
+          ..sort((a, b) => a.position.compareTo(b.position));
     for (final fach in meineFaecher) {
       final meine = zuordnungen.where((z) => z.compartmentId == fach.id);
       for (final z in meine) {
@@ -121,52 +121,63 @@ String bestandCsv({
         // Nur Einheiten, die WIRKLICH in diesem Fach stehen: Dasselbe Gerät
         // kann in zwei Fächern liegen, und die Einheit ist die genauere
         // Angabe — dieselbe Regel wie beim Abhaken.
-        final meineEinheiten = einheiten
-            .where((e) =>
-                e.equipmentId == z.equipmentId && e.compartmentId == fach.id)
-            .toList()
-          ..sort((a, b) => (a.identifier ?? '').compareTo(b.identifier ?? ''));
+        final meineEinheiten =
+            einheiten
+                .where(
+                  (e) =>
+                      e.equipmentId == z.equipmentId &&
+                      e.compartmentId == fach.id,
+                )
+                .toList()
+              ..sort(
+                (a, b) => (a.identifier ?? '').compareTo(b.identifier ?? ''),
+              );
 
         for (final e in meineEinheiten) {
           verbuchteEinheiten.add(e.id);
-          zeilen.add(zeile(
-            fahrzeug: f.name,
-            kennzeichen: f.licensePlate ?? '',
-            fach: fach.label,
-            geraet: geraet,
-            anzahl: 1,
-            einheit: e,
-          ));
+          zeilen.add(
+            zeile(
+              fahrzeug: f.name,
+              kennzeichen: f.licensePlate ?? '',
+              fach: fach.label,
+              geraet: geraet,
+              anzahl: 1,
+              einheit: e,
+            ),
+          );
         }
 
         final rest = z.quantity - meineEinheiten.length;
         if (rest > 0) {
-          zeilen.add(zeile(
-            fahrzeug: f.name,
-            kennzeichen: f.licensePlate ?? '',
-            fach: fach.label,
-            geraet: geraet,
-            anzahl: rest,
-          ));
+          zeilen.add(
+            zeile(
+              fahrzeug: f.name,
+              kennzeichen: f.licensePlate ?? '',
+              fach: fach.label,
+              geraet: geraet,
+              anzahl: rest,
+            ),
+          );
         }
       }
     }
   }
 
   // Was an keinem Fach hängt — Lager, Reparatur, noch nicht zugeordnet.
-  final uebrige = einheiten
-      .where((e) => !verbuchteEinheiten.contains(e.id))
-      .toList()
-    ..sort((a, b) => (a.identifier ?? '').compareTo(b.identifier ?? ''));
+  final uebrige =
+      einheiten.where((e) => !verbuchteEinheiten.contains(e.id)).toList()
+        ..sort((a, b) => (a.identifier ?? '').compareTo(b.identifier ?? ''));
   for (final e in uebrige) {
-    zeilen.add(zeile(
-      fahrzeug: kOhneFahrzeug,
-      kennzeichen: '',
-      fach: '',
-      geraet: geraetNachId[e.equipmentId],
-      anzahl: 1,
-      einheit: e,
-    ));
+    zeilen.add(
+      zeile(
+        fahrzeug: kOhneFahrzeug,
+        kennzeichen: '',
+        fach: '',
+        geraet: geraetNachId[e.equipmentId],
+        anzahl: 1,
+        einheit: e,
+      ),
+    );
   }
 
   return alsCsvDatei(zeilen);

@@ -1,5 +1,6 @@
 /// changelog_screen_test.dart – „Was ist neu?"-Screen (Issue #51).
 library;
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/core/changelog/changelog.dart';
 import 'package:fwapp/core/database/app_database.dart';
@@ -32,11 +33,13 @@ void main() {
   ];
 
   testWidgets('zeigt die Versionen und klappt die neueste auf', (tester) async {
-    await tester.pumpWidget(buildTestApp(
-      db: db,
-      home: const ChangelogScreen(),
-      overrides: [changelogProvider.overrideWith((ref) async => releases)],
-    ));
+    await tester.pumpWidget(
+      buildTestApp(
+        db: db,
+        home: const ChangelogScreen(),
+        overrides: [changelogProvider.overrideWith((ref) async => releases)],
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('Was ist neu?'), findsOneWidget);
@@ -52,11 +55,13 @@ void main() {
   });
 
   testWidgets('klappt eine ältere Version auf Tipp auf', (tester) async {
-    await tester.pumpWidget(buildTestApp(
-      db: db,
-      home: const ChangelogScreen(),
-      overrides: [changelogProvider.overrideWith((ref) async => releases)],
-    ));
+    await tester.pumpWidget(
+      buildTestApp(
+        db: db,
+        home: const ChangelogScreen(),
+        overrides: [changelogProvider.overrideWith((ref) async => releases)],
+      ),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Version 1.0.0'));
@@ -70,13 +75,15 @@ void main() {
   testWidgets('bleibt bei leerer Änderungsliste bedienbar', (tester) async {
     // Ein kaputtes oder fehlendes Asset darf einen Hinweis zeigen, aber den
     // Screen nicht sprengen — changelogProvider fängt Fehler bewusst ab.
-    await tester.pumpWidget(buildTestApp(
-      db: db,
-      home: const ChangelogScreen(),
-      overrides: [
-        changelogProvider.overrideWith((ref) async => <ChangelogRelease>[]),
-      ],
-    ));
+    await tester.pumpWidget(
+      buildTestApp(
+        db: db,
+        home: const ChangelogScreen(),
+        overrides: [
+          changelogProvider.overrideWith((ref) async => <ChangelogRelease>[]),
+        ],
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(find.textContaining('nicht verfügbar'), findsOneWidget);

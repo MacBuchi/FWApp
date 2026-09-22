@@ -1,6 +1,7 @@
 /// crash_store_test.dart – Lokaler Absturzspeicher (Issue #34) nach dem
 /// Bauplan „Route A" der Observability-Guideline.
 library;
+
 import 'dart:convert';
 import 'dart:io';
 
@@ -14,15 +15,14 @@ CrashReport report(
   String stack = 'stack',
   String? fingerprint,
   DateTime? time,
-}) =>
-    CrashReport(
-      time: time ?? DateTime.utc(2026, 7, 31, 12, n),
-      appVersion: '1.5.2 (Build 20)',
-      source: 'Async',
-      error: 'Fehler $n',
-      stackTrace: stack,
-      fingerprint: fingerprint ?? 'fp$n',
-    );
+}) => CrashReport(
+  time: time ?? DateTime.utc(2026, 7, 31, 12, n),
+  appVersion: '1.5.2 (Build 20)',
+  source: 'Async',
+  error: 'Fehler $n',
+  stackTrace: stack,
+  fingerprint: fingerprint ?? 'fp$n',
+);
 
 void main() {
   late Directory tempDir;
@@ -43,19 +43,21 @@ void main() {
 
   group('Serialisierung', () {
     test('überlebt eine Runde encode/decode verlustfrei', () {
-      final decoded = decodeCrashReports(encodeCrashReports([
-        CrashReport(
-          time: DateTime.utc(2026, 7, 31, 12),
-          appVersion: '1.5.2 (Build 20)',
-          source: 'Async',
-          error: 'Fehler',
-          stackTrace: 'stack',
-          fingerprint: 'abc12345',
-          device: 'android — Android 16',
-          locale: 'de_DE',
-          log: const ['erste Zeile', 'zweite Zeile'],
-        ),
-      ]));
+      final decoded = decodeCrashReports(
+        encodeCrashReports([
+          CrashReport(
+            time: DateTime.utc(2026, 7, 31, 12),
+            appVersion: '1.5.2 (Build 20)',
+            source: 'Async',
+            error: 'Fehler',
+            stackTrace: 'stack',
+            fingerprint: 'abc12345',
+            device: 'android — Android 16',
+            locale: 'de_DE',
+            log: const ['erste Zeile', 'zweite Zeile'],
+          ),
+        ]),
+      );
       expect(decoded, hasLength(1));
       final r = decoded.single;
       expect(r.error, 'Fehler');
@@ -82,7 +84,8 @@ void main() {
     test('liest Berichte ohne Formatversion (v1.5.0/1.5.1) weiter', () {
       // Legacy-Toleranz: Diese Berichte sind der Grund, warum jemand meldet —
       // sie wegzuwerfen wäre der schlechteste Zeitpunkt für Strenge.
-      const legacy = '[{"time":"2026-07-31T12:00:00.000Z",'
+      const legacy =
+          '[{"time":"2026-07-31T12:00:00.000Z",'
           '"appVersion":"1.5.0 (Build 18)","source":"Async",'
           '"error":"Bad state: kaputt",'
           '"stackTrace":"#0 x (package:fwapp/a.dart:1:1)"}]';
@@ -109,7 +112,8 @@ void main() {
     });
 
     test('überspringt Einträge ohne brauchbaren Zeitstempel', () {
-      const raw = '[{"time":"unsinn","error":"a"},'
+      const raw =
+          '[{"time":"unsinn","error":"a"},'
           '{"time":"2026-07-31T12:00:00.000Z","error":"b"}]';
       expect(decodeCrashReports(raw).single.error, 'b');
     });
@@ -148,7 +152,9 @@ void main() {
 
     test('liefert bei fehlender Datei eine leere Liste', () {
       expect(
-          CrashStore(File('${tempDir.path}/gibtsnicht.json')).load(), isEmpty);
+        CrashStore(File('${tempDir.path}/gibtsnicht.json')).load(),
+        isEmpty,
+      );
     });
   });
 
@@ -227,17 +233,18 @@ void main() {
 
   group('toReportText', () {
     test('enthält Version, Quelle, Kennung, Fehler und Stacktrace', () {
-      final text = CrashReport(
-        time: DateTime.utc(2026, 7, 31, 12),
-        appVersion: '1.5.2 (Build 20)',
-        source: 'Async',
-        error: 'Bad state: kaputt',
-        stackTrace: '#0 f (package:fwapp/a.dart:3:4)',
-        fingerprint: 'abc12345',
-        device: 'android — Android 16',
-        locale: 'de_DE',
-        log: const ['vorher passiert'],
-      ).toReportText();
+      final text =
+          CrashReport(
+            time: DateTime.utc(2026, 7, 31, 12),
+            appVersion: '1.5.2 (Build 20)',
+            source: 'Async',
+            error: 'Bad state: kaputt',
+            stackTrace: '#0 f (package:fwapp/a.dart:3:4)',
+            fingerprint: 'abc12345',
+            device: 'android — Android 16',
+            locale: 'de_DE',
+            log: const ['vorher passiert'],
+          ).toReportText();
 
       expect(text, contains('1.5.2 (Build 20)'));
       expect(text, contains('Async'));

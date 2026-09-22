@@ -1,5 +1,6 @@
 /// assignment_repository_impl.dart – Drift-backed AssignmentRepository implementation.
 library;
+
 import 'package:drift/drift.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/features/assignment/domain/entities/equipment_assignment.dart';
@@ -29,23 +30,23 @@ class AssignmentRepositoryImpl implements AssignmentRepository {
 
   @override
   Future<int> insert(EquipmentAssignment a) => _dao.insertAssignment(
-        EquipmentAssignmentsCompanion.insert(
-          compartmentId: a.compartmentId,
-          equipmentId: a.equipmentId,
-          quantity: Value(a.quantity),
-        ),
-      );
+    EquipmentAssignmentsCompanion.insert(
+      compartmentId: a.compartmentId,
+      equipmentId: a.equipmentId,
+      quantity: Value(a.quantity),
+    ),
+  );
 
   @override
   Future<void> update(EquipmentAssignment a) => _dao.updateAssignment(
-        EquipmentAssignmentsCompanion(
-          id: Value(a.id),
-          compartmentId: Value(a.compartmentId),
-          equipmentId: Value(a.equipmentId),
-          quantity: Value(a.quantity),
-          updatedAt: Value(DateTime.now()),
-        ),
-      );
+    EquipmentAssignmentsCompanion(
+      id: Value(a.id),
+      compartmentId: Value(a.compartmentId),
+      equipmentId: Value(a.equipmentId),
+      quantity: Value(a.quantity),
+      updatedAt: Value(DateTime.now()),
+    ),
+  );
 
   @override
   Future<void> delete(int id) => _dao.deleteAssignment(id);
@@ -63,10 +64,10 @@ class AssignmentRepositoryImpl implements AssignmentRepository {
       _dao.deleteAssignments(assignmentIds);
 
   EquipmentAssignment _toEntity(AssignmentData row) => EquipmentAssignment(
-        id: row.id,
-        compartmentId: row.compartmentId,
-        equipmentId: row.equipmentId,
-        quantity: row.quantity,
-        updatedAt: row.updatedAt,
-      );
+    id: row.id,
+    compartmentId: row.compartmentId,
+    equipmentId: row.equipmentId,
+    quantity: row.quantity,
+    updatedAt: row.updatedAt,
+  );
 }

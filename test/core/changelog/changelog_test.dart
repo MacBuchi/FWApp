@@ -1,5 +1,6 @@
 /// changelog_test.dart – Parser für die mitgelieferte CHANGELOG.md (Issue #51).
 library;
+
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -67,9 +68,10 @@ Vorwort, das nicht im Ergebnis auftauchen darf.
       ]);
     });
 
-    test('akzeptiert Überschriften ohne Klammern, Datum und Bindestrich-Trenner',
-        () {
-      final releases = parseChangelog('''
+    test(
+      'akzeptiert Überschriften ohne Klammern, Datum und Bindestrich-Trenner',
+      () {
+        final releases = parseChangelog('''
 ## 1.0.0 - 2026-01-01
 
 ### Neu
@@ -82,10 +84,11 @@ Vorwort, das nicht im Ergebnis auftauchen darf.
 
 - ohne Datum
 ''');
-      expect(releases.map((r) => r.version), ['1.0.0', '0.9.0']);
-      expect(releases.first.date, '2026-01-01');
-      expect(releases.last.date, isNull);
-    });
+        expect(releases.map((r) => r.version), ['1.0.0', '0.9.0']);
+        expect(releases.first.date, '2026-01-01');
+        expect(releases.last.date, isNull);
+      },
+    );
 
     test('ignoriert Link-Definitionen und leere Abschnitte', () {
       final releases = parseChangelog('''
@@ -111,8 +114,9 @@ Vorwort, das nicht im Ergebnis auftauchen darf.
   group('die ausgelieferte CHANGELOG.md', () {
     // Die Datei ist Asset und Anzeige-Quelle zugleich (Issue #51). Ein Tippfehler
     // im Format fällt sonst erst auf dem Gerät auf, wo der Screen leer bleibt.
-    late final List<ChangelogRelease> releases =
-        parseChangelog(File('CHANGELOG.md').readAsStringSync());
+    late final List<ChangelogRelease> releases = parseChangelog(
+      File('CHANGELOG.md').readAsStringSync(),
+    );
 
     test('ist parsebar und nicht leer', () {
       expect(releases, isNotEmpty);
@@ -121,26 +125,36 @@ Vorwort, das nicht im Ergebnis auftauchen darf.
     test('trägt für jede Version ein Datum und mindestens einen Punkt', () {
       for (final r in releases) {
         expect(r.date, isNotNull, reason: 'Version ${r.version} ohne Datum');
-        expect(r.sections, isNotEmpty,
-            reason: 'Version ${r.version} ohne Abschnitte');
+        expect(
+          r.sections,
+          isNotEmpty,
+          reason: 'Version ${r.version} ohne Abschnitte',
+        );
         for (final s in r.sections) {
-          expect(s.entries, isNotEmpty,
-              reason: 'Version ${r.version}, Abschnitt "${s.title}" ist leer');
+          expect(
+            s.entries,
+            isNotEmpty,
+            reason: 'Version ${r.version}, Abschnitt "${s.title}" ist leer',
+          );
         }
       }
     });
 
     test('enthält die Version aus pubspec.yaml als obersten Eintrag', () {
       final pubspec = File('pubspec.yaml').readAsStringSync();
-      final version = RegExp(r'^version:\s*([0-9]+\.[0-9]+\.[0-9]+)',
-              multiLine: true)
-          .firstMatch(pubspec)
-          ?.group(1);
+      final version = RegExp(
+        r'^version:\s*([0-9]+\.[0-9]+\.[0-9]+)',
+        multiLine: true,
+      ).firstMatch(pubspec)?.group(1);
       expect(version, isNotNull, reason: 'pubspec.yaml ohne version:');
-      expect(releases.first.version, version,
-          reason: 'Der oberste CHANGELOG-Eintrag muss die Version aus '
-              'pubspec.yaml sein — sonst liefert ein Release Notizen für '
-              'eine Version aus, die es nicht gibt.');
+      expect(
+        releases.first.version,
+        version,
+        reason:
+            'Der oberste CHANGELOG-Eintrag muss die Version aus '
+            'pubspec.yaml sein — sonst liefert ein Release Notizen für '
+            'eine Version aus, die es nicht gibt.',
+      );
     });
 
     test('nennt jede Version genau einmal', () {

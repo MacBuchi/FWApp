@@ -17,8 +17,7 @@ void main() {
       String frage = 'Wie lang ist ein C-Druckschlauch?',
       List<String> antworten = const ['15 m', '20 m', '30 m'],
       Set<int> richtige = const {0},
-    }) =>
-        pruefeFrage(frage: frage, antworten: antworten, richtige: richtige);
+    }) => pruefeFrage(frage: frage, antworten: antworten, richtige: richtige);
 
     test('eine ordentliche Frage geht durch', () {
       expect(pruefe(), isNull);
@@ -57,25 +56,38 @@ void main() {
       expect(pruefe(richtige: {99}), isNotNull);
     });
 
-    test('sieben Antworten sind erlaubt — der Prüfungsstoff geht bis zehn',
-        () {
+    test('sieben Antworten sind erlaubt — der Prüfungsstoff geht bis zehn', () {
       // Die erste Fassung stoppte bei sechs. Das war geraten: Im amtlichen
       // Fragenkatalog laufen die Antwortkennungen bis „j)".
       expect(
-          pruefe(
-              antworten: const ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
-              richtige: {0}),
-          isNull);
+        pruefe(
+          antworten: const ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
+          richtige: {0},
+        ),
+        isNull,
+      );
     });
 
     test('mehr als zehn Antworten werden abgewiesen', () {
       expect(
-          pruefe(
-              antworten: const [
-                'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k'
-              ],
-              richtige: {0}),
-          isNotNull);
+        pruefe(
+          antworten: const [
+            'a',
+            'b',
+            'c',
+            'd',
+            'e',
+            'f',
+            'g',
+            'h',
+            'i',
+            'j',
+            'k',
+          ],
+          richtige: {0},
+        ),
+        isNotNull,
+      );
     });
 
     test('Leerraum ringsum stört nicht', () {
@@ -87,8 +99,10 @@ void main() {
     test('der Schlüssel ist stabil, nicht das Label', () {
       // In der Datenbank steht der Schlüssel. Wer das Label umbenennt, darf
       // damit keine Frage aus ihrem Gebiet werfen.
-      expect(Wissensgebiet.ausSchluessel('geraetekunde'),
-          Wissensgebiet.geraetekunde);
+      expect(
+        Wissensgebiet.ausSchluessel('geraetekunde'),
+        Wissensgebiet.geraetekunde,
+      );
       expect(Wissensgebiet.ausSchluessel('Gerätekunde'), isNull);
       expect(Wissensgebiet.ausSchluessel(null), isNull);
     });
@@ -100,8 +114,7 @@ void main() {
     });
 
     test('jedes Gebiet hat einen eigenen Schlüssel', () {
-      final schluessel =
-          Wissensgebiet.values.map((g) => g.schluessel).toList();
+      final schluessel = Wissensgebiet.values.map((g) => g.schluessel).toList();
       expect(schluessel.toSet(), hasLength(schluessel.length));
     });
   });
@@ -110,16 +123,15 @@ void main() {
     Wissensfrage bauen({
       Fragenherkunft herkunft = Fragenherkunft.eigen,
       Fragenstand stand = Fragenstand.freigegeben,
-    }) =>
-        Wissensfrage(
-          id: 1,
-          gebiet: Wissensgebiet.geraetekunde,
-          frage: 'Wie lang ist ein C-Druckschlauch?',
-          antworten: const ['15 m', '20 m'],
-          richtige: const {0},
-          herkunft: herkunft,
-          stand: stand,
-        );
+    }) => Wissensfrage(
+      id: 1,
+      gebiet: Wissensgebiet.geraetekunde,
+      frage: 'Wie lang ist ein C-Druckschlauch?',
+      antworten: const ['15 m', '20 m'],
+      richtige: const {0},
+      herkunft: herkunft,
+      stand: stand,
+    );
 
     test('gestellt wird nur, was freigegeben ist', () {
       expect(bauen().spielbar, isTrue);
@@ -146,12 +158,12 @@ void main() {
     // Der Grund in einer Zahl: Im Fragenkatalog des Innenministeriums BW
     // haben nur 79 von 210 Fragen genau eine richtige Antwort.
     Wissensfrage mitRichtigen(Set<int> richtige) => Wissensfrage(
-          id: 1,
-          gebiet: Wissensgebiet.loeschlehre,
-          frage: 'Welche Aussagen zur Brandklasse A sind richtig?',
-          antworten: const ['Feste Stoffe', 'Gase', 'Glutbildend', 'Metalle'],
-          richtige: richtige,
-        );
+      id: 1,
+      gebiet: Wissensgebiet.loeschlehre,
+      frage: 'Welche Aussagen zur Brandklasse A sind richtig?',
+      antworten: const ['Feste Stoffe', 'Gase', 'Glutbildend', 'Metalle'],
+      richtige: richtige,
+    );
 
     test('richtig ist nur, wer alle trifft und keine danebenlegt', () {
       final f = mitRichtigen({0, 2});
@@ -180,20 +192,24 @@ void main() {
 
     test('alle Antworten richtig ist keine Frage', () {
       expect(
-          pruefeFrage(
-              frage: 'Welche gehören dazu?',
-              antworten: const ['a', 'b'],
-              richtige: {0, 1}),
-          isNotNull);
+        pruefeFrage(
+          frage: 'Welche gehören dazu?',
+          antworten: const ['a', 'b'],
+          richtige: {0, 1},
+        ),
+        isNotNull,
+      );
     });
 
     test('mehrere richtige gehen durch', () {
       expect(
-          pruefeFrage(
-              frage: 'Welche Aussagen sind richtig?',
-              antworten: const ['a', 'b', 'c', 'd'],
-              richtige: {0, 2, 3}),
-          isNull);
+        pruefeFrage(
+          frage: 'Welche Aussagen sind richtig?',
+          antworten: const ['a', 'b', 'c', 'd'],
+          richtige: {0, 2, 3},
+        ),
+        isNull,
+      );
     });
   });
 

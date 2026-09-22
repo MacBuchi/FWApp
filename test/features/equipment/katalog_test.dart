@@ -49,18 +49,19 @@ void main() {
   tearDown(() => db.close());
 
   Widget app(Widget home) => buildTestApp(
-        db: db,
-        home: home,
-        overrides: [
-          standardCatalogProvider.overrideWith((ref) async => katalog),
-          imageLibraryProvider.overrideWith((ref) async => bibliothek),
-        ],
-      );
+    db: db,
+    home: home,
+    overrides: [
+      standardCatalogProvider.overrideWith((ref) async => katalog),
+      imageLibraryProvider.overrideWith((ref) async => bibliothek),
+    ],
+  );
 
   // ── #102: aus dem Katalog anlegen ───────────────────────────────────────
 
-  testWidgets('ein Gerät aus dem Katalog bringt seine Herkunft mit',
-      (tester) async {
+  testWidgets('ein Gerät aus dem Katalog bringt seine Herkunft mit', (
+    tester,
+  ) async {
     await tester.pumpWidget(app(const EquipmentFormScreen()));
     await tester.pumpAndSettle();
 
@@ -70,21 +71,28 @@ void main() {
     // Der Wähler ist die Bildbibliothek — dieselbe Suche über Name,
     // Kurzname und Aliasse, die es dafür schon gibt.
     await tester.enterText(
-        find.descendant(
-            of: find.byType(ImageLibraryScreen),
-            matching: find.byType(TextField)),
-        'Pylone');
+      find.descendant(
+        of: find.byType(ImageLibraryScreen),
+        matching: find.byType(TextField),
+      ),
+      'Pylone',
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.text('Leitkegel').first);
     await tester.pumpAndSettle();
 
     // Sichtbar übernommen …
-    expect(find.widgetWithText(TextField, 'Verkehrsleitkegel 500 mm'),
-        findsOneWidget);
+    expect(
+      find.widgetWithText(TextField, 'Verkehrsleitkegel 500 mm'),
+      findsOneWidget,
+    );
     expect(find.textContaining('Katalog-Gerät'), findsOneWidget);
 
     await tester.dragUntilVisible(
-        find.text('Speichern'), find.byType(ListView), const Offset(0, -120));
+      find.text('Speichern'),
+      find.byType(ListView),
+      const Offset(0, -120),
+    );
     await tester.tap(find.text('Speichern'));
     await tester.pumpAndSettle();
 
@@ -101,15 +109,20 @@ void main() {
     await endTestApp(tester);
   });
 
-  testWidgets('ohne Katalog-Wahl bleibt das Gerät ein eigenes',
-      (tester) async {
+  testWidgets('ohne Katalog-Wahl bleibt das Gerät ein eigenes', (tester) async {
     await tester.pumpWidget(
-        buildTestApp(db: db, home: const EquipmentFormScreen()));
+      buildTestApp(db: db, home: const EquipmentFormScreen()),
+    );
     await tester.pumpAndSettle();
     await tester.enterText(
-        find.widgetWithText(TextField, 'Name*'), 'Selbstgebautes');
+      find.widgetWithText(TextField, 'Name*'),
+      'Selbstgebautes',
+    );
     await tester.dragUntilVisible(
-        find.text('Speichern'), find.byType(ListView), const Offset(0, -120));
+      find.text('Speichern'),
+      find.byType(ListView),
+      const Offset(0, -120),
+    );
     await tester.tap(find.text('Speichern'));
     await tester.pumpAndSettle();
 
@@ -157,27 +170,36 @@ void main() {
       ),
     );
 
-    Future<void> oeffneMenue(WidgetTester tester, int id,
-        {bool angemeldet = true}) async {
-      await tester.pumpWidget(buildTestApp(
-        db: db,
-        home: EquipmentDetailScreen(equipmentId: id),
-        overrides: [
-          standardCatalogProvider.overrideWith((ref) async => katalog),
-          imageLibraryProvider.overrideWith((ref) async => bibliothek),
-          if (angemeldet)
-            sessionStreamProvider.overrideWith((ref) => Stream.value(sitzung)),
-        ],
-      ));
+    Future<void> oeffneMenue(
+      WidgetTester tester,
+      int id, {
+      bool angemeldet = true,
+    }) async {
+      await tester.pumpWidget(
+        buildTestApp(
+          db: db,
+          home: EquipmentDetailScreen(equipmentId: id),
+          overrides: [
+            standardCatalogProvider.overrideWith((ref) async => katalog),
+            imageLibraryProvider.overrideWith((ref) async => bibliothek),
+            if (angemeldet)
+              sessionStreamProvider.overrideWith(
+                (ref) => Stream.value(sitzung),
+              ),
+          ],
+        ),
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.byType(PopupMenuButton<String>));
       await tester.pumpAndSettle();
     }
 
-    testWidgets('steht bei einem selbst angelegten Gerät im Menü',
-        (tester) async {
-      final id = await db.equipmentDao
-          .insertEquipment(EquipmentItemsCompanion.insert(name: 'Eigenbau'));
+    testWidgets('steht bei einem selbst angelegten Gerät im Menü', (
+      tester,
+    ) async {
+      final id = await db.equipmentDao.insertEquipment(
+        EquipmentItemsCompanion.insert(name: 'Eigenbau'),
+      );
       await oeffneMenue(tester, id);
       expect(find.text('Für den Katalog vorschlagen'), findsOneWidget);
       await endTestApp(tester);
@@ -186,9 +208,11 @@ void main() {
     testWidgets('fehlt bei einem Katalog-Gerät', (tester) async {
       // Was schon im Katalog steht, kann man nicht dafür vorschlagen.
       final id = await db.equipmentDao.insertEquipment(
-          EquipmentItemsCompanion.insert(
-              name: 'Verkehrsleitkegel 500 mm',
-              libraryEquipmentId: const Value('std_leitkegel')));
+        EquipmentItemsCompanion.insert(
+          name: 'Verkehrsleitkegel 500 mm',
+          libraryEquipmentId: const Value('std_leitkegel'),
+        ),
+      );
       await oeffneMenue(tester, id);
       expect(find.text('Für den Katalog vorschlagen'), findsNothing);
       expect(find.text('Gerät entfernen'), findsOneWidget);
@@ -198,8 +222,9 @@ void main() {
     testWidgets('fehlt ohne Anmeldung', (tester) async {
       // Der Vorschlag läuft über die Feedback-Tabelle — die verlangt ein
       // Konto. Ein toter Menüpunkt wäre schlimmer als keiner.
-      final id = await db.equipmentDao
-          .insertEquipment(EquipmentItemsCompanion.insert(name: 'Eigenbau'));
+      final id = await db.equipmentDao.insertEquipment(
+        EquipmentItemsCompanion.insert(name: 'Eigenbau'),
+      );
       await oeffneMenue(tester, id, angemeldet: false);
       expect(find.text('Für den Katalog vorschlagen'), findsNothing);
       await endTestApp(tester);

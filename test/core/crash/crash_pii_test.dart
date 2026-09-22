@@ -6,6 +6,7 @@
 /// Log-Ring-Buffer oder den Fehlertext hineinrutscht, ist damit im Netz.
 /// Jedes `reason:` unten benennt, was real schiefginge.
 library;
+
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -41,35 +42,54 @@ void main() {
     tempDir.deleteSync(recursive: true);
   });
 
-  test('ein Bericht aus einer angemeldeten Sitzung trägt keine Geheimnisse',
-      () {
-    // So sieht der Ring nach einem normalen Anmelde- und Sync-Vorgang aus.
-    appLogRing
-      ..add('Server erreichbar')
-      ..add('Pulled dataset version 38 (4 rows).')
-      ..add('Library seed complete.');
+  test(
+    'ein Bericht aus einer angemeldeten Sitzung trägt keine Geheimnisse',
+    () {
+      // So sieht der Ring nach einem normalen Anmelde- und Sync-Vorgang aus.
+      appLogRing
+        ..add('Server erreichbar')
+        ..add('Pulled dataset version 38 (4 rows).')
+        ..add('Library seed complete.');
 
-    recordCrash(
-      source: 'Async',
-      error: StateError('Sync fehlgeschlagen'),
-      stackTrace: StackTrace.fromString(
-          '#0 SyncService.pull (package:fwapp/core/sync/sync_service.dart:1:1)'),
-    );
+      recordCrash(
+        source: 'Async',
+        error: StateError('Sync fehlgeschlagen'),
+        stackTrace: StackTrace.fromString(
+          '#0 SyncService.pull (package:fwapp/core/sync/sync_service.dart:1:1)',
+        ),
+      );
 
-    final text = store.load().single.toReportText();
+      final text = store.load().single.toReportText();
 
-    expect(text, isNot(contains(_accessToken)),
-        reason: 'ein Access-Token im Issue gibt Fremden Zugriff auf die Wehr');
-    expect(text, isNot(contains(_refreshToken)),
-        reason: 'ein Refresh-Token ist noch schlimmer, es läuft nicht ab');
-    expect(text, isNot(contains(_email)),
-        reason: 'die Anmeldeadresse ist personenbezogen');
-    expect(text, isNot(contains(_anonKey)),
-        reason: 'der Anon-Key gehört nicht in ein Issue, auch wenn er '
-            'clientseitig öffentlich ist');
-    expect(text, isNot(contains('password')),
-        reason: 'Passwörter dürfen nirgends im Bericht auftauchen');
-  });
+      expect(
+        text,
+        isNot(contains(_accessToken)),
+        reason: 'ein Access-Token im Issue gibt Fremden Zugriff auf die Wehr',
+      );
+      expect(
+        text,
+        isNot(contains(_refreshToken)),
+        reason: 'ein Refresh-Token ist noch schlimmer, es läuft nicht ab',
+      );
+      expect(
+        text,
+        isNot(contains(_email)),
+        reason: 'die Anmeldeadresse ist personenbezogen',
+      );
+      expect(
+        text,
+        isNot(contains(_anonKey)),
+        reason:
+            'der Anon-Key gehört nicht in ein Issue, auch wenn er '
+            'clientseitig öffentlich ist',
+      );
+      expect(
+        text,
+        isNot(contains('password')),
+        reason: 'Passwörter dürfen nirgends im Bericht auftauchen',
+      );
+    },
+  );
 
   test('was der Logger nicht loggt, kann auch nicht durchrutschen', () {
     // Gegenprobe zur Regel im Kopf von app_logger.dart: Der Ring gibt genau
@@ -91,9 +111,13 @@ void main() {
     appLogRing.add('Token: $_accessToken');
     recordCrash(source: 'Async', error: Exception('x'));
 
-    expect(store.load().single.toReportText(), contains(_accessToken),
-        reason: 'wer ein Geheimnis loggt, hat es im Bericht — genau deshalb '
-            'steht die Regel am Logger und nicht hier');
+    expect(
+      store.load().single.toReportText(),
+      contains(_accessToken),
+      reason:
+          'wer ein Geheimnis loggt, hat es im Bericht — genau deshalb '
+          'steht die Regel am Logger und nicht hier',
+    );
   });
 
   test('der Kontext enthält nur Technisches', () {
@@ -104,8 +128,11 @@ void main() {
     expect(r.appVersion, '1.5.2 (Build 20)');
     expect(r.device, 'android — Android 16');
     expect(r.locale, 'de_DE');
-    expect(r.toReportText(), isNot(contains('@')),
-        reason: 'kein Feld darf eine Adresse tragen');
+    expect(
+      r.toReportText(),
+      isNot(contains('@')),
+      reason: 'kein Feld darf eine Adresse tragen',
+    );
   });
 
   test('lange Log-Zeilen werden gekappt, nicht ausgelassen', () {

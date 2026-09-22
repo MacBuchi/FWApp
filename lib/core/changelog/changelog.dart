@@ -72,11 +72,9 @@ List<ChangelogRelease> parseChangelog(String markdown) {
   void closeRelease() {
     closeSection();
     if (version != null) {
-      releases.add(ChangelogRelease(
-        version: version!,
-        date: date,
-        sections: sections,
-      ));
+      releases.add(
+        ChangelogRelease(version: version!, date: date, sections: sections),
+      );
     }
     version = null;
     date = null;
@@ -129,7 +127,11 @@ final changelogProvider = FutureProvider<List<ChangelogRelease>>((ref) async {
   try {
     return parseChangelog(await rootBundle.loadString('CHANGELOG.md'));
   } catch (e, s) {
-    appLog.w('CHANGELOG.md konnte nicht geladen werden', error: e, stackTrace: s);
+    appLog.w(
+      'CHANGELOG.md konnte nicht geladen werden',
+      error: e,
+      stackTrace: s,
+    );
     return const <ChangelogRelease>[];
   }
 });

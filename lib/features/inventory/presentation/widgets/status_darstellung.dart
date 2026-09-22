@@ -18,9 +18,9 @@ import 'package:fwapp/core/database/app_database.dart';
 /// „In Reparatur" ist bewusst blau und nicht rot: Das Gerät ist bekannt und
 /// unterwegs, das ist ein Vorgang und kein Loch in der Beladung.
 (Color, IconData) statusDarstellung(String status) => switch (status) {
-      InventoryChecks.statusOk => (Colors.green, Icons.check_circle),
-      InventoryChecks.statusMissing => (Colors.red, Icons.cancel),
-      InventoryChecks.statusDamaged => (Colors.orange, Icons.warning),
-      InventoryChecks.statusRepair => (Colors.blue, Icons.build_circle),
-      _ => (Colors.grey, Icons.radio_button_unchecked),
-    };
+  InventoryChecks.statusOk => (Colors.green, Icons.check_circle),
+  InventoryChecks.statusMissing => (Colors.red, Icons.cancel),
+  InventoryChecks.statusDamaged => (Colors.orange, Icons.warning),
+  InventoryChecks.statusRepair => (Colors.blue, Icons.build_circle),
+  _ => (Colors.grey, Icons.radio_button_unchecked),
+};

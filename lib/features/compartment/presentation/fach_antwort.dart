@@ -25,17 +25,13 @@ class FachAntwort {
   final String? seite;
   final String? laengsposition;
 
-  const FachAntwort({
-    required this.label,
-    this.seite,
-    this.laengsposition,
-  });
+  const FachAntwort({required this.label, this.seite, this.laengsposition});
 
   factory FachAntwort.ausFach(CompartmentData c) => FachAntwort(
-        label: c.label,
-        seite: c.seite,
-        laengsposition: c.laengsposition,
-      );
+    label: c.label,
+    seite: c.seite,
+    laengsposition: c.laengsposition,
+  );
 
   /// „Fahrerseite · hinten", oder null für ein Fach ohne Seite — dann bleibt
   /// die Zeile weg, statt „Ohne Seite" als Antwort-Beiwerk zu behaupten.
@@ -81,12 +77,17 @@ class FachAntwortInhalt extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(antwort.label,
-                  style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(
+                antwort.label,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
               if (ort != null)
-                Text(ort,
-                    style: theme.textTheme.bodySmall
-                        ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+                Text(
+                  ort,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
             ],
           ),
         ),

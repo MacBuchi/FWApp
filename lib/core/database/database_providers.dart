@@ -1,5 +1,6 @@
 /// database_providers.dart – Riverpod provider for the AppDatabase singleton.
 library;
+
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/sync/abteilung_providers.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -18,8 +19,7 @@ AppDatabase appDatabase(Ref ref) {
 }
 
 @Riverpod(keepAlive: true)
-VehicleDao vehicleDao(Ref ref) =>
-    ref.watch(appDatabaseProvider).vehicleDao;
+VehicleDao vehicleDao(Ref ref) => ref.watch(appDatabaseProvider).vehicleDao;
 
 @Riverpod(keepAlive: true)
 CompartmentDao compartmentDao(Ref ref) =>
@@ -51,8 +51,7 @@ InspectionDao inspectionDao(Ref ref) =>
     ref.watch(appDatabaseProvider).inspectionDao;
 
 @Riverpod(keepAlive: true)
-LearningDao learningDao(Ref ref) =>
-    ref.watch(appDatabaseProvider).learningDao;
+LearningDao learningDao(Ref ref) => ref.watch(appDatabaseProvider).learningDao;
 
 @Riverpod(keepAlive: true)
 InventoryDao inventoryDao(Ref ref) =>

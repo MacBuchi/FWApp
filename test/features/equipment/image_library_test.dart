@@ -2,6 +2,7 @@
 /// (jede Katalog-ID hat ein PNG) und intuitive Suche (Ranking, Aliasse,
 /// Umlaute).
 library;
+
 import 'dart:convert';
 import 'dart:io';
 
@@ -14,17 +15,25 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   test('jede Katalog-ID hat ein Piktogramm-PNG (Konvention <id>.png)', () {
-    final catalog = jsonDecode(
-            File('assets/equipment_library/catalog/standard_catalog.json')
-                .readAsStringSync()) as Map<String, dynamic>;
+    final catalog =
+        jsonDecode(
+              File(
+                'assets/equipment_library/catalog/standard_catalog.json',
+              ).readAsStringSync(),
+            )
+            as Map<String, dynamic>;
     final missing = [
       for (final item in (catalog['items'] as List))
         if (!File(pictogramPath((item as Map)['id'] as String)).existsSync())
-          item['id']
+          item['id'],
     ];
-    expect(missing, isEmpty,
-        reason: 'Piktogramme fehlen (tool/generate_pictograms.py laufen '
-            'lassen): $missing');
+    expect(
+      missing,
+      isEmpty,
+      reason:
+          'Piktogramme fehlen (tool/generate_pictograms.py laufen '
+          'lassen): $missing',
+    );
   });
 
   group('searchImageLibrary', () {
@@ -58,23 +67,26 @@ void main() {
       expect(results.first.id, 'std_tragkraftspritze');
     });
 
-    test('Wortanfang schlägt Teiltreffer: „schlauch“ listet Schläuche vorn',
-        () {
-      final results = searchImageLibrary(entries, 'schlauch');
-      expect(results.length, greaterThan(4));
-      // Vorn stehen Einträge, deren Name mit „Schlauch“ beginnt (z. B.
-      // Schlauchhalter), nicht solche mit „…schlauch“ mittendrin.
-      expect(results.first.name.toLowerCase(), startsWith('schlauch'));
-      expect(results.map((e) => e.id),
-          contains('std_b_druckschlauch_20m'));
-    });
+    test(
+      'Wortanfang schlägt Teiltreffer: „schlauch“ listet Schläuche vorn',
+      () {
+        final results = searchImageLibrary(entries, 'schlauch');
+        expect(results.length, greaterThan(4));
+        // Vorn stehen Einträge, deren Name mit „Schlauch“ beginnt (z. B.
+        // Schlauchhalter), nicht solche mit „…schlauch“ mittendrin.
+        expect(results.first.name.toLowerCase(), startsWith('schlauch'));
+        expect(results.map((e) => e.id), contains('std_b_druckschlauch_20m'));
+      },
+    );
 
-    test('Umlaut-tolerant: „Lüfter“ und „Luefter“ finden den Drucklüfter',
-        () {
+    test('Umlaut-tolerant: „Lüfter“ und „Luefter“ finden den Drucklüfter', () {
       for (final q in ['Lüfter', 'Luefter']) {
         final results = searchImageLibrary(entries, q);
-        expect(results.map((e) => e.id), contains('std_druckbeluefter'),
-            reason: 'Suche nach $q');
+        expect(
+          results.map((e) => e.id),
+          contains('std_druckbeluefter'),
+          reason: 'Suche nach $q',
+        );
       }
     });
 

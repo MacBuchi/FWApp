@@ -2,6 +2,7 @@
 /// Rules: "assets/" → Image.asset, `supabase://<bucket>/<object>` markers and
 /// http(s) URLs → CachedNetworkImage (offline cache), all others → Image.file.
 library;
+
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -39,7 +40,8 @@ bool isPictogramPath(String? path) =>
 
 bool isRemoteImagePath(String? path) =>
     isSupabaseImagePath(path) ||
-    (path != null && (path.startsWith('http://') || path.startsWith('https://')));
+    (path != null &&
+        (path.startsWith('http://') || path.startsWith('https://')));
 
 /// True for paths pointing to files on this device (camera/gallery imports) —
 /// the ones that are dead on other devices and need uploading.
@@ -82,7 +84,8 @@ Widget resolveImage({
   Color? backgroundColor = const Color(0xFFF5F5F5),
   Widget? placeholder,
 }) {
-  final fallback = placeholder ??
+  final fallback =
+      placeholder ??
       Container(
         width: width,
         height: height,

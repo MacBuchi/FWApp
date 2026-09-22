@@ -95,9 +95,10 @@ PartyInhalte parsePartyInhalte(String raw) {
   for (final eintrag in (decoded['fragen'] as List?) ?? const []) {
     if (eintrag is! Map<String, dynamic>) continue;
     final frage = (eintrag['frage'] as String?)?.trim() ?? '';
-    final antworten = ((eintrag['antworten'] as List?) ?? const [])
-        .map((a) => a.toString())
-        .toList();
+    final antworten =
+        ((eintrag['antworten'] as List?) ?? const [])
+            .map((a) => a.toString())
+            .toList();
     final richtig = eintrag['richtig'];
     final kategorie = eintrag['kategorie'] as String? ?? kKategorieWissen;
     if (frage.isEmpty ||
@@ -108,20 +109,23 @@ PartyInhalte parsePartyInhalte(String raw) {
       appLog.w('Party-Frage übersprungen: "$frage"');
       continue;
     }
-    fragen.add(UnerwarteteFrage(
-      frage: frage,
-      antworten: antworten,
-      richtig: richtig,
-      kategorie: kategorie,
-      gebiet: (eintrag['gebiet'] as String?)?.trim(),
-      erklaerung: (eintrag['erklaerung'] as String?)?.trim(),
-    ));
+    fragen.add(
+      UnerwarteteFrage(
+        frage: frage,
+        antworten: antworten,
+        richtig: richtig,
+        kategorie: kategorie,
+        gebiet: (eintrag['gebiet'] as String?)?.trim(),
+        erklaerung: (eintrag['erklaerung'] as String?)?.trim(),
+      ),
+    );
   }
 
-  final aufgaben = ((decoded['aufgaben'] as List?) ?? const [])
-      .map((a) => a.toString().trim())
-      .where((a) => a.isNotEmpty)
-      .toList();
+  final aufgaben =
+      ((decoded['aufgaben'] as List?) ?? const [])
+          .map((a) => a.toString().trim())
+          .where((a) => a.isNotEmpty)
+          .toList();
 
   return PartyInhalte(fragen: fragen, aufgaben: aufgaben);
 }

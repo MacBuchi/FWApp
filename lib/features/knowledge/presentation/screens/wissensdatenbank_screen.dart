@@ -89,9 +89,12 @@ class _WissensdatenbankScreenState
             IconButton(
               tooltip: 'Fragen importieren',
               icon: const Icon(Icons.upload_file),
-              onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-                builder: (_) => const FragenImportScreen(),
-              )),
+              onPressed:
+                  () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const FragenImportScreen(),
+                    ),
+                  ),
             ),
           const AbteilungAction(),
         ],
@@ -106,8 +109,9 @@ class _WissensdatenbankScreenState
       body: alleAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Fehler: $e')),
-        data: (alle) =>
-            _inhalt(alle, darfFreigeben, abgeschaltet, hinweise, bestand),
+        data:
+            (alle) =>
+                _inhalt(alle, darfFreigeben, abgeschaltet, hinweise, bestand),
       ),
     );
   }
@@ -119,32 +123,39 @@ class _WissensdatenbankScreenState
     List<Fragenhinweis> hinweise,
     Set<String>? bestand,
   ) {
-    final offen = alle
-        .where((f) => f.stand == Fragenstand.eingereicht.schluessel)
-        .toList();
-    final freigegeben = alle
-        .where((f) => f.stand == Fragenstand.freigegeben.schluessel)
-        .where((f) => _gebiet == null || f.gebiet == _gebiet!.schluessel)
-        .where((f) => _kapitel == null || f.kapitel == _kapitel)
-        .toList();
+    final offen =
+        alle
+            .where((f) => f.stand == Fragenstand.eingereicht.schluessel)
+            .toList();
+    final freigegeben =
+        alle
+            .where((f) => f.stand == Fragenstand.freigegeben.schluessel)
+            .where((f) => _gebiet == null || f.gebiet == _gebiet!.schluessel)
+            .where((f) => _kapitel == null || f.kapitel == _kapitel)
+            .toList();
 
     return ListView(
       padding: const EdgeInsets.only(bottom: 96),
       children: [
         if (offen.isNotEmpty) ...[
-          _ueberschrift(darfFreigeben
-              ? '${offen.length} wartet auf deine Freigabe'
-              : '${offen.length} eingereicht, wartet auf Freigabe'),
-          ...offen.map((f) => _zeile(f, darfFreigeben, abgeschaltet,
-              bestand, offen: true)),
+          _ueberschrift(
+            darfFreigeben
+                ? '${offen.length} wartet auf deine Freigabe'
+                : '${offen.length} eingereicht, wartet auf Freigabe',
+          ),
+          ...offen.map(
+            (f) => _zeile(f, darfFreigeben, abgeschaltet, bestand, offen: true),
+          ),
           const Divider(height: 32),
         ],
         // Der Hinweis-Stapel steht aus demselben Grund oben wie der
         // Freigabe-Stapel: Was niemand sieht, bearbeitet niemand (#194).
         if (hinweise.isNotEmpty && darfFreigeben) ...[
-          _ueberschrift(hinweise.length == 1
-              ? '1 Hinweis zu einer Frage'
-              : '${hinweise.length} Hinweise zu Fragen'),
+          _ueberschrift(
+            hinweise.length == 1
+                ? '1 Hinweis zu einer Frage'
+                : '${hinweise.length} Hinweise zu Fragen',
+          ),
           ...hinweise.map((h) => _hinweiszeile(h, alle)),
           const Divider(height: 32),
         ],
@@ -161,26 +172,30 @@ class _WissensdatenbankScreenState
                       'Du kannst die erste Frage beisteuern.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           )
         else
-          ...freigegeben
-              .map((f) => _zeile(f, darfFreigeben, abgeschaltet, bestand)),
+          ...freigegeben.map(
+            (f) => _zeile(f, darfFreigeben, abgeschaltet, bestand),
+          ),
       ],
     );
   }
 
   Widget _ueberschrift(String text) => Padding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-        child: Text(text, style: Theme.of(context).textTheme.titleMedium),
-      );
+    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+    child: Text(text, style: Theme.of(context).textTheme.titleMedium),
+  );
 
   /// Die Gebiete mit ihrer Anzahl. Leere Gebiete bleiben sichtbar — sie sind
   /// die Einladung, dort etwas beizusteuern, und eine Lücke, die man nicht
   /// sieht, füllt niemand.
-  Widget _gebietsfilter(List<WissensfrageData> alle,
-      List<AbgeschalteterLernbereich> abgeschaltet) {
+  Widget _gebietsfilter(
+    List<WissensfrageData> alle,
+    List<AbgeschalteterLernbereich> abgeschaltet,
+  ) {
     final zaehlung = <String, int>{};
     for (final f in alle) {
       if (f.stand != Fragenstand.freigegeben.schluessel) continue;
@@ -195,10 +210,11 @@ class _WissensdatenbankScreenState
           FilterChip(
             label: Text('Alle (${zaehlung.values.fold(0, (a, b) => a + b)})'),
             selected: _gebiet == null,
-            onSelected: (_) => setState(() {
-              _gebiet = null;
-              _kapitel = null;
-            }),
+            onSelected:
+                (_) => setState(() {
+                  _gebiet = null;
+                  _kapitel = null;
+                }),
           ),
           for (final g in Wissensgebiet.values) ...[
             const SizedBox(width: 8),
@@ -207,19 +223,23 @@ class _WissensdatenbankScreenState
               // einer waagerechten Leiste ist Platz das knappste Gut, und
               // „Atemschutz (12) — abgeschaltet" passt nicht mehr auf den
               // Chip.
-              avatar: istAbgeschaltet(abgeschaltet, g.schluessel)
-                  ? const Icon(Icons.block, size: 16)
-                  : null,
-              label: Text('${g.symbol} ${g.label} (${zaehlung[g.schluessel] ?? 0})'),
+              avatar:
+                  istAbgeschaltet(abgeschaltet, g.schluessel)
+                      ? const Icon(Icons.block, size: 16)
+                      : null,
+              label: Text(
+                '${g.symbol} ${g.label} (${zaehlung[g.schluessel] ?? 0})',
+              ),
               selected: _gebiet == g,
               // ⚠️ Das Kapitel muss mit: Ein „Dekontamination"-Filter, der
               // nach dem Wechsel zu „Funk" stehen bleibt, zeigt eine leere
               // Liste, und der Grund dafür steht am anderen Ende des
               // Schirms.
-              onSelected: (_) => setState(() {
-                _gebiet = g;
-                _kapitel = null;
-              }),
+              onSelected:
+                  (_) => setState(() {
+                    _gebiet = g;
+                    _kapitel = null;
+                  }),
             ),
           ],
         ],
@@ -233,8 +253,10 @@ class _WissensdatenbankScreenState
   /// eingrenzt, ist kein Filter, sondern Beschriftung. Ohne gewähltes Gebiet
   /// bleibt die Zeile ganz weg — quer über alle Gebiete stünden „Dekon" und
   /// „Gefahrzettel" neben Sachgebieten, zu denen sie nicht gehören.
-  Widget _kapitelfilter(List<WissensfrageData> alle,
-      List<AbgeschalteterLernbereich> abgeschaltet) {
+  Widget _kapitelfilter(
+    List<WissensfrageData> alle,
+    List<AbgeschalteterLernbereich> abgeschaltet,
+  ) {
     if (_gebiet == null) return const SizedBox.shrink();
     final zaehlung = <String, int>{};
     for (final f in alle) {
@@ -260,10 +282,10 @@ class _WissensdatenbankScreenState
           for (final k in namen) ...[
             const SizedBox(width: 8),
             ChoiceChip(
-              avatar: istAbgeschaltet(abgeschaltet, _gebiet!.schluessel,
-                      kapitel: k)
-                  ? const Icon(Icons.block, size: 16)
-                  : null,
+              avatar:
+                  istAbgeschaltet(abgeschaltet, _gebiet!.schluessel, kapitel: k)
+                      ? const Icon(Icons.block, size: 16)
+                      : null,
               label: Text('$k (${zaehlung[k]})'),
               selected: _kapitel == k,
               onSelected: (_) => setState(() => _kapitel = k),
@@ -286,7 +308,9 @@ class _WissensdatenbankScreenState
   /// hieße, die Wissensdatenbank stillzulegen, und das ist keine Einstellung,
   /// sondern ein Versehen.
   Widget _abschalter(
-      bool darfFreigeben, List<AbgeschalteterLernbereich> abgeschaltet) {
+    bool darfFreigeben,
+    List<AbgeschalteterLernbereich> abgeschaltet,
+  ) {
     if (!darfFreigeben || _gebiet == null) return const SizedBox.shrink();
 
     final gebietAus = istAbgeschaltet(abgeschaltet, _gebiet!.schluessel);
@@ -295,10 +319,14 @@ class _WissensdatenbankScreenState
     // Lüge: Er könnte nichts einschalten, was das Gebiet nicht wieder
     // freigibt.
     final gemeintesKapitel = gebietAus ? null : _kapitel;
-    final aus = gemeintesKapitel == null
-        ? gebietAus
-        : istAbgeschaltet(abgeschaltet, _gebiet!.schluessel,
-            kapitel: gemeintesKapitel);
+    final aus =
+        gemeintesKapitel == null
+            ? gebietAus
+            : istAbgeschaltet(
+              abgeschaltet,
+              _gebiet!.schluessel,
+              kapitel: gemeintesKapitel,
+            );
     final name = gemeintesKapitel ?? _gebiet!.label;
 
     return Padding(
@@ -307,18 +335,20 @@ class _WissensdatenbankScreenState
         margin: EdgeInsets.zero,
         child: SwitchListTile(
           value: !aus,
-          onChanged: (an) => _schalten(
-              kapitel: gemeintesKapitel, aus: !an, name: name),
+          onChanged:
+              (an) =>
+                  _schalten(kapitel: gemeintesKapitel, aus: !an, name: name),
           secondary: Icon(aus ? Icons.block : Icons.school_outlined),
-          title: Text(aus ? '„$name" wird nicht abgefragt'
-              : '„$name" wird abgefragt'),
+          title: Text(
+            aus ? '„$name" wird nicht abgefragt' : '„$name" wird abgefragt',
+          ),
           subtitle: Text(
             aus
                 ? 'Die Fragen bleiben hier lesbar, kommen aber im Quiz und '
                     'im Party-Modus nicht mehr dran.'
                 : gebietAus
-                    ? 'Das ganze Gebiet ist abgeschaltet.'
-                    : 'Gilt für die ganze Wehr, nicht nur für dieses Gerät.',
+                ? 'Das ganze Gebiet ist abgeschaltet.'
+                : 'Gilt für die ganze Wehr, nicht nur für dieses Gerät.',
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ),
@@ -332,17 +362,27 @@ class _WissensdatenbankScreenState
     required String name,
   }) async {
     try {
-      await schalteLernbereich(ref,
-          gebiet: _gebiet!.schluessel, kapitel: kapitel, aus: aus);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(aus
-              ? '„$name" wird nicht mehr abgefragt.'
-              : '„$name" wird wieder abgefragt.')));
-    } catch (e) {
+      await schalteLernbereich(
+        ref,
+        gebiet: _gebiet!.schluessel,
+        kapitel: kapitel,
+        aus: aus,
+      );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ging nicht: $e')));
+        SnackBar(
+          content: Text(
+            aus
+                ? '„$name" wird nicht mehr abgefragt.'
+                : '„$name" wird wieder abgefragt.',
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Ging nicht: $e')));
     }
   }
 
@@ -354,12 +394,14 @@ class _WissensdatenbankScreenState
       child: ListTile(
         leading: const Icon(Icons.flag_outlined),
         title: Text(h.hinweis),
-        subtitle: Text([
-          // Die Frage selbst, nicht nur ihre Nummer: Der Hinweis „Antwort b)
-          // stimmt nicht mehr" ist ohne sie nicht zu beurteilen.
-          frage?.frage ?? 'Frage nicht mehr vorhanden',
-          if (h.vonName != null) 'von ${h.vonName}',
-        ].join(' · ')),
+        subtitle: Text(
+          [
+            // Die Frage selbst, nicht nur ihre Nummer: Der Hinweis „Antwort b)
+            // stimmt nicht mehr" ist ohne sie nicht zu beurteilen.
+            frage?.frage ?? 'Frage nicht mehr vorhanden',
+            if (h.vonName != null) 'von ${h.vonName}',
+          ].join(' · '),
+        ),
         isThreeLine: true,
         trailing: IconButton(
           tooltip: 'Erledigt',
@@ -375,46 +417,55 @@ class _WissensdatenbankScreenState
       await erledigeFragenhinweis(ref, h);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ging nicht: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Ging nicht: $e')));
     }
   }
 
-  Widget _zeile(WissensfrageData z, bool darfFreigeben,
-      List<AbgeschalteterLernbereich> abgeschaltet, Set<String>? bestand,
-      {bool offen = false}) {
+  Widget _zeile(
+    WissensfrageData z,
+    bool darfFreigeben,
+    List<AbgeschalteterLernbereich> abgeschaltet,
+    Set<String>? bestand, {
+    bool offen = false,
+  }) {
     final f = zuWissensfrage(z);
     final theme = Theme.of(context);
     final aus = istAbgeschaltet(abgeschaltet, z.gebiet, kapitel: z.kapitel);
     // Nur bei Fragen MIT Gerätebezug und nur, wenn der Bestand schon da ist.
     // „Nicht in eurem Bestand" ist eine Aussage über die Wehr — die trifft
     // man nicht, solange man den Bestand noch gar nicht kennt.
-    final imBestand = z.geraet == null || bestand == null
-        ? null
-        : bestand.contains(z.geraet);
+    final imBestand =
+        z.geraet == null || bestand == null ? null : bestand.contains(z.geraet);
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       child: ExpansionTile(
         leading: Text(f.gebiet.symbol, style: const TextStyle(fontSize: 22)),
-        title: Text(f.frage,
-            style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: Text([
-          f.gebiet.label,
-          if (f.kapitel != null) f.kapitel!,
-          // Landesrecht wird benannt, Bundesweites nicht — was überall gilt,
-          // braucht keinen Hinweis, was nur hier gilt schon.
-          if (f.geltung == Geltungsbereich.land) f.geltungAnzeige,
-          if (f.herkunft == Fragenherkunft.mitgeliefert) 'mitgeliefert',
-          if (f.eingereichtVon != null) 'von ${f.eingereichtVon}',
-          // Ohne diese Markierung sieht die Frage aus wie jede andere, und
-          // niemand versteht, warum sie im Quiz nie kommt.
-          if (aus) 'abgeschaltet',
-          // Dasselbe Argument für den Gerätebezug: Wer nicht sieht, dass eine
-          // Frage an einem Gerät hängt, das die Wehr gar nicht hat, hält ihr
-          // seltenes Auftauchen für Zufall.
-          if (imBestand == true) 'in eurem Bestand',
-          if (imBestand == false) 'nicht in eurem Bestand',
-        ].join(' · '), style: theme.textTheme.bodySmall),
+        title: Text(
+          f.frage,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        subtitle: Text(
+          [
+            f.gebiet.label,
+            if (f.kapitel != null) f.kapitel!,
+            // Landesrecht wird benannt, Bundesweites nicht — was überall gilt,
+            // braucht keinen Hinweis, was nur hier gilt schon.
+            if (f.geltung == Geltungsbereich.land) f.geltungAnzeige,
+            if (f.herkunft == Fragenherkunft.mitgeliefert) 'mitgeliefert',
+            if (f.eingereichtVon != null) 'von ${f.eingereichtVon}',
+            // Ohne diese Markierung sieht die Frage aus wie jede andere, und
+            // niemand versteht, warum sie im Quiz nie kommt.
+            if (aus) 'abgeschaltet',
+            // Dasselbe Argument für den Gerätebezug: Wer nicht sieht, dass eine
+            // Frage an einem Gerät hängt, das die Wehr gar nicht hat, hält ihr
+            // seltenes Auftauchen für Zufall.
+            if (imBestand == true) 'in eurem Bestand',
+            if (imBestand == false) 'nicht in eurem Bestand',
+          ].join(' · '),
+          style: theme.textTheme.bodySmall,
+        ),
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
@@ -444,9 +495,10 @@ class _WissensdatenbankScreenState
                               ? Icons.check_box
                               : Icons.check_box_outline_blank,
                           size: 18,
-                          color: f.richtige.contains(i)
-                              ? Colors.green.shade700
-                              : theme.colorScheme.outline,
+                          color:
+                              f.richtige.contains(i)
+                                  ? Colors.green.shade700
+                                  : theme.colorScheme.outline,
                         ),
                         const SizedBox(width: 8),
                         Expanded(child: Text(f.antworten[i])),
@@ -455,15 +507,21 @@ class _WissensdatenbankScreenState
                   ),
                 if (f.richtige.length > 1) ...[
                   const SizedBox(height: 6),
-                  Text('${f.richtige.length} Antworten sind richtig.',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant)),
+                  Text(
+                    '${f.richtige.length} Antworten sind richtig.',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
                 ],
                 if (f.erklaerung != null) ...[
                   const SizedBox(height: 8),
-                  Text(f.erklaerung!,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant)),
+                  Text(
+                    f.erklaerung!,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
                 ],
                 // Die Fundstelle gehört sichtbar an die Frage: Eine Antwort,
                 // die man nicht nachschlagen kann, ist im Zweifel wertlos —
@@ -484,7 +542,11 @@ class _WissensdatenbankScreenState
   }
 
   Widget _aktionen(
-      WissensfrageData z, Wissensfrage f, bool darfFreigeben, bool offen) {
+    WissensfrageData z,
+    Wissensfrage f,
+    bool darfFreigeben,
+    bool offen,
+  ) {
     if (offen && darfFreigeben) {
       return Row(
         mainAxisAlignment: MainAxisAlignment.end,
@@ -505,8 +567,10 @@ class _WissensdatenbankScreenState
     if (offen) {
       return Align(
         alignment: Alignment.centerLeft,
-        child: Text('Wartet auf den Gerätewart.',
-            style: Theme.of(context).textTheme.bodySmall),
+        child: Text(
+          'Wartet auf den Gerätewart.',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
       );
     }
     // Hinweise darf jeder geben — genau wie einreichen. Das Gate sitzt
@@ -541,27 +605,32 @@ class _WissensdatenbankScreenState
   Future<void> _hinweisGeben(WissensfrageData z) async {
     final meldung = await zeigeHinweisDialog(context, ref, z);
     if (meldung == null || !mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(meldung)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(meldung)));
   }
 
-  Future<void> _entfernenBestaetigen(
-      WissensfrageData z, Wissensfrage f) async {
+  Future<void> _entfernenBestaetigen(WissensfrageData z, Wissensfrage f) async {
     final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Frage entfernen?'),
-        content: Text('„${f.frage}" wird aus der Wissensdatenbank der '
-            'Gesamtwehr entfernt.'),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Abbrechen')),
-          FilledButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Entfernen')),
-        ],
-      ),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Frage entfernen?'),
+            content: Text(
+              '„${f.frage}" wird aus der Wissensdatenbank der '
+              'Gesamtwehr entfernt.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Abbrechen'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Entfernen'),
+              ),
+            ],
+          ),
     );
     if (ok == true && mounted) await entferneFrage(ref, z);
   }
@@ -587,9 +656,14 @@ class _WissensdatenbankScreenState
       sofortFreigeben: darfFreigeben,
     );
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(darfFreigeben
-            ? 'Frage aufgenommen — sie ist ab sofort im Spiel.'
-            : 'Danke! Der Gerätewart schaut sie sich an.')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          darfFreigeben
+              ? 'Frage aufgenommen — sie ist ab sofort im Spiel.'
+              : 'Danke! Der Gerätewart schaut sie sich an.',
+        ),
+      ),
+    );
   }
 }

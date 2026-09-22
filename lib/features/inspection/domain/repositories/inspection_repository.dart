@@ -1,5 +1,6 @@
 /// inspection_repository.dart – Abstract interface for instance/inspection data access.
 library;
+
 import 'package:fwapp/features/inspection/domain/entities/due_inspection_entry.dart';
 import 'package:fwapp/features/inspection/domain/entities/equipment_instance.dart';
 import 'package:fwapp/features/inspection/domain/entities/inspection_schedule.dart';

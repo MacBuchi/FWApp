@@ -1,6 +1,7 @@
 /// inventory_screen.dart – Inventurassistent: Fahrzeug fach für fach prüfen
 /// (Soll/Ist), Mängel dokumentieren, Report mit Export. Admin-Tätigkeit.
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -32,31 +33,34 @@ class InventorySetupScreen extends ConsumerWidget {
       body: vehiclesAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Fehler: $e')),
-        data: (vehicles) => ListView(
-          padding: const EdgeInsets.all(12),
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(8),
-              child: Text('Fahrzeug für die Inventur wählen:'),
-            ),
-            ...vehicles.map((v) => Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.fire_truck),
-                    title: Text(v.name),
-                    subtitle: Text(v.type),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () async {
-                      final sessionId = await ref
-                          .read(inventoryServiceProvider)
-                          .startOrResume(v.id);
-                      if (context.mounted) {
-                        context.push('/inventory/run/$sessionId');
-                      }
-                    },
+        data:
+            (vehicles) => ListView(
+              padding: const EdgeInsets.all(12),
+              children: [
+                const Padding(
+                  padding: EdgeInsets.all(8),
+                  child: Text('Fahrzeug für die Inventur wählen:'),
+                ),
+                ...vehicles.map(
+                  (v) => Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.fire_truck),
+                      title: Text(v.name),
+                      subtitle: Text(v.type),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () async {
+                        final sessionId = await ref
+                            .read(inventoryServiceProvider)
+                            .startOrResume(v.id);
+                        if (context.mounted) {
+                          context.push('/inventory/run/$sessionId');
+                        }
+                      },
+                    ),
                   ),
-                )),
-          ],
-        ),
+                ),
+              ],
+            ),
       ),
     );
   }
@@ -97,9 +101,10 @@ class InventoryRunScreen extends ConsumerWidget {
             data: (checks) {
               final summary = InventorySummary.from(checks);
               return TextButton(
-                onPressed: summary.checked == 0
-                    ? null
-                    : () => context.push('/inventory/report/$sessionId'),
+                onPressed:
+                    summary.checked == 0
+                        ? null
+                        : () => context.push('/inventory/report/$sessionId'),
                 child: const Text('Abschluss'),
               );
             },
@@ -122,15 +127,22 @@ class InventoryRunScreen extends ConsumerWidget {
 /// hat fünfzehn Geräte, und für jedes die Kamera neu zu öffnen wäre der
 /// langsamere Weg als das Antippen, das damit ersetzt werden soll.
 Future<void> _codeScannen(
-    BuildContext context, WidgetRef ref, int sessionId) async {
+  BuildContext context,
+  WidgetRef ref,
+  int sessionId,
+) async {
   final dienst = ref.read(inventoryServiceProvider);
-  await Navigator.of(context).push<String>(MaterialPageRoute(
-    builder: (_) => CodeScannenScreen(
-      titel: 'Geräte abhaken',
-      beiFund: (roh) async =>
-          abhakMeldung(await dienst.hakeCodeAb(sessionId, roh)),
+  await Navigator.of(context).push<String>(
+    MaterialPageRoute(
+      builder:
+          (_) => CodeScannenScreen(
+            titel: 'Geräte abhaken',
+            beiFund:
+                (roh) async =>
+                    abhakMeldung(await dienst.hakeCodeAb(sessionId, roh)),
+          ),
     ),
-  ));
+  );
 }
 
 /// Liest NFC-Tags und hakt ab, ohne zwischendurch zu schließen (#176).
@@ -142,17 +154,26 @@ Future<void> _codeScannen(
 /// [hakeKandidatenAb] statt `hakeCodeAb`, weil ein Tag zwei Schlüssel tragen
 /// kann — die Begründung steht dort.
 Future<void> _tagsLesen(
-    BuildContext context, WidgetRef ref, int sessionId) async {
+  BuildContext context,
+  WidgetRef ref,
+  int sessionId,
+) async {
   final dienst = ref.read(inventoryServiceProvider);
-  await Navigator.of(context).push<String>(MaterialPageRoute(
-    builder: (_) => NfcLesenScreen(
-      titel: 'Geräte abhaken',
-      anleitung: 'Das Handy nacheinander an die Tags halten. Jeder Fund '
-          'steht hier unten.',
-      beiFund: (fund) async =>
-          abhakMeldung(await dienst.hakeKandidatenAb(sessionId, fund.kandidaten)),
+  await Navigator.of(context).push<String>(
+    MaterialPageRoute(
+      builder:
+          (_) => NfcLesenScreen(
+            titel: 'Geräte abhaken',
+            anleitung:
+                'Das Handy nacheinander an die Tags halten. Jeder Fund '
+                'steht hier unten.',
+            beiFund:
+                (fund) async => abhakMeldung(
+                  await dienst.hakeKandidatenAb(sessionId, fund.kandidaten),
+                ),
+          ),
     ),
-  ));
+  );
 }
 
 /// Fragt einen Code ab und hakt das Gerät ab, auf dem er klebt.
@@ -163,7 +184,10 @@ Future<void> _tagsLesen(
 /// Kamera (#179, zweiter Schritt) ist dieses Feld der Leser — ein
 /// Handscanner am Gerät tippt hier ohnehin hinein.
 Future<void> _codeEingeben(
-    BuildContext context, WidgetRef ref, int sessionId) async {
+  BuildContext context,
+  WidgetRef ref,
+  int sessionId,
+) async {
   final controller = TextEditingController();
   final dienst = ref.read(inventoryServiceProvider);
 
@@ -172,41 +196,47 @@ Future<void> _codeEingeben(
     builder: (ctx) {
       String? letzteMeldung;
       return StatefulBuilder(
-        builder: (ctx, setState) => AlertDialog(
-          title: const Text('Code eingeben'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextField(
-                  controller: controller,
-                  autofocus: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Code',
-                    helperText: 'Nach jedem Code bleibt das Feld offen.',
-                  ),
-                  onSubmitted: (wert) async {
-                    final ergebnis =
-                        await dienst.hakeCodeAb(sessionId, wert);
-                    controller.clear();
-                    setState(() => letzteMeldung = abhakMeldung(ergebnis));
-                  },
+        builder:
+            (ctx, setState) => AlertDialog(
+              title: const Text('Code eingeben'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextField(
+                      controller: controller,
+                      autofocus: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Code',
+                        helperText: 'Nach jedem Code bleibt das Feld offen.',
+                      ),
+                      onSubmitted: (wert) async {
+                        final ergebnis = await dienst.hakeCodeAb(
+                          sessionId,
+                          wert,
+                        );
+                        controller.clear();
+                        setState(() => letzteMeldung = abhakMeldung(ergebnis));
+                      },
+                    ),
+                    if (letzteMeldung != null) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        letzteMeldung!,
+                        style: Theme.of(ctx).textTheme.bodySmall,
+                      ),
+                    ],
+                  ],
                 ),
-                if (letzteMeldung != null) ...[
-                  const SizedBox(height: 12),
-                  Text(letzteMeldung!,
-                      style: Theme.of(ctx).textTheme.bodySmall),
-                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('Fertig'),
+                ),
               ],
             ),
-          ),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Fertig')),
-          ],
-        ),
       );
     },
   );
@@ -233,31 +263,38 @@ class _InventoryBody extends ConsumerWidget {
         _ProgressHeader(summary: summary),
         if (session != null)
           Expanded(
-            child: ref.watch(compartmentListStreamProvider(session)).when(
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
+            child: ref
+                .watch(compartmentListStreamProvider(session))
+                .when(
+                  loading:
+                      () => const Center(child: CircularProgressIndicator()),
                   error: (e, _) => Center(child: Text('Fehler: $e')),
                   data: (compartments) {
                     final tileStates = <int, CutawayTileState>{};
                     for (final comp in compartments) {
                       final items = byCompartment[comp.id] ?? const [];
-                      final done = items
-                          .where((c) =>
-                              c.status != InventoryChecks.statusOpen)
-                          .length;
-                      final hasIssue = items.any((c) =>
-                          InventorySummary.abweichendeStatus
-                              .contains(c.status));
+                      final done =
+                          items
+                              .where(
+                                (c) => c.status != InventoryChecks.statusOpen,
+                              )
+                              .length;
+                      final hasIssue = items.any(
+                        (c) => InventorySummary.abweichendeStatus.contains(
+                          c.status,
+                        ),
+                      );
                       tileStates[comp.id] = CutawayTileState(
-                        status: items.isEmpty
-                            ? CutawayTileStatus.normal
-                            : hasIssue
+                        status:
+                            items.isEmpty
+                                ? CutawayTileStatus.normal
+                                : hasIssue
                                 ? CutawayTileStatus.wrong
                                 : done == items.length
-                                    ? CutawayTileStatus.correct
-                                    : done > 0
-                                        ? CutawayTileStatus.selected
-                                        : CutawayTileStatus.normal,
+                                ? CutawayTileStatus.correct
+                                : done > 0
+                                ? CutawayTileStatus.selected
+                                : CutawayTileStatus.normal,
                         statusText:
                             items.isEmpty ? null : '$done/${items.length}',
                       );
@@ -268,15 +305,17 @@ class _InventoryBody extends ConsumerWidget {
                         VehicleCutawayView(
                           compartments: compartments,
                           tileStates: tileStates,
-                          onTapCompartment: (comp) => showModalBottomSheet(
-                            context: context,
-                            isScrollControlled: true,
-                            showDragHandle: true,
-                            builder: (_) => _CompartmentCheckSheet(
-                              compartment: comp,
-                              sessionId: sessionId,
-                            ),
-                          ),
+                          onTapCompartment:
+                              (comp) => showModalBottomSheet(
+                                context: context,
+                                isScrollControlled: true,
+                                showDragHandle: true,
+                                builder:
+                                    (_) => _CompartmentCheckSheet(
+                                      compartment: comp,
+                                      sessionId: sessionId,
+                                    ),
+                              ),
                         ),
                         const SizedBox(height: 8),
                         const Text(
@@ -295,8 +334,10 @@ class _InventoryBody extends ConsumerWidget {
 }
 
 /// Resolves a session's vehicleId.
-final _sessionVehicleProvider =
-    FutureProvider.family<int?, int>((ref, sessionId) async {
+final _sessionVehicleProvider = FutureProvider.family<int?, int>((
+  ref,
+  sessionId,
+) async {
   final session = await ref.watch(inventoryDaoProvider).getSession(sessionId);
   return session?.vehicleId;
 });
@@ -317,27 +358,33 @@ class _ProgressHeader extends StatelessWidget {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
-                    value: summary.total > 0
-                        ? summary.checked / summary.total
-                        : 0,
+                    value:
+                        summary.total > 0 ? summary.checked / summary.total : 0,
                     minHeight: 8,
                   ),
                 ),
               ),
               const SizedBox(width: 12),
-              Text('${summary.checked}/${summary.total}',
-                  style: const TextStyle(fontWeight: FontWeight.w700)),
+              Text(
+                '${summary.checked}/${summary.total}',
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
             ],
           ),
           const SizedBox(height: 8),
-          Wrap(spacing: 8, children: [
-            _Pill(color: Colors.green, label: '${summary.ok} i.O.'),
-            if (summary.missing > 0)
-              _Pill(color: Colors.red, label: '${summary.missing} fehlt'),
-            if (summary.damaged > 0)
-              _Pill(
-                  color: Colors.orange, label: '${summary.damaged} beschädigt'),
-          ]),
+          Wrap(
+            spacing: 8,
+            children: [
+              _Pill(color: Colors.green, label: '${summary.ok} i.O.'),
+              if (summary.missing > 0)
+                _Pill(color: Colors.red, label: '${summary.missing} fehlt'),
+              if (summary.damaged > 0)
+                _Pill(
+                  color: Colors.orange,
+                  label: '${summary.damaged} beschädigt',
+                ),
+            ],
+          ),
         ],
       ),
     );
@@ -351,10 +398,10 @@ class _Pill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Chip(
-        visualDensity: VisualDensity.compact,
-        avatar: CircleAvatar(backgroundColor: color, radius: 6),
-        label: Text(label, style: const TextStyle(fontSize: 12)),
-      );
+    visualDensity: VisualDensity.compact,
+    avatar: CircleAvatar(backgroundColor: color, radius: 6),
+    label: Text(label, style: const TextStyle(fontSize: 12)),
+  );
 }
 
 /// Die Geräte eines Fachs zum Abhaken.
@@ -367,12 +414,15 @@ class _Pill extends StatelessWidget {
 class _CompartmentCheckSheet extends ConsumerWidget {
   final Compartment compartment;
   final int sessionId;
-  const _CompartmentCheckSheet(
-      {required this.compartment, required this.sessionId});
+  const _CompartmentCheckSheet({
+    required this.compartment,
+    required this.sessionId,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final checks = ref
+    final checks =
+        ref
             .watch(inventoryChecksProvider(sessionId))
             .value
             ?.where((c) => c.compartmentId == compartment.id)
@@ -383,27 +433,29 @@ class _CompartmentCheckSheet extends ConsumerWidget {
         expand: false,
         initialChildSize: 0.7,
         maxChildSize: 0.95,
-        builder: (context, controller) => Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(compartment.label,
-                    style: Theme.of(context).textTheme.titleLarge),
-              ),
+        builder:
+            (context, controller) => Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      compartment.label,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    controller: controller,
+                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+                    itemCount: checks.length,
+                    itemBuilder: (context, i) => _CheckTile(check: checks[i]),
+                  ),
+                ),
+              ],
             ),
-            Expanded(
-              child: ListView.builder(
-                controller: controller,
-                padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
-                itemCount: checks.length,
-                itemBuilder: (context, i) =>
-                    _CheckTile(check: checks[i]),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -422,28 +474,31 @@ class _CheckTile extends ConsumerWidget {
       child: ListTile(
         leading: Icon(icon, color: color),
         title: Text(check.equipmentName),
-        subtitle: Text([
-          if (check.targetQuantity > 1) 'Soll: ${check.targetQuantity}',
-          if (check.note.isNotEmpty) check.note,
-        ].join(' · ')),
+        subtitle: Text(
+          [
+            if (check.targetQuantity > 1) 'Soll: ${check.targetQuantity}',
+            if (check.note.isNotEmpty) check.note,
+          ].join(' · '),
+        ),
         trailing: Wrap(
           spacing: 0,
           children: [
             IconButton(
               icon: const Icon(Icons.check_circle_outline),
-              color: check.status == InventoryChecks.statusOk
-                  ? Colors.green
-                  : null,
+              color:
+                  check.status == InventoryChecks.statusOk
+                      ? Colors.green
+                      : null,
               tooltip: 'Vollständig',
-              onPressed: () =>
-                  service.setStatus(check.id, InventoryChecks.statusOk),
+              onPressed:
+                  () => service.setStatus(check.id, InventoryChecks.statusOk),
             ),
             IconButton(
               icon: const Icon(Icons.report_gmailerrorred),
-              color: InventorySummary.abweichendeStatus
-                      .contains(check.status)
-                  ? color
-                  : null,
+              color:
+                  InventorySummary.abweichendeStatus.contains(check.status)
+                      ? color
+                      : null,
               tooltip: 'Mangel',
               onPressed: () => _reportIssue(context, service),
             ),
@@ -454,62 +509,76 @@ class _CheckTile extends ConsumerWidget {
   }
 
   Future<void> _reportIssue(
-      BuildContext context, InventoryService service) async {
+    BuildContext context,
+    InventoryService service,
+  ) async {
     final noteController = TextEditingController(text: check.note);
     // Beim zweiten Öffnen steht der bereits vermerkte Zustand da — sonst
     // setzt ein Blick in die Notiz das Gerät stillschweigend auf „fehlt".
-    var status = InventorySummary.abweichendeStatus.contains(check.status)
-        ? check.status
-        : InventoryChecks.statusMissing;
+    var status =
+        InventorySummary.abweichendeStatus.contains(check.status)
+            ? check.status
+            : InventoryChecks.statusMissing;
     final result = await showDialog<bool>(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setState) => AlertDialog(
-          title: Text('Mangel: ${check.equipmentName}'),
-          // Drei Zustände und ein Textfeld: ohne Scrollbereich überlappen
-          // auf kleinen Bildschirmen Knöpfe und Feld (AGENTS.md).
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SegmentedButton<String>(
-                  showSelectedIcon: false,
-                  segments: const [
-                    ButtonSegment(
-                        value: InventoryChecks.statusMissing,
-                        label: Text('Fehlt')),
-                    ButtonSegment(
-                        value: InventoryChecks.statusDamaged,
-                        label: Text('Beschädigt')),
-                    ButtonSegment(
-                        value: InventoryChecks.statusRepair,
-                        label: Text('In Reparatur')),
+      builder:
+          (ctx) => StatefulBuilder(
+            builder:
+                (ctx, setState) => AlertDialog(
+                  title: Text('Mangel: ${check.equipmentName}'),
+                  // Drei Zustände und ein Textfeld: ohne Scrollbereich überlappen
+                  // auf kleinen Bildschirmen Knöpfe und Feld (AGENTS.md).
+                  content: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SegmentedButton<String>(
+                          showSelectedIcon: false,
+                          segments: const [
+                            ButtonSegment(
+                              value: InventoryChecks.statusMissing,
+                              label: Text('Fehlt'),
+                            ),
+                            ButtonSegment(
+                              value: InventoryChecks.statusDamaged,
+                              label: Text('Beschädigt'),
+                            ),
+                            ButtonSegment(
+                              value: InventoryChecks.statusRepair,
+                              label: Text('In Reparatur'),
+                            ),
+                          ],
+                          selected: {status},
+                          onSelectionChanged:
+                              (s) => setState(() => status = s.first),
+                        ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: noteController,
+                          decoration: const InputDecoration(labelText: 'Notiz'),
+                        ),
+                      ],
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, false),
+                      child: const Text('Abbrechen'),
+                    ),
+                    FilledButton(
+                      onPressed: () => Navigator.pop(ctx, true),
+                      child: const Text('Speichern'),
+                    ),
                   ],
-                  selected: {status},
-                  onSelectionChanged: (s) => setState(() => status = s.first),
                 ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: noteController,
-                  decoration: const InputDecoration(labelText: 'Notiz'),
-                ),
-              ],
-            ),
           ),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('Abbrechen')),
-            FilledButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Speichern')),
-          ],
-        ),
-      ),
     );
     if (result == true) {
-      await service.setStatus(check.id, status,
-          note: noteController.text.trim());
+      await service.setStatus(
+        check.id,
+        status,
+        note: noteController.text.trim(),
+      );
     }
   }
 }

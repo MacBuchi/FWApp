@@ -1,6 +1,7 @@
 /// log_ring_test.dart – Der Log-Ring-Buffer, dessen Zeilen im Absturzbericht
 /// landen (Issue #34).
 library;
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/core/logging/app_logger.dart';
 
@@ -30,7 +31,10 @@ void main() {
     // Sonst belegt ein hineingereichter Serverfehler den halben Ring und
     // verdrängt die Vorgeschichte, um die es geht.
     ring.add('x' * (kLogRingMaxLineChars + 200));
-    expect(ring.lines.single.length, lessThanOrEqualTo(kLogRingMaxLineChars + 1));
+    expect(
+      ring.lines.single.length,
+      lessThanOrEqualTo(kLogRingMaxLineChars + 1),
+    );
     expect(ring.lines.single, endsWith('…'));
   });
 

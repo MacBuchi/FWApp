@@ -44,30 +44,48 @@ void main() {
 
     test('jede Frage ist beantwortbar', () {
       for (final f in inhalte.fragen) {
-        expect(f.antworten.length, greaterThanOrEqualTo(3),
-            reason: 'zu wenig Auswahl bei "${f.frage}"');
-        expect(f.richtig, inInclusiveRange(0, f.antworten.length - 1),
-            reason: '"${f.frage}"');
-        expect(f.antworten.toSet(), hasLength(f.antworten.length),
-            reason: 'doppelte Antwort bei "${f.frage}"');
-        expect(kPartyKategorien, contains(f.kategorie),
-            reason: 'unbekannte Kategorie bei "${f.frage}"');
+        expect(
+          f.antworten.length,
+          greaterThanOrEqualTo(3),
+          reason: 'zu wenig Auswahl bei "${f.frage}"',
+        );
+        expect(
+          f.richtig,
+          inInclusiveRange(0, f.antworten.length - 1),
+          reason: '"${f.frage}"',
+        );
+        expect(
+          f.antworten.toSet(),
+          hasLength(f.antworten.length),
+          reason: 'doppelte Antwort bei "${f.frage}"',
+        );
+        expect(
+          kPartyKategorien,
+          contains(f.kategorie),
+          reason: 'unbekannte Kategorie bei "${f.frage}"',
+        );
       }
     });
 
     test('keine Frage steht zweimal drin', () {
-      expect(inhalte.fragen.map((f) => f.frage).toSet(),
-          hasLength(inhalte.fragen.length));
+      expect(
+        inhalte.fragen.map((f) => f.frage).toSet(),
+        hasLength(inhalte.fragen.length),
+      );
     });
 
     test('Klischee-Fragen sagen dazu, dass sie Spaß sind', () {
       // Ohne den Hinweis wirkt eine Klischee-Frage wie eine Wissensfrage, und
       // wer sie „falsch" beantwortet hat, streitet zu Recht.
-      for (final f
-          in inhalte.fragen.where((f) => f.kategorie == kKategorieKlischee)) {
+      for (final f in inhalte.fragen.where(
+        (f) => f.kategorie == kKategorieKlischee,
+      )) {
         expect(f.erklaerung, isNotNull, reason: '"${f.frage}"');
-        expect(f.erklaerung!.toLowerCase(), contains('klischee'),
-            reason: '"${f.frage}"');
+        expect(
+          f.erklaerung!.toLowerCase(),
+          contains('klischee'),
+          reason: '"${f.frage}"',
+        );
       }
     });
 
@@ -78,8 +96,11 @@ void main() {
         final zufall = Random(seed);
         for (final f in inhalte.fragen) {
           final gemischt = f.zuPartyFrage(zufall);
-          expect(gemischt.richtigeAntwort.text, f.antworten[f.richtig],
-              reason: '"${f.frage}" mit Seed $seed');
+          expect(
+            gemischt.richtigeAntwort.text,
+            f.antworten[f.richtig],
+            reason: '"${f.frage}" mit Seed $seed',
+          );
           expect(gemischt.art, PartyFrageArt.unerwartet);
         }
       }
@@ -93,26 +114,50 @@ void main() {
     });
 
     test('unbrauchbare Einträge fallen einzeln heraus', () {
-      final inhalte = parsePartyInhalte(jsonEncode({
-        'fragen': [
-          {'frage': 'gut', 'antworten': ['a', 'b'], 'richtig': 1},
-          {'frage': 'Index daneben', 'antworten': ['a', 'b'], 'richtig': 7},
-          {'frage': 'nur eine Antwort', 'antworten': ['a'], 'richtig': 0},
-          {'frage': '', 'antworten': ['a', 'b'], 'richtig': 0},
-          'gar kein Objekt',
-        ],
-        'aufgaben': ['machbar', '   ', ''],
-      }));
+      final inhalte = parsePartyInhalte(
+        jsonEncode({
+          'fragen': [
+            {
+              'frage': 'gut',
+              'antworten': ['a', 'b'],
+              'richtig': 1,
+            },
+            {
+              'frage': 'Index daneben',
+              'antworten': ['a', 'b'],
+              'richtig': 7,
+            },
+            {
+              'frage': 'nur eine Antwort',
+              'antworten': ['a'],
+              'richtig': 0,
+            },
+            {
+              'frage': '',
+              'antworten': ['a', 'b'],
+              'richtig': 0,
+            },
+            'gar kein Objekt',
+          ],
+          'aufgaben': ['machbar', '   ', ''],
+        }),
+      );
       expect(inhalte.fragen.map((f) => f.frage), ['gut']);
       expect(inhalte.aufgaben, ['machbar']);
     });
 
     test('ohne Kategorie gilt Wissen', () {
-      final inhalte = parsePartyInhalte(jsonEncode({
-        'fragen': [
-          {'frage': 'x', 'antworten': ['a', 'b'], 'richtig': 0},
-        ],
-      }));
+      final inhalte = parsePartyInhalte(
+        jsonEncode({
+          'fragen': [
+            {
+              'frage': 'x',
+              'antworten': ['a', 'b'],
+              'richtig': 0,
+            },
+          ],
+        }),
+      );
       expect(inhalte.fragen.single.kategorie, kKategorieWissen);
     });
   });

@@ -83,16 +83,17 @@ class _GeraeteSucheScreenState extends ConsumerState<GeraeteSucheScreen> {
                 hintText: 'Gerät suchen, z. B. „Spreizer“',
                 prefixIcon: const Icon(Icons.search),
                 border: const OutlineInputBorder(),
-                suffixIcon: _eingabe.isEmpty
-                    ? null
-                    : IconButton(
-                        icon: const Icon(Icons.clear),
-                        tooltip: 'Eingabe löschen',
-                        onPressed: () {
-                          _controller.clear();
-                          setState(() => _eingabe = '');
-                        },
-                      ),
+                suffixIcon:
+                    _eingabe.isEmpty
+                        ? null
+                        : IconButton(
+                          icon: const Icon(Icons.clear),
+                          tooltip: 'Eingabe löschen',
+                          onPressed: () {
+                            _controller.clear();
+                            setState(() => _eingabe = '');
+                          },
+                        ),
               ),
               onChanged: (wert) => setState(() => _eingabe = wert),
             ),
@@ -102,11 +103,14 @@ class _GeraeteSucheScreenState extends ConsumerState<GeraeteSucheScreen> {
             child: bestand.when(
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, _) => Center(child: Text('Fehler: $e')),
-              data: (alle) => _ergebnis(sucheGeraete(
-                bestand: alle,
-                eingabe: _eingabe,
-                vehicleId: _fahrzeugId,
-              )),
+              data:
+                  (alle) => _ergebnis(
+                    sucheGeraete(
+                      bestand: alle,
+                      eingabe: _eingabe,
+                      vehicleId: _fahrzeugId,
+                    ),
+                  ),
             ),
           ),
         ],
@@ -126,24 +130,29 @@ class _GeraeteSucheScreenState extends ConsumerState<GeraeteSucheScreen> {
   }
 
   Future<void> _scannen() async {
-    final code = await Navigator.of(context).push<String>(MaterialPageRoute(
-      // Ohne `beiFund` schließt der Bildschirm nach dem ersten Fund und
-      // gibt ihn zurück — hier wird EIN Gegenstand gesucht, nicht ein Fach
-      // abgearbeitet.
-      builder: (_) => const CodeScannenScreen(titel: 'Code nachschlagen'),
-    ));
+    final code = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        // Ohne `beiFund` schließt der Bildschirm nach dem ersten Fund und
+        // gibt ihn zurück — hier wird EIN Gegenstand gesucht, nicht ein Fach
+        // abgearbeitet.
+        builder: (_) => const CodeScannenScreen(titel: 'Code nachschlagen'),
+      ),
+    );
     _uebernimm(code);
   }
 
   Future<void> _nfcLesen() async {
-    final code = await Navigator.of(context).push<String>(MaterialPageRoute(
-      builder: (_) => NfcLesenScreen(
-        titel: 'Tag nachschlagen',
-        anleitung: 'Das Handy an das Tag halten.',
-        // `null` heißt: schließen und den Fund zurückgeben.
-        beiFund: (_) async => null,
+    final code = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder:
+            (_) => NfcLesenScreen(
+              titel: 'Tag nachschlagen',
+              anleitung: 'Das Handy an das Tag halten.',
+              // `null` heißt: schließen und den Fund zurückgeben.
+              beiFund: (_) async => null,
+            ),
       ),
-    ));
+    );
     _uebernimm(code);
   }
 
@@ -157,28 +166,30 @@ class _GeraeteSucheScreenState extends ConsumerState<GeraeteSucheScreen> {
     final gewaehlt =
         fahrzeuge.any((v) => v.id == _fahrzeugId) ? _fahrzeugId : null;
     return Padding(
-        padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
-        // `isExpanded` und `ellipsis`: Ein echter Fahrzeugname („HLF 20/16
-        // Florian Musterstadt 1/44") sprengt das Feld sonst auf einem Handy
-        // (dort gefunden: Issue #172).
-        child: DropdownButtonFormField<int?>(
-          initialValue: gewaehlt,
-          isExpanded: true,
-          decoration: const InputDecoration(
-            labelText: 'Wo suchen?',
-            border: OutlineInputBorder(),
-            isDense: true,
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+      // `isExpanded` und `ellipsis`: Ein echter Fahrzeugname („HLF 20/16
+      // Florian Musterstadt 1/44") sprengt das Feld sonst auf einem Handy
+      // (dort gefunden: Issue #172).
+      child: DropdownButtonFormField<int?>(
+        initialValue: gewaehlt,
+        isExpanded: true,
+        decoration: const InputDecoration(
+          labelText: 'Wo suchen?',
+          border: OutlineInputBorder(),
+          isDense: true,
+        ),
+        items: [
+          const DropdownMenuItem(value: null, child: Text('Ganzer Fuhrpark')),
+          ...fahrzeuge.map(
+            (v) => DropdownMenuItem(
+              value: v.id,
+              child: Text(v.name, overflow: TextOverflow.ellipsis),
+            ),
           ),
-          items: [
-            const DropdownMenuItem(
-                value: null, child: Text('Ganzer Fuhrpark')),
-            ...fahrzeuge.map((v) => DropdownMenuItem(
-                  value: v.id,
-                  child: Text(v.name, overflow: TextOverflow.ellipsis),
-                )),
-          ],
-          onChanged: (wert) => setState(() => _fahrzeugId = wert),
-        ));
+        ],
+        onChanged: (wert) => setState(() => _fahrzeugId = wert),
+      ),
+    );
   }
 
   Widget _ergebnis(SucheErgebnis ergebnis) {
@@ -239,8 +250,11 @@ class _GeraeteSucheScreenState extends ConsumerState<GeraeteSucheScreen> {
         padding: const EdgeInsets.all(12),
         child: Row(
           children: [
-            Icon(Icons.qr_code_2,
-                size: 20, color: theme.colorScheme.onSecondaryContainer),
+            Icon(
+              Icons.qr_code_2,
+              size: 20,
+              color: theme.colorScheme.onSecondaryContainer,
+            ),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -248,7 +262,8 @@ class _GeraeteSucheScreenState extends ConsumerState<GeraeteSucheScreen> {
                     ? 'Code ${code.code}'
                     : 'Code ${code.code} · ${code.kennung}',
                 style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSecondaryContainer),
+                  color: theme.colorScheme.onSecondaryContainer,
+                ),
               ),
             ),
           ],
@@ -258,34 +273,38 @@ class _GeraeteSucheScreenState extends ConsumerState<GeraeteSucheScreen> {
   }
 
   Widget _abschnitt(String text) => Padding(
-        padding: const EdgeInsets.fromLTRB(4, 20, 4, 8),
-        child: Text(
-          text,
-          style: Theme.of(context)
-              .textTheme
-              .titleSmall
-              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
-        ),
-      );
+    padding: const EdgeInsets.fromLTRB(4, 20, 4, 8),
+    child: Text(
+      text,
+      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
+    ),
+  );
 
   Widget _hinweis(IconData symbol, String text) => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(symbol,
-                  size: 48,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant),
-              const SizedBox(height: 12),
-              Text(text,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant)),
-            ],
+    child: Padding(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            symbol,
+            size: 48,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-        ),
-      );
+          const SizedBox(height: 12),
+          Text(
+            text,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 
   Widget _karte(GeraetTreffer geraet) {
     final theme = Theme.of(context);
@@ -308,22 +327,29 @@ class _GeraeteSucheScreenState extends ConsumerState<GeraeteSucheScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(geraet.name,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16)),
+                      Text(
+                        geraet.name,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
                       if (geraet.kurzname != null &&
                           geraet.kurzname!.isNotEmpty)
-                        Text(geraet.kurzname!,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant)),
+                        Text(
+                          geraet.kurzname!,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
                     ],
                   ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.chevron_right),
                   tooltip: 'Gerät ansehen',
-                  onPressed: () =>
-                      context.push('/equipment/${geraet.equipmentId}'),
+                  onPressed:
+                      () => context.push('/equipment/${geraet.equipmentId}'),
                 ),
               ],
             ),
@@ -332,8 +358,9 @@ class _GeraeteSucheScreenState extends ConsumerState<GeraeteSucheScreen> {
                 padding: const EdgeInsets.only(top: 8),
                 child: Text(
                   'In keinem Fahrzeug eingetragen.',
-                  style: theme.textTheme.bodySmall
-                      ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ),
             ...geraet.fundorte.map((ort) => _fundort(geraet, ort)),
@@ -362,15 +389,21 @@ class _GeraeteSucheScreenState extends ConsumerState<GeraeteSucheScreen> {
                   if (zeigeFahrzeug)
                     Row(
                       children: [
-                        Icon(Icons.fire_truck,
-                            size: 16, color: theme.colorScheme.primary),
+                        Icon(
+                          Icons.fire_truck,
+                          size: 16,
+                          color: theme.colorScheme.primary,
+                        ),
                         const SizedBox(width: 6),
                         Expanded(
-                          child: Text(ort.fahrzeug,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  color: theme.colorScheme.primary)),
+                          child: Text(
+                            ort.fahrzeug,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -386,9 +419,12 @@ class _GeraeteSucheScreenState extends ConsumerState<GeraeteSucheScreen> {
             if (ort.menge > 1)
               Padding(
                 padding: const EdgeInsets.only(left: 8),
-                child: Text('${ort.menge}×',
-                    style: theme.textTheme.titleSmall
-                        ?.copyWith(fontWeight: FontWeight.bold)),
+                child: Text(
+                  '${ort.menge}×',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
           ],
         ),

@@ -47,9 +47,11 @@ final selectedAbteilungIdProvider = StateProvider<String?>((ref) => null);
 /// dieselbe Frage zweimal zu beantworten ist genau die Stelle, an der die
 /// beiden Antworten später auseinanderlaufen (AGENTS.md, „Zweitverwendung =
 /// Extraktion").
-final aktiveAbteilungIdProvider = Provider<String?>((ref) =>
-    ref.watch(selectedAbteilungIdProvider) ??
-    ref.watch(myAbteilungIdProvider).value);
+final aktiveAbteilungIdProvider = Provider<String?>(
+  (ref) =>
+      ref.watch(selectedAbteilungIdProvider) ??
+      ref.watch(myAbteilungIdProvider).value,
+);
 
 /// Heimat-Abteilung des angemeldeten Nutzers (aus dem eigenen Profil).
 /// `null`: nicht angemeldet, Lokalmodus oder Server ohne Mandanten-Schema.
@@ -58,10 +60,8 @@ final myAbteilungIdProvider = FutureProvider<String?>((ref) async {
   final session = ref.watch(sessionStreamProvider).value;
   if (client == null || session == null) return null;
   try {
-    final row = await client
-        .from('profiles')
-        .select('abteilung_id')
-        .maybeSingle();
+    final row =
+        await client.from('profiles').select('abteilung_id').maybeSingle();
     return row?['abteilung_id'] as String?;
   } catch (e) {
     appLog.i('Heimat-Abteilung nicht ermittelbar (Legacy-Server?)', error: e);
@@ -133,8 +133,9 @@ final abteilungenProvider = FutureProvider<List<AbteilungInfo>>((ref) async {
 /// Wechselt die angezeigte Abteilung — die EINZIGE Schreibstelle für die
 /// Auswahl. Wer den StateProvider direkt setzt, verliert Persistenz und
 /// Erst-Pull.
-final abteilungSwitcherProvider =
-    Provider<AbteilungSwitcher>((ref) => AbteilungSwitcher(ref));
+final abteilungSwitcherProvider = Provider<AbteilungSwitcher>(
+  (ref) => AbteilungSwitcher(ref),
+);
 
 class AbteilungSwitcher {
   final Ref _ref;
@@ -177,8 +178,10 @@ class AbteilungSwitcher {
       // oben gesetzt wurde. Gefragt wird also nach dem, was DORT liegt.
       final dienst = _ref.read(syncServiceProvider);
       if (dienst != null) {
-        final version =
-            await dienst.pullIfNewer(force: true, bestaetigen: bestaetigen);
+        final version = await dienst.pullIfNewer(
+          force: true,
+          bestaetigen: bestaetigen,
+        );
         // Mit `force` gibt es nur einen Grund, nichts zu liefern: Es wurde
         // abgelehnt. Ohne Rückfrage kann das gar nicht eintreten.
         abgelehnt = bestaetigen != null && version == null;

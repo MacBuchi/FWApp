@@ -19,8 +19,9 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 /// Zeigt [code] als QR in einem Dialog.
 Future<void> zeigeCode(BuildContext context, String code) => showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
+  context: context,
+  builder:
+      (ctx) => AlertDialog(
         title: const Text('Code zum Aufkleben'),
         content: SingleChildScrollView(
           child: Column(
@@ -45,7 +46,10 @@ Future<void> zeigeCode(BuildContext context, String code) => showDialog<void>(
               SelectableText(
                 code,
                 style: const TextStyle(
-                    fontFamily: 'monospace', fontSize: 18, letterSpacing: 1),
+                  fontFamily: 'monospace',
+                  fontSize: 18,
+                  letterSpacing: 1,
+                ),
               ),
               const SizedBox(height: 4),
               Text(
@@ -64,8 +68,9 @@ Future<void> zeigeCode(BuildContext context, String code) => showDialog<void>(
             onPressed: () => Clipboard.setData(ClipboardData(text: code)),
           ),
           FilledButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Fertig')),
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Fertig'),
+          ),
         ],
       ),
-    );
+);

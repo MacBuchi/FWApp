@@ -1,6 +1,7 @@
 /// operation_summary_screen.dart – Entnommen-Übersicht: was ist ausgeladen und
 /// muss beim Aufräumen zurück. Export in die Zwischenablage; Einsatz beenden.
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,26 +29,28 @@ class OperationSummaryScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: !op.active
-          ? const Center(child: Text('Kein aktiver Einsatz.'))
-          : op.takenAssignmentIds.isEmpty
+      body:
+          !op.active
+              ? const Center(child: Text('Kein aktiver Einsatz.'))
+              : op.takenAssignmentIds.isEmpty
               ? const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(24),
-                    child: Text(
-                        'Noch nichts entnommen. Tippe im Ausladen-Bildschirm '
-                        'die entnommenen Geräte an.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.grey)),
+                child: Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Text(
+                    'Noch nichts entnommen. Tippe im Ausladen-Bildschirm '
+                    'die entnommenen Geräte an.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey),
                   ),
-                )
-              : ListView(
-                  padding: const EdgeInsets.all(12),
-                  children: [
-                    for (final vehicleId in op.vehicleIds)
-                      _VehicleTakenSection(vehicleId: vehicleId),
-                  ],
                 ),
+              )
+              : ListView(
+                padding: const EdgeInsets.all(12),
+                children: [
+                  for (final vehicleId in op.vehicleIds)
+                    _VehicleTakenSection(vehicleId: vehicleId),
+                ],
+              ),
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(12),
@@ -65,27 +68,34 @@ class OperationSummaryScreen extends ConsumerWidget {
     final text = await _buildReport(ref);
     await Clipboard.setData(ClipboardData(text: text));
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Entnommen-Liste in die Zwischenablage kopiert.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Entnommen-Liste in die Zwischenablage kopiert.'),
+        ),
+      );
     }
   }
 
   Future<String> _endOperation(BuildContext context, WidgetRef ref) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Einsatz beenden?'),
-        content: const Text(
-            'Die Entnommen-Liste geht verloren. Vorher ggf. kopieren.'),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Abbrechen')),
-          FilledButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Beenden')),
-        ],
-      ),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Einsatz beenden?'),
+            content: const Text(
+              'Die Entnommen-Liste geht verloren. Vorher ggf. kopieren.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Abbrechen'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Beenden'),
+              ),
+            ],
+          ),
     );
     if (confirmed == true && context.mounted) {
       ref.read(operationProvider.notifier).end();
@@ -101,27 +111,32 @@ class OperationSummaryScreen extends ConsumerWidget {
     final equipmentRepo = ref.read(equipmentRepositoryProvider);
 
     final buffer = StringBuffer('Einsatz – Entnommene Geräte\n');
-    if (op.scenario != null) buffer.writeln('Einsatzart: ${op.scenario!.label}');
+    if (op.scenario != null) {
+      buffer.writeln('Einsatzart: ${op.scenario!.label}');
+    }
     if (op.startedAt != null) {
       final d = op.startedAt!;
-      buffer.writeln('Beginn: ${d.day.toString().padLeft(2, '0')}.'
-          '${d.month.toString().padLeft(2, '0')}. '
-          '${d.hour.toString().padLeft(2, '0')}:'
-          '${d.minute.toString().padLeft(2, '0')}');
+      buffer.writeln(
+        'Beginn: ${d.day.toString().padLeft(2, '0')}.'
+        '${d.month.toString().padLeft(2, '0')}. '
+        '${d.hour.toString().padLeft(2, '0')}:'
+        '${d.minute.toString().padLeft(2, '0')}',
+      );
     }
     buffer.writeln();
 
     for (final vehicleId in op.vehicleIds) {
       final vehicle = await vehicleRepo.getById(vehicleId);
       final assignments = await assignmentRepo.getByVehicle(vehicleId);
-      final taken =
-          assignments.where((a) => op.isTaken(a.id)).toList();
+      final taken = assignments.where((a) => op.isTaken(a.id)).toList();
       if (taken.isEmpty) continue;
       buffer.writeln('${vehicle?.name ?? 'Fahrzeug $vehicleId'}:');
       for (final a in taken) {
         final item = await equipmentRepo.getById(a.equipmentId);
-        buffer.writeln('  - ${item?.name ?? 'Gerät ${a.equipmentId}'}'
-            '${a.quantity > 1 ? ' (×${a.quantity})' : ''}');
+        buffer.writeln(
+          '  - ${item?.name ?? 'Gerät ${a.equipmentId}'}'
+          '${a.quantity > 1 ? ' (×${a.quantity})' : ''}',
+        );
       }
       buffer.writeln();
     }
@@ -147,8 +162,10 @@ class _VehicleTakenSection extends ConsumerWidget {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(8, 12, 8, 6),
-          child: Text('${vehicle?.name ?? '…'} (${taken.length})',
-              style: Theme.of(context).textTheme.titleMedium),
+          child: Text(
+            '${vehicle?.name ?? '…'} (${taken.length})',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
         ),
         Card(
           child: Column(
@@ -185,8 +202,8 @@ class _TakenRow extends ConsumerWidget {
       leading: const Icon(Icons.check_circle, color: Colors.green, size: 20),
       title: Text(item?.name ?? '…'),
       trailing: quantity > 1 ? Text('× $quantity') : null,
-      onTap: () =>
-          ref.read(operationProvider.notifier).toggleTaken(assignmentId),
+      onTap:
+          () => ref.read(operationProvider.notifier).toggleTaken(assignmentId),
     );
   }
 }

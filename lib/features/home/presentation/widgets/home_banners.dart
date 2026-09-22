@@ -5,6 +5,7 @@
 /// Beide Banner sind pro Sitzung wegklickbar (bewusst ohne Persistenz —
 /// beim nächsten App-Start erscheinen sie wieder, solange relevant).
 library;
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -58,20 +59,26 @@ Future<void> showFeedbackDialog(BuildContext context, WidgetRef ref) async {
     // noch etwas — und musste sonst die App neu starten, um wieder an den
     // Dialog zu kommen.
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
           content: Text(switch (result.type) {
-        FeedbackType.bug =>
-          'Danke für die Meldung — wir schauen uns das an! 🐛',
-        FeedbackType.feature => 'Danke für deinen Wunsch! 💡',
-        FeedbackType.fahrzeug => 'Danke für den Fahrzeug-Vorschlag! 🚒',
-        FeedbackType.katalog => 'Danke für den Geräte-Vorschlag! 🧰',
-        FeedbackType.frage => 'Danke für den Hinweis zur Frage! ❓',
-      })));
+            FeedbackType.bug =>
+              'Danke für die Meldung — wir schauen uns das an! 🐛',
+            FeedbackType.feature => 'Danke für deinen Wunsch! 💡',
+            FeedbackType.fahrzeug => 'Danke für den Fahrzeug-Vorschlag! 🚒',
+            FeedbackType.katalog => 'Danke für den Geräte-Vorschlag! 🧰',
+            FeedbackType.frage => 'Danke für den Hinweis zur Frage! ❓',
+          }),
+        ),
+      );
     }
   } catch (_) {
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Senden fehlgeschlagen. Internetverbindung prüfen?')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Senden fehlgeschlagen. Internetverbindung prüfen?'),
+        ),
+      );
     }
   }
 }
@@ -87,7 +94,8 @@ class HomeBanners extends ConsumerWidget {
     final showUpdate = updateInfo != null && !updateDismissed;
 
     // Feedback braucht Server + Login (die Meldung landet in Supabase).
-    final signedIn = ref.watch(supabaseReadyProvider) &&
+    final signedIn =
+        ref.watch(supabaseReadyProvider) &&
         ref.watch(sessionStreamProvider).value != null;
     final showFeedback =
         signedIn && !ref.watch(feedbackBannerDismissedProvider);
@@ -102,12 +110,11 @@ class HomeBanners extends ConsumerWidget {
     // gerade schreiben darf und bis wann — sonst wundert er sich später, dass
     // Knöpfe verschwunden sind. Bewusst OHNE Wegklicken: Das hier ist kein
     // Angebot, sondern der Zustand seines Kontos.
-    final selected = ref.watch(selectedAbteilungIdProvider) ??
+    final selected =
+        ref.watch(selectedAbteilungIdProvider) ??
         ref.watch(myAbteilungIdProvider).value;
-    final laeuftAb =
-        ref.watch(meineTemporaerenRechteProvider).value?[selected];
-    final zeigeTempRecht =
-        laeuftAb != null && laeuftAb.isAfter(DateTime.now());
+    final laeuftAb = ref.watch(meineTemporaerenRechteProvider).value?[selected];
+    final zeigeTempRecht = laeuftAb != null && laeuftAb.isAfter(DateTime.now());
 
     if (!showUpdate && !showFeedback && !showCrash && !zeigeTempRecht) {
       return const SizedBox.shrink();
@@ -119,7 +126,8 @@ class HomeBanners extends ConsumerWidget {
         if (zeigeTempRecht)
           _BannerCard(
             emoji: '🔧',
-            text: 'Gerätewart-Rechte bis '
+            text:
+                'Gerätewart-Rechte bis '
                 '${_uhrzeit(laeuftAb)} — du darfst jetzt bearbeiten',
             color: Theme.of(context).colorScheme.tertiaryContainer,
             onColor: Theme.of(context).colorScheme.onTertiaryContainer,
@@ -128,15 +136,17 @@ class HomeBanners extends ConsumerWidget {
         if (showCrash)
           _BannerCard(
             emoji: '⚠️',
-            text: crashes.length == 1
-                ? 'Die App hatte zuletzt ein Problem'
-                : 'Die App hatte zuletzt ${crashes.length} Probleme',
+            text:
+                crashes.length == 1
+                    ? 'Die App hatte zuletzt ein Problem'
+                    : 'Die App hatte zuletzt ${crashes.length} Probleme',
             color: Theme.of(context).colorScheme.errorContainer,
             onColor: Theme.of(context).colorScheme.onErrorContainer,
-            onTap: () => showDialog<void>(
-              context: context,
-              builder: (context) => _CrashDialog(crashes: crashes),
-            ),
+            onTap:
+                () => showDialog<void>(
+                  context: context,
+                  builder: (context) => _CrashDialog(crashes: crashes),
+                ),
             onDismiss: () {
               // Wegklicken verwirft die Berichte endgültig — sonst käme das
               // Banner bei jedem Start wieder und würde zur Gewohnheit, die
@@ -150,17 +160,21 @@ class HomeBanners extends ConsumerWidget {
             // Vorabversionen sagen es dazu (Issue #169) — ein ungeprüfter
             // Stand darf sich nicht wie eine Freigabe anfühlen.
             emoji: updateInfo.isPrerelease ? '🧪' : '🔄',
-            text: updateInfo.isPrerelease
-                ? 'Vorabversion v${updateInfo.latestVersion} verfügbar'
-                : 'Update auf v${updateInfo.latestVersion} verfügbar',
+            text:
+                updateInfo.isPrerelease
+                    ? 'Vorabversion v${updateInfo.latestVersion} verfügbar'
+                    : 'Update auf v${updateInfo.latestVersion} verfügbar',
             color: Theme.of(context).colorScheme.primaryContainer,
             onColor: Theme.of(context).colorScheme.onPrimaryContainer,
-            onTap: () => showDialog<void>(
-              context: context,
-              builder: (context) => _UpdateDialog(info: updateInfo),
-            ),
-            onDismiss: () =>
-                ref.read(updateBannerDismissedProvider.notifier).state = true,
+            onTap:
+                () => showDialog<void>(
+                  context: context,
+                  builder: (context) => _UpdateDialog(info: updateInfo),
+                ),
+            onDismiss:
+                () =>
+                    ref.read(updateBannerDismissedProvider.notifier).state =
+                        true,
           ),
         if (showFeedback)
           _BannerCard(
@@ -169,9 +183,10 @@ class HomeBanners extends ConsumerWidget {
             color: Theme.of(context).colorScheme.secondaryContainer,
             onColor: Theme.of(context).colorScheme.onSecondaryContainer,
             onTap: () => showFeedbackDialog(context, ref),
-            onDismiss: () => ref
-                .read(feedbackBannerDismissedProvider.notifier)
-                .state = true,
+            onDismiss:
+                () =>
+                    ref.read(feedbackBannerDismissedProvider.notifier).state =
+                        true,
           ),
         const SizedBox(height: 12),
       ],
@@ -214,16 +229,16 @@ class _BannerCard extends StatelessWidget {
         textColor: onColor,
         iconColor: onColor,
         leading: Text(emoji, style: const TextStyle(fontSize: 24)),
-        title: Text(text,
-            style: const TextStyle(fontWeight: FontWeight.w600)),
-        trailing: onDismiss == null
-            ? null
-            : IconButton(
-                icon: const Icon(Icons.close, size: 20),
-                color: onColor,
-                tooltip: 'Ausblenden',
-                onPressed: onDismiss,
-              ),
+        title: Text(text, style: const TextStyle(fontWeight: FontWeight.w600)),
+        trailing:
+            onDismiss == null
+                ? null
+                : IconButton(
+                  icon: const Icon(Icons.close, size: 20),
+                  color: onColor,
+                  tooltip: 'Ausblenden',
+                  onPressed: onDismiss,
+                ),
         onTap: onTap,
       ),
     );
@@ -253,7 +268,8 @@ class _CrashDialogState extends ConsumerState<_CrashDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final signedIn = ref.watch(supabaseReadyProvider) &&
+    final signedIn =
+        ref.watch(supabaseReadyProvider) &&
         ref.watch(sessionStreamProvider).value != null;
 
     return AlertDialog(
@@ -297,24 +313,30 @@ class _CrashDialogState extends ConsumerState<_CrashDialog> {
           child: const Text('Später'),
         ),
         TextButton(
-          onPressed: _sending
-              ? null
-              : () async {
-                  await Clipboard.setData(ClipboardData(text: _reportText));
-                  if (!context.mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                      content: Text('Bericht in die Zwischenablage kopiert')));
-                },
+          onPressed:
+              _sending
+                  ? null
+                  : () async {
+                    await Clipboard.setData(ClipboardData(text: _reportText));
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Bericht in die Zwischenablage kopiert'),
+                      ),
+                    );
+                  },
           child: const Text('Kopieren'),
         ),
         FilledButton(
           onPressed: !signedIn || _sending ? null : _send,
-          child: _sending
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2))
-              : const Text('Melden'),
+          child:
+              _sending
+                  ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                  : const Text('Melden'),
         ),
       ],
     );
@@ -334,15 +356,21 @@ class _CrashDialogState extends ConsumerState<_CrashDialog> {
       if (!mounted) return;
       ref.read(crashBannerDismissedProvider.notifier).state = true;
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Danke — der Bericht ist raus. 🐛')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Danke — der Bericht ist raus. 🐛')),
+      );
     } catch (e) {
       appLog.w('Absturzbericht konnte nicht gesendet werden', error: e);
       if (!mounted) return;
       setState(() => _sending = false);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Senden fehlgeschlagen. Internetverbindung prüfen? '
-              'Der Bericht bleibt erhalten.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Senden fehlgeschlagen. Internetverbindung prüfen? '
+            'Der Bericht bleibt erhalten.',
+          ),
+        ),
+      );
     }
   }
 }
@@ -377,27 +405,29 @@ class _UpdateDialogState extends State<_UpdateDialog> {
     setState(() => _phase = _UpdatePhase.downloading);
     try {
       _subscription = OtaUpdate()
-          .execute(widget.info.downloadUrl,
-              destinationFilename: 'fwapp-update.apk')
+          .execute(
+            widget.info.downloadUrl,
+            destinationFilename: 'fwapp-update.apk',
+          )
           .listen(
-        (event) {
-          if (!mounted) return;
-          switch (event.status) {
-            case OtaStatus.DOWNLOADING:
-              setState(() {
-                _phase = _UpdatePhase.downloading;
-                _progress = (double.tryParse(event.value ?? '') ?? 0) / 100;
-              });
-            case OtaStatus.INSTALLING:
-              setState(() => _phase = _UpdatePhase.installing);
-            default:
-              setState(() => _phase = _UpdatePhase.error);
-          }
-        },
-        onError: (Object _) {
-          if (mounted) setState(() => _phase = _UpdatePhase.error);
-        },
-      );
+            (event) {
+              if (!mounted) return;
+              switch (event.status) {
+                case OtaStatus.DOWNLOADING:
+                  setState(() {
+                    _phase = _UpdatePhase.downloading;
+                    _progress = (double.tryParse(event.value ?? '') ?? 0) / 100;
+                  });
+                case OtaStatus.INSTALLING:
+                  setState(() => _phase = _UpdatePhase.installing);
+                default:
+                  setState(() => _phase = _UpdatePhase.error);
+              }
+            },
+            onError: (Object _) {
+              if (mounted) setState(() => _phase = _UpdatePhase.error);
+            },
+          );
     } catch (_) {
       setState(() => _phase = _UpdatePhase.error);
     }
@@ -409,11 +439,15 @@ class _UpdateDialogState extends State<_UpdateDialog> {
   /// laufen zu lassen.
   Future<void> _browserFallback() async {
     try {
-      final opened = await launchUrl(Uri.parse(widget.info.downloadUrl),
-          mode: LaunchMode.externalApplication);
+      final opened = await launchUrl(
+        Uri.parse(widget.info.downloadUrl),
+        mode: LaunchMode.externalApplication,
+      );
       if (opened) return;
-      appLog.w('Browser-Fallback: launchUrl lieferte false '
-          '(${widget.info.downloadUrl})');
+      appLog.w(
+        'Browser-Fallback: launchUrl lieferte false '
+        '(${widget.info.downloadUrl})',
+      );
     } catch (e) {
       appLog.w('Browser-Fallback fehlgeschlagen: $e');
     }
@@ -424,9 +458,11 @@ class _UpdateDialogState extends State<_UpdateDialog> {
   Widget build(BuildContext context) {
     final info = widget.info;
     return AlertDialog(
-      title: Text(info.isPrerelease
-          ? 'Vorabversion v${info.latestVersion}'
-          : 'Update auf v${info.latestVersion}'),
+      title: Text(
+        info.isPrerelease
+            ? 'Vorabversion v${info.latestVersion}'
+            : 'Update auf v${info.latestVersion}',
+      ),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -446,44 +482,56 @@ class _UpdateDialogState extends State<_UpdateDialog> {
             ],
             switch (_phase) {
               _UpdatePhase.idle => const Text(
-                  'Das Update lädt direkt in der App und öffnet dann den '
-                  'Android-Installer — Datenbestand und Lernstand bleiben '
-                  'erhalten. Beim ersten Mal fragt Android einmalig um '
-                  'Erlaubnis.'),
+                'Das Update lädt direkt in der App und öffnet dann den '
+                'Android-Installer — Datenbestand und Lernstand bleiben '
+                'erhalten. Beim ersten Mal fragt Android einmalig um '
+                'Erlaubnis.',
+              ),
               _UpdatePhase.downloading => Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Lade herunter … ${(_progress * 100).round()} %'),
-                    const SizedBox(height: 8),
-                    LinearProgressIndicator(
-                        value: _progress > 0 ? _progress : null),
-                  ],
-                ),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Lade herunter … ${(_progress * 100).round()} %'),
+                  const SizedBox(height: 8),
+                  LinearProgressIndicator(
+                    value: _progress > 0 ? _progress : null,
+                  ),
+                ],
+              ),
               _UpdatePhase.installing => const Text(
-                  'Download fertig — Android fragt jetzt, ob die FWApp '
-                  'aktualisiert werden soll. Einfach bestätigen!'),
+                'Download fertig — Android fragt jetzt, ob die FWApp '
+                'aktualisiert werden soll. Einfach bestätigen!',
+              ),
               _UpdatePhase.error => const Text(
-                  'Der Direkt-Download hat nicht geklappt. Du kannst das '
-                  'Update stattdessen über den Browser laden — nach dem '
-                  'Download in der Benachrichtigung auf die Datei tippen.'),
+                'Der Direkt-Download hat nicht geklappt. Du kannst das '
+                'Update stattdessen über den Browser laden — nach dem '
+                'Download in der Benachrichtigung auf die Datei tippen.',
+              ),
             },
             if (_fallbackFailed) ...[
               const SizedBox(height: 12),
-              const Text('Es ließ sich kein Browser öffnen. Die Adresse zum '
-                  'manuellen Download:'),
+              const Text(
+                'Es ließ sich kein Browser öffnen. Die Adresse zum '
+                'manuellen Download:',
+              ),
               const SizedBox(height: 4),
-              SelectableText(info.downloadUrl,
-                  style: Theme.of(context).textTheme.bodySmall),
+              SelectableText(
+                info.downloadUrl,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
             ],
             if (_phase == _UpdatePhase.idle &&
                 info.releaseNotes != null &&
                 info.releaseNotes!.trim().isNotEmpty) ...[
               const SizedBox(height: 12),
-              Text('Was ist neu:',
-                  style: Theme.of(context).textTheme.titleSmall),
+              Text(
+                'Was ist neu:',
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
               const SizedBox(height: 4),
-              Text(info.releaseNotes!.trim(),
-                  style: Theme.of(context).textTheme.bodySmall),
+              Text(
+                info.releaseNotes!.trim(),
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
             ],
           ],
         ),
@@ -547,53 +595,51 @@ class _FeedbackDialogState extends State<_FeedbackDialog> {
   ];
 
   String _chipText(FeedbackType t) => switch (t) {
-        FeedbackType.feature => '💡 Wunsch',
-        FeedbackType.bug => '🐛 Fehler',
-        FeedbackType.fahrzeug => '🚒 Fahrzeug-Vorlage',
-        FeedbackType.katalog => '🧰 Standard-Gerät',
-        FeedbackType.frage => '❓ Quizfrage',
-      };
+    FeedbackType.feature => '💡 Wunsch',
+    FeedbackType.bug => '🐛 Fehler',
+    FeedbackType.fahrzeug => '🚒 Fahrzeug-Vorlage',
+    FeedbackType.katalog => '🧰 Standard-Gerät',
+    FeedbackType.frage => '❓ Quizfrage',
+  };
 
   /// Bei den Vorschlägen ist die ERSTE ZEILE der Name — der Bot baut daraus
   /// die Issue-Überschrift (tool/feedback_bot.py). Der Hinweis muss das
   /// sagen, sonst steht die Überschrift mitten im Fließtext.
   String get _hinweis => switch (_type) {
-        FeedbackType.bug =>
-          'Was funktioniert nicht? Beschreibe kurz, was du gemacht '
-              'hast und was stattdessen passiert ist.',
-        FeedbackType.feature =>
-          'Was fehlt dir, was nervt, was wäre praktisch? Jede Idee '
-              'landet direkt beim Entwickler.',
-        FeedbackType.fahrzeug =>
-          'Welcher Fahrzeugtyp fehlt als Vorlage? Die erste Zeile ist '
-              'der Typ — sie wird die Überschrift. Darunter: welche '
-              'Geräteräume das Fahrzeug hat.',
-        FeedbackType.katalog =>
-          'Welches Gerät fehlt im mitgelieferten Katalog? Die erste '
-              'Zeile ist der Gerätename — sie wird die Überschrift.',
-        FeedbackType.frage =>
-          'Was stimmt an der Frage nicht? Die erste Zeile ist die Frage '
-              'selbst — sie wird die Überschrift.',
-      };
+    FeedbackType.bug =>
+      'Was funktioniert nicht? Beschreibe kurz, was du gemacht '
+          'hast und was stattdessen passiert ist.',
+    FeedbackType.feature =>
+      'Was fehlt dir, was nervt, was wäre praktisch? Jede Idee '
+          'landet direkt beim Entwickler.',
+    FeedbackType.fahrzeug =>
+      'Welcher Fahrzeugtyp fehlt als Vorlage? Die erste Zeile ist '
+          'der Typ — sie wird die Überschrift. Darunter: welche '
+          'Geräteräume das Fahrzeug hat.',
+    FeedbackType.katalog =>
+      'Welches Gerät fehlt im mitgelieferten Katalog? Die erste '
+          'Zeile ist der Gerätename — sie wird die Überschrift.',
+    FeedbackType.frage =>
+      'Was stimmt an der Frage nicht? Die erste Zeile ist die Frage '
+          'selbst — sie wird die Überschrift.',
+  };
 
   String get _feldLabel => switch (_type) {
-        FeedbackType.bug => 'Was ist passiert?',
-        FeedbackType.feature => 'Dein Wunsch',
-        FeedbackType.fahrzeug => 'Fahrzeugtyp und Geräteräume',
-        FeedbackType.katalog => 'Gerätename und Details',
-        FeedbackType.frage => 'Frage und was daran nicht stimmt',
-      };
+    FeedbackType.bug => 'Was ist passiert?',
+    FeedbackType.feature => 'Dein Wunsch',
+    FeedbackType.fahrzeug => 'Fahrzeugtyp und Geräteräume',
+    FeedbackType.katalog => 'Gerätename und Details',
+    FeedbackType.frage => 'Frage und was daran nicht stimmt',
+  };
 
   String get _feldHint => switch (_type) {
-        FeedbackType.bug => 'z. B. „Beim Quiz bleibt das Bild schwarz“',
-        FeedbackType.feature =>
-          'z. B. „Eine Suche über alle Fahrzeuge wäre toll!“',
-        FeedbackType.fahrzeug => 'z. B. „GW-T“ — darunter die Fächer',
-        FeedbackType.katalog =>
-          'z. B. „Akku-Rettungsschere“ — Details darunter',
-        FeedbackType.frage =>
-          'z. B. „Wie hoch ist der Nenndruck?“ — Hinweis darunter',
-      };
+    FeedbackType.bug => 'z. B. „Beim Quiz bleibt das Bild schwarz“',
+    FeedbackType.feature => 'z. B. „Eine Suche über alle Fahrzeuge wäre toll!“',
+    FeedbackType.fahrzeug => 'z. B. „GW-T“ — darunter die Fächer',
+    FeedbackType.katalog => 'z. B. „Akku-Rettungsschere“ — Details darunter',
+    FeedbackType.frage =>
+      'z. B. „Wie hoch ist der Nenndruck?“ — Hinweis darunter',
+  };
 
   @override
   void dispose() {
@@ -604,8 +650,9 @@ class _FeedbackDialogState extends State<_FeedbackDialog> {
   void _submit() {
     final text = _textController.text.trim();
     if (text.length < 3) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Bitte schreib ein paar Worte mehr. 🙂')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Bitte schreib ein paar Worte mehr. 🙂')),
+      );
       return;
     }
     Navigator.of(context).pop((type: _type, message: text));
@@ -632,10 +679,7 @@ class _FeedbackDialogState extends State<_FeedbackDialog> {
               ],
             ),
             const SizedBox(height: 12),
-            Text(
-              _hinweis,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
+            Text(_hinweis, style: Theme.of(context).textTheme.bodySmall),
             const SizedBox(height: 12),
             TextField(
               controller: _textController,
@@ -654,10 +698,9 @@ class _FeedbackDialogState extends State<_FeedbackDialog> {
               'ℹ️ Dein Text erscheint zusammen mit deinem Nutzernamen '
               'öffentlich im GitHub-Projekt der App — bitte keine '
               'persönlichen Daten hineinschreiben.',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(fontStyle: FontStyle.italic),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(fontStyle: FontStyle.italic),
             ),
           ],
         ),

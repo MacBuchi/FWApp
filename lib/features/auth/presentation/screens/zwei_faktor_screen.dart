@@ -58,8 +58,12 @@ class _ZweiFaktorScreenState extends ConsumerState<ZweiFaktorScreen> {
       if (totp == null) {
         // Kann nur passieren, wenn der Server TOTP nicht anbietet — dann
         // hilft kein Wiederholen, sondern nur ein Hinweis.
-        setState(() => _error = 'Dieser Server unterstützt keine '
-            'Zwei-Faktor-Anmeldung.');
+        setState(
+          () =>
+              _error =
+                  'Dieser Server unterstützt keine '
+                  'Zwei-Faktor-Anmeldung.',
+        );
         return;
       }
       setState(() {
@@ -72,8 +76,11 @@ class _ZweiFaktorScreenState extends ConsumerState<ZweiFaktorScreen> {
       setState(() => _error = e.message);
     } catch (e, s) {
       // Der Schlüssel selbst darf NIE ins Protokoll — er ist das Geheimnis.
-      appLog.w('Einrichtung des zweiten Faktors fehlgeschlagen',
-          error: e, stackTrace: s);
+      appLog.w(
+        'Einrichtung des zweiten Faktors fehlgeschlagen',
+        error: e,
+        stackTrace: s,
+      );
       if (!mounted) return;
       setState(() => _error = 'Der Server ist nicht erreichbar.');
     } finally {
@@ -95,21 +102,35 @@ class _ZweiFaktorScreenState extends ConsumerState<ZweiFaktorScreen> {
       _error = null;
     });
     try {
-      await client.auth.mfa
-          .challengeAndVerify(factorId: id, code: _code.text.trim());
+      await client.auth.mfa.challengeAndVerify(
+        factorId: id,
+        code: _code.text.trim(),
+      );
       // Der Guard hört auf die Faktorenliste und gibt den Weg danach frei.
       ref.invalidate(mfaFaktorenProvider);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Zweiter Faktor aktiv. Beim nächsten Anmelden wird '
-              'der Code abgefragt.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Zweiter Faktor aktiv. Beim nächsten Anmelden wird '
+            'der Code abgefragt.',
+          ),
+        ),
+      );
     } on AuthException catch (e) {
       if (!mounted) return;
-      setState(() => _error = 'Der Code stimmt nicht. Zeigt die '
-          'Authenticator-App gerade einen anderen? (${e.message})');
+      setState(
+        () =>
+            _error =
+                'Der Code stimmt nicht. Zeigt die '
+                'Authenticator-App gerade einen anderen? (${e.message})',
+      );
     } catch (e, s) {
-      appLog.w('Bestätigung des zweiten Faktors fehlgeschlagen',
-          error: e, stackTrace: s);
+      appLog.w(
+        'Bestätigung des zweiten Faktors fehlgeschlagen',
+        error: e,
+        stackTrace: s,
+      );
       if (!mounted) return;
       setState(() => _error = 'Der Server ist nicht erreichbar.');
     } finally {
@@ -155,14 +176,14 @@ class _ZweiFaktorScreenState extends ConsumerState<ZweiFaktorScreen> {
                         leading: Icon(Icons.verified_user, color: Colors.green),
                         title: Text('Zweiter Faktor ist aktiv'),
                         subtitle: Text(
-                            'Beim Anmelden fragt die App nach dem Code aus '
-                            'deiner Authenticator-App.'),
+                          'Beim Anmelden fragt die App nach dem Code aus '
+                          'deiner Authenticator-App.',
+                        ),
                       ),
                       const SizedBox(height: 8),
                       OutlinedButton(
-                        onPressed: _busy
-                            ? null
-                            : () => _entfernen(aktiv.first.id),
+                        onPressed:
+                            _busy ? null : () => _entfernen(aktiv.first.id),
                         child: const Text('Zweiten Faktor entfernen'),
                       ),
                       const SizedBox(height: 8),
@@ -199,58 +220,74 @@ class _ZweiFaktorScreenState extends ConsumerState<ZweiFaktorScreen> {
                       const SizedBox(height: 16),
                       FilledButton(
                         onPressed: _busy ? null : _starten,
-                        child: _busy
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2))
-                            : const Text('Einrichtung starten'),
+                        child:
+                            _busy
+                                ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                                : const Text('Einrichtung starten'),
                       ),
                     ] else ...[
-                      Text('Schritt 1: Schlüssel übernehmen',
-                          style: theme.textTheme.titleMedium),
+                      Text(
+                        'Schritt 1: Schlüssel übernehmen',
+                        style: theme.textTheme.titleMedium,
+                      ),
                       const SizedBox(height: 8),
                       FilledButton.icon(
                         icon: const Icon(Icons.open_in_new),
                         label: const Text('In Authenticator-App öffnen'),
-                        onPressed: _busy
-                            ? null
-                            : () async {
-                                final ziel = Uri.parse(_uri!);
-                                if (!await launchUrl(ziel)) {
-                                  if (!context.mounted) return;
-                                  setState(() => _error =
-                                      'Keine Authenticator-App gefunden — '
-                                      'bitte den Schlüssel abtippen.');
-                                }
-                              },
+                        onPressed:
+                            _busy
+                                ? null
+                                : () async {
+                                  final ziel = Uri.parse(_uri!);
+                                  if (!await launchUrl(ziel)) {
+                                    if (!context.mounted) return;
+                                    setState(
+                                      () =>
+                                          _error =
+                                              'Keine Authenticator-App gefunden — '
+                                              'bitte den Schlüssel abtippen.',
+                                    );
+                                  }
+                                },
                       ),
                       const SizedBox(height: 12),
-                      const Text('… oder diesen Schlüssel von Hand eintragen:',
-                          style: TextStyle(fontSize: 13)),
+                      const Text(
+                        '… oder diesen Schlüssel von Hand eintragen:',
+                        style: TextStyle(fontSize: 13),
+                      ),
                       const SizedBox(height: 4),
                       SelectableText(
                         schluesselLesbar(_secret!),
                         style: const TextStyle(
-                            fontFamily: 'monospace',
-                            fontSize: 16,
-                            letterSpacing: 1.2),
+                          fontFamily: 'monospace',
+                          fontSize: 16,
+                          letterSpacing: 1.2,
+                        ),
                       ),
                       TextButton.icon(
                         icon: const Icon(Icons.copy, size: 18),
                         label: const Text('Schlüssel kopieren'),
                         onPressed: () async {
                           await Clipboard.setData(
-                              ClipboardData(text: _secret!));
+                            ClipboardData(text: _secret!),
+                          );
                           if (!context.mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Kopiert.')));
+                            const SnackBar(content: Text('Kopiert.')),
+                          );
                         },
                       ),
                       const Divider(height: 32),
-                      Text('Schritt 2: Code bestätigen',
-                          style: theme.textTheme.titleMedium),
+                      Text(
+                        'Schritt 2: Code bestätigen',
+                        style: theme.textTheme.titleMedium,
+                      ),
                       const SizedBox(height: 8),
                       TextField(
                         controller: _code,
@@ -265,20 +302,25 @@ class _ZweiFaktorScreenState extends ConsumerState<ZweiFaktorScreen> {
                       const SizedBox(height: 16),
                       FilledButton(
                         onPressed: _busy ? null : _bestaetigen,
-                        child: _busy
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2))
-                            : const Text('Aktivieren'),
+                        child:
+                            _busy
+                                ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                                : const Text('Aktivieren'),
                       ),
                     ],
                     if (_error != null)
                       Padding(
                         padding: const EdgeInsets.only(top: 16),
-                        child: Text(_error!,
-                            style: TextStyle(color: theme.colorScheme.error)),
+                        child: Text(
+                          _error!,
+                          style: TextStyle(color: theme.colorScheme.error),
+                        ),
                       ),
                   ],
                 ),

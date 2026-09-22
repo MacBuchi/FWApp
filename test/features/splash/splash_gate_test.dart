@@ -18,21 +18,22 @@ import 'package:fwapp/features/splash/presentation/splash_gate.dart';
 import 'package:fwapp/features/splash/presentation/widgets/fw_splash.dart';
 
 final _splash = find.byWidgetPredicate(
-    (w) => w is CustomPaint && w.painter is SplashPainter);
+  (w) => w is CustomPaint && w.painter is SplashPainter,
+);
 
 Widget _host({required bool voll, bool ruhig = false}) => MediaQuery(
-      data: MediaQueryData(disableAnimations: ruhig),
-      child: MaterialApp(
-        home: SplashGate(
-          // Eigener Schlüssel je Fassung: Ohne ihn übernimmt Flutter beim
-          // zweiten `pumpWidget` denselben State — die Animation startete
-          // dann gar nicht neu.
-          key: ValueKey('$voll-$ruhig'),
-          voll: voll,
-          child: const Scaffold(body: Text('Die App')),
-        ),
-      ),
-    );
+  data: MediaQueryData(disableAnimations: ruhig),
+  child: MaterialApp(
+    home: SplashGate(
+      // Eigener Schlüssel je Fassung: Ohne ihn übernimmt Flutter beim
+      // zweiten `pumpWidget` denselben State — die Animation startete
+      // dann gar nicht neu.
+      key: ValueKey('$voll-$ruhig'),
+      voll: voll,
+      child: const Scaffold(body: Text('Die App')),
+    ),
+  ),
+);
 
 /// Ausblenddauer plus etwas Luft, in gezählten Schritten.
 const _ausblenden = 400;
@@ -52,8 +53,9 @@ Future<void> _warte(WidgetTester tester, int ms) async {
 }
 
 void main() {
-  testWidgets('die App baut UNTER der Animation — sie wird nicht aufgehalten',
-      (tester) async {
+  testWidgets('die App baut UNTER der Animation — sie wird nicht aufgehalten', (
+    tester,
+  ) async {
     await tester.pumpWidget(_host(voll: true));
     await tester.pump();
 
@@ -65,8 +67,9 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  testWidgets('die volle Fassung läuft ihre 4,3 Sekunden und geht dann',
-      (tester) async {
+  testWidgets('die volle Fassung läuft ihre 4,3 Sekunden und geht dann', (
+    tester,
+  ) async {
     await tester.pumpWidget(_host(voll: true));
     await _warte(tester, kSplashVollMs - 300);
     expect(_splash, findsOneWidget, reason: 'kurz vor Schluss noch da');
@@ -76,8 +79,9 @@ void main() {
     expect(find.text('Die App'), findsOneWidget);
   });
 
-  testWidgets('die Kurzform ist zu Ende, wenn die volle noch läuft',
-      (tester) async {
+  testWidgets('die Kurzform ist zu Ende, wenn die volle noch läuft', (
+    tester,
+  ) async {
     const messpunkt = kSplashKurzMs + _ausblenden;
 
     await tester.pumpWidget(_host(voll: false));
@@ -92,12 +96,16 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  testWidgets('Bewegungsreduzierung überstimmt die volle Fassung',
-      (tester) async {
+  testWidgets('Bewegungsreduzierung überstimmt die volle Fassung', (
+    tester,
+  ) async {
     await tester.pumpWidget(_host(voll: true, ruhig: true));
     await _warte(tester, kSplashKurzMs + _ausblenden);
-    expect(_splash, findsNothing,
-        reason: 'wer Animationen abgeschaltet hat, will in die App');
+    expect(
+      _splash,
+      findsNothing,
+      reason: 'wer Animationen abgeschaltet hat, will in die App',
+    );
   });
 
   testWidgets('Antippen bricht ab', (tester) async {
@@ -122,17 +130,19 @@ void main() {
     // Sonst greift jemand blind in die App darunter — und trifft eine
     // Schaltfläche, die er nie gesehen hat.
     var getroffen = false;
-    await tester.pumpWidget(MaterialApp(
-      home: SplashGate(
-        voll: true,
-        child: Scaffold(
-          body: GestureDetector(
-            onTap: () => getroffen = true,
-            child: const SizedBox.expand(child: Text('Die App')),
+    await tester.pumpWidget(
+      MaterialApp(
+        home: SplashGate(
+          voll: true,
+          child: Scaffold(
+            body: GestureDetector(
+              onTap: () => getroffen = true,
+              child: const SizedBox.expand(child: Text('Die App')),
+            ),
           ),
         ),
       ),
-    ));
+    );
     await _warte(tester, 300);
     await tester.tapAt(const Offset(200, 400));
     await _warte(tester, _ausblenden);

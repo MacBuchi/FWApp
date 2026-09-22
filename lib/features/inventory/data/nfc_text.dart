@@ -93,9 +93,11 @@ String? _ausUtf16(Uint8List bytes) {
   }
   final einheiten = <int>[];
   for (var i = ab; i + 1 < bytes.length; i += 2) {
-    einheiten.add(kleinZuerst
-        ? bytes[i] | (bytes[i + 1] << 8)
-        : (bytes[i] << 8) | bytes[i + 1]);
+    einheiten.add(
+      kleinZuerst
+          ? bytes[i] | (bytes[i + 1] << 8)
+          : (bytes[i] << 8) | bytes[i + 1],
+    );
   }
   return String.fromCharCodes(einheiten);
 }

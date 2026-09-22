@@ -3,6 +3,7 @@
 /// Edit-/Admin-Routen sind zusätzlich zur ausgeblendeten UI per [guardRedirect]
 /// geschützt, damit auch Deep-Links (Web!) die Rollenregeln respektieren.
 library;
+
 import 'dart:async' show unawaited;
 
 import 'package:flutter/material.dart';
@@ -52,11 +53,13 @@ import 'package:fwapp/features/settings/presentation/screens/user_management_scr
 
 /// Routen, die Bearbeitungsrechte voraussetzen (Spiegel der UI-Gates:
 /// `canEditProvider` blendet genau diese Einstiege aus).
-final _editRoutePattern = RegExp(r'^(/vehicles/(new(/template)?|[^/]+/(edit|compartments))'
-    r'|/equipment/(new|[^/]+/edit)'
-    r'|/import'
-    r'|/inspections'
-    r'|/inventory(/.*)?)$');
+final _editRoutePattern = RegExp(
+  r'^(/vehicles/(new(/template)?|[^/]+/(edit|compartments))'
+  r'|/equipment/(new|[^/]+/edit)'
+  r'|/import'
+  r'|/inspections'
+  r'|/inventory(/.*)?)$',
+);
 
 /// Ohne Anmeldung erreichbar: die Anmeldung selbst und der Notausgang, über
 /// den man Server-URL und Schlüssel korrigiert. Ohne diese Hintertür säße
@@ -151,258 +154,250 @@ final routerProvider = Provider<GoRouter>((ref) {
   // An-/Abmelden stößt den Redirect an. Bewusst der rohe gotrue-Strom und
   // nicht sessionStreamProvider: Der filtert per distinct auf die Nutzer-ID
   // und startet als AsyncLoading — beides ist für einen Guard falsch.
-  final sub = ref.read(supabaseClientProvider)?.auth.onAuthStateChange.listen(
-    (_) => refresh.value++,
-    // Pflicht, kein Beiwerk: gotrue meldet einen fehlgeschlagenen
-    // Token-Refresh (offline!) als Stream-FEHLER. Ohne Handler wird daraus
-    // eine unbehandelte Ausnahme, und PlatformDispatcher.onError in
-    // main.dart schriebe bei jedem Start ohne Netz einen Absturzbericht.
-    onError: (Object e, StackTrace s) => appLog.w(
-        'Auth-Ereignisstrom meldet einen Fehler (offline?)',
-        error: e,
-        stackTrace: s),
-  );
+  final sub = ref
+      .read(supabaseClientProvider)
+      ?.auth
+      .onAuthStateChange
+      .listen(
+        (_) => refresh.value++,
+        // Pflicht, kein Beiwerk: gotrue meldet einen fehlgeschlagenen
+        // Token-Refresh (offline!) als Stream-FEHLER. Ohne Handler wird daraus
+        // eine unbehandelte Ausnahme, und PlatformDispatcher.onError in
+        // main.dart schriebe bei jedem Start ohne Netz einen Absturzbericht.
+        onError:
+            (Object e, StackTrace s) => appLog.w(
+              'Auth-Ereignisstrom meldet einen Fehler (offline?)',
+              error: e,
+              stackTrace: s,
+            ),
+      );
   ref.onDispose(() => unawaited(sub?.cancel()));
 
   return GoRouter(
     initialLocation: '/',
     refreshListenable: refresh,
-    redirect: (context, state) => guardRedirect(
-      path: state.uri.path,
-      canEdit: ref.read(canEditProvider),
-      isAdmin: ref.read(isAdminProvider),
-      supabaseReady: ref.read(supabaseReadyProvider),
-      loggedIn: ref.read(signedInReaderProvider)(),
-      // Beim allerersten Redirect steht der Wert noch nicht fest (der
-      // Provider lädt); dann gilt „kein Zwang" und der ref.listen oben
-      // holt es nach. Sichtbare Folge: ein Sekundenbruchteil Startseite,
-      // bevor der Wechsel greift — hingenommen, weil die Alternative ein
-      // Ladezustand im Router wäre, der jeden Kaltstart verzögert.
-      mustChangePassword: ref.read(mustChangePasswordProvider).value ?? false,
-      recoveryPending: ref.read(recoveryPendingProvider),
-      mfaPending: ref.read(mfaOffenProvider),
-    ),
+    redirect:
+        (context, state) => guardRedirect(
+          path: state.uri.path,
+          canEdit: ref.read(canEditProvider),
+          isAdmin: ref.read(isAdminProvider),
+          supabaseReady: ref.read(supabaseReadyProvider),
+          loggedIn: ref.read(signedInReaderProvider)(),
+          // Beim allerersten Redirect steht der Wert noch nicht fest (der
+          // Provider lädt); dann gilt „kein Zwang" und der ref.listen oben
+          // holt es nach. Sichtbare Folge: ein Sekundenbruchteil Startseite,
+          // bevor der Wechsel greift — hingenommen, weil die Alternative ein
+          // Ladezustand im Router wäre, der jeden Kaltstart verzögert.
+          mustChangePassword:
+              ref.read(mustChangePasswordProvider).value ?? false,
+          recoveryPending: ref.read(recoveryPendingProvider),
+          mfaPending: ref.read(mfaOffenProvider),
+        ),
     routes: _routes,
   );
 });
 
 final _routes = [
-    // Bewusst AUSSERHALB der ShellRoute: Das sind Vollbild-Übernahmen ohne
-    // Navigationsleiste — und außerhalb der Shell gibt es den
-    // verschachtelten Navigator gar nicht, an dem v1.6.0 im Feld
-    // gescheitert ist (Dialog poppte den Screen dahinter weg, #79).
-    GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
-    GoRoute(
-      path: '/change-password',
-      builder: (_, _) => const ChangePasswordScreen(),
-    ),
-    GoRoute(
-      path: '/zwei-faktor',
-      builder: (_, _) => const ZweiFaktorScreen(),
-    ),
-    GoRoute(
-      path: '/server-settings',
-      builder: (_, _) => const ServerSettingsScreen(),
-    ),
-    ShellRoute(
-      builder: (context, state, child) =>
-          _AppShell(location: state.uri.path, child: child),
-      routes: [
-        GoRoute(
-          path: '/',
-          builder: (_, _) => const HomeScreen(),
-        ),
-        GoRoute(
-          path: '/vehicles',
-          builder: (_, _) => const VehicleListScreen(),
-          routes: [
-            GoRoute(
-              path: 'new',
-              builder: (_, _) => const VehicleFormScreen(),
-              routes: [
-                GoRoute(
-                  path: 'template',
-                  builder: (_, _) => const VehicleTemplateScreen(),
+  // Bewusst AUSSERHALB der ShellRoute: Das sind Vollbild-Übernahmen ohne
+  // Navigationsleiste — und außerhalb der Shell gibt es den
+  // verschachtelten Navigator gar nicht, an dem v1.6.0 im Feld
+  // gescheitert ist (Dialog poppte den Screen dahinter weg, #79).
+  GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
+  GoRoute(
+    path: '/change-password',
+    builder: (_, _) => const ChangePasswordScreen(),
+  ),
+  GoRoute(path: '/zwei-faktor', builder: (_, _) => const ZweiFaktorScreen()),
+  GoRoute(
+    path: '/server-settings',
+    builder: (_, _) => const ServerSettingsScreen(),
+  ),
+  ShellRoute(
+    builder:
+        (context, state, child) =>
+            _AppShell(location: state.uri.path, child: child),
+    routes: [
+      GoRoute(path: '/', builder: (_, _) => const HomeScreen()),
+      GoRoute(
+        path: '/vehicles',
+        builder: (_, _) => const VehicleListScreen(),
+        routes: [
+          GoRoute(
+            path: 'new',
+            builder: (_, _) => const VehicleFormScreen(),
+            routes: [
+              GoRoute(
+                path: 'template',
+                builder: (_, _) => const VehicleTemplateScreen(),
+              ),
+            ],
+          ),
+          GoRoute(
+            path: ':id',
+            builder:
+                (_, state) => VehicleDetailScreen(
+                  vehicleId: int.parse(state.pathParameters['id']!),
                 ),
-              ],
-            ),
-            GoRoute(
-              path: ':id',
-              builder: (_, state) => VehicleDetailScreen(
-                  vehicleId: int.parse(state.pathParameters['id']!)),
-              routes: [
-                GoRoute(
-                  path: 'edit',
-                  builder: (_, state) => VehicleFormScreen(
-                      editId:
-                          int.parse(state.pathParameters['id']!)),
+            routes: [
+              GoRoute(
+                path: 'edit',
+                builder:
+                    (_, state) => VehicleFormScreen(
+                      editId: int.parse(state.pathParameters['id']!),
+                    ),
+              ),
+              GoRoute(
+                path: 'compartments',
+                builder:
+                    (_, state) => CompartmentManagerScreen(
+                      vehicleId: int.parse(state.pathParameters['id']!),
+                    ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      // Die Reichweite steckt in der Abfrage, nicht im Pfad: „Wo liegt
+      // das?" ist dieselbe Frage, ob für ein Fahrzeug oder den ganzen
+      // Fuhrpark (Issue #180). Ein eigener Unterpfad je Fahrzeug hätte
+      // zwei Schirme aus einem gemacht.
+      //
+      // Bewusst OHNE Reiter-Zuordnung (`_currentNavIndex` kennt den Pfad
+      // nicht, die Leiste bleibt also weg): Der Schirm ist von Start UND
+      // vom Fahrzeug-Reiter aus erreichbar — kein Reiter wäre der
+      // richtige, und mit offener Tastatur frisst die Leiste eine ganze
+      // Trefferzeile.
+      GoRoute(
+        path: '/wissensdatenbank',
+        builder: (_, _) => const WissensdatenbankScreen(),
+      ),
+      GoRoute(
+        path: '/geraetesuche',
+        builder: (_, state) {
+          final roh = state.uri.queryParameters['fahrzeug'];
+          return GeraeteSucheScreen(
+            vehicleId: roh == null ? null : int.tryParse(roh),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/equipment',
+        builder: (_, _) => const EquipmentListScreen(),
+        routes: [
+          GoRoute(
+            path: 'new',
+            // ?name= belegt das Namensfeld vor (Fach-Picker „neu anlegen").
+            builder:
+                (_, state) => EquipmentFormScreen(
+                  initialName: state.uri.queryParameters['name'],
                 ),
-                GoRoute(
-                  path: 'compartments',
-                  builder: (_, state) => CompartmentManagerScreen(
-                      vehicleId:
-                          int.parse(state.pathParameters['id']!)),
+          ),
+          GoRoute(
+            path: ':id',
+            builder:
+                (_, state) => EquipmentDetailScreen(
+                  equipmentId: int.parse(state.pathParameters['id']!),
                 ),
-              ],
-            ),
-          ],
-        ),
-        // Die Reichweite steckt in der Abfrage, nicht im Pfad: „Wo liegt
-        // das?" ist dieselbe Frage, ob für ein Fahrzeug oder den ganzen
-        // Fuhrpark (Issue #180). Ein eigener Unterpfad je Fahrzeug hätte
-        // zwei Schirme aus einem gemacht.
-        //
-        // Bewusst OHNE Reiter-Zuordnung (`_currentNavIndex` kennt den Pfad
-        // nicht, die Leiste bleibt also weg): Der Schirm ist von Start UND
-        // vom Fahrzeug-Reiter aus erreichbar — kein Reiter wäre der
-        // richtige, und mit offener Tastatur frisst die Leiste eine ganze
-        // Trefferzeile.
-        GoRoute(
-          path: '/wissensdatenbank',
-          builder: (_, _) => const WissensdatenbankScreen(),
-        ),
-        GoRoute(
-          path: '/geraetesuche',
-          builder: (_, state) {
-            final roh = state.uri.queryParameters['fahrzeug'];
-            return GeraeteSucheScreen(
-                vehicleId: roh == null ? null : int.tryParse(roh));
-          },
-        ),
-        GoRoute(
-          path: '/equipment',
-          builder: (_, _) => const EquipmentListScreen(),
-          routes: [
-            GoRoute(
-              path: 'new',
-              // ?name= belegt das Namensfeld vor (Fach-Picker „neu anlegen").
-              builder: (_, state) => EquipmentFormScreen(
-                  initialName: state.uri.queryParameters['name']),
-            ),
-            GoRoute(
-              path: ':id',
-              builder: (_, state) => EquipmentDetailScreen(
-                  equipmentId:
-                      int.parse(state.pathParameters['id']!)),
-              routes: [
-                GoRoute(
-                  path: 'edit',
-                  builder: (_, state) => EquipmentFormScreen(
-                      editId:
-                          int.parse(state.pathParameters['id']!)),
+            routes: [
+              GoRoute(
+                path: 'edit',
+                builder:
+                    (_, state) => EquipmentFormScreen(
+                      editId: int.parse(state.pathParameters['id']!),
+                    ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/game',
+        builder: (_, _) => const GameMenuScreen(),
+        routes: [
+          GoRoute(
+            path: 'compartment-quiz',
+            builder: (_, _) => const CompartmentQuizScreen(),
+          ),
+          GoRoute(
+            path: 'cutaway-quiz',
+            builder: (_, _) => const CutawayQuizScreen(),
+          ),
+          GoRoute(
+            path: 'flashcards',
+            builder: (_, _) => const FlashcardScreen(),
+          ),
+          GoRoute(path: 'drag-drop', builder: (_, _) => const DragDropScreen()),
+          GoRoute(
+            path: 'image-quiz',
+            builder: (_, _) => const ImageRecognitionQuizScreen(),
+          ),
+          GoRoute(
+            path: 'deployment',
+            builder: (_, _) => const DeploymentModeScreen(),
+          ),
+          GoRoute(path: 'party', builder: (_, _) => const PartyScreen()),
+        ],
+      ),
+      GoRoute(
+        path: '/inspections',
+        builder: (_, _) => const InspectionDashboardScreen(),
+      ),
+      GoRoute(
+        path: '/user-management',
+        builder: (_, _) => const UserManagementScreen(),
+      ),
+      GoRoute(path: '/profil', builder: (_, _) => const ProfilScreen()),
+      GoRoute(
+        path: '/gesamtwehr',
+        builder: (_, _) => const GesamtwehrScreen(),
+        routes: [
+          GoRoute(
+            path: 'kopfbereich',
+            builder: (_, _) => const BrandingScreen(),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/operation',
+        builder: (_, _) => const OperationSetupScreen(),
+        routes: [
+          GoRoute(path: 'run', builder: (_, _) => const OperationRunScreen()),
+          GoRoute(
+            path: 'summary',
+            builder: (_, _) => const OperationSummaryScreen(),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/inventory',
+        builder: (_, _) => const InventorySetupScreen(),
+        routes: [
+          GoRoute(
+            path: 'run/:id',
+            builder:
+                (_, state) => InventoryRunScreen(
+                  sessionId: int.parse(state.pathParameters['id']!),
                 ),
-              ],
-            ),
-          ],
-        ),
-        GoRoute(
-          path: '/game',
-          builder: (_, _) => const GameMenuScreen(),
-          routes: [
-            GoRoute(
-              path: 'compartment-quiz',
-              builder: (_, _) => const CompartmentQuizScreen(),
-            ),
-            GoRoute(
-              path: 'cutaway-quiz',
-              builder: (_, _) => const CutawayQuizScreen(),
-            ),
-            GoRoute(
-              path: 'flashcards',
-              builder: (_, _) => const FlashcardScreen(),
-            ),
-            GoRoute(
-              path: 'drag-drop',
-              builder: (_, _) => const DragDropScreen(),
-            ),
-            GoRoute(
-              path: 'image-quiz',
-              builder: (_, _) => const ImageRecognitionQuizScreen(),
-            ),
-            GoRoute(
-              path: 'deployment',
-              builder: (_, _) => const DeploymentModeScreen(),
-            ),
-            GoRoute(
-              path: 'party',
-              builder: (_, _) => const PartyScreen(),
-            ),
-          ],
-        ),
-        GoRoute(
-          path: '/inspections',
-          builder: (_, _) => const InspectionDashboardScreen(),
-        ),
-        GoRoute(
-          path: '/user-management',
-          builder: (_, _) => const UserManagementScreen(),
-        ),
-        GoRoute(
-          path: '/profil',
-          builder: (_, _) => const ProfilScreen(),
-        ),
-        GoRoute(
-          path: '/gesamtwehr',
-          builder: (_, _) => const GesamtwehrScreen(),
-          routes: [
-            GoRoute(
-              path: 'kopfbereich',
-              builder: (_, _) => const BrandingScreen(),
-            ),
-          ],
-        ),
-        GoRoute(
-          path: '/operation',
-          builder: (_, _) => const OperationSetupScreen(),
-          routes: [
-            GoRoute(
-              path: 'run',
-              builder: (_, _) => const OperationRunScreen(),
-            ),
-            GoRoute(
-              path: 'summary',
-              builder: (_, _) => const OperationSummaryScreen(),
-            ),
-          ],
-        ),
-        GoRoute(
-          path: '/inventory',
-          builder: (_, _) => const InventorySetupScreen(),
-          routes: [
-            GoRoute(
-              path: 'run/:id',
-              builder: (_, state) => InventoryRunScreen(
-                  sessionId: int.parse(state.pathParameters['id']!)),
-            ),
-            GoRoute(
-              path: 'report/:id',
-              builder: (_, state) => InventoryReportScreen(
-                  sessionId: int.parse(state.pathParameters['id']!)),
-            ),
-          ],
-        ),
-        GoRoute(
-          path: '/import',
-          builder: (_, _) => const ImportWizardScreen(),
-        ),
-        GoRoute(
-          path: '/more',
-          builder: (_, _) => const MoreScreen(),
-        ),
-        GoRoute(
-          path: '/image-library',
-          builder: (_, _) => const ImageLibraryScreen(),
-        ),
-        GoRoute(
-          path: '/settings',
-          builder: (_, _) => const SettingsScreen(),
-        ),
-        GoRoute(
-          path: '/changelog',
-          builder: (_, _) => const ChangelogScreen(),
-        ),
-      ],
-    ),
+          ),
+          GoRoute(
+            path: 'report/:id',
+            builder:
+                (_, state) => InventoryReportScreen(
+                  sessionId: int.parse(state.pathParameters['id']!),
+                ),
+          ),
+        ],
+      ),
+      GoRoute(path: '/import', builder: (_, _) => const ImportWizardScreen()),
+      GoRoute(path: '/more', builder: (_, _) => const MoreScreen()),
+      GoRoute(
+        path: '/image-library',
+        builder: (_, _) => const ImageLibraryScreen(),
+      ),
+      GoRoute(path: '/settings', builder: (_, _) => const SettingsScreen()),
+      GoRoute(path: '/changelog', builder: (_, _) => const ChangelogScreen()),
+    ],
+  ),
 ];
 
 class _AppShell extends StatelessWidget {
@@ -416,40 +411,45 @@ class _AppShell extends StatelessWidget {
 
     return Scaffold(
       body: child,
-      bottomNavigationBar: currentIndex >= 0
-          ? NavigationBar(
-              selectedIndex: currentIndex,
-              onDestinationSelected: (i) {
-                switch (i) {
-                  case 0:
-                    context.go('/');
-                  case 1:
-                    context.go('/game');
-                  case 2:
-                    context.go('/vehicles');
-                  case 3:
-                    context.go('/more');
-                }
-              },
-              destinations: const [
-                NavigationDestination(
+      bottomNavigationBar:
+          currentIndex >= 0
+              ? NavigationBar(
+                selectedIndex: currentIndex,
+                onDestinationSelected: (i) {
+                  switch (i) {
+                    case 0:
+                      context.go('/');
+                    case 1:
+                      context.go('/game');
+                    case 2:
+                      context.go('/vehicles');
+                    case 3:
+                      context.go('/more');
+                  }
+                },
+                destinations: const [
+                  NavigationDestination(
                     icon: Icon(Icons.home_outlined),
                     selectedIcon: Icon(Icons.home),
-                    label: 'Start'),
-                NavigationDestination(
+                    label: 'Start',
+                  ),
+                  NavigationDestination(
                     icon: Icon(Icons.school_outlined),
                     selectedIcon: Icon(Icons.school),
-                    label: 'Lernen'),
-                NavigationDestination(
+                    label: 'Lernen',
+                  ),
+                  NavigationDestination(
                     icon: Icon(Icons.fire_truck_outlined),
                     selectedIcon: Icon(Icons.fire_truck),
-                    label: 'Fahrzeuge'),
-                NavigationDestination(
+                    label: 'Fahrzeuge',
+                  ),
+                  NavigationDestination(
                     icon: Icon(Icons.more_horiz),
-                    label: 'Mehr'),
-              ],
-            )
-          : null,
+                    label: 'Mehr',
+                  ),
+                ],
+              )
+              : null,
     );
   }
 

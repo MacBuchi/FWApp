@@ -84,8 +84,10 @@ Future<CapturedImage?> captureImage(
   // rootNavigator: Ohne das öffnet der Editor im Shell-Navigator, die untere
   // Navigationsleiste bleibt stehen und frisst genau die Höhe, die der
   // Zuschnittrahmen braucht. Zum Bildbearbeiten gehört der ganze Schirm.
-  final edited =
-      await Navigator.of(context, rootNavigator: true).push<Uint8List>(
+  final edited = await Navigator.of(
+    context,
+    rootNavigator: true,
+  ).push<Uint8List>(
     MaterialPageRoute(
       fullscreenDialog: true,
       builder: (_) => ImageEditorScreen(source: raw),
@@ -100,7 +102,9 @@ Future<CapturedImage?> captureImage(
     small = await compute(compressImageForUpload, edited);
   } on FormatException catch (e) {
     appLog.w('Bild konnte nicht verkleinert werden', error: e);
-    if (context.mounted) _showError(context, 'Bildformat wird nicht unterstützt.');
+    if (context.mounted) {
+      _showError(context, 'Bildformat wird nicht unterstützt.');
+    }
     return null;
   }
 
@@ -115,9 +119,9 @@ Future<CapturedImage?> captureImage(
   }
 }
 
-void _showError(BuildContext context, String message) =>
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+void _showError(BuildContext context, String message) => ScaffoldMessenger.of(
+  context,
+).showSnackBar(SnackBar(content: Text(message)));
 
 /// Schreibt das Bild unter einem eindeutigen Namen in den App-Ordner.
 /// Zeitstempel im Namen: Ein ersetztes Bild darf nie denselben Pfad bekommen,
@@ -142,29 +146,30 @@ Future<ImageSource?> _askForSource(BuildContext context) {
   final hasCamera = cameraAvailable;
   return showModalBottomSheet<ImageSource>(
     context: context,
-    builder: (context) => SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (hasCamera)
-            ListTile(
-              leading: const Icon(Icons.photo_camera),
-              title: const Text('Foto aufnehmen'),
-              onTap: () => Navigator.pop(context, ImageSource.camera),
-            ),
-          ListTile(
-            leading: const Icon(Icons.photo_library),
-            title: const Text('Aus Galerie wählen'),
-            onTap: () => Navigator.pop(context, ImageSource.gallery),
+    builder:
+        (context) => SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (hasCamera)
+                ListTile(
+                  leading: const Icon(Icons.photo_camera),
+                  title: const Text('Foto aufnehmen'),
+                  onTap: () => Navigator.pop(context, ImageSource.camera),
+                ),
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Aus Galerie wählen'),
+                onTap: () => Navigator.pop(context, ImageSource.gallery),
+              ),
+              ListTile(
+                leading: const Icon(Icons.close),
+                title: const Text('Abbrechen'),
+                onTap: () => Navigator.pop(context),
+              ),
+            ],
           ),
-          ListTile(
-            leading: const Icon(Icons.close),
-            title: const Text('Abbrechen'),
-            onTap: () => Navigator.pop(context),
-          ),
-        ],
-      ),
-    ),
+        ),
   );
 }
 
@@ -269,7 +274,10 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
   void _onScaleUpdate(ScaleUpdateDetails details) {
     setState(() {
       // Nicht kleiner als „füllt den Rahmen" — sonst entstehen Ränder.
-      _scale = (_startScale * details.scale).clamp(_coverScale, _coverScale * 8);
+      _scale = (_startScale * details.scale).clamp(
+        _coverScale,
+        _coverScale * 8,
+      );
       _rotation = _startRotation + details.rotation;
       // Verschieben ergibt sich daraus, den gemerkten Punkt unter dem
       // (mitwandernden) Fingerschwerpunkt zu halten. Deckt Ein-Finger-Ziehen
@@ -290,10 +298,10 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
   void _rotateQuarter() => setState(() => _rotation += math.pi / 2);
 
   void _reset() => setState(() {
-        _offset = Offset.zero;
-        _rotation = 0;
-        _scale = _coverScale;
-      });
+    _offset = Offset.zero;
+    _rotation = 0;
+    _scale = _coverScale;
+  });
 
   Future<void> _apply() async {
     final image = _image;
@@ -341,53 +349,54 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
       body: Column(
         children: [
           Expanded(
-            child: _loadError != null
-                ? const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(24),
-                      child: Text(
-                        'Bildformat wird nicht unterstützt.',
-                        style: TextStyle(color: Colors.white),
-                        textAlign: TextAlign.center,
+            child:
+                _loadError != null
+                    ? const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(24),
+                        child: Text(
+                          'Bildformat wird nicht unterstützt.',
+                          style: TextStyle(color: Colors.white),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
-                    ),
-                  )
-                : image == null
+                    )
+                    : image == null
                     ? const Center(child: CircularProgressIndicator())
                     : LayoutBuilder(
-                        builder: (context, constraints) {
-                          final frame = _fitFrame(constraints.biggest);
-                          // Erststart und Fenstergrößenwechsel: Bild so
-                          // legen, dass es den Rahmen füllt.
-                          final cover = math.max(
-                            frame.width / image.width,
-                            frame.height / image.height,
-                          );
-                          if (_frameSize != frame) {
-                            _frameSize = frame;
-                            _coverScale = cover;
-                            if (_scale < cover) _scale = cover;
-                          }
-                          _center = Offset(
-                            constraints.maxWidth / 2,
-                            constraints.maxHeight / 2,
-                          );
-                          return GestureDetector(
-                            onScaleStart: _onScaleStart,
-                            onScaleUpdate: _onScaleUpdate,
-                            child: CustomPaint(
-                              size: constraints.biggest,
-                              painter: _EditorPainter(
-                                image: image,
-                                frame: frame,
-                                offset: _offset,
-                                scale: _scale,
-                                rotation: _rotation,
-                              ),
+                      builder: (context, constraints) {
+                        final frame = _fitFrame(constraints.biggest);
+                        // Erststart und Fenstergrößenwechsel: Bild so
+                        // legen, dass es den Rahmen füllt.
+                        final cover = math.max(
+                          frame.width / image.width,
+                          frame.height / image.height,
+                        );
+                        if (_frameSize != frame) {
+                          _frameSize = frame;
+                          _coverScale = cover;
+                          if (_scale < cover) _scale = cover;
+                        }
+                        _center = Offset(
+                          constraints.maxWidth / 2,
+                          constraints.maxHeight / 2,
+                        );
+                        return GestureDetector(
+                          onScaleStart: _onScaleStart,
+                          onScaleUpdate: _onScaleUpdate,
+                          child: CustomPaint(
+                            size: constraints.biggest,
+                            painter: _EditorPainter(
+                              image: image,
+                              frame: frame,
+                              offset: _offset,
+                              scale: _scale,
+                              rotation: _rotation,
                             ),
-                          );
-                        },
-                      ),
+                          ),
+                        );
+                      },
+                    ),
           ),
           // Eigene schwarze Fläche: Der Hinweis stand sonst halb über dem Bild
           // und war je nach Motiv nicht zu lesen.
@@ -410,9 +419,10 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
                       children: [
                         Expanded(
                           child: OutlinedButton(
-                            onPressed: _busy
-                                ? null
-                                : () => Navigator.of(context).pop(),
+                            onPressed:
+                                _busy
+                                    ? null
+                                    : () => Navigator.of(context).pop(),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.white,
                               side: const BorderSide(color: Colors.white54),
@@ -429,14 +439,16 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
                             style: FilledButton.styleFrom(
                               minimumSize: const Size.fromHeight(48),
                             ),
-                            child: _busy
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                        strokeWidth: 2),
-                                  )
-                                : const Text('Übernehmen'),
+                            child:
+                                _busy
+                                    ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                    : const Text('Übernehmen'),
                           ),
                         ),
                       ],
@@ -484,12 +496,18 @@ class _EditorPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final frameRect = Rect.fromCenter(
-        center: center, width: frame.width, height: frame.height);
+      center: center,
+      width: frame.width,
+      height: frame.height,
+    );
 
     canvas.save();
     applyImageTransform(canvas, center, offset, scale, rotation);
     canvas.drawImage(
-        image, Offset(-image.width / 2, -image.height / 2), Paint());
+      image,
+      Offset(-image.width / 2, -image.height / 2),
+      Paint(),
+    );
     canvas.restore();
 
     // Alles außerhalb des Rahmens abdunkeln — der Rahmen IST der Zuschnitt,

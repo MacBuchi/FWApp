@@ -23,9 +23,10 @@ import 'package:flutter_test/flutter_test.dart';
 
 Map<String, String> _authEnvAus(String pfad) {
   final roh = jsonDecode(File(pfad).readAsStringSync()) as Map<String, dynamic>;
-  final quelle = roh.containsKey('auth_env')
-      ? roh['auth_env'] as Map<String, dynamic>
-      : roh;
+  final quelle =
+      roh.containsKey('auth_env')
+          ? roh['auth_env'] as Map<String, dynamic>
+          : roh;
   return {
     for (final e in quelle.entries)
       if (!e.key.startsWith('_')) e.key: e.value as String,
@@ -62,7 +63,12 @@ void main() {
       // damit sie nicht still gelockert wird.
       for (final k in authEnv.keys) {
         for (final wort in const [
-          'KEY', 'SECRET', 'PASSWORD', 'TOKEN', 'DSN', 'SMTP_PASS',
+          'KEY',
+          'SECRET',
+          'PASSWORD',
+          'TOKEN',
+          'DSN',
+          'SMTP_PASS',
         ]) {
           expect(k.toUpperCase().contains(wort), isFalse, reason: k);
         }
@@ -107,14 +113,17 @@ void main() {
     List<String> vergleiche(Map<String, String> soll, Map<String, String> ist) {
       final py = File('${tmp.path}/diff.py')
         ..writeAsStringSync(_pythonBlock(skript, 'AUTHDIFF'));
-      final sollDatei = File('${tmp.path}/soll.txt')
-        ..writeAsStringSync(
-            soll.entries.map((e) => '${e.key}\t${e.value}').join('\n'));
-      final istDatei = File('${tmp.path}/ist.txt')
-        ..writeAsStringSync(
-            ist.entries.map((e) => '${e.key}=${e.value}').join('\n'));
-      final r = Process.runSync(
-          'python3', [py.path, sollDatei.path, istDatei.path]);
+      final sollDatei = File('${tmp.path}/soll.txt')..writeAsStringSync(
+        soll.entries.map((e) => '${e.key}\t${e.value}').join('\n'),
+      );
+      final istDatei = File('${tmp.path}/ist.txt')..writeAsStringSync(
+        ist.entries.map((e) => '${e.key}=${e.value}').join('\n'),
+      );
+      final r = Process.runSync('python3', [
+        py.path,
+        sollDatei.path,
+        istDatei.path,
+      ]);
       expect(r.exitCode, 0, reason: r.stderr.toString());
       return (r.stdout as String)
           .split('\n')
@@ -151,8 +160,10 @@ void main() {
       expect(authEnv[schluessel], contains(' '));
       expect(authEnv[schluessel], contains(':'));
       expect(vergleiche(authEnv, authEnv), isEmpty);
-      expect(vergleiche(authEnv, {...authEnv, schluessel: 'FWApp: Einladung'}),
-          hasLength(1));
+      expect(
+        vergleiche(authEnv, {...authEnv, schluessel: 'FWApp: Einladung'}),
+        hasLength(1),
+      );
     });
 
     test('zusätzliche Variablen auf dem Server stören nicht', () {

@@ -62,30 +62,33 @@ class _BrandingScreenState extends ConsumerState<BrandingScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Kopfbereich')),
-      body: bezug == null
-          ? const _Hinweis(
-              icon: Icons.account_tree_outlined,
-              text: 'Diese Abteilung gehört zu keiner Gesamtwehr. '
-                  'Einen gemeinsamen Kopfbereich gibt es erst mit ihr.',
-            )
-          : !darfPflegen
+      body:
+          bezug == null
               ? const _Hinweis(
-                  icon: Icons.lock_outline,
-                  text: 'Den Auftritt der Gesamtwehr pflegt der '
-                      'Feuerwehrkommandant. Du siehst ihn auf der Startseite.',
-                )
+                icon: Icons.account_tree_outlined,
+                text:
+                    'Diese Abteilung gehört zu keiner Gesamtwehr. '
+                    'Einen gemeinsamen Kopfbereich gibt es erst mit ihr.',
+              )
+              : !darfPflegen
+              ? const _Hinweis(
+                icon: Icons.lock_outline,
+                text:
+                    'Den Auftritt der Gesamtwehr pflegt der '
+                    'Feuerwehrkommandant. Du siehst ihn auf der Startseite.',
+              )
               : _Maske(
-                  wehrName: bezug.name,
-                  titel: _titel,
-                  text: _text,
-                  bildPfad: _bildPfad,
-                  neuesBild: _neuesBild,
-                  laeuft: _laeuft,
-                  onBildWaehlen: _bildWaehlen,
-                  onBildEntfernen: _bildEntfernen,
-                  onSpeichern: _speichern,
-                  onAenderung: () => setState(() {}),
-                ),
+                wehrName: bezug.name,
+                titel: _titel,
+                text: _text,
+                bildPfad: _bildPfad,
+                neuesBild: _neuesBild,
+                laeuft: _laeuft,
+                onBildWaehlen: _bildWaehlen,
+                onBildEntfernen: _bildEntfernen,
+                onSpeichern: _speichern,
+                onAenderung: () => setState(() {}),
+              ),
     );
   }
 
@@ -110,8 +113,10 @@ class _BrandingScreenState extends ConsumerState<BrandingScreen> {
     final bezug = ref.read(aktuelleGesamtwehrProvider).value;
     final dienst = ref.read(brandingServiceProvider);
     if (bezug == null || dienst == null) {
-      _melde('Ohne Serververbindung lässt sich der Kopfbereich nicht '
-          'speichern.');
+      _melde(
+        'Ohne Serververbindung lässt sich der Kopfbereich nicht '
+        'speichern.',
+      );
       return;
     }
 
@@ -150,8 +155,7 @@ class _BrandingScreenState extends ConsumerState<BrandingScreen> {
 
   void _melde(String text) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(text)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
   }
 }
 
@@ -182,16 +186,20 @@ class _Maske extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hatBild = neuesBild != null || (bildPfad != null && bildPfad!.isNotEmpty);
-    final vorschauBild = neuesBild != null
-        ? Image.memory(neuesBild!, fit: BoxFit.cover)
-        : gesamtwehrKopfBild(bildPfad);
+    final hatBild =
+        neuesBild != null || (bildPfad != null && bildPfad!.isNotEmpty);
+    final vorschauBild =
+        neuesBild != null
+            ? Image.memory(neuesBild!, fit: BoxFit.cover)
+            : gesamtwehrKopfBild(bildPfad);
 
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Text('So sieht es auf der Startseite aus',
-            style: Theme.of(context).textTheme.labelLarge),
+        Text(
+          'So sieht es auf der Startseite aus',
+          style: Theme.of(context).textTheme.labelLarge,
+        ),
         const SizedBox(height: 8),
         // Dieselbe Darstellung wie die Startseite, nicht eine ähnliche.
         GesamtwehrKopf(
@@ -238,9 +246,11 @@ class _Maske extends StatelessWidget {
               ListTile(
                 leading: const Icon(Icons.image_outlined),
                 title: Text(hatBild ? 'Kopfbild ersetzen' : 'Kopfbild wählen'),
-                subtitle: Text(neuesBild != null
-                    ? 'Neu gewählt — wird beim Speichern hochgeladen'
-                    : 'Quer aufgenommen wirkt am besten'),
+                subtitle: Text(
+                  neuesBild != null
+                      ? 'Neu gewählt — wird beim Speichern hochgeladen'
+                      : 'Quer aufgenommen wirkt am besten',
+                ),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: laeuft ? null : onBildWaehlen,
               ),
@@ -256,13 +266,14 @@ class _Maske extends StatelessWidget {
         const SizedBox(height: 24),
         FilledButton.icon(
           onPressed: laeuft ? null : onSpeichern,
-          icon: laeuft
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Icon(Icons.save),
+          icon:
+              laeuft
+                  ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                  : const Icon(Icons.save),
           label: Text(laeuft ? 'Wird gespeichert …' : 'Speichern'),
         ),
         const SizedBox(height: 8),
@@ -284,16 +295,16 @@ class _Hinweis extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 48),
-              const SizedBox(height: 12),
-              Text(text, textAlign: TextAlign.center),
-            ],
-          ),
-        ),
-      );
+    child: Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 48),
+          const SizedBox(height: 12),
+          Text(text, textAlign: TextAlign.center),
+        ],
+      ),
+    ),
+  );
 }

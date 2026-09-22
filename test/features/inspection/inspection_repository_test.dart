@@ -1,5 +1,6 @@
 /// inspection_repository_test.dart – markDone due-date logic and due queries.
 library;
+
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/core/database/app_database.dart';
@@ -17,11 +18,15 @@ void main() {
   setUp(() async {
     db = createTestDatabase();
     repo = InspectionRepositoryImpl(db.inspectionDao);
-    equipmentId = await db.equipmentDao
-        .insertEquipment(EquipmentItemsCompanion.insert(name: 'Pressluftatmer'));
+    equipmentId = await db.equipmentDao.insertEquipment(
+      EquipmentItemsCompanion.insert(name: 'Pressluftatmer'),
+    );
     instanceId = await db.inspectionDao.insertInstance(
-        EquipmentInstancesCompanion.insert(
-            equipmentId: equipmentId, identifier: const Value('PA 1')));
+      EquipmentInstancesCompanion.insert(
+        equipmentId: equipmentId,
+        identifier: const Value('PA 1'),
+      ),
+    );
   });
 
   tearDown(() => db.close());
@@ -29,41 +34,51 @@ void main() {
   Future<InspectionSchedule> currentSchedule() async =>
       (await repo.watchSchedulesByInstance(instanceId).first).single;
 
-  test('markDone on recurring schedule advances dueAt by intervalMonths',
-      () async {
-    await repo.insertSchedule(InspectionSchedule(
-      id: 0,
-      instanceId: instanceId,
-      kind: InspectionKind.recurring,
-      title: 'Jährliche Prüfung',
-      intervalMonths: 12,
-      dueAt: DateTime(2026, 7, 1),
-      updatedAt: DateTime.now(),
-    ));
+  test(
+    'markDone on recurring schedule advances dueAt by intervalMonths',
+    () async {
+      await repo.insertSchedule(
+        InspectionSchedule(
+          id: 0,
+          instanceId: instanceId,
+          kind: InspectionKind.recurring,
+          title: 'Jährliche Prüfung',
+          intervalMonths: 12,
+          dueAt: DateTime(2026, 7, 1),
+          updatedAt: DateTime.now(),
+        ),
+      );
 
-    final doneAt = DateTime(2026, 7, 12);
-    await repo.markDone(await currentSchedule(),
-        doneAt: doneAt, doneBy: 'Marcus', note: 'alles i.O.');
+      final doneAt = DateTime(2026, 7, 12);
+      await repo.markDone(
+        await currentSchedule(),
+        doneAt: doneAt,
+        doneBy: 'Marcus',
+        note: 'alles i.O.',
+      );
 
-    final updated = await currentSchedule();
-    expect(updated.lastDoneAt, doneAt);
-    expect(updated.dueAt, DateTime(2027, 7, 12));
+      final updated = await currentSchedule();
+      expect(updated.lastDoneAt, doneAt);
+      expect(updated.dueAt, DateTime(2027, 7, 12));
 
-    final log = await repo.getLog(updated.id);
-    expect(log, hasLength(1));
-    expect(log.single.doneBy, 'Marcus');
-    expect(log.single.note, 'alles i.O.');
-  });
+      final log = await repo.getLog(updated.id);
+      expect(log, hasLength(1));
+      expect(log.single.doneBy, 'Marcus');
+      expect(log.single.note, 'alles i.O.');
+    },
+  );
 
   test('markDone on expiry schedule requires and applies nextDueAt', () async {
-    await repo.insertSchedule(InspectionSchedule(
-      id: 0,
-      instanceId: instanceId,
-      kind: InspectionKind.expiry,
-      title: 'MHD Verbandmaterial',
-      dueAt: DateTime(2026, 8, 1),
-      updatedAt: DateTime.now(),
-    ));
+    await repo.insertSchedule(
+      InspectionSchedule(
+        id: 0,
+        instanceId: instanceId,
+        kind: InspectionKind.expiry,
+        title: 'MHD Verbandmaterial',
+        dueAt: DateTime(2026, 8, 1),
+        updatedAt: DateTime.now(),
+      ),
+    );
     final schedule = await currentSchedule();
 
     await expectLater(
@@ -72,14 +87,14 @@ void main() {
     );
 
     final newExpiry = DateTime(2031, 8, 1);
-    await repo.markDone(schedule,
-        doneAt: DateTime.now(), nextDueAt: newExpiry);
+    await repo.markDone(schedule, doneAt: DateTime.now(), nextDueAt: newExpiry);
     expect((await currentSchedule()).dueAt, newExpiry);
   });
 
   test('due queries only count active instances within the window', () async {
-    final vehicleId = await db.vehicleDao
-        .insertVehicle(VehiclesCompanion.insert(name: 'AB-G', type: 'AB-G'));
+    final vehicleId = await db.vehicleDao.insertVehicle(
+      VehiclesCompanion.insert(name: 'AB-G', type: 'AB-G'),
+    );
     final instance =
         (await repo.watchInstancesByEquipment(equipmentId).first).single;
     await repo.updateInstance(instance.copyWith(vehicleId: vehicleId));
@@ -91,14 +106,16 @@ void main() {
       ('Bald fällig', now.add(const Duration(days: 10))),
       ('Weit weg', now.add(const Duration(days: 200))),
     ]) {
-      await repo.insertSchedule(InspectionSchedule(
-        id: 0,
-        instanceId: instanceId,
-        kind: InspectionKind.expiry,
-        title: title,
-        dueAt: due,
-        updatedAt: now,
-      ));
+      await repo.insertSchedule(
+        InspectionSchedule(
+          id: 0,
+          instanceId: instanceId,
+          kind: InspectionKind.expiry,
+          title: title,
+          dueAt: due,
+          updatedAt: now,
+        ),
+      );
     }
 
     final due = await repo.watchDueSoon(withinDays: 30).first;

@@ -10,6 +10,7 @@
 /// Braucht die lokalen Testkonten aus tool/setup_local_supabase.sh:
 ///   admin@fw.local / geraetewart@fw.local / member@fw.local, pw test1234
 library;
+
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -25,7 +26,8 @@ const _anonKey =
 
 /// Derselbe öffentlich dokumentierte Demo-Key wie in sync_e2e_test.dart —
 /// in jedem lokalen Stack identisch, kein Geheimnis.
-final _serviceRoleKey = Platform.environment['SUPABASE_SERVICE_ROLE_KEY'] ??
+final _serviceRoleKey =
+    Platform.environment['SUPABASE_SERVICE_ROLE_KEY'] ??
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU';
 
 Future<bool> _stackAvailable() async {
@@ -43,8 +45,11 @@ Future<bool> _stackAvailable() async {
 
 Future<void> main() async {
   if (!await _stackAvailable()) {
-    test('branding e2e', () {},
-        skip: 'Lokaler Supabase-Stack läuft nicht (supabase start).');
+    test(
+      'branding e2e',
+      () {},
+      skip: 'Lokaler Supabase-Stack läuft nicht (supabase start).',
+    );
     return;
   }
 
@@ -79,40 +84,49 @@ Future<void> main() async {
     kommandantClient = SupabaseClient(_url, _anonKey);
     gwClient = SupabaseClient(_url, _anonKey);
     memberClient = SupabaseClient(_url, _anonKey);
-    await kommandantClient.auth
-        .signInWithPassword(email: 'admin@fw.local', password: 'test1234');
+    await kommandantClient.auth.signInWithPassword(
+      email: 'admin@fw.local',
+      password: 'test1234',
+    );
     await gwClient.auth.signInWithPassword(
-        email: 'geraetewart@fw.local', password: 'test1234');
-    await memberClient.auth
-        .signInWithPassword(email: 'member@fw.local', password: 'test1234');
+      email: 'geraetewart@fw.local',
+      password: 'test1234',
+    );
+    await memberClient.auth.signInWithPassword(
+      email: 'member@fw.local',
+      password: 'test1234',
+    );
 
     await asService((s) async {
-      final gw = await s
-          .from('gesamtwehren')
-          .insert({'name': 'GW Branding', 'slug': 'gw-branding'})
-          .select('id')
-          .single();
+      final gw =
+          await s
+              .from('gesamtwehren')
+              .insert({'name': 'GW Branding', 'slug': 'gw-branding'})
+              .select('id')
+              .single();
       gesamtwehrId = gw['id'] as String;
 
       // Eine zweite Wehr, zu der KEINES der Testkonten gehört — an ihr zeigt
       // sich, ob RLS wirklich je Wehr trennt.
-      final fremd = await s
-          .from('gesamtwehren')
-          .insert({'name': 'GW Fremd', 'slug': 'gw-fremd'})
-          .select('id')
-          .single();
+      final fremd =
+          await s
+              .from('gesamtwehren')
+              .insert({'name': 'GW Fremd', 'slug': 'gw-fremd'})
+              .select('id')
+              .single();
       fremdeGesamtwehrId = fremd['id'] as String;
 
-      final abt = await s
-          .from('abteilungen')
-          .insert({
-            'name': 'Abteilung Branding',
-            'slug': 'abteilung-branding',
-            'status': 'active',
-            'gesamtwehr_id': gesamtwehrId,
-          })
-          .select('id')
-          .single();
+      final abt =
+          await s
+              .from('abteilungen')
+              .insert({
+                'name': 'Abteilung Branding',
+                'slug': 'abteilung-branding',
+                'status': 'active',
+                'gesamtwehr_id': gesamtwehrId,
+              })
+              .select('id')
+              .single();
       abteilungId = abt['id'] as String;
 
       // Gerätewart und Mitglied gehören zur Wehr — darüber greift
@@ -143,14 +157,16 @@ Future<void> main() async {
 
   tearDownAll(() async {
     await asService((s) async {
-      await s.from('gesamtwehr_branding').delete().inFilter(
-          'gesamtwehr_id', [gesamtwehrId, fremdeGesamtwehrId]);
+      await s.from('gesamtwehr_branding').delete().inFilter('gesamtwehr_id', [
+        gesamtwehrId,
+        fremdeGesamtwehrId,
+      ]);
       await s.from('memberships').delete().eq('abteilung_id', abteilungId);
       await s.from('abteilungen').delete().eq('id', abteilungId);
-      await s
-          .from('gesamtwehren')
-          .delete()
-          .inFilter('id', [gesamtwehrId, fremdeGesamtwehrId]);
+      await s.from('gesamtwehren').delete().inFilter('id', [
+        gesamtwehrId,
+        fremdeGesamtwehrId,
+      ]);
     });
     await kommandantClient.dispose();
     await gwClient.dispose();
@@ -159,16 +175,21 @@ Future<void> main() async {
   });
 
   test('der Feuerwehrkommandant pflegt den Kopfbereich', () async {
-    final zeile = await kommandantClient.rpc('set_gesamtwehr_branding', params: {
-      'gw': gesamtwehrId,
-      'neuer_titel': 'Freiwillige Feuerwehr Musterstadt',
-      'neuer_text': 'Übung am Dienstag, 19 Uhr.',
-      'neues_bild': 'supabase://gesamtwehr-branding/$gesamtwehrId/1700.jpg',
-    });
+    final zeile = await kommandantClient.rpc(
+      'set_gesamtwehr_branding',
+      params: {
+        'gw': gesamtwehrId,
+        'neuer_titel': 'Freiwillige Feuerwehr Musterstadt',
+        'neuer_text': 'Übung am Dienstag, 19 Uhr.',
+        'neues_bild': 'supabase://gesamtwehr-branding/$gesamtwehrId/1700.jpg',
+      },
+    );
     expect(zeile['title'], 'Freiwillige Feuerwehr Musterstadt');
     expect(zeile['welcome_text'], 'Übung am Dienstag, 19 Uhr.');
-    expect(zeile['image_path'],
-        'supabase://gesamtwehr-branding/$gesamtwehrId/1700.jpg');
+    expect(
+      zeile['image_path'],
+      'supabase://gesamtwehr-branding/$gesamtwehrId/1700.jpg',
+    );
   });
 
   test('der Gerätewart derselben Wehr darf NICHT — er pflegt Geräte, nicht '
@@ -176,45 +197,58 @@ Future<void> main() async {
     // Gegenprobe zur Stufe ②: Denselben geteilten Gerätebestand DARF er
     // schreiben. Die Grenze verläuft hier bewusst anders.
     await expectLater(
-      gwClient.rpc('set_gesamtwehr_branding', params: {
-        'gw': gesamtwehrId,
-        'neuer_titel': 'Übernommen',
-        'neuer_text': null,
-        'neues_bild': null,
-      }),
-      throwsA(isA<PostgrestException>().having((e) => e.message, 'message',
-          contains('feuerwehrkommandant'))),
+      gwClient.rpc(
+        'set_gesamtwehr_branding',
+        params: {
+          'gw': gesamtwehrId,
+          'neuer_titel': 'Übernommen',
+          'neuer_text': null,
+          'neues_bild': null,
+        },
+      ),
+      throwsA(
+        isA<PostgrestException>().having(
+          (e) => e.message,
+          'message',
+          contains('feuerwehrkommandant'),
+        ),
+      ),
     );
 
     // Und der Bestand steht unverändert.
-    final zeile = await kommandantClient
-        .from('gesamtwehr_branding')
-        .select('title')
-        .eq('gesamtwehr_id', gesamtwehrId)
-        .single();
+    final zeile =
+        await kommandantClient
+            .from('gesamtwehr_branding')
+            .select('title')
+            .eq('gesamtwehr_id', gesamtwehrId)
+            .single();
     expect(zeile['title'], 'Freiwillige Feuerwehr Musterstadt');
   });
 
   test('jedes Mitglied der Wehr liest den Kopfbereich', () async {
-    final zeile = await memberClient
-        .from('gesamtwehr_branding')
-        .select('title, welcome_text')
-        .eq('gesamtwehr_id', gesamtwehrId)
-        .maybeSingle();
+    final zeile =
+        await memberClient
+            .from('gesamtwehr_branding')
+            .select('title, welcome_text')
+            .eq('gesamtwehr_id', gesamtwehrId)
+            .maybeSingle();
     expect(zeile, isNotNull);
     expect(zeile!['welcome_text'], 'Übung am Dienstag, 19 Uhr.');
   });
 
   test('der Kopfbereich einer fremden Wehr bleibt unsichtbar', () async {
-    await asService((s) => s.from('gesamtwehr_branding').insert({
-          'gesamtwehr_id': fremdeGesamtwehrId,
-          'title': 'Geheime Nachbarwehr',
-        }));
+    await asService(
+      (s) => s.from('gesamtwehr_branding').insert({
+        'gesamtwehr_id': fremdeGesamtwehrId,
+        'title': 'Geheime Nachbarwehr',
+      }),
+    );
 
     // Weder der Kommandant der eigenen Wehr noch das Mitglied sehen sie.
     for (final client in [kommandantClient, memberClient]) {
-      final zeilen =
-          await client.from('gesamtwehr_branding').select('gesamtwehr_id');
+      final zeilen = await client
+          .from('gesamtwehr_branding')
+          .select('gesamtwehr_id');
       expect(
         zeilen.map((r) => r['gesamtwehr_id']),
         isNot(contains(fremdeGesamtwehrId)),
@@ -222,75 +256,87 @@ Future<void> main() async {
     }
   });
 
-  test('an der RPC vorbei geht nichts — die Tabelle hat keine Schreib-Policy',
-      () async {
-    // Auch der Kommandant kommt nur über die geprüfte Funktion hinein.
-    //
-    // Geprüft wird, dass nichts entsteht und sich nichts ändert — nicht, dass
-    // PostgREST einen Fehler schickt. Beides fällt auseinander, sobald der
-    // Stack `authenticated` doch ein Schreibrecht mitgibt: Der INSERT
-    // scheitert dann an der fehlenden INSERT-Policy, das UPDATE läuft still
-    // ins Leere, weil RLS die Zeile herausfiltert. Genau daran kippte dieser
-    // Test unter CLI 2.116.0 — ohne dass je etwas durchgegangen wäre (#185).
-    // Siehe direktzugriff.dart; das Recht selbst prüft
-    // tool/check_schema_grants.sql am laufenden Stack.
-    final vorher = await kommandantClient
-        .from('gesamtwehr_branding')
-        .select('title')
-        .eq('gesamtwehr_id', gesamtwehrId)
-        .maybeSingle();
+  test(
+    'an der RPC vorbei geht nichts — die Tabelle hat keine Schreib-Policy',
+    () async {
+      // Auch der Kommandant kommt nur über die geprüfte Funktion hinein.
+      //
+      // Geprüft wird, dass nichts entsteht und sich nichts ändert — nicht, dass
+      // PostgREST einen Fehler schickt. Beides fällt auseinander, sobald der
+      // Stack `authenticated` doch ein Schreibrecht mitgibt: Der INSERT
+      // scheitert dann an der fehlenden INSERT-Policy, das UPDATE läuft still
+      // ins Leere, weil RLS die Zeile herausfiltert. Genau daran kippte dieser
+      // Test unter CLI 2.116.0 — ohne dass je etwas durchgegangen wäre (#185).
+      // Siehe direktzugriff.dart; das Recht selbst prüft
+      // tool/check_schema_grants.sql am laufenden Stack.
+      final vorher =
+          await kommandantClient
+              .from('gesamtwehr_branding')
+              .select('title')
+              .eq('gesamtwehr_id', gesamtwehrId)
+              .maybeSingle();
 
-    await erwarteKeinenDurchgriff(
-      () => kommandantClient.from('gesamtwehr_branding').insert({
-        'gesamtwehr_id': gesamtwehrId,
-        'title': 'Direkt geschrieben',
-      }),
-    );
-    await erwarteKeinenDurchgriff(
-      () => kommandantClient
-          .from('gesamtwehr_branding')
-          .update({'title': 'Direkt geändert'}).eq(
-              'gesamtwehr_id', gesamtwehrId),
-    );
+      await erwarteKeinenDurchgriff(
+        () => kommandantClient.from('gesamtwehr_branding').insert({
+          'gesamtwehr_id': gesamtwehrId,
+          'title': 'Direkt geschrieben',
+        }),
+      );
+      await erwarteKeinenDurchgriff(
+        () => kommandantClient
+            .from('gesamtwehr_branding')
+            .update({'title': 'Direkt geändert'})
+            .eq('gesamtwehr_id', gesamtwehrId),
+      );
 
-    final nachher = await kommandantClient
-        .from('gesamtwehr_branding')
-        .select('title')
-        .eq('gesamtwehr_id', gesamtwehrId)
-        .maybeSingle();
-    expect(nachher?['title'], vorher?['title']);
-    expect(nachher?['title'], isNot('Direkt geschrieben'));
-    expect(nachher?['title'], isNot('Direkt geändert'));
-  });
+      final nachher =
+          await kommandantClient
+              .from('gesamtwehr_branding')
+              .select('title')
+              .eq('gesamtwehr_id', gesamtwehrId)
+              .maybeSingle();
+      expect(nachher?['title'], vorher?['title']);
+      expect(nachher?['title'], isNot('Direkt geschrieben'));
+      expect(nachher?['title'], isNot('Direkt geändert'));
+    },
+  );
 
   test('NULL heißt gelöscht, nicht unverändert', () async {
     // Die Nutzlast trägt immer den vollen Datensatz. Wer nur den Titel ändert,
     // schickt Text und Bild mit — sonst stünde hier plötzlich das alte Bild
     // wieder, obwohl der Kommandant es entfernt hat.
-    final zeile = await kommandantClient.rpc('set_gesamtwehr_branding', params: {
-      'gw': gesamtwehrId,
-      'neuer_titel': 'Nur noch der Titel',
-      'neuer_text': null,
-      'neues_bild': null,
-    });
+    final zeile = await kommandantClient.rpc(
+      'set_gesamtwehr_branding',
+      params: {
+        'gw': gesamtwehrId,
+        'neuer_titel': 'Nur noch der Titel',
+        'neuer_text': null,
+        'neues_bild': null,
+      },
+    );
     expect(zeile['title'], 'Nur noch der Titel');
     expect(zeile['welcome_text'], isNull);
     expect(zeile['image_path'], isNull);
   });
 
-  test('leere Eingaben werden zu NULL, nicht zu leeren Zeichenketten',
-      () async {
-    // Sonst hielte die App einen Kopf für gepflegt, der nur aus Leerzeichen
-    // besteht — und reservierte auf jeder Startseite Platz dafür.
-    final zeile = await kommandantClient.rpc('set_gesamtwehr_branding', params: {
-      'gw': gesamtwehrId,
-      'neuer_titel': '   ',
-      'neuer_text': '',
-      'neues_bild': null,
-    });
-    expect(zeile['title'], isNull);
-    expect(zeile['welcome_text'], isNull);
-  });
+  test(
+    'leere Eingaben werden zu NULL, nicht zu leeren Zeichenketten',
+    () async {
+      // Sonst hielte die App einen Kopf für gepflegt, der nur aus Leerzeichen
+      // besteht — und reservierte auf jeder Startseite Platz dafür.
+      final zeile = await kommandantClient.rpc(
+        'set_gesamtwehr_branding',
+        params: {
+          'gw': gesamtwehrId,
+          'neuer_titel': '   ',
+          'neuer_text': '',
+          'neues_bild': null,
+        },
+      );
+      expect(zeile['title'], isNull);
+      expect(zeile['welcome_text'], isNull);
+    },
+  );
 
   group('Bucket gesamtwehr-branding', () {
     // Ein winziges, gültiges JPEG-Gerüst reicht — geprüft wird die Policy,
@@ -303,14 +349,21 @@ Future<void> main() async {
 
     test('der Kommandant lädt in den Ordner seiner Wehr', () async {
       final objekt = '$gesamtwehrId/e2e.jpg';
-      await kommandantClient.storage.from('gesamtwehr-branding').uploadBinary(
+      await kommandantClient.storage
+          .from('gesamtwehr-branding')
+          .uploadBinary(
             objekt,
             bytes,
-            fileOptions:
-                const FileOptions(contentType: 'image/jpeg', upsert: true),
+            fileOptions: const FileOptions(
+              contentType: 'image/jpeg',
+              upsert: true,
+            ),
           );
-      addTearDown(() => asService((s) =>
-          s.storage.from('gesamtwehr-branding').remove([objekt])));
+      addTearDown(
+        () => asService(
+          (s) => s.storage.from('gesamtwehr-branding').remove([objekt]),
+        ),
+      );
 
       // Und jedes Mitglied der Wehr darf es sehen.
       final geladen = await memberClient.storage
@@ -321,7 +374,9 @@ Future<void> main() async {
 
     test('der Gerätewart darf nicht in den Branding-Bucket', () async {
       await expectLater(
-        gwClient.storage.from('gesamtwehr-branding').uploadBinary(
+        gwClient.storage
+            .from('gesamtwehr-branding')
+            .uploadBinary(
               '$gesamtwehrId/verboten.jpg',
               bytes,
               fileOptions: const FileOptions(contentType: 'image/jpeg'),
@@ -330,21 +385,27 @@ Future<void> main() async {
       );
     });
 
-    test('auch der Kommandant kommt nicht in den Ordner einer fremden Wehr',
-        () async {
-      await expectLater(
-        kommandantClient.storage.from('gesamtwehr-branding').uploadBinary(
-              '$fremdeGesamtwehrId/uebernahme.jpg',
-              bytes,
-              fileOptions: const FileOptions(contentType: 'image/jpeg'),
-            ),
-        throwsA(isA<StorageException>()),
-      );
-    });
+    test(
+      'auch der Kommandant kommt nicht in den Ordner einer fremden Wehr',
+      () async {
+        await expectLater(
+          kommandantClient.storage
+              .from('gesamtwehr-branding')
+              .uploadBinary(
+                '$fremdeGesamtwehrId/uebernahme.jpg',
+                bytes,
+                fileOptions: const FileOptions(contentType: 'image/jpeg'),
+              ),
+          throwsA(isA<StorageException>()),
+        );
+      },
+    );
 
     test('ein Ordnername ohne UUID kommt nicht in den Bucket', () async {
       await expectLater(
-        kommandantClient.storage.from('gesamtwehr-branding').uploadBinary(
+        kommandantClient.storage
+            .from('gesamtwehr-branding')
+            .uploadBinary(
               'kein-ordner-mit-uuid/x.jpg',
               bytes,
               fileOptions: const FileOptions(contentType: 'image/jpeg'),
@@ -365,17 +426,25 @@ Future<void> main() async {
       // lief er ebenfalls grün, weil Postgres `bucket_id` zuerst auswertete.
       // Warum das Netz trotzdem drinbleibt, steht in der Migration.
       const objekt = 'eq_99999_e2e.jpg';
-      await kommandantClient.storage.from('equipment-images').uploadBinary(
+      await kommandantClient.storage
+          .from('equipment-images')
+          .uploadBinary(
             objekt,
             bytes,
-            fileOptions:
-                const FileOptions(contentType: 'image/jpeg', upsert: true),
+            fileOptions: const FileOptions(
+              contentType: 'image/jpeg',
+              upsert: true,
+            ),
           );
-      addTearDown(() =>
-          asService((s) => s.storage.from('equipment-images').remove([objekt])));
+      addTearDown(
+        () => asService(
+          (s) => s.storage.from('equipment-images').remove([objekt]),
+        ),
+      );
 
-      final geladen =
-          await memberClient.storage.from('equipment-images').download(objekt);
+      final geladen = await memberClient.storage
+          .from('equipment-images')
+          .download(objekt);
       expect(geladen, isNotEmpty);
 
       final liste = await memberClient.storage.from('equipment-images').list();
@@ -383,17 +452,27 @@ Future<void> main() async {
     });
   });
 
-  test('eine Wehr, deren Kommandant man nicht ist, bleibt unbeschreibbar',
-      () async {
-    await expectLater(
-      kommandantClient.rpc('set_gesamtwehr_branding', params: {
-        'gw': fremdeGesamtwehrId,
-        'neuer_titel': 'Übernahme',
-        'neuer_text': null,
-        'neues_bild': null,
-      }),
-      throwsA(isA<PostgrestException>().having((e) => e.message, 'message',
-          contains('feuerwehrkommandant'))),
-    );
-  });
+  test(
+    'eine Wehr, deren Kommandant man nicht ist, bleibt unbeschreibbar',
+    () async {
+      await expectLater(
+        kommandantClient.rpc(
+          'set_gesamtwehr_branding',
+          params: {
+            'gw': fremdeGesamtwehrId,
+            'neuer_titel': 'Übernahme',
+            'neuer_text': null,
+            'neues_bild': null,
+          },
+        ),
+        throwsA(
+          isA<PostgrestException>().having(
+            (e) => e.message,
+            'message',
+            contains('feuerwehrkommandant'),
+          ),
+        ),
+      );
+    },
+  );
 }

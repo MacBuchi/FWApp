@@ -6,6 +6,7 @@
 /// „Internetverbindung prüfen?". Die Kürzung passiert clientseitig,
 /// damit auch alte Server-Stände bediente Berichte annehmen.
 library;
+
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -18,8 +19,11 @@ void main() {
     // käme als „Feature request" an und ginge in der Liste unter.
     final bot = File('tool/feedback_bot.py').readAsStringSync();
     for (final t in FeedbackType.values) {
-      expect(bot, contains('"${t.name}":'),
-          reason: '${t.name} fehlt in KINDS von tool/feedback_bot.py');
+      expect(
+        bot,
+        contains('"${t.name}":'),
+        reason: '${t.name} fehlt in KINDS von tool/feedback_bot.py',
+      );
     }
   });
 
@@ -34,14 +38,23 @@ void main() {
 
   test('Überlänge wird aufs Server-Limit gekürzt und sichtbar markiert', () {
     // Ein realistischer Absturzbericht: Kopf + Stack + langer Log-Schwanz.
-    final bericht = 'Absturz vom 2026-08-01\n\nNull check operator …\n'
+    final bericht =
+        'Absturz vom 2026-08-01\n\nNull check operator …\n'
         '${'#0 irgendein Frame\n' * 500}';
     final gekuerzt = clampFeedbackMessage(bericht);
 
-    expect(gekuerzt.length, kFeedbackMaxLength,
-        reason: 'länger lehnt der Server-Constraint hart ab');
-    expect(gekuerzt, endsWith('[… gekürzt — volle Länge überschritt das '
-        'Server-Limit]'));
+    expect(
+      gekuerzt.length,
+      kFeedbackMaxLength,
+      reason: 'länger lehnt der Server-Constraint hart ab',
+    );
+    expect(
+      gekuerzt,
+      endsWith(
+        '[… gekürzt — volle Länge überschritt das '
+        'Server-Limit]',
+      ),
+    );
     // Der Anfang — die wichtigste Information — bleibt stehen.
     expect(gekuerzt, startsWith('Absturz vom 2026-08-01'));
   });

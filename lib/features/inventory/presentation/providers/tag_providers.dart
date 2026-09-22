@@ -54,9 +54,10 @@ class TagTreffer {
   const TagTreffer(this.tag, this.einheit, this.geraetename);
 }
 
-final tagsDerEinheitProvider =
-    StreamProvider.family<List<EquipmentTagData>, int>((ref, instanceId) =>
-        ref.watch(tagDaoProvider).watchByInstance(instanceId));
+final tagsDerEinheitProvider = StreamProvider.family<
+  List<EquipmentTagData>,
+  int
+>((ref, instanceId) => ref.watch(tagDaoProvider).watchByInstance(instanceId));
 
 class TagDienst {
   final AppDatabase db;
@@ -73,11 +74,13 @@ class TagDienst {
   /// Vergibt einen eigenen Code und hängt ihn an [instanceId].
   Future<String> vergebeCode(int instanceId) async {
     final code = erzeugeTagCode(await db.tagDao.alleCodes());
-    await db.tagDao.insertTag(EquipmentTagsCompanion.insert(
-      instanceId: instanceId,
-      code: code,
-      selfIssued: const Value(true),
-    ));
+    await db.tagDao.insertTag(
+      EquipmentTagsCompanion.insert(
+        instanceId: instanceId,
+        code: code,
+        selfIssued: const Value(true),
+      ),
+    );
     return code;
   }
 
@@ -96,10 +99,12 @@ class TagDienst {
     final code = normalisiereTagCode(roh);
     if (code == null) return const TagLeer();
 
-    final art = Value(artDesTags ??
-        (istEigenerCode(code)
-            ? EquipmentTags.kindQr
-            : EquipmentTags.kindBarcode));
+    final art = Value(
+      artDesTags ??
+          (istEigenerCode(code)
+              ? EquipmentTags.kindQr
+              : EquipmentTags.kindBarcode),
+    );
 
     // Auch Grabsteine: Die Spalte ist `unique`, und ein entfernter Code, der
     // noch auf sein Hochladen wartet, belegt sie weiter.
@@ -130,12 +135,14 @@ class TagDienst {
       return TagVerknuepft(code);
     }
 
-    await db.tagDao.insertTag(EquipmentTagsCompanion.insert(
-      instanceId: instanceId,
-      code: code,
-      kind: art,
-      selfIssued: Value(selbstVergeben),
-    ));
+    await db.tagDao.insertTag(
+      EquipmentTagsCompanion.insert(
+        instanceId: instanceId,
+        code: code,
+        kind: art,
+        selfIssued: Value(selbstVergeben),
+      ),
+    );
     return TagVerknuepft(code);
   }
 
@@ -178,10 +185,13 @@ class TagDienst {
   }
 }
 
-final tagDienstProvider =
-    Provider<TagDienst>((ref) => TagDienst(ref.watch(appDatabaseProvider)));
+final tagDienstProvider = Provider<TagDienst>(
+  (ref) => TagDienst(ref.watch(appDatabaseProvider)),
+);
 
-final tagSyncProvider = Provider<TagSync>((ref) => TagSync(
-      db: ref.watch(appDatabaseProvider),
-      client: ref.watch(supabaseClientProvider),
-    ));
+final tagSyncProvider = Provider<TagSync>(
+  (ref) => TagSync(
+    db: ref.watch(appDatabaseProvider),
+    client: ref.watch(supabaseClientProvider),
+  ),
+);

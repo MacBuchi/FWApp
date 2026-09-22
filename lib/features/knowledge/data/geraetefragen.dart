@@ -87,12 +87,14 @@ List<Geraetefrage> baueGeraetefragen(StandardCatalog katalog) {
 
     final meins = e.funktionen.toSet();
     // Regel 2: nur fachfremde Geräte als Ablenker-Quelle.
-    final ablenker = <String>{
-      for (final andere in eintraege)
-        if (andere.id != e.id && meins.intersection(andere.funktionen.toSet()).isEmpty)
-          ...andere.typischeVerwendung.where(eigen),
-    }.toList()
-      ..sort();
+    final ablenker =
+        <String>{
+            for (final andere in eintraege)
+              if (andere.id != e.id &&
+                  meins.intersection(andere.funktionen.toSet()).isEmpty)
+                ...andere.typischeVerwendung.where(eigen),
+          }.toList()
+          ..sort();
     if (ablenker.length < _ablenker) continue;
 
     // Deterministisch statt zufällig gezogen: Der Startpunkt hängt am Namen
@@ -100,19 +102,21 @@ List<Geraetefrage> baueGeraetefragen(StandardCatalog katalog) {
     // aber ein zweiter Lauf dieselben liefert.
     final start = e.id.hashCode.abs() % ablenker.length;
     final gewaehlt = [
-      for (var i = 0; i < _ablenker; i++) ablenker[(start + i) % ablenker.length],
+      for (var i = 0; i < _ablenker; i++)
+        ablenker[(start + i) % ablenker.length],
     ];
 
     final richtige = eigene.first;
-    fragen.add(Geraetefrage(
-      geraet: e.id,
-      frage: 'Wofür wird „${e.name}" typischerweise eingesetzt?',
-      richtige: richtige,
-      falsche: gewaehlt,
-      erklaerung: e.beschreibung.isEmpty
-          ? '${e.name}: $richtige.'
-          : e.beschreibung,
-    ));
+    fragen.add(
+      Geraetefrage(
+        geraet: e.id,
+        frage: 'Wofür wird „${e.name}" typischerweise eingesetzt?',
+        richtige: richtige,
+        falsche: gewaehlt,
+        erklaerung:
+            e.beschreibung.isEmpty ? '${e.name}: $richtige.' : e.beschreibung,
+      ),
+    );
   }
   return fragen;
 }

@@ -28,10 +28,14 @@ void main() {
       ('Stirnschild', kStirnschildPfad),
       ('Haken', kHakenPfad),
     ]) {
-      expect(svg, contains(_eng(pfad)),
-          reason: '$name weicht von assets/branding/app_icon.svg ab. Wer das '
-              'Icon ändert, ändert fw_marke.dart mit — sonst trägt das Gerät '
-              'ein anderes Zeichen als die App.');
+      expect(
+        svg,
+        contains(_eng(pfad)),
+        reason:
+            '$name weicht von assets/branding/app_icon.svg ab. Wer das '
+            'Icon ändert, ändert fw_marke.dart mit — sonst trägt das Gerät '
+            'ein anderes Zeichen als die App.',
+      );
     }
   });
 
@@ -65,7 +69,8 @@ void main() {
       // (`translate(-546 -609)`), also muss er hier dieselben Zahlen
       // ergeben.
       final gesamt = fwPfad(kHelmPfad).getBounds().expandToInclude(
-          Rect.fromCircle(center: kAbzeichenMitte, radius: kAbzeichenRing));
+        Rect.fromCircle(center: kAbzeichenMitte, radius: kAbzeichenRing),
+      );
       expect(gesamt, kMarkeKasten);
       expect(gesamt.center, const Offset(546, 609));
     });

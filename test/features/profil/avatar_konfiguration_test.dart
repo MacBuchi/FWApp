@@ -73,16 +73,17 @@ void main() {
         ('Haarfarbe', standard.copyWith(hairColor: anders.hairColor)),
       ]) {
         expect(geaendert.kodiert, isNot(standard.kodiert), reason: name);
-        expect(AvatarKonfiguration.dekodiert(geaendert.kodiert), geaendert,
-            reason: name);
+        expect(
+          AvatarKonfiguration.dekodiert(geaendert.kodiert),
+          geaendert,
+          reason: name,
+        );
       }
     });
 
     test('ohne Text kommt der Standardkopf', () {
-      expect(AvatarKonfiguration.dekodiert(null),
-          const AvatarKonfiguration());
-      expect(AvatarKonfiguration.dekodiert('   '),
-          const AvatarKonfiguration());
+      expect(AvatarKonfiguration.dekodiert(null), const AvatarKonfiguration());
+      expect(AvatarKonfiguration.dekodiert('   '), const AvatarKonfiguration());
     });
   });
 
@@ -95,8 +96,9 @@ void main() {
 
     test('ein unbekannter Wert fällt auf den Standard zurück, der Rest '
         'bleibt stehen', () {
-      final gelesen =
-          AvatarKonfiguration.dekodiert('gear=raumanzug;eyes=dots;hair=beard');
+      final gelesen = AvatarKonfiguration.dekodiert(
+        'gear=raumanzug;eyes=dots;hair=beard',
+      );
       expect(gelesen.gear, 'helmet'); // Standard
       expect(gelesen.eyes, 'dots'); // unverändert übernommen
       expect(gelesen.hair, 'beard');
@@ -109,13 +111,17 @@ void main() {
     });
 
     test('reiner Unsinn ergibt den Standardkopf statt einer Ausnahme', () {
-      expect(AvatarKonfiguration.dekodiert('%%%kein=;;;avatar'),
-          const AvatarKonfiguration());
+      expect(
+        AvatarKonfiguration.dekodiert('%%%kein=;;;avatar'),
+        const AvatarKonfiguration(),
+      );
     });
 
     test('eine Farbe mit Raute wird auch gelesen', () {
-      expect(AvatarKonfiguration.dekodiert('bg=#CBDCEA').bg,
-          const Color(0xFFCBDCEA));
+      expect(
+        AvatarKonfiguration.dekodiert('bg=#CBDCEA').bg,
+        const Color(0xFFCBDCEA),
+      );
     });
   });
 
@@ -124,8 +130,7 @@ void main() {
       for (final v in kAvatarVorlagen) {
         final text = v.kopf.kodiert;
         expect(text.length, lessThanOrEqualTo(200), reason: v.name);
-        expect(_serverRegel.hasMatch(text), isTrue,
-            reason: '${v.name}: $text');
+        expect(_serverRegel.hasMatch(text), isTrue, reason: '${v.name}: $text');
       }
     });
 
@@ -137,8 +142,11 @@ void main() {
             for (final h in kAvatarHair) {
               kopf = kopf.copyWith(gear: g, eyes: e, mouth: m, hair: h);
               expect(kopf.kodiert.length, lessThanOrEqualTo(200));
-              expect(_serverRegel.hasMatch(kopf.kodiert), isTrue,
-                  reason: kopf.kodiert);
+              expect(
+                _serverRegel.hasMatch(kopf.kodiert),
+                isTrue,
+                reason: kopf.kodiert,
+              );
             }
           }
         }

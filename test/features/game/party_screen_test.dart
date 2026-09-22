@@ -22,13 +22,14 @@ import '../../helpers/widget_harness.dart';
 /// Auflösung, und ein Test, der beides verwechselt, prüft nichts.
 final testInhalte = PartyInhalte(
   fragen: List.generate(
-      12,
-      (i) => UnerwarteteFrage(
-            frage: 'Testfrage $i',
-            antworten: const ['Stimmt', 'Daneben A', 'Daneben B'],
-            richtig: 0,
-            kategorie: kKategorieWissen,
-          )),
+    12,
+    (i) => UnerwarteteFrage(
+      frage: 'Testfrage $i',
+      antworten: const ['Stimmt', 'Daneben A', 'Daneben B'],
+      richtig: 0,
+      kategorie: kKategorieWissen,
+    ),
+  ),
   aufgaben: const ['Zehn Liegestütze'],
 );
 
@@ -44,22 +45,25 @@ void main() {
   /// soll.
   Future<void> seedWissen() async {
     for (var i = 0; i < 12; i++) {
-      await db.wissenDao.insertFrage(WissensfragenCompanion.insert(
-        gebiet: 'recht_organisation',
-        frage: 'Testfrage $i',
-        antwortenJson: const Value('["Stimmt","Daneben A","Daneben B"]'),
-        richtigeJson: const Value('[0]'),
-        // Alle mit Bild, damit der Test nicht von der Mischung abhängt —
-        // bei einem Gefahrzettel IST das Bild die Frage.
-        bildPfad: const Value(
-            'assets/knowledge/bilder/gefahrzettel_klasse_3.png'),
-        quelleWerk: const Value('FwG BW'),
-        quelleFundstelle: const Value('§ 8 Abs. 2'),
-        quelleStand: const Value('2025-02-25'),
-        geltung: const Value('land'),
-        land: const Value('BW'),
-        stand: const Value('freigegeben'),
-      ));
+      await db.wissenDao.insertFrage(
+        WissensfragenCompanion.insert(
+          gebiet: 'recht_organisation',
+          frage: 'Testfrage $i',
+          antwortenJson: const Value('["Stimmt","Daneben A","Daneben B"]'),
+          richtigeJson: const Value('[0]'),
+          // Alle mit Bild, damit der Test nicht von der Mischung abhängt —
+          // bei einem Gefahrzettel IST das Bild die Frage.
+          bildPfad: const Value(
+            'assets/knowledge/bilder/gefahrzettel_klasse_3.png',
+          ),
+          quelleWerk: const Value('FwG BW'),
+          quelleFundstelle: const Value('§ 8 Abs. 2'),
+          quelleStand: const Value('2025-02-25'),
+          geltung: const Value('land'),
+          land: const Value('BW'),
+          stand: const Value('freigegeben'),
+        ),
+      );
     }
   }
 
@@ -73,7 +77,8 @@ void main() {
   /// mehrere Fach-Fragen.
   Future<void> seedBestand({String fahrzeug = 'HLF 20'}) async {
     final vehicleId = await db.vehicleDao.insertVehicle(
-        VehiclesCompanion.insert(name: fahrzeug, type: 'HLF 20'));
+      VehiclesCompanion.insert(name: fahrzeug, type: 'HLF 20'),
+    );
     final faecher = <int>[];
     for (final (label, seite) in const [
       ('G1', 'fahrerseite'),
@@ -81,34 +86,49 @@ void main() {
       ('G3', 'fahrerseite'),
       ('G4', 'beifahrerseite'),
     ]) {
-      faecher.add(await db.compartmentDao.insertCompartment(
-        CompartmentsCompanion.insert(
-            vehicleId: vehicleId, label: label, seite: Value(seite)),
-      ));
+      faecher.add(
+        await db.compartmentDao.insertCompartment(
+          CompartmentsCompanion.insert(
+            vehicleId: vehicleId,
+            label: label,
+            seite: Value(seite),
+          ),
+        ),
+      );
     }
     const geraete = ['Spreizer', 'Schere', 'Rettungszylinder', 'Pumpe'];
     for (final (i, name) in geraete.indexed) {
-      final geraet = await db.equipmentDao
-          .insertEquipment(EquipmentItemsCompanion.insert(name: name));
+      final geraet = await db.equipmentDao.insertEquipment(
+        EquipmentItemsCompanion.insert(name: name),
+      );
       await db.assignmentDao.insertAssignment(
-          EquipmentAssignmentsCompanion.insert(
-              compartmentId: faecher[i], equipmentId: geraet));
+        EquipmentAssignmentsCompanion.insert(
+          compartmentId: faecher[i],
+          equipmentId: geraet,
+        ),
+      );
     }
   }
 
-  Future<void> pumpe(WidgetTester tester,
-      {PartyInhalte? inhalte, Size groesse = const Size(1200, 2400)}) async {
+  Future<void> pumpe(
+    WidgetTester tester, {
+    PartyInhalte? inhalte,
+    Size groesse = const Size(1200, 2400),
+  }) async {
     tester.view.physicalSize = groesse;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(buildTestApp(
-      db: db,
-      home: const PartyScreen(),
-      overrides: [
-        partyInhalteProvider
-            .overrideWith((ref) async => inhalte ?? testInhalte),
-      ],
-    ));
+    await tester.pumpWidget(
+      buildTestApp(
+        db: db,
+        home: const PartyScreen(),
+        overrides: [
+          partyInhalteProvider.overrideWith(
+            (ref) async => inhalte ?? testInhalte,
+          ),
+        ],
+      ),
+    );
     await tester.pumpAndSettle();
   }
 
@@ -118,8 +138,7 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Future<void> starten(WidgetTester tester,
-      {bool trinkspiel = false}) async {
+  Future<void> starten(WidgetTester tester, {bool trinkspiel = false}) async {
     await spielerEintragen(tester, 'Anna');
     await spielerEintragen(tester, 'Ben');
     if (trinkspiel) {
@@ -135,15 +154,18 @@ void main() {
     await spielerEintragen(tester, 'Anna');
 
     expect(find.text('Mindestens zwei Spieler.'), findsOneWidget);
-    final knopf = tester.widget<FilledButton>(find.ancestor(
-        of: find.text('Losgeht\'s'), matching: find.byType(FilledButton)));
+    final knopf = tester.widget<FilledButton>(
+      find.ancestor(
+        of: find.text('Losgeht\'s'),
+        matching: find.byType(FilledButton),
+      ),
+    );
     expect(knopf.onPressed, isNull);
 
     await endTestApp(tester);
   });
 
-  testWidgets('derselbe Name kommt nicht zweimal in die Runde',
-      (tester) async {
+  testWidgets('derselbe Name kommt nicht zweimal in die Runde', (tester) async {
     await pumpe(tester);
     await spielerEintragen(tester, 'Anna');
     await spielerEintragen(tester, 'anna');
@@ -157,8 +179,12 @@ void main() {
   testWidgets('das Trinkspiel ist ab Werk aus', (tester) async {
     await pumpe(tester);
 
-    final schalter = tester.widget<SwitchListTile>(find.ancestor(
-        of: find.text('Trinkspiel'), matching: find.byType(SwitchListTile)));
+    final schalter = tester.widget<SwitchListTile>(
+      find.ancestor(
+        of: find.text('Trinkspiel'),
+        matching: find.byType(SwitchListTile),
+      ),
+    );
     expect(schalter.value, isFalse);
     // Der Hinweis erscheint erst, wenn jemand den Schalter umlegt.
     expect(find.textContaining('Bereitschaft'), findsNothing);
@@ -166,20 +192,24 @@ void main() {
     await endTestApp(tester);
   });
 
-  testWidgets('eingeschaltet sagt das Trinkspiel etwas zur Bereitschaft',
-      (tester) async {
+  testWidgets('eingeschaltet sagt das Trinkspiel etwas zur Bereitschaft', (
+    tester,
+  ) async {
     await pumpe(tester);
     await tester.tap(find.text('Trinkspiel'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Wer heute Bereitschaft hat, nimmt die Aufgabe.'),
-        findsOneWidget);
+    expect(
+      find.text('Wer heute Bereitschaft hat, nimmt die Aufgabe.'),
+      findsOneWidget,
+    );
 
     await endTestApp(tester);
   });
 
-  testWidgets('die Übergabe nennt den Spieler und verrät die Frage nicht',
-      (tester) async {
+  testWidgets('die Übergabe nennt den Spieler und verrät die Frage nicht', (
+    tester,
+  ) async {
     await pumpe(tester);
     await starten(tester);
 
@@ -196,8 +226,9 @@ void main() {
     await endTestApp(tester);
   });
 
-  testWidgets('falsche Antwort ohne Trinkspiel bleibt folgenlos',
-      (tester) async {
+  testWidgets('falsche Antwort ohne Trinkspiel bleibt folgenlos', (
+    tester,
+  ) async {
     await pumpe(tester);
     await starten(tester);
     await tester.tap(find.text('Bereit'));
@@ -226,8 +257,10 @@ void main() {
     await tester.tap(find.text('Bereit'));
     await tester.pumpAndSettle();
 
-    final bilder = find.byType(Image).evaluate().map((e) =>
-        (e.widget as Image).image);
+    final bilder = find
+        .byType(Image)
+        .evaluate()
+        .map((e) => (e.widget as Image).image);
     expect(
       bilder.whereType<AssetImage>().map((a) => a.assetName),
       contains('assets/knowledge/bilder/gefahrzettel_klasse_3.png'),
@@ -236,8 +269,9 @@ void main() {
     await endTestApp(tester);
   });
 
-  testWidgets('die Auflösung nennt die Fundstelle und wo sie gilt',
-      (tester) async {
+  testWidgets('die Auflösung nennt die Fundstelle und wo sie gilt', (
+    tester,
+  ) async {
     // Der Streit am Tisch endet an der Vorschrift oder an der lautesten
     // Stimme (Issue #174). Vor dem Schritt stand die Quelle nur in der
     // Wissensdatenbank — also dort, wo gerade niemand hinsieht.
@@ -254,15 +288,19 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-        find.text('FwG BW · § 8 Abs. 2 (2025-02-25) · gilt in '
-            'Baden-Württemberg'),
-        findsOneWidget);
+      find.text(
+        'FwG BW · § 8 Abs. 2 (2025-02-25) · gilt in '
+        'Baden-Württemberg',
+      ),
+      findsOneWidget,
+    );
 
     await endTestApp(tester);
   });
 
-  testWidgets('mit Trinkspiel steht die Aufgabe als Alternative daneben',
-      (tester) async {
+  testWidgets('mit Trinkspiel steht die Aufgabe als Alternative daneben', (
+    tester,
+  ) async {
     await pumpe(tester);
     await starten(tester, trinkspiel: true);
     await tester.tap(find.text('Bereit'));
@@ -278,8 +316,9 @@ void main() {
     await endTestApp(tester);
   });
 
-  testWidgets('Gleichstand heißt Unentschieden, nicht „Sieger: Anna"',
-      (tester) async {
+  testWidgets('Gleichstand heißt Unentschieden, nicht „Sieger: Anna"', (
+    tester,
+  ) async {
     await pumpe(tester);
     await starten(tester);
 
@@ -309,8 +348,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text(i.isEven ? 'Stimmt' : 'Daneben A'));
       await tester.pumpAndSettle();
-      await tester
-          .tap(find.text(i < 5 ? 'Weitergeben' : 'Ergebnis'));
+      await tester.tap(find.text(i < 5 ? 'Weitergeben' : 'Ergebnis'));
       await tester.pumpAndSettle();
     }
 
@@ -321,8 +359,9 @@ void main() {
     await endTestApp(tester);
   });
 
-  testWidgets('die Fach-Frage zeigt das Fahrzeug, bevor geantwortet wird',
-      (tester) async {
+  testWidgets('die Fach-Frage zeigt das Fahrzeug, bevor geantwortet wird', (
+    tester,
+  ) async {
     // Keine Wissensfragen: Dann bleiben nur Fach-Fragen übrig, und der Test
     // hängt nicht am Zufall der Rundenverteilung. Seit Issue #174 kommt der
     // unerwartete Topf aus der Datenbank — den Asset-Provider zu leeren
@@ -361,8 +400,9 @@ void main() {
     await endTestApp(tester);
   });
 
-  testWidgets('der Übergabe-Schirm sagt Runde und Kategorie an',
-      (tester) async {
+  testWidgets('der Übergabe-Schirm sagt Runde und Kategorie an', (
+    tester,
+  ) async {
     await pumpe(tester);
     await starten(tester);
 
@@ -371,8 +411,9 @@ void main() {
     await endTestApp(tester);
   });
 
-  testWidgets('ein langer Fahrzeugname sprengt das Handy nicht',
-      (tester) async {
+  testWidgets('ein langer Fahrzeugname sprengt das Handy nicht', (
+    tester,
+  ) async {
     // Die echten Namen sind lang („HLF 20/16 Florian Musterstadt 1/44"), und
     // der Weg führt über zwei Engstellen: die Fahrzeug-Auswahl im Aufbau und
     // die Kachel an der Frage. Beim ersten Lauf lief die Auswahl um 285
@@ -385,15 +426,19 @@ void main() {
       await db.wissenDao.deleteFrage(f.id);
     }
     await seedBestand(fahrzeug: 'HLF 20/16 Florian Musterstadt 1/44');
-    await pumpe(tester,
-        inhalte: PartyInhalte.leer, groesse: const Size(360, 800));
+    await pumpe(
+      tester,
+      inhalte: PartyInhalte.leer,
+      groesse: const Size(360, 800),
+    );
     await starten(tester);
     await tester.tap(find.text('Bereit'));
     await tester.pumpAndSettle();
 
     expect(
-        find.widgetWithText(Chip, 'HLF 20/16 Florian Musterstadt 1/44'),
-        findsOneWidget);
+      find.widgetWithText(Chip, 'HLF 20/16 Florian Musterstadt 1/44'),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
 
     await endTestApp(tester);

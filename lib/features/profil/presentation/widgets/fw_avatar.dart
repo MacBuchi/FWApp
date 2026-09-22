@@ -48,9 +48,10 @@ class FwAvatar extends StatelessWidget {
       dimension: groesse,
       child: CustomPaint(painter: AvatarPainter(konfiguration)),
     );
-    final kopf = semantikLabel == null
-        ? ExcludeSemantics(child: bild)
-        : Semantics(label: semantikLabel, image: true, child: bild);
+    final kopf =
+        semantikLabel == null
+            ? ExcludeSemantics(child: bild)
+            : Semantics(label: semantikLabel, image: true, child: bild);
 
     final stufe = abzeichen;
     if (stufe == null) return kopf;
@@ -133,15 +134,14 @@ class AvatarPainter extends CustomPainter {
     // das umgebende `border-radius: 50%; overflow: hidden` ab.
     canvas.clipPath(
       Path()
-        ..addOval(
-          Rect.fromCircle(center: const Offset(100, 100), radius: 100),
-        ),
+        ..addOval(Rect.fromCircle(center: const Offset(100, 100), radius: 100)),
     );
 
     final hautSchatten = _dunkler(k.skin, 0.12);
     final helmDunkel = _dunkler(k.gearColor, 0.28);
 
-    final hatHelm = k.gear == 'helmet' ||
+    final hatHelm =
+        k.gear == 'helmet' ||
         k.gear == 'visor' ||
         k.gear == 'scba' ||
         k.gear == 'dog';
@@ -219,16 +219,22 @@ class AvatarPainter extends CustomPainter {
       _fuellung(const Color(0xFF3B4650)),
     );
     canvas.drawCircle(
-        const Offset(28, 94), 8, _fuellung(const Color(0xFF6B7A85)));
+      const Offset(28, 94),
+      8,
+      _fuellung(const Color(0xFF6B7A85)),
+    );
     canvas.drawCircle(
-        const Offset(28, 94), 3, _fuellung(const Color(0xFF2E353B)));
+      const Offset(28, 94),
+      3,
+      _fuellung(const Color(0xFF2E353B)),
+    );
   }
 
   void _hundZeichnen(Canvas canvas) {
     void ohr(double cx) => canvas.drawOval(
-          Rect.fromCenter(center: Offset(cx, 112), width: 30, height: 60),
-          _fuellung(k.hairColor),
-        );
+      Rect.fromCenter(center: Offset(cx, 112), width: 30, height: 60),
+      _fuellung(k.hairColor),
+    );
     ohr(52);
     ohr(148);
     canvas.drawCircle(const Offset(74, 80), 13, _fuellung(k.hairColor, 0.9));
@@ -291,12 +297,14 @@ class AvatarPainter extends CustomPainter {
 
   void _augenZeichnen(Canvas canvas) {
     final strich = _strich(_augenTinte, 5);
-    Path bogen(double x) => Path()
-      ..moveTo(x, 102)
-      ..relativeQuadraticBezierTo(8, -11, 16, 0);
-    Path linie(double x) => Path()
-      ..moveTo(x, 101)
-      ..relativeLineTo(17, 0);
+    Path bogen(double x) =>
+        Path()
+          ..moveTo(x, 102)
+          ..relativeQuadraticBezierTo(8, -11, 16, 0);
+    Path linie(double x) =>
+        Path()
+          ..moveTo(x, 101)
+          ..relativeLineTo(17, 0);
 
     switch (k.eyes) {
       case 'happy':
@@ -305,7 +313,10 @@ class AvatarPainter extends CustomPainter {
       case 'wide':
         for (final cx in const [84.0, 116.0]) {
           canvas.drawCircle(
-              Offset(cx, 100), 10, _fuellung(const Color(0xFFFFFFFF)));
+            Offset(cx, 100),
+            10,
+            _fuellung(const Color(0xFFFFFFFF)),
+          );
         }
         for (final cx in const [85.0, 117.0]) {
           canvas.drawCircle(Offset(cx, 101), 5, _fuellung(_augenTinte));
@@ -379,13 +390,29 @@ class AvatarPainter extends CustomPainter {
 
   void _maskeZeichnen(Canvas canvas) {
     final band = _strich(const Color(0xFF2E353B), 9);
-    canvas.drawPath(Path()..moveTo(52, 92)..relativeLineTo(-20, 0), band);
-    canvas.drawPath(Path()..moveTo(148, 92)..relativeLineTo(20, 0), band);
+    canvas.drawPath(
+      Path()
+        ..moveTo(52, 92)
+        ..relativeLineTo(-20, 0),
+      band,
+    );
+    canvas.drawPath(
+      Path()
+        ..moveTo(148, 92)
+        ..relativeLineTo(20, 0),
+      band,
+    );
     canvas.drawRRect(
       RRect.fromLTRBR(54, 74, 146, 152, const Radius.circular(34)),
       _fuellung(const Color(0xFF2E353B)),
     );
-    final scheibe = RRect.fromLTRBR(62, 82, 138, 128, const Radius.circular(21));
+    final scheibe = RRect.fromLTRBR(
+      62,
+      82,
+      138,
+      128,
+      const Radius.circular(21),
+    );
     canvas.drawRRect(scheibe, _fuellung(const Color(0xFFFFFFFF), 0.58));
     canvas.drawRRect(scheibe, _fuellung(_visierTon, 0.5));
     canvas.drawRRect(
@@ -406,9 +433,15 @@ class AvatarPainter extends CustomPainter {
       _fuellung(const Color(0xFFFFFFFF), 0.55),
     );
     canvas.drawCircle(
-        const Offset(100, 136), 14, _fuellung(const Color(0xFF4A555E)));
+      const Offset(100, 136),
+      14,
+      _fuellung(const Color(0xFF4A555E)),
+    );
     canvas.drawCircle(
-        const Offset(100, 136), 7, _fuellung(const Color(0xFF20262B)));
+      const Offset(100, 136),
+      7,
+      _fuellung(const Color(0xFF20262B)),
+    );
     canvas.drawPath(
       Path()
         ..moveTo(86, 142)
@@ -418,7 +451,13 @@ class AvatarPainter extends CustomPainter {
   }
 
   void _visierZeichnen(Canvas canvas) {
-    final scheibe = RRect.fromLTRBR(54, 82, 146, 112, const Radius.circular(12));
+    final scheibe = RRect.fromLTRBR(
+      54,
+      82,
+      146,
+      112,
+      const Radius.circular(12),
+    );
     canvas.drawRRect(scheibe, _fuellung(const Color(0xFFA8CFE4), 0.55));
     canvas.drawRRect(
       scheibe,
@@ -434,8 +473,10 @@ class AvatarPainter extends CustomPainter {
     canvas.drawPath(
       Path()
         ..moveTo(64, 78)
-        ..arcToPoint(const Offset(136, 78),
-            radius: const Radius.elliptical(38, 44))
+        ..arcToPoint(
+          const Offset(136, 78),
+          radius: const Radius.elliptical(38, 44),
+        )
         ..close(),
       _fuellung(k.gearColor),
     );
@@ -465,8 +506,10 @@ class AvatarPainter extends CustomPainter {
     canvas.drawPath(
       Path()
         ..moveTo(66, 76)
-        ..arcToPoint(const Offset(134, 76),
-            radius: const Radius.elliptical(36, 38))
+        ..arcToPoint(
+          const Offset(134, 76),
+          radius: const Radius.elliptical(36, 38),
+        )
         ..close(),
       _fuellung(k.gearColor),
     );
@@ -484,27 +527,29 @@ class AvatarPainter extends CustomPainter {
 
   // ── Werkzeug ──────────────────────────────────────────────────────────────
 
-  Paint _fuellung(Color c, [double deckkraft = 1]) => Paint()
-    ..color = deckkraft == 1 ? c : c.withValues(alpha: deckkraft)
-    ..isAntiAlias = true;
+  Paint _fuellung(Color c, [double deckkraft = 1]) =>
+      Paint()
+        ..color = deckkraft == 1 ? c : c.withValues(alpha: deckkraft)
+        ..isAntiAlias = true;
 
-  Paint _strich(Color c, double breite) => Paint()
-    ..style = PaintingStyle.stroke
-    ..strokeWidth = breite
-    ..strokeCap = StrokeCap.round
-    ..color = c
-    ..isAntiAlias = true;
+  Paint _strich(Color c, double breite) =>
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = breite
+        ..strokeCap = StrokeCap.round
+        ..color = c
+        ..isAntiAlias = true;
 
   /// Dieselbe Abdunklung wie im Entwurf (`shade(hex, -f)`): jeder Kanal mal
   /// `1 - f`. Helm und Flasche brauchen einen Schatten, der zur gewählten
   /// Farbe passt — eine feste graue Kante sieht bei Weiß und Rot gleich
   /// falsch aus.
   static Color _dunkler(Color c, double f) => Color.fromARGB(
-        255,
-        ((c.toARGB32() >> 16 & 0xFF) * (1 - f)).round(),
-        ((c.toARGB32() >> 8 & 0xFF) * (1 - f)).round(),
-        ((c.toARGB32() & 0xFF) * (1 - f)).round(),
-      );
+    255,
+    ((c.toARGB32() >> 16 & 0xFF) * (1 - f)).round(),
+    ((c.toARGB32() >> 8 & 0xFF) * (1 - f)).round(),
+    ((c.toARGB32() & 0xFF) * (1 - f)).round(),
+  );
 
   @override
   bool shouldRepaint(AvatarPainter old) => old.k != k;

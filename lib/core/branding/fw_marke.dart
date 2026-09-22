@@ -24,19 +24,22 @@ const kMarkeLeinwand = Size(1024, 1024);
 const kMarkeKasten = Rect.fromLTRB(140, 280, 952, 938);
 
 /// Helm, Frontansicht.
-const kHelmPfad = 'M 152,704 C 140,652 176,616 268,604 '
+const kHelmPfad =
+    'M 152,704 C 140,652 176,616 268,604 '
     'C 260,400 360,280 512,280 '
     'C 664,280 764,400 756,604 '
     'C 848,616 884,652 872,704 Z';
 
 /// Stirnschild — das Zeichen, an dem man den Feuerwehrhelm vom Bauhelm
 /// unterscheidet. Wird in der Grundfarbe gemalt, nicht ausgestanzt.
-const kStirnschildPfad = 'M 424,396 C 480,376 544,376 600,396 '
+const kStirnschildPfad =
+    'M 424,396 C 480,376 544,376 600,396 '
     'C 604,496 576,564 512,600 '
     'C 448,564 420,496 424,396 Z';
 
 /// Der Haken im Abzeichen.
-const kHakenPfad = 'M 768,792 L 806,830 L 874,750 L 892,768 L 806,858 '
+const kHakenPfad =
+    'M 768,792 L 806,830 L 874,750 L 892,768 L 806,858 '
     'L 750,802 Z';
 
 /// Mitte des Abzeichens, Radius des trennenden Rings und der weißen Scheibe.
@@ -57,12 +60,20 @@ void zeichneFwMarke(
 }) {
   canvas.save();
   canvas.translate(ziel.left, ziel.top);
-  canvas.scale(ziel.width / kMarkeKasten.width,
-      ziel.height / kMarkeKasten.height);
+  canvas.scale(
+    ziel.width / kMarkeKasten.width,
+    ziel.height / kMarkeKasten.height,
+  );
   canvas.translate(-kMarkeKasten.left, -kMarkeKasten.top);
 
-  final weiss = Paint()..color = vordergrund..isAntiAlias = true;
-  final rot = Paint()..color = grund..isAntiAlias = true;
+  final weiss =
+      Paint()
+        ..color = vordergrund
+        ..isAntiAlias = true;
+  final rot =
+      Paint()
+        ..color = grund
+        ..isAntiAlias = true;
 
   canvas.drawPath(fwPfad(kHelmPfad), weiss);
   canvas.drawPath(fwPfad(kStirnschildPfad), rot);
@@ -114,8 +125,14 @@ Path fwPfad(String d) {
       case 'L':
         pfad.lineTo(naechste(), naechste());
       case 'C':
-        pfad.cubicTo(naechste(), naechste(), naechste(), naechste(),
-            naechste(), naechste());
+        pfad.cubicTo(
+          naechste(),
+          naechste(),
+          naechste(),
+          naechste(),
+          naechste(),
+          naechste(),
+        );
       default:
         throw FormatException('Unbekannter Befehl: $befehl');
     }
@@ -142,12 +159,12 @@ class FwMarke extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SizedBox(
-        width: groesse,
-        height: groesse * kMarkeKasten.height / kMarkeKasten.width,
-        child: CustomPaint(
-          painter: _MarkePainter(vordergrund: vordergrund, grund: grund),
-        ),
-      );
+    width: groesse,
+    height: groesse * kMarkeKasten.height / kMarkeKasten.width,
+    child: CustomPaint(
+      painter: _MarkePainter(vordergrund: vordergrund, grund: grund),
+    ),
+  );
 }
 
 class _MarkePainter extends CustomPainter {
@@ -158,11 +175,11 @@ class _MarkePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) => zeichneFwMarke(
-        canvas,
-        ziel: Offset.zero & size,
-        vordergrund: vordergrund,
-        grund: grund,
-      );
+    canvas,
+    ziel: Offset.zero & size,
+    vordergrund: vordergrund,
+    grund: grund,
+  );
 
   @override
   bool shouldRepaint(_MarkePainter alt) =>

@@ -41,8 +41,10 @@ const kMaxStoredCrashes = 20;
 
 /// Serialisiert eine Liste von Berichten und behält nur die
 /// [kMaxStoredCrashes] jüngsten. Rein, damit der Test das Kappen direkt prüft.
-String encodeCrashReports(List<CrashReport> reports,
-    {int max = kMaxStoredCrashes}) {
+String encodeCrashReports(
+  List<CrashReport> reports, {
+  int max = kMaxStoredCrashes,
+}) {
   final kept =
       reports.length <= max ? reports : reports.sublist(reports.length - max);
   return jsonEncode(kept.map((r) => r.toJson()).toList());
@@ -166,19 +168,21 @@ void recordCrash({
   try {
     final errorText = error.toString();
     final stackText = stackTrace?.toString() ?? '';
-    store.recordSync(CrashReport(
-      time: DateTime.now().toUtc(),
-      appVersion: globalCrashContext.appVersion,
-      device: globalCrashContext.device,
-      locale: globalCrashContext.locale,
-      source: source,
-      error: errorText,
-      stackTrace: truncateStack(stackText),
-      fingerprint: crashFingerprint(errorText, stackText),
-      // Vorgeschichte aus dem Ring — ein Stacktrace allein ist oft nicht
-      // diagnostizierbar.
-      log: appLogRing.lines,
-    ));
+    store.recordSync(
+      CrashReport(
+        time: DateTime.now().toUtc(),
+        appVersion: globalCrashContext.appVersion,
+        device: globalCrashContext.device,
+        locale: globalCrashContext.locale,
+        source: source,
+        error: errorText,
+        stackTrace: truncateStack(stackText),
+        fingerprint: crashFingerprint(errorText, stackText),
+        // Vorgeschichte aus dem Ring — ein Stacktrace allein ist oft nicht
+        // diagnostizierbar.
+        log: appLogRing.lines,
+      ),
+    );
   } catch (e) {
     appLog.w('Absturzbericht konnte nicht gespeichert werden', error: e);
   }
@@ -204,7 +208,7 @@ List<CrashReport> dedupeCrashes(List<CrashReport> reports) {
       newest[report.fingerprint] = report;
     }
   }
-  final result = newest.values.toList()
-    ..sort((a, b) => a.time.compareTo(b.time));
+  final result =
+      newest.values.toList()..sort((a, b) => a.time.compareTo(b.time));
   return result;
 }

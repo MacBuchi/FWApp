@@ -35,26 +35,31 @@ void main() {
       key.path,
     ]);
     expect(lauf.exitCode, 0, reason: lauf.stderr.toString());
-    final zeilen = (lauf.stdout as String)
-        .split('\n')
-        .where((z) => z.trim().startsWith('{'))
-        .toList();
+    final zeilen =
+        (lauf.stdout as String)
+            .split('\n')
+            .where((z) => z.trim().startsWith('{'))
+            .toList();
     expect(zeilen, isNotEmpty, reason: lauf.stdout.toString());
     ergebnis = jsonDecode(zeilen.last) as Map<String, dynamic>;
   });
 
-  test('eine gültige Anfrage kommt durch und reicht Brevo unverändert weiter',
-      () {
-    expect(ergebnis['gut']['status'], 200);
-    expect(ergebnis['gut']['rumpf'], contains('delivered'));
-  });
+  test(
+    'eine gültige Anfrage kommt durch und reicht Brevo unverändert weiter',
+    () {
+      expect(ergebnis['gut']['status'], 200);
+      expect(ergebnis['gut']['rumpf'], contains('delivered'));
+    },
+  );
 
   test('der Schlüssel geht an Brevo — und nur dorthin', () {
     // Die Ziel-URL ist im Skript fest verdrahtet. Wäre sie es nicht, ginge
     // der Brevo-Schlüssel an ein Ziel, das der Aufrufer bestimmt.
     final ziel = ergebnis['ziel'] as Map<String, dynamic>;
-    expect(ziel['url'],
-        startsWith('https://api.brevo.com/v3/smtp/statistics/events?'));
+    expect(
+      ziel['url'],
+      startsWith('https://api.brevo.com/v3/smtp/statistics/events?'),
+    );
     expect(ziel['methode'], 'GET');
     expect(ziel['schluessel'], 'xkeysib-probe');
   });
@@ -80,8 +85,10 @@ void main() {
       keinAufruf('adresse_ist_url', 400);
     });
 
-    test('ein Zeitfenster, das keine Zahl ist',
-        () => keinAufruf('days_kein_wert', 400));
+    test(
+      'ein Zeitfenster, das keine Zahl ist',
+      () => keinAufruf('days_kein_wert', 400),
+    );
   });
 
   test('das Zeitfenster wird gedeckelt', () {

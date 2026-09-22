@@ -61,21 +61,27 @@ void main() {
       abteilungenProvider.overrideWith((ref) async => list),
       myAbteilungIdProvider.overrideWith((ref) async => 'A'),
       selectedAbteilungIdProvider.overrideWith((ref) => selected),
-      meineMitgliedschaftenProvider.overrideWith((ref) async => mitgliedschaften),
-      meineKommandoGesamtwehrenProvider.overrideWith((ref) async => kommandiert),
+      meineMitgliedschaftenProvider.overrideWith(
+        (ref) async => mitgliedschaften,
+      ),
+      meineKommandoGesamtwehrenProvider.overrideWith(
+        (ref) async => kommandiert,
+      ),
       supabaseClientProvider.overrideWithValue(null),
     ],
   );
 
-  testWidgets('bei einer einzigen Abteilung bleibt die Leiste frei',
-      (tester) async {
+  testWidgets('bei einer einzigen Abteilung bleibt die Leiste frei', (
+    tester,
+  ) async {
     await tester.pumpWidget(host(const [_own]));
     await tester.pumpAndSettle();
     expect(find.text('Stadtmitte'), findsNothing);
   });
 
-  testWidgets('nennt die Heim-Abteilung beim Namen und zeigt das Heim-Symbol',
-      (tester) async {
+  testWidgets('nennt die Heim-Abteilung beim Namen und zeigt das Heim-Symbol', (
+    tester,
+  ) async {
     await tester.pumpWidget(host(const [_own, _sister]));
     await tester.pumpAndSettle();
 
@@ -84,8 +90,9 @@ void main() {
     expect(find.byIcon(Icons.visibility), findsNothing);
   });
 
-  testWidgets('in der Schwester-Abteilung wechselt Symbol und Farbe',
-      (tester) async {
+  testWidgets('in der Schwester-Abteilung wechselt Symbol und Farbe', (
+    tester,
+  ) async {
     await tester.pumpWidget(host(const [_own, _sister], selected: 'B'));
     await tester.pumpAndSettle();
 
@@ -100,14 +107,14 @@ void main() {
         matching: find.byType(Material),
       ),
     );
-    final scheme = Theme.of(
-      tester.element(find.byType(AbteilungAction)),
-    ).colorScheme;
+    final scheme =
+        Theme.of(tester.element(find.byType(AbteilungAction))).colorScheme;
     expect(material.color, scheme.tertiaryContainer);
   });
 
-  testWidgets('Tippen öffnet die Wahl und wechselt die Abteilung',
-      (tester) async {
+  testWidgets('Tippen öffnet die Wahl und wechselt die Abteilung', (
+    tester,
+  ) async {
     await tester.pumpWidget(host(const [_own, _sister]));
     await tester.pumpAndSettle();
 
@@ -124,8 +131,9 @@ void main() {
     expect(find.textContaining('Der Bestand wird geladen'), findsOneWidget);
   });
 
-  testWidgets('die schon angezeigte Abteilung erneut zu wählen tut nichts',
-      (tester) async {
+  testWidgets('die schon angezeigte Abteilung erneut zu wählen tut nichts', (
+    tester,
+  ) async {
     // Ein Wechsel zieht den kompletten Bestand neu — für einen Fehlgriff im
     // Sheet ist das zu teuer.
     await tester.pumpWidget(host(const [_own, _sister], selected: 'B'));
@@ -142,36 +150,43 @@ void main() {
     expect(prefs.getString(kSelectedAbteilungPref), isNull);
   });
 
-  testWidgets('das Sheet liegt über der Navigationsleiste, nicht darunter',
-      (tester) async {
+  testWidgets('das Sheet liegt über der Navigationsleiste, nicht darunter', (
+    tester,
+  ) async {
     // Im Browser erlebt: Ohne Wurzel-Navigator landet das Sheet im
     // verschachtelten Navigator der ShellRoute — dann bleibt die
     // Navigationsleiste bedienbar, und ein Tipp knapp unter dem Sheet bricht
     // die Auswahl ab UND wechselt den Tab. Der Prüfstand baut die
     // Verschachtelung nach, sonst ginge der Fehler wieder durch.
     final shell = GlobalKey<NavigatorState>();
-    await tester.pumpWidget(buildTestApp(
-      db: db,
-      home: Scaffold(
-        body: Navigator(
-          key: shell,
-          onGenerateRoute: (_) => MaterialPageRoute<void>(
-            builder: (_) => Scaffold(
-              appBar: AppBar(actions: const [AbteilungAction()]),
-            ),
+    await tester.pumpWidget(
+      buildTestApp(
+        db: db,
+        home: Scaffold(
+          body: Navigator(
+            key: shell,
+            onGenerateRoute:
+                (_) => MaterialPageRoute<void>(
+                  builder:
+                      (_) => Scaffold(
+                        appBar: AppBar(actions: const [AbteilungAction()]),
+                      ),
+                ),
           ),
+          bottomNavigationBar: const SizedBox(height: 68),
         ),
-        bottomNavigationBar: const SizedBox(height: 68),
+        overrides: [
+          abteilungenProvider.overrideWith(
+            (ref) async => const [_own, _sister],
+          ),
+          myAbteilungIdProvider.overrideWith((ref) async => 'A'),
+          selectedAbteilungIdProvider.overrideWith((ref) => null),
+          meineMitgliedschaftenProvider.overrideWith((ref) async => null),
+          meineKommandoGesamtwehrenProvider.overrideWith((ref) async => null),
+          supabaseClientProvider.overrideWithValue(null),
+        ],
       ),
-      overrides: [
-        abteilungenProvider.overrideWith((ref) async => const [_own, _sister]),
-        myAbteilungIdProvider.overrideWith((ref) async => 'A'),
-        selectedAbteilungIdProvider.overrideWith((ref) => null),
-        meineMitgliedschaftenProvider.overrideWith((ref) async => null),
-        meineKommandoGesamtwehrenProvider.overrideWith((ref) async => null),
-        supabaseClientProvider.overrideWithValue(null),
-      ],
-    ));
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.byType(AbteilungAction));
@@ -188,15 +203,18 @@ void main() {
     );
   });
 
-  testWidgets('das Sheet nennt die Rechte je Abteilung, nicht die Herkunft',
-      (tester) async {
+  testWidgets('das Sheet nennt die Rechte je Abteilung, nicht die Herkunft', (
+    tester,
+  ) async {
     // Vor Stufe ① stand an jeder Schwester pauschal „nur lesen". Wer dort
     // Gerätewart ist, darf sehr wohl bearbeiten.
-    await tester.pumpWidget(host(
-      const [_own, _sister],
-      mitgliedschaften: {'A': 'member', 'B': 'geraetewart'},
-      kommandiert: const {},
-    ));
+    await tester.pumpWidget(
+      host(
+        const [_own, _sister],
+        mitgliedschaften: {'A': 'member', 'B': 'geraetewart'},
+        kommandiert: const {},
+      ),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.byType(AbteilungAction));
@@ -206,13 +224,16 @@ void main() {
     expect(find.text('Schwester-Abteilung — Gerätewart'), findsOneWidget);
   });
 
-  testWidgets('der Feuerwehrkommandant sieht seine Stellung überall',
-      (tester) async {
-    await tester.pumpWidget(host(
-      const [_own, _sister],
-      mitgliedschaften: {'A': 'member'},
-      kommandiert: const {'GW'},
-    ));
+  testWidgets('der Feuerwehrkommandant sieht seine Stellung überall', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      host(
+        const [_own, _sister],
+        mitgliedschaften: {'A': 'member'},
+        kommandiert: const {'GW'},
+      ),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.byType(AbteilungAction));

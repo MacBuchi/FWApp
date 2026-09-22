@@ -5,6 +5,7 @@
 /// Naht lief jeder Test in den Fehlerzweig (kein echter Supabase-Client), und
 /// der Erfolgsfall — der mit dem Fehler aus Issue #173 — war ungeprüft.
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -22,17 +23,17 @@ import '../../helpers/widget_harness.dart';
 
 /// Minimal-Session, damit der Feedback-Banner "angemeldet" sieht.
 Session fakeSession() => Session(
-      accessToken: 'test-token',
-      tokenType: 'bearer',
-      user: const User(
-        id: '00000000-0000-0000-0000-000000000001',
-        appMetadata: {},
-        userMetadata: {},
-        aud: 'authenticated',
-        email: 'tester@fw.local',
-        createdAt: '2026-01-01T00:00:00Z',
-      ),
-    );
+  accessToken: 'test-token',
+  tokenType: 'bearer',
+  user: const User(
+    id: '00000000-0000-0000-0000-000000000001',
+    appMetadata: {},
+    userMetadata: {},
+    aud: 'authenticated',
+    email: 'tester@fw.local',
+    createdAt: '2026-01-01T00:00:00Z',
+  ),
+);
 
 const _update = UpdateInfo(
   latestVersion: '9.9.9',
@@ -56,25 +57,27 @@ void main() {
     bool signedIn = false,
     List<CrashReport> crashes = const [],
     bool sendenKlappt = true,
-  }) =>
-      buildTestApp(
-        db: db,
-        home: Scaffold(body: ListView(children: const [HomeBanners()])),
-        overrides: [
-          updateInfoProvider.overrideWith((ref) async => update),
-          supabaseReadyProvider.overrideWithValue(signedIn),
-          supabaseClientProvider.overrideWithValue(null),
-          pendingCrashesProvider.overrideWith((ref) async => crashes),
-          feedbackSenderProvider.overrideWithValue(
-              ({required FeedbackType type, required String message}) async {
-            if (!sendenKlappt) throw StateError('kein Netz');
-            gesendet.add((type: type, message: message));
-          }),
-          if (signedIn)
-            sessionStreamProvider
-                .overrideWith((ref) => Stream.value(fakeSession())),
-        ],
-      );
+  }) => buildTestApp(
+    db: db,
+    home: Scaffold(body: ListView(children: const [HomeBanners()])),
+    overrides: [
+      updateInfoProvider.overrideWith((ref) async => update),
+      supabaseReadyProvider.overrideWithValue(signedIn),
+      supabaseClientProvider.overrideWithValue(null),
+      pendingCrashesProvider.overrideWith((ref) async => crashes),
+      feedbackSenderProvider.overrideWithValue(({
+        required FeedbackType type,
+        required String message,
+      }) async {
+        if (!sendenKlappt) throw StateError('kein Netz');
+        gesendet.add((type: type, message: message));
+      }),
+      if (signedIn)
+        sessionStreamProvider.overrideWith(
+          (ref) => Stream.value(fakeSession()),
+        ),
+    ],
+  );
 
   /// Öffnet das Banner, tippt [text] ein und sendet.
   Future<void> feedbackSenden(WidgetTester tester, String text) async {
@@ -86,13 +89,13 @@ void main() {
   }
 
   CrashReport crashWith({String fingerprint = 'abc12345'}) => CrashReport(
-        time: DateTime.utc(2026, 7, 31, 12),
-        appVersion: '1.4.9 (Build 17)',
-        source: 'Async',
-        error: 'StateError: kaputt',
-        stackTrace: '#0 irgendwo (package:fwapp/datei.dart:1:1)',
-        fingerprint: fingerprint,
-      );
+    time: DateTime.utc(2026, 7, 31, 12),
+    appVersion: '1.4.9 (Build 17)',
+    source: 'Async',
+    error: 'StateError: kaputt',
+    stackTrace: '#0 irgendwo (package:fwapp/datei.dart:1:1)',
+    fingerprint: fingerprint,
+  );
   final crash = crashWith();
 
   testWidgets('Ohne Update und ohne Login: keine Banner', (tester) async {
@@ -103,8 +106,9 @@ void main() {
     expect(find.text('Wunsch oder Fehler melden'), findsNothing);
   });
 
-  testWidgets('Update verfügbar: Banner sichtbar und wegklickbar',
-      (tester) async {
+  testWidgets('Update verfügbar: Banner sichtbar und wegklickbar', (
+    tester,
+  ) async {
     await tester.pumpWidget(app(update: _update));
     await tester.pumpAndSettle();
 
@@ -115,17 +119,21 @@ void main() {
     expect(find.text('Update auf v9.9.9 verfügbar'), findsNothing);
   });
 
-  testWidgets('Vorabversion ist im Banner und im Dialog als solche benannt',
-      (tester) async {
+  testWidgets('Vorabversion ist im Banner und im Dialog als solche benannt', (
+    tester,
+  ) async {
     // Ein ungeprüfter Stand darf sich nicht wie eine Freigabe anfühlen
     // (Issue #169) — und zwar an beiden Stellen, an denen entschieden wird.
-    await tester.pumpWidget(app(
+    await tester.pumpWidget(
+      app(
         update: const UpdateInfo(
-      latestVersion: '9.9.9',
-      downloadUrl: 'https://example.invalid/fwapp.apk',
-      releaseNotes: 'Testnotizen',
-      isPrerelease: true,
-    )));
+          latestVersion: '9.9.9',
+          downloadUrl: 'https://example.invalid/fwapp.apk',
+          releaseNotes: 'Testnotizen',
+          isPrerelease: true,
+        ),
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('Vorabversion v9.9.9 verfügbar'), findsOneWidget);
@@ -141,8 +149,9 @@ void main() {
     await tester.pumpAndSettle();
   });
 
-  testWidgets('ein freigegebener Stand bleibt ein normales Update',
-      (tester) async {
+  testWidgets('ein freigegebener Stand bleibt ein normales Update', (
+    tester,
+  ) async {
     await tester.pumpWidget(app(update: _update));
     await tester.pumpAndSettle();
 
@@ -150,8 +159,9 @@ void main() {
     expect(find.textContaining('Vorabversion'), findsNothing);
   });
 
-  testWidgets('Update-Banner öffnet den Dialog mit Release-Notes',
-      (tester) async {
+  testWidgets('Update-Banner öffnet den Dialog mit Release-Notes', (
+    tester,
+  ) async {
     await tester.pumpWidget(app(update: _update));
     await tester.pumpAndSettle();
 
@@ -167,8 +177,9 @@ void main() {
     expect(find.text('Jetzt aktualisieren'), findsNothing);
   });
 
-  testWidgets('Angemeldet: Feedback-Banner öffnet Dialog mit vier Arten',
-      (tester) async {
+  testWidgets('Angemeldet: Feedback-Banner öffnet Dialog mit vier Arten', (
+    tester,
+  ) async {
     await tester.pumpWidget(app(signedIn: true));
     await tester.pumpAndSettle();
 
@@ -187,8 +198,9 @@ void main() {
     expect(find.textContaining('öffentlich'), findsOneWidget);
   });
 
-  testWidgets('der Fahrzeug-Vorschlag erklärt die Erste-Zeile-Regel',
-      (tester) async {
+  testWidgets('der Fahrzeug-Vorschlag erklärt die Erste-Zeile-Regel', (
+    tester,
+  ) async {
     // Der Bot baut die Issue-Überschrift aus der ersten Zeile — wer das
     // nicht weiß, schreibt die Überschrift mitten in den Fließtext.
     await tester.pumpWidget(app(signedIn: true));
@@ -203,12 +215,13 @@ void main() {
 
     await tester.tap(find.text('🧰 Standard-Gerät'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('erste Zeile ist der Gerätename'),
-        findsOneWidget);
+    expect(
+      find.textContaining('erste Zeile ist der Gerätename'),
+      findsOneWidget,
+    );
   });
 
-  testWidgets('Feedback-Dialog verlangt mindestens 3 Zeichen',
-      (tester) async {
+  testWidgets('Feedback-Dialog verlangt mindestens 3 Zeichen', (tester) async {
     await tester.pumpWidget(app(signedIn: true));
     await tester.pumpAndSettle();
 
@@ -242,11 +255,15 @@ void main() {
   });
 
   testWidgets('Mehrere verschiedene Abstürze werden gezählt', (tester) async {
-    await tester.pumpWidget(app(crashes: [
-      crashWith(fingerprint: 'aa'),
-      crashWith(fingerprint: 'bb'),
-      crashWith(fingerprint: 'cc'),
-    ]));
+    await tester.pumpWidget(
+      app(
+        crashes: [
+          crashWith(fingerprint: 'aa'),
+          crashWith(fingerprint: 'bb'),
+          crashWith(fingerprint: 'cc'),
+        ],
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('Die App hatte zuletzt 3 Probleme'), findsOneWidget);
@@ -267,8 +284,9 @@ void main() {
     expect(find.textContaining('keine Namen, Zugangsdaten'), findsOneWidget);
   });
 
-  testWidgets('Ohne Login ist "Melden" gesperrt, "Kopieren" nicht',
-      (tester) async {
+  testWidgets('Ohne Login ist "Melden" gesperrt, "Kopieren" nicht', (
+    tester,
+  ) async {
     await tester.pumpWidget(app(crashes: [crash]));
     await tester.pumpAndSettle();
 
@@ -276,17 +294,23 @@ void main() {
     await tester.pumpAndSettle();
 
     final melden = tester.widget<FilledButton>(
-        find.widgetWithText(FilledButton, 'Melden'));
+      find.widgetWithText(FilledButton, 'Melden'),
+    );
     expect(melden.onPressed, isNull, reason: 'Melden braucht eine Session');
 
     final kopieren = tester.widget<TextButton>(
-        find.widgetWithText(TextButton, 'Kopieren'));
-    expect(kopieren.onPressed, isNotNull,
-        reason: 'Kopieren ist der Weg ohne Server und muss offen bleiben');
+      find.widgetWithText(TextButton, 'Kopieren'),
+    );
+    expect(
+      kopieren.onPressed,
+      isNotNull,
+      reason: 'Kopieren ist der Weg ohne Server und muss offen bleiben',
+    );
   });
 
-  testWidgets('"Kopieren" legt den Bericht in die Zwischenablage',
-      (tester) async {
+  testWidgets('"Kopieren" legt den Bericht in die Zwischenablage', (
+    tester,
+  ) async {
     String? copied;
     tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
       SystemChannels.platform,
@@ -297,8 +321,12 @@ void main() {
         return null;
       },
     );
-    addTearDown(() => tester.binding.defaultBinaryMessenger
-        .setMockMethodCallHandler(SystemChannels.platform, null));
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      ),
+    );
 
     await tester.pumpWidget(app(crashes: [crash]));
     await tester.pumpAndSettle();
@@ -320,14 +348,17 @@ void main() {
     await tester.pumpAndSettle();
 
     final melden = tester.widget<FilledButton>(
-        find.widgetWithText(FilledButton, 'Melden'));
+      find.widgetWithText(FilledButton, 'Melden'),
+    );
     expect(melden.onPressed, isNotNull);
   });
 
-  testWidgets('Absturz-Banner steht über Update- und Feedback-Banner',
-      (tester) async {
+  testWidgets('Absturz-Banner steht über Update- und Feedback-Banner', (
+    tester,
+  ) async {
     await tester.pumpWidget(
-        app(update: _update, signedIn: true, crashes: [crash]));
+      app(update: _update, signedIn: true, crashes: [crash]),
+    );
     await tester.pumpAndSettle();
 
     final crashY =
@@ -342,8 +373,9 @@ void main() {
   });
 
   group('Feedback-Banner überlebt das Senden (Issue #173)', () {
-    testWidgets('nach einer gesendeten Meldung steht das Banner noch da',
-        (tester) async {
+    testWidgets('nach einer gesendeten Meldung steht das Banner noch da', (
+      tester,
+    ) async {
       // Der gemeldete Fehler: „Feedback-Banner sollte nicht verschwinden,
       // wenn man einmal Feedback sendet." Wer zwei Dinge zu sagen hatte,
       // musste die App neu starten — das Flag lebt nur in der Sitzung.
@@ -359,8 +391,9 @@ void main() {
       expect(find.text('Wunsch oder Fehler melden'), findsOneWidget);
     });
 
-    testWidgets('auch die zweite Meldung geht ohne Neustart raus',
-        (tester) async {
+    testWidgets('auch die zweite Meldung geht ohne Neustart raus', (
+      tester,
+    ) async {
       // Genau der Ablauf, aus dem das Issue entstand: Marcus hatte elf
       // Dinge zu melden.
       await tester.pumpWidget(app(signedIn: true));
@@ -369,8 +402,10 @@ void main() {
       await feedbackSenden(tester, 'Erster Wunsch');
       await feedbackSenden(tester, 'Zweiter Wunsch');
 
-      expect(gesendet.map((f) => f.message),
-          ['Erster Wunsch', 'Zweiter Wunsch']);
+      expect(gesendet.map((f) => f.message), [
+        'Erster Wunsch',
+        'Zweiter Wunsch',
+      ]);
       expect(find.text('Wunsch oder Fehler melden'), findsOneWidget);
     });
 
@@ -386,8 +421,7 @@ void main() {
       expect(find.text('Wunsch oder Fehler melden'), findsNothing);
     });
 
-    testWidgets('ein Fehlschlag sagt es und behält das Banner',
-        (tester) async {
+    testWidgets('ein Fehlschlag sagt es und behält das Banner', (tester) async {
       await tester.pumpWidget(app(signedIn: true, sendenKlappt: false));
       await tester.pumpAndSettle();
 

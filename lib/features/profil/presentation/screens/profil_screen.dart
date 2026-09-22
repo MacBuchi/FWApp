@@ -132,7 +132,8 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
             textCapitalization: TextCapitalization.words,
             decoration: const InputDecoration(
               labelText: 'Anzeigename',
-              helperText: 'So stehen dein Name und dein Kopf in der '
+              helperText:
+                  'So stehen dein Name und dein Kopf in der '
                   'Nutzerverwaltung. Leer = dein Nutzername.',
               helperMaxLines: 3,
               border: OutlineInputBorder(),
@@ -146,16 +147,17 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
                 'Dieser Server kennt Profile noch nicht — Anzeigename und '
                 'Avatar lassen sich erst nach seiner Aktualisierung '
                 'speichern.',
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(color: theme.colorScheme.error),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.error,
+                ),
               ),
             ),
           const SizedBox(height: 8),
           Align(
             alignment: Alignment.centerLeft,
             child: OutlinedButton.icon(
-              onPressed: () =>
-                  _setze(wuerfleAvatar((n) => _wuerfel.nextInt(n))),
+              onPressed:
+                  () => _setze(wuerfleAvatar((n) => _wuerfel.nextInt(n))),
               icon: const Icon(Icons.casino_outlined),
               label: const Text('Zufällig würfeln'),
             ),
@@ -205,9 +207,10 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
             onWahl: (v) => _setze(_avatar.copyWith(hair: v)),
             // Ehrlicher als die Auswahl auszublenden: Sie bleibt gespeichert
             // und taucht wieder auf, sobald die Maske abgesetzt wird.
-            hinweis: _avatar.gear == 'scba'
-                ? 'Unter der Atemschutzmaske sieht man davon nichts.'
-                : _avatar.gear == 'dog'
+            hinweis:
+                _avatar.gear == 'scba'
+                    ? 'Unter der Atemschutzmaske sieht man davon nichts.'
+                    : _avatar.gear == 'dog'
                     ? 'Der Dalmatiner trägt keinen Bart.'
                     : null,
           ),
@@ -236,13 +239,14 @@ class _ProfilScreenState extends ConsumerState<ProfilScreen> {
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
           child: FilledButton.icon(
             onPressed: _laeuft || !kannSpeichern ? null : _speichern,
-            icon: _laeuft
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.save),
+            icon:
+                _laeuft
+                    ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                    : const Icon(Icons.save),
             label: const Text('Speichern'),
           ),
         ),
@@ -302,9 +306,10 @@ class _Vorlagen extends StatelessWidget {
                         shape: BoxShape.circle,
                         border: Border.all(
                           width: 2,
-                          color: v.kopf == gewaehlt
-                              ? theme.colorScheme.primary
-                              : Colors.transparent,
+                          color:
+                              v.kopf == gewaehlt
+                                  ? theme.colorScheme.primary
+                                  : Colors.transparent,
                         ),
                       ),
                       padding: const EdgeInsets.all(2),
@@ -327,8 +332,9 @@ class _Vorlagen extends StatelessWidget {
                       textAlign: TextAlign.center,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.labelSmall
-                          ?.copyWith(color: theme.colorScheme.outline),
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.outline,
+                      ),
                     ),
                   ],
                 ),
@@ -367,8 +373,7 @@ class _Wahl extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(titel, style: theme.textTheme.labelLarge),
-          if (hinweis != null)
-            Text(hinweis!, style: theme.textTheme.bodySmall),
+          if (hinweis != null) Text(hinweis!, style: theme.textTheme.bodySmall),
           const SizedBox(height: 6),
           Wrap(
             spacing: 8,
@@ -433,21 +438,24 @@ class _Farben extends StatelessWidget {
                         shape: BoxShape.circle,
                         border: Border.all(
                           width: f == aktiv ? 3 : 1,
-                          color: f == aktiv
-                              ? theme.colorScheme.primary
-                              : theme.colorScheme.outlineVariant,
+                          color:
+                              f == aktiv
+                                  ? theme.colorScheme.primary
+                                  : theme.colorScheme.outlineVariant,
                         ),
                       ),
-                      child: f == aktiv
-                          ? Icon(
-                              Icons.check,
-                              size: 20,
-                              color: ThemeData.estimateBrightnessForColor(f) ==
-                                      Brightness.dark
-                                  ? Colors.white
-                                  : Colors.black87,
-                            )
-                          : null,
+                      child:
+                          f == aktiv
+                              ? Icon(
+                                Icons.check,
+                                size: 20,
+                                color:
+                                    ThemeData.estimateBrightnessForColor(f) ==
+                                            Brightness.dark
+                                        ? Colors.white
+                                        : Colors.black87,
+                              )
+                              : null,
                     ),
                   ),
                 ),

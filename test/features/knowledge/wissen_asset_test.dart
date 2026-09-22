@@ -26,7 +26,8 @@ void main() {
 
   group('parseWissensAsset', () {
     test('liest Frage, Antwortmenge, Quelle und Geltungsbereich', () {
-      final f = parseWissensAsset('''
+      final f =
+          parseWissensAsset('''
       {"fragen": [{
         "gebiet": "einsatzlehre",
         "frage": "Wie ist die Mannschaftsstärke einer Gruppe?",
@@ -48,7 +49,8 @@ void main() {
     });
 
     test('mehrere richtige Antworten kommen als Menge an', () {
-      final f = parseWissensAsset('''
+      final f =
+          parseWissensAsset('''
       {"fragen": [{
         "gebiet": "geraetekunde",
         "frage": "Welche Leitern sind genormt?",
@@ -77,25 +79,28 @@ void main() {
       // Sonst landete die Frage in einem Sammelbecken und wäre über den
       // Filter nie wieder zu finden.
       expect(
-          parseWissensAsset('''
+        parseWissensAsset('''
       {"fragen": [{"gebiet": "sonstiges", "frage": "Irgendwas dazu?",
         "antworten": ["a", "b"], "richtige": [0]}]}'''),
-          isEmpty);
+        isEmpty,
+      );
     });
 
     test('Landesrecht ohne gültiges Land fällt heraus', () {
       // „Gilt im Landesrecht" ohne zu sagen, in welchem, ist keine Angabe.
       expect(
-          parseWissensAsset('''
+        parseWissensAsset('''
       {"fragen": [{"gebiet": "recht_organisation", "frage": "Wer wählt ihn?",
         "antworten": ["a", "b"], "richtige": [0], "geltung": "land"}]}'''),
-          isEmpty);
+        isEmpty,
+      );
       expect(
-          parseWissensAsset('''
+        parseWissensAsset('''
       {"fragen": [{"gebiet": "recht_organisation", "frage": "Wer wählt ihn?",
         "antworten": ["a", "b"], "richtige": [0], "geltung": "land",
         "land": "XX"}]}'''),
-          isEmpty);
+        isEmpty,
+      );
     });
 
     test('unlesbares JSON liefert nichts statt zu werfen', () {
@@ -127,8 +132,11 @@ void main() {
         // Zählt gegen die Datei selbst: Fällt eine Frage beim Parsen heraus,
         // stimmt die Zahl nicht mehr — und genau das soll auffallen.
         final imJson = RegExp(r'"frage"\s*:').allMatches(roh).length;
-        expect(fragen, hasLength(imJson),
-            reason: 'eine Frage ist beim Parsen herausgefallen');
+        expect(
+          fragen,
+          hasLength(imJson),
+          reason: 'eine Frage ist beim Parsen herausgefallen',
+        );
         expect(fragen.length, greaterThanOrEqualTo(mindestens));
       });
 
@@ -138,10 +146,16 @@ void main() {
         for (final f in fragen) {
           expect(f.quelle, isNotNull, reason: 'ohne Quelle: "${f.frage}"');
           expect(f.quelle!.werk, isNotEmpty);
-          expect(f.quelle!.fundstelle, isNotNull,
-              reason: 'ohne Fundstelle: "${f.frage}"');
-          expect(f.quelle!.stand, isNotNull,
-              reason: 'ohne Fassung: "${f.frage}"');
+          expect(
+            f.quelle!.fundstelle,
+            isNotNull,
+            reason: 'ohne Fundstelle: "${f.frage}"',
+          );
+          expect(
+            f.quelle!.stand,
+            isNotNull,
+            reason: 'ohne Fassung: "${f.frage}"',
+          );
         }
       });
 
@@ -149,29 +163,38 @@ void main() {
         // Lehrstoffblätter (Neckar-Verlag) und DIN-Normtexte sind
         // urheberrechtlich geschützt — aus ihnen wird nichts entnommen.
         for (final f in fragen) {
-          expect(erlaubteWerke.hasMatch(f.quelle!.werk), isTrue,
-              reason: 'unerwartete Quelle "${f.quelle!.werk}" bei '
-                  '"${f.frage}"');
+          expect(
+            erlaubteWerke.hasMatch(f.quelle!.werk),
+            isTrue,
+            reason:
+                'unerwartete Quelle "${f.quelle!.werk}" bei '
+                '"${f.frage}"',
+          );
         }
       });
 
       test('der Geltungsbereich stimmt für die ganze Datei', () {
         for (final f in fragen) {
-          expect(f.geltung, geltung,
-              reason: 'falscher Geltungsbereich: "${f.frage}"');
+          expect(
+            f.geltung,
+            geltung,
+            reason: 'falscher Geltungsbereich: "${f.frage}"',
+          );
           expect(f.land, land, reason: 'falsches Land: "${f.frage}"');
         }
       });
 
-      test('Mehrfachantworten sind dabei — sonst wäre die Erweiterung umsonst',
-          () {
-        final mehrfach = fragen.where((f) => f.richtige.length > 1);
-        expect(mehrfach, isNotEmpty);
-        // Und es sind keine Fangfragen, bei denen alles richtig ist.
-        for (final f in mehrfach) {
-          expect(f.richtige.length, lessThan(f.antworten.length));
-        }
-      });
+      test(
+        'Mehrfachantworten sind dabei — sonst wäre die Erweiterung umsonst',
+        () {
+          final mehrfach = fragen.where((f) => f.richtige.length > 1);
+          expect(mehrfach, isNotEmpty);
+          // Und es sind keine Fangfragen, bei denen alles richtig ist.
+          for (final f in mehrfach) {
+            expect(f.richtige.length, lessThan(f.antworten.length));
+          }
+        },
+      );
 
       test('keine Frage steht zweimal drin', () {
         // ⚠️ Nicht bloß Kosmetik: `WissenSeeder` erkennt eine schon
@@ -191,16 +214,22 @@ void main() {
           for (final f in fragen)
             if (f.kapitel != null) f.kapitel!,
         };
-        expect(gefunden, erlaubteKapitel,
-            reason: 'unerwartetes oder fehlendes Kapitel in $pfad');
+        expect(
+          gefunden,
+          erlaubteKapitel,
+          reason: 'unerwartetes oder fehlendes Kapitel in $pfad',
+        );
       });
 
       test('jedes genannte Bild liegt auch im Bundle', () async {
         // Ein Pfad, der ins Leere zeigt, fiele sonst erst auf dem Gerät auf
         // — und bei einer Bildfrage IST das Bild die Frage.
         for (final f in fragen.where((f) => f.bildPfad != null)) {
-          await expectLater(rootBundle.load(f.bildPfad!), completes,
-              reason: 'Bild fehlt: ${f.bildPfad} ("${f.frage}")');
+          await expectLater(
+            rootBundle.load(f.bildPfad!),
+            completes,
+            reason: 'Bild fehlt: ${f.bildPfad} ("${f.frage}")',
+          );
         }
       });
     });
@@ -248,8 +277,9 @@ void main() {
   // die Lehrstoffblätter der Landesfeuerwehrschule sind es NICHT.
   bestandPruefen(
     'assets/knowledge/bw.json',
-    erlaubteWerke:
-        RegExp(r'^(FwG BW|VwV Feuerwehrbekleidung|VwV Feuerwehrausbildung)$'),
+    erlaubteWerke: RegExp(
+      r'^(FwG BW|VwV Feuerwehrbekleidung|VwV Feuerwehrausbildung)$',
+    ),
     geltung: Geltungsbereich.land,
     land: 'BW',
     mindestens: 40,
@@ -262,9 +292,13 @@ void main() {
       // auf dem Gerät einfach leer.
       final pubspec = File('pubspec.yaml').readAsStringSync();
       for (final pfad in kWissensAssets) {
-        expect(pubspec, contains('- $pfad'),
-            reason: '$pfad steht in kWissensAssets, aber nicht in '
-                'pubspec.yaml');
+        expect(
+          pubspec,
+          contains('- $pfad'),
+          reason:
+              '$pfad steht in kWissensAssets, aber nicht in '
+              'pubspec.yaml',
+        );
         // Und umgekehrt: Die Datei muss wirklich im Bundle liegen.
         await expectLater(rootBundle.loadString(pfad), completes);
       }
@@ -275,8 +309,11 @@ void main() {
       // Spiel doppelt und in der Übersicht zweimal untereinander.
       final texte = <String>[];
       for (final pfad in kWissensAssets) {
-        texte.addAll(parseWissensAsset(await rootBundle.loadString(pfad))
-            .map((f) => f.frage.toLowerCase()));
+        texte.addAll(
+          parseWissensAsset(
+            await rootBundle.loadString(pfad),
+          ).map((f) => f.frage.toLowerCase()),
+        );
       }
       expect(texte.toSet(), hasLength(texte.length));
     });
@@ -287,26 +324,30 @@ void main() {
     setUp(() => db = createTestDatabase());
     tearDown(() => db.close());
 
-    test('der Fachbestand landet freigegeben und mit Quelle in der DB',
-        () async {
-      final fragen = parseWissensAsset(
-          await rootBundle.loadString('assets/knowledge/bund.json'));
-      final n = await WissenSeeder(db).seedFachbestand(fragen);
+    test(
+      'der Fachbestand landet freigegeben und mit Quelle in der DB',
+      () async {
+        final fragen = parseWissensAsset(
+          await rootBundle.loadString('assets/knowledge/bund.json'),
+        );
+        final n = await WissenSeeder(db).seedFachbestand(fragen);
 
-      expect(n, fragen.length);
-      final zeilen = await db.wissenDao.getAll();
-      expect(zeilen, hasLength(fragen.length));
-      // Ausgeliefertes ist geprüft — es wartet auf niemanden.
-      expect(zeilen.every((z) => z.stand == 'freigegeben'), isTrue);
-      expect(zeilen.every((z) => z.herkunft == 'mitgeliefert'), isTrue);
-      expect(zeilen.every((z) => (z.quelleWerk ?? '').isNotEmpty), isTrue);
-      // Und die Mengen sind wirklich Mengen.
-      expect(zeilen.any((z) => z.richtigeJson.contains(',')), isTrue);
-    });
+        expect(n, fragen.length);
+        final zeilen = await db.wissenDao.getAll();
+        expect(zeilen, hasLength(fragen.length));
+        // Ausgeliefertes ist geprüft — es wartet auf niemanden.
+        expect(zeilen.every((z) => z.stand == 'freigegeben'), isTrue);
+        expect(zeilen.every((z) => z.herkunft == 'mitgeliefert'), isTrue);
+        expect(zeilen.every((z) => (z.quelleWerk ?? '').isNotEmpty), isTrue);
+        // Und die Mengen sind wirklich Mengen.
+        expect(zeilen.any((z) => z.richtigeJson.contains(',')), isTrue);
+      },
+    );
 
     test('ein zweiter Lauf verdoppelt nichts', () async {
       final fragen = parseWissensAsset(
-          await rootBundle.loadString('assets/knowledge/bund.json'));
+        await rootBundle.loadString('assets/knowledge/bund.json'),
+      );
       await WissenSeeder(db).seedFachbestand(fragen);
       expect(await WissenSeeder(db).seedFachbestand(fragen), 0);
       expect(await db.wissenDao.getAll(), hasLength(fragen.length));

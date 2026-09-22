@@ -46,7 +46,11 @@ class InventurEinheit {
   /// Ihre Codes — beim Suchen ist der Aufkleber die genaueste Angabe.
   final List<String> codes;
 
-  const InventurEinheit({required this.id, this.kennung, this.codes = const []});
+  const InventurEinheit({
+    required this.id,
+    this.kennung,
+    this.codes = const [],
+  });
 
   /// „Flasche 3 (FW-7K2M9Q)" — was davon da ist.
   String get beschriftung {
@@ -84,14 +88,15 @@ List<InventurEinheit> nichtGefundene(
   // „welche" schlicht nicht bekannt.
   if (gezaehlt.length != ist) return const [];
 
-  return [for (final e in einheiten) if (!gezaehlt.contains(e.id)) e];
+  return [
+    for (final e in einheiten)
+      if (!gezaehlt.contains(e.id)) e,
+  ];
 }
 
 Set<int> _gezaehlteIds(String json) {
   try {
-    return {
-      for (final e in jsonDecode(json) as List) (e as num).toInt(),
-    };
+    return {for (final e in jsonDecode(json) as List) (e as num).toInt()};
   } catch (_) {
     // Eine kaputte Zeile darf den Bericht nicht kosten.
     return {};
@@ -103,12 +108,12 @@ Set<int> _gezaehlteIds(String json) {
 /// Bewusst nicht der rohe Schlüssel (`damaged`): Die Datei landet beim
 /// Kommandanten in Excel, nicht in einem Parser.
 String statusText(String status) => switch (status) {
-      InventoryChecks.statusOk => 'i.O.',
-      InventoryChecks.statusMissing => 'fehlt',
-      InventoryChecks.statusDamaged => 'beschädigt',
-      InventoryChecks.statusRepair => 'in Reparatur',
-      _ => 'nicht geprüft',
-    };
+  InventoryChecks.statusOk => 'i.O.',
+  InventoryChecks.statusMissing => 'fehlt',
+  InventoryChecks.statusDamaged => 'beschädigt',
+  InventoryChecks.statusRepair => 'in Reparatur',
+  _ => 'nicht geprüft',
+};
 
 /// Baut den Inventurbericht als CSV.
 ///
@@ -139,9 +144,10 @@ String inventurCsv({
         statusText(c.status),
         // Die Antwort auf „wonach suche ich?" — ohne sie sagt der Bericht
         // „2 von 4", und der Gerätewart zählt das Fach noch einmal durch.
-        nichtGefundene(c, einheiten[c.id] ?? const [])
-            .map((e) => e.beschriftung)
-            .join(', '),
+        nichtGefundene(
+          c,
+          einheiten[c.id] ?? const [],
+        ).map((e) => e.beschriftung).join(', '),
         c.note,
       ],
   ];

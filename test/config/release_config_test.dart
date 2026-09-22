@@ -42,53 +42,62 @@ void main() {
       expect(
         manifest,
         contains('android.permission.INTERNET'),
-        reason: 'Debug-Builds mergen die Permission automatisch, das '
+        reason:
+            'Debug-Builds mergen die Permission automatisch, das '
             'Release-Manifest braucht sie explizit — sonst scheitert jede '
             'DNS-Auflösung mit "Failed host lookup" (v1.3.1).',
       );
     });
 
-    test('In-App-Update: Permission, FileProvider und Pfade hängen zusammen',
-        () {
-      expect(
-        manifest,
-        contains('android.permission.REQUEST_INSTALL_PACKAGES'),
-        reason: 'Ohne diese Permission darf ota_update das heruntergeladene '
-            'APK nicht an den Android-Installer übergeben.',
-      );
-      expect(
-        manifest,
-        contains(r'${applicationId}.ota_update_provider'),
-        reason: 'ota_update erwartet exakt diese FileProvider-Authority. '
-            'Fehlt sie, stürzt die App nach abgeschlossenem Download ab.',
-      );
-      expect(
-        manifest,
-        contains('@xml/filepaths'),
-        reason: 'Der FileProvider braucht seine Pfad-Definition.',
-      );
+    test(
+      'In-App-Update: Permission, FileProvider und Pfade hängen zusammen',
+      () {
+        expect(
+          manifest,
+          contains('android.permission.REQUEST_INSTALL_PACKAGES'),
+          reason:
+              'Ohne diese Permission darf ota_update das heruntergeladene '
+              'APK nicht an den Android-Installer übergeben.',
+        );
+        expect(
+          manifest,
+          contains(r'${applicationId}.ota_update_provider'),
+          reason:
+              'ota_update erwartet exakt diese FileProvider-Authority. '
+              'Fehlt sie, stürzt die App nach abgeschlossenem Download ab.',
+        );
+        expect(
+          manifest,
+          contains('@xml/filepaths'),
+          reason: 'Der FileProvider braucht seine Pfad-Definition.',
+        );
 
-      final filepaths = _withoutXmlComments(
-        File('android/app/src/main/res/xml/filepaths.xml').readAsStringSync(),
-      );
-      expect(
-        filepaths,
-        contains('ota_update/'),
-        reason: 'Ohne files-path auf ota_update/ kann der FileProvider das '
-            'heruntergeladene APK nicht freigeben.',
-      );
-    });
+        final filepaths = _withoutXmlComments(
+          File('android/app/src/main/res/xml/filepaths.xml').readAsStringSync(),
+        );
+        expect(
+          filepaths,
+          contains('ota_update/'),
+          reason:
+              'Ohne files-path auf ota_update/ kann der FileProvider das '
+              'heruntergeladene APK nicht freigeben.',
+        );
+      },
+    );
 
     test('queries erlaubt das Auflösen von https-Links (Issue #27)', () {
-      final queries =
-          RegExp(r'<queries>(.*?)</queries>', dotAll: true).firstMatch(manifest);
+      final queries = RegExp(
+        r'<queries>(.*?)</queries>',
+        dotAll: true,
+      ).firstMatch(manifest);
       expect(queries, isNotNull, reason: 'Kein <queries>-Block im Manifest.');
 
       final block = queries!.group(1)!;
       expect(
         block,
         contains('android.intent.action.VIEW'),
-        reason: 'Ohne VIEW/https-Intent sieht die App unter Android 11+ '
+        reason:
+            'Ohne VIEW/https-Intent sieht die App unter Android 11+ '
             'keinen Browser: launchUrl liefert still false und der '
             'Update-Fallback "Im Browser laden" läuft ins Leere.',
       );
@@ -99,13 +108,15 @@ void main() {
       expect(
         manifest,
         contains('android:dataExtractionRules="@xml/backup_rules"'),
-        reason: 'Ohne eigene Regeln gilt allowBackup=true für alles — dann '
+        reason:
+            'Ohne eigene Regeln gilt allowBackup=true für alles — dann '
             'landet das Refresh-Token im Google-Konto des Nutzers.',
       );
       expect(
         manifest,
         contains('android:fullBackupContent="@xml/full_backup_content"'),
-        reason: 'dataExtractionRules greift erst ab Android 12; ältere '
+        reason:
+            'dataExtractionRules greift erst ab Android 12; ältere '
             'Versionen brauchen fullBackupContent.',
       );
 
@@ -117,13 +128,15 @@ void main() {
         expect(
           rules,
           contains('FlutterSharedPreferences.xml'),
-          reason: '$file muss die Prefs ausschließen — dort legt '
+          reason:
+              '$file muss die Prefs ausschließen — dort legt '
               'supabase_flutter die Session inkl. Refresh-Token ab.',
         );
         expect(
           rules,
           isNot(contains('fwapp.sqlite')),
-          reason: 'Die Datenbank soll bewusst IM Backup bleiben, sonst '
+          reason:
+              'Die Datenbank soll bewusst IM Backup bleiben, sonst '
               'kostet ein Gerätewechsel den Lernfortschritt.',
         );
       }
@@ -135,7 +148,8 @@ void main() {
     expect(
       gradle,
       contains('isCoreLibraryDesugaringEnabled = true'),
-      reason: 'ota_update setzt Desugaring voraus — fehlt es, bricht schon '
+      reason:
+          'ota_update setzt Desugaring voraus — fehlt es, bricht schon '
           'der Gradle-Build.',
     );
     expect(gradle, contains('coreLibraryDesugaring('));

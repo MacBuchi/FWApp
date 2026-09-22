@@ -54,9 +54,12 @@ Future<String?> zeigeHinweisDialog(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('„${f.frage}"',
-                  style: theme.textTheme.bodyMedium
-                      ?.copyWith(fontStyle: FontStyle.italic)),
+              Text(
+                '„${f.frage}"',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
               const SizedBox(height: 12),
               Text(
                 weg == Hinweisweg.bot
@@ -66,8 +69,9 @@ Future<String?> zeigeHinweisDialog(
                         'sichtbar.'
                     : 'Diese Frage gehört eurer Wehr. Dein Hinweis geht an '
                         'den Gerätewart und bleibt in der Wehr.',
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 12),
               TextField(
@@ -77,7 +81,8 @@ Future<String?> zeigeHinweisDialog(
                 maxLength: kFeedbackMaxLength,
                 decoration: const InputDecoration(
                   labelText: 'Was stimmt nicht?',
-                  hintText: 'z. B. „Antwort b) ist seit der Neufassung 2024 '
+                  hintText:
+                      'z. B. „Antwort b) ist seit der Neufassung 2024 '
                       'auch richtig."',
                   border: OutlineInputBorder(),
                 ),

@@ -1,6 +1,7 @@
 /// due_inspection_entry.dart – A due/soon-due schedule with display context
 /// (pure Dart, no Flutter/Drift dependencies).
 library;
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:fwapp/features/inspection/domain/entities/equipment_instance.dart';
 import 'package:fwapp/features/inspection/domain/entities/inspection_schedule.dart';

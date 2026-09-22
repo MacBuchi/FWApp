@@ -6,6 +6,7 @@
 /// eine belegbare Liste vorliegt — erfundene Beladung erspart keine Arbeit,
 /// sie verlagert sie nur ins Aufräumen.
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -88,40 +89,46 @@ class VehicleTemplateScreen extends ConsumerWidget {
       ref.invalidate(vehicleListProvider);
       if (!context.mounted) return;
 
-      var message = '${options.name} angelegt: '
+      var message =
+          '${options.name} angelegt: '
           '${result.compartmentCount} Geräteräume.';
       if (result.itemCount > 0) {
         final verteilt = result.itemCount - result.unassignedCount;
-        message = verteilt > 0
-            ? '${options.name} angelegt: $verteilt Positionen nach Konvention '
-                'verteilt'
-                '${result.unassignedCount > 0 ? ', ${result.unassignedCount} im Sammelfach' : ''}'
-                ' — bitte am Fahrzeug prüfen.'
-            : '${options.name} angelegt: ${result.compartmentCount} '
-                'Geräteräume, ${result.itemCount} Positionen im Sammelfach.';
+        message =
+            verteilt > 0
+                ? '${options.name} angelegt: $verteilt Positionen nach Konvention '
+                    'verteilt'
+                    '${result.unassignedCount > 0 ? ', ${result.unassignedCount} im Sammelfach' : ''}'
+                    ' — bitte am Fahrzeug prüfen.'
+                : '${options.name} angelegt: ${result.compartmentCount} '
+                    'Geräteräume, ${result.itemCount} Positionen im Sammelfach.';
       }
       // Fehlende Positionen laut sagen: Wer „mit Normbeladung" wählt und
       // still ein Drittel weniger bekommt, merkt es sonst erst am Fahrzeug
       // (Issue #86 entstand genau so).
       if (result.missingEquipment.isNotEmpty) {
-        message += ' ${result.missingEquipment.length} Positionen ohne '
+        message +=
+            ' ${result.missingEquipment.length} Positionen ohne '
             'Katalogeintrag übersprungen.';
       }
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(message),
-        duration: result.missingEquipment.isEmpty
-            ? const Duration(seconds: 4)
-            : const Duration(seconds: 8),
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          duration:
+              result.missingEquipment.isEmpty
+                  ? const Duration(seconds: 4)
+                  : const Duration(seconds: 8),
+        ),
+      );
       // Zurück zur Liste, nicht nur ein Schritt: Die Vorlagenauswahl hinter
       // sich zu lassen ist nach dem Anlegen die richtige Erwartung.
       context.go('/vehicles');
     } catch (e, s) {
       appLog.w('Fahrzeug aus Vorlage fehlgeschlagen', error: e, stackTrace: s);
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Anlegen fehlgeschlagen: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Anlegen fehlgeschlagen: $e')));
     }
   }
 }
@@ -206,15 +213,18 @@ class _TemplateOptionsSheetState extends State<_TemplateOptionsSheet> {
               const SizedBox(height: 12),
               TextField(
                 controller: _plateCtrl,
-                decoration:
-                    const InputDecoration(labelText: 'Kennzeichen (optional)'),
+                decoration: const InputDecoration(
+                  labelText: 'Kennzeichen (optional)',
+                ),
               ),
               const SizedBox(height: 12),
               OutlinedButton.icon(
                 icon: const Icon(Icons.photo_camera),
-                label: Text(_imagePath == null
-                    ? 'Bild hinzufügen (optional)'
-                    : 'Bild ausgewählt — ändern'),
+                label: Text(
+                  _imagePath == null
+                      ? 'Bild hinzufügen (optional)'
+                      : 'Bild ausgewählt — ändern',
+                ),
                 onPressed: _pickImage,
               ),
               const SizedBox(height: 16),
@@ -224,8 +234,7 @@ class _TemplateOptionsSheetState extends State<_TemplateOptionsSheet> {
                   withLoading: _withLoading,
                   onChanged: (v) => setState(() => _withLoading = v),
                   withPlacement: _withPlacement,
-                  onPlacementChanged: (v) =>
-                      setState(() => _withPlacement = v),
+                  onPlacementChanged: (v) => setState(() => _withPlacement = v),
                 )
               else
                 _NoLoadingHint(compartments: t.compartments.length),
@@ -252,7 +261,8 @@ class _TemplateOptionsSheetState extends State<_TemplateOptionsSheet> {
                         if (name.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                                content: Text('Bitte einen Namen eingeben.')),
+                              content: Text('Bitte einen Namen eingeben.'),
+                            ),
                           );
                           return;
                         }
@@ -317,14 +327,17 @@ class _LoadingChoice extends StatelessWidget {
                 contentPadding: EdgeInsets.zero,
                 title: const Text('Nur Geräteräume'),
                 subtitle: Text(
-                    '${template.compartments.length} leere Fächer anlegen'),
+                  '${template.compartments.length} leere Fächer anlegen',
+                ),
               ),
               RadioListTile<bool>(
                 value: true,
                 contentPadding: EdgeInsets.zero,
                 title: const Text('Mit Normbeladung'),
-                subtitle: Text('${template.loading!.items.length} Positionen '
-                    'in ein Sammelfach, von dort selbst zuordnen'),
+                subtitle: Text(
+                  '${template.loading!.items.length} Positionen '
+                  'in ein Sammelfach, von dort selbst zuordnen',
+                ),
               ),
             ],
           ),
@@ -339,8 +352,9 @@ class _LoadingChoice extends StatelessWidget {
             contentPadding: EdgeInsets.zero,
             title: const Text('Auf die Geräteräume verteilen'),
             subtitle: const Text(
-                'Nach verbreiteter Konvention vorbelegen — ungeprüft, '
-                'jede Position bleibt änderbar'),
+              'Nach verbreiteter Konvention vorbelegen — ungeprüft, '
+              'jede Position bleibt änderbar',
+            ),
           ),
         if (withLoading) ...[
           const SizedBox(height: 8),

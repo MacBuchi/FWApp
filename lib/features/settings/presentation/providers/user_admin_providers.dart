@@ -4,6 +4,7 @@
 /// Der Service-Role-Key bleibt auf dem Server; die App ruft die Function mit
 /// dem Admin-JWT auf, die Function prüft die Rolle serverseitig.
 library;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/features/profil/domain/avatar_konfiguration.dart';
@@ -77,16 +78,18 @@ class ManagedUser {
       role: role,
       mustChangePassword: json['must_change_password'] as bool? ?? false,
       banned: json['banned'] as bool? ?? false,
-      lastSignInAt: json['last_sign_in_at'] == null
-          ? null
-          : DateTime.tryParse(json['last_sign_in_at'] as String),
+      lastSignInAt:
+          json['last_sign_in_at'] == null
+              ? null
+              : DateTime.tryParse(json['last_sign_in_at'] as String),
       abteilungId: abteilungId,
-      memberships: rawMemberships != null
-          ? {
-              for (final m in rawMemberships)
-                (m as Map)['abteilung_id'] as String: m['role'] as String,
-            }
-          : {if (abteilungId != null) abteilungId: role},
+      memberships:
+          rawMemberships != null
+              ? {
+                for (final m in rawMemberships)
+                  (m as Map)['abteilung_id'] as String: m['role'] as String,
+              }
+              : {if (abteilungId != null) abteilungId: role},
       kommandantGesamtwehren: [
         for (final g in (json['kommandant_gesamtwehren'] as List? ?? const []))
           g as String,
@@ -103,7 +106,9 @@ class ManagedUser {
 /// (Nimmt den Client statt eines Ref, damit Provider UND Widgets sie
 /// nutzen können — WidgetRef ist in Riverpod 3 kein Ref.)
 Future<Map<String, dynamic>> invokeAdminUsers(
-    SupabaseClient? client, Map<String, dynamic> body) async {
+  SupabaseClient? client,
+  Map<String, dynamic> body,
+) async {
   if (client == null) {
     throw StateError('Kein Server verbunden (Sync nicht initialisiert).');
   }
@@ -112,25 +117,30 @@ Future<Map<String, dynamic>> invokeAdminUsers(
     return (resp.data as Map).cast<String, dynamic>();
   } on FunctionException catch (e) {
     final detail = e.details;
-    final msg = detail is Map && detail['error'] != null
-        ? detail['error'].toString()
-        : 'HTTP ${e.status}';
+    final msg =
+        detail is Map && detail['error'] != null
+            ? detail['error'].toString()
+            : 'HTTP ${e.status}';
     throw Exception(msg);
   }
 }
 
 /// Liste aller Konten; neu laden per ref.invalidate.
-final managedUsersProvider =
-    FutureProvider.autoDispose<List<ManagedUser>>((ref) async {
-  final data = await invokeAdminUsers(
-      ref.watch(supabaseClientProvider), {'action': 'list'});
-  final users = (data['users'] as List? ?? [])
-      .map((u) => ManagedUser.fromJson((u as Map).cast<String, dynamic>()))
-      .toList();
+final managedUsersProvider = FutureProvider.autoDispose<List<ManagedUser>>((
+  ref,
+) async {
+  final data = await invokeAdminUsers(ref.watch(supabaseClientProvider), {
+    'action': 'list',
+  });
+  final users =
+      (data['users'] as List? ?? [])
+          .map((u) => ManagedUser.fromJson((u as Map).cast<String, dynamic>()))
+          .toList();
   // Nach dem ANGEZEIGTEN Namen sortieren, nicht nach dem technischen:
   // Sonst steht die Liste in einer Reihenfolge, die auf dem Bildschirm
   // niemand nachvollziehen kann.
   users.sort(
-      (a, b) => a.anzeige.toLowerCase().compareTo(b.anzeige.toLowerCase()));
+    (a, b) => a.anzeige.toLowerCase().compareTo(b.anzeige.toLowerCase()),
+  );
   return users;
 });

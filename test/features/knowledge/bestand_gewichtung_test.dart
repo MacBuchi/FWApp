@@ -25,14 +25,16 @@ void main() {
   tearDown(() => db.close());
 
   Future<WissensfrageData> frage(String text, {String? geraet}) async {
-    final id = await db.wissenDao.insertFrage(WissensfragenCompanion.insert(
-      gebiet: 'geraetekunde',
-      frage: text,
-      antwortenJson: const Value('["a","b"]'),
-      richtigeJson: const Value('[0]'),
-      stand: const Value('freigegeben'),
-      geraet: Value(geraet),
-    ));
+    final id = await db.wissenDao.insertFrage(
+      WissensfragenCompanion.insert(
+        gebiet: 'geraetekunde',
+        frage: text,
+        antwortenJson: const Value('["a","b"]'),
+        richtigeJson: const Value('[0]'),
+        stand: const Value('freigegeben'),
+        geraet: Value(geraet),
+      ),
+    );
     return (await db.wissenDao.getById(id))!;
   }
 
@@ -49,12 +51,18 @@ void main() {
         await frage('Gerätefrage $i', geraet: 'std_fremd_$i'),
     ];
 
-    final gewaehlt =
-        waehleNachBestand([...ohne, ...mit], {'std_eigen'}, zufall);
+    final gewaehlt = waehleNachBestand(
+      [...ohne, ...mit],
+      {'std_eigen'},
+      zufall,
+    );
 
     for (final f in ohne) {
-      expect(gewaehlt.map((x) => x.frage), contains(f.frage),
-          reason: 'Prüfungsstoff ohne Gerätebezug darf nie wegfallen.');
+      expect(
+        gewaehlt.map((x) => x.frage),
+        contains(f.frage),
+        reason: 'Prüfungsstoff ohne Gerätebezug darf nie wegfallen.',
+      );
     }
   });
 
@@ -84,8 +92,11 @@ void main() {
     for (var i = 0; i < 12; i++) {
       await frage('Gerätefrage $i', geraet: 'std_$i');
     }
-    final gewaehlt =
-        waehleNachBestand(await db.wissenDao.getAll(), const {}, zufall);
+    final gewaehlt = waehleNachBestand(
+      await db.wissenDao.getAll(),
+      const {},
+      zufall,
+    );
     expect(gewaehlt, hasLength(12));
   });
 
@@ -96,8 +107,9 @@ void main() {
     for (var i = 0; i < 12; i++) {
       await frage('Fremd $i', geraet: 'std_fremd_$i');
     }
-    final gewaehlt = waehleNachBestand(
-        await db.wissenDao.getAll(), {'std_gibtesnicht'}, zufall);
+    final gewaehlt = waehleNachBestand(await db.wissenDao.getAll(), {
+      'std_gibtesnicht',
+    }, zufall);
 
     expect(gewaehlt, hasLength(1));
     expect(gewaehlt.single.frage, ohne.frage);

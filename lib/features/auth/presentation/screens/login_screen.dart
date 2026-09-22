@@ -67,6 +67,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   var _modus = _Modus.anmelden;
   bool _busy = false;
   String? _error;
+
   /// Hinweise (kein Fehler) teilen sich den Platz mit [_error] — sie stehen
   /// nur in einer anderen Farbe da, weil sie dieselbe Frage beantworten:
   /// „Was ist gerade passiert?"
@@ -88,8 +89,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _signIn() async {
     final client = ref.read(supabaseClientProvider);
     if (client == null) {
-      setState(() => _error = 'Kein Server konfiguriert — bitte unter '
-          '„Servereinstellungen“ Adresse und Schlüssel eintragen.');
+      setState(
+        () =>
+            _error =
+                'Kein Server konfiguriert — bitte unter '
+                '„Servereinstellungen“ Adresse und Schlüssel eintragen.',
+      );
       return;
     }
     if (_user.text.trim().isEmpty || _password.text.isEmpty) {
@@ -132,9 +137,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       // auf Wunsch in einem öffentlichen Issue.
       appLog.w('Anmeldung fehlgeschlagen', error: e, stackTrace: s);
       if (!mounted) return;
-      setState(() => _error = 'Der Server ist nicht erreichbar. '
-          'Internetverbindung prüfen oder unter „Servereinstellungen“ die '
-          'Adresse korrigieren.');
+      setState(
+        () =>
+            _error =
+                'Der Server ist nicht erreichbar. '
+                'Internetverbindung prüfen oder unter „Servereinstellungen“ die '
+                'Adresse korrigieren.',
+      );
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -147,7 +156,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final client = ref.read(supabaseClientProvider);
     final mail = _mail.text.trim().toLowerCase();
     if (client == null || !mail.contains('@')) {
-      setState(() => _error = 'Bitte eine vollständige E-Mail-Adresse angeben.');
+      setState(
+        () => _error = 'Bitte eine vollständige E-Mail-Adresse angeben.',
+      );
       return;
     }
     setState(() {
@@ -165,7 +176,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         setState(() {
           _busy = false;
           _modus = _Modus.code;
-          _hinweis = 'Wenn es zu dieser Adresse ein Konto gibt, ist ein Code '
+          _hinweis =
+              'Wenn es zu dieser Adresse ein Konto gibt, ist ein Code '
               'unterwegs. Er gilt eine Stunde.';
         });
         _fokusAufErstesFeld();
@@ -228,8 +240,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       await client.auth.signOut().catchError((_) {});
       appLog.w('Zurücksetzen fehlgeschlagen', error: e, stackTrace: s);
       if (!mounted) return;
-      setState(() => _error = 'Der Code stimmt nicht oder ist abgelaufen. '
-          'Bitte einen neuen anfordern.');
+      setState(
+        () =>
+            _error =
+                'Der Code stimmt nicht oder ist abgelaufen. '
+                'Bitte einen neuen anfordern.',
+      );
     } finally {
       if (mounted) {
         ref.read(recoveryPendingProvider.notifier).state = false;
@@ -258,7 +274,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final mail = _mail.text.trim().toLowerCase();
     if (!mail.contains('@')) {
       setState(() {
-        _error = 'Bitte die E-Mail-Adresse eingeben, an die die Einladung '
+        _error =
+            'Bitte die E-Mail-Adresse eingeben, an die die Einladung '
             'ging.';
         _hinweis = null;
       });
@@ -303,8 +320,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       await client.auth.signOut().catchError((_) {});
       appLog.w('Einladung annehmen fehlgeschlagen', error: e, stackTrace: s);
       if (!mounted) return;
-      setState(() => _error = 'Der Code stimmt nicht oder ist abgelaufen. '
-          'Bitte deinen Kommandanten um eine neue Einladung.');
+      setState(
+        () =>
+            _error =
+                'Der Code stimmt nicht oder ist abgelaufen. '
+                'Bitte deinen Kommandanten um eine neue Einladung.',
+      );
     } finally {
       if (mounted) {
         ref.read(recoveryPendingProvider.notifier).state = false;
@@ -338,8 +359,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       ref.read(mfaOffenProvider.notifier).state = false;
     } on AuthException catch (e) {
       if (!mounted) return;
-      setState(() => _error = 'Der Code stimmt nicht oder ist abgelaufen. '
-          'Die App zeigt alle 30 Sekunden einen neuen. (${e.message})');
+      setState(
+        () =>
+            _error =
+                'Der Code stimmt nicht oder ist abgelaufen. '
+                'Die App zeigt alle 30 Sekunden einen neuen. (${e.message})',
+      );
     } catch (e, s) {
       appLog.w('Zweiter Faktor fehlgeschlagen', error: e, stackTrace: s);
       if (!mounted) return;
@@ -357,12 +382,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _absenden() => switch (_modus) {
-        _Modus.anmelden => _signIn(),
-        _Modus.adresse => _codeAnfordern(),
-        _Modus.code => _codeEinloesen(),
-        _Modus.einladung => _einladungAnnehmen(),
-        _Modus.zweiterFaktor => _zweitenFaktorPruefen(),
-      };
+    _Modus.anmelden => _signIn(),
+    _Modus.adresse => _codeAnfordern(),
+    _Modus.code => _codeEinloesen(),
+    _Modus.einladung => _einladungAnnehmen(),
+    _Modus.zweiterFaktor => _zweitenFaktorPruefen(),
+  };
 
   void _wechsle(_Modus ziel) {
     setState(() {
@@ -399,200 +424,200 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   List<Widget> _felder() => switch (_modus) {
-        _Modus.anmelden => [
-            TextField(
-              controller: _user,
-              decoration: const InputDecoration(
-                labelText: 'Nutzername',
-                helperText: 'Vom Zugangszettel (oder vollständige E-Mail)',
-              ),
-              keyboardType: TextInputType.emailAddress,
-              autocorrect: false,
-              focusNode: _fokusErstes,
-              autofocus: true,
-              textInputAction: TextInputAction.next,
-              autofillHints: const [AutofillHints.username],
-            ),
-            const SizedBox(height: 8),
-            PasswordField(
-              controller: _password,
-              labelText: 'Passwort',
-              autofillHints: const [AutofillHints.password],
-              textInputAction: TextInputAction.done,
-              onSubmitted: (_) => _busy ? null : _signIn(),
-            ),
-          ],
-        _Modus.adresse => [
-            TextField(
-              controller: _mail,
-              decoration: const InputDecoration(labelText: 'E-Mail-Adresse'),
-              keyboardType: TextInputType.emailAddress,
-              autocorrect: false,
-              focusNode: _fokusErstes,
-              autofocus: true,
-              textInputAction: TextInputAction.done,
-              autofillHints: const [AutofillHints.email],
-              onSubmitted: (_) => _busy ? null : _codeAnfordern(),
-            ),
-          ],
-        _Modus.zweiterFaktor => [
-            TextField(
-              controller: _totp,
-              decoration: const InputDecoration(
-                labelText: 'Code aus der Authenticator-App',
-                helperText: 'Sechs Ziffern, wechselt alle 30 Sekunden',
-              ),
-              keyboardType: TextInputType.number,
-              autocorrect: false,
-              focusNode: _fokusErstes,
-              autofocus: true,
-              textInputAction: TextInputAction.done,
-              autofillHints: const [AutofillHints.oneTimeCode],
-              onSubmitted: (_) => _busy ? null : _zweitenFaktorPruefen(),
-            ),
-          ],
-        _Modus.code => [
-            TextField(
-              controller: _code,
-              decoration: const InputDecoration(
-                labelText: 'Code aus der E-Mail',
-                helperText: 'Sechs Ziffern',
-              ),
-              keyboardType: TextInputType.number,
-              autocorrect: false,
-              focusNode: _fokusErstes,
-              autofocus: true,
-              textInputAction: TextInputAction.next,
-              autofillHints: const [AutofillHints.oneTimeCode],
-            ),
-            const SizedBox(height: 8),
-            PasswordField(
-              controller: _neu1,
-              labelText: 'Neues Passwort',
-              helperText: 'Mindestens 8 Zeichen',
-              autofillHints: const [AutofillHints.newPassword],
-              textInputAction: TextInputAction.next,
-            ),
-            const SizedBox(height: 8),
-            PasswordField(
-              controller: _neu2,
-              labelText: 'Passwort wiederholen',
-              autofillHints: const [AutofillHints.newPassword],
-              textInputAction: TextInputAction.done,
-              onSubmitted: (_) => _busy ? null : _codeEinloesen(),
-            ),
-          ],
-        // Wie _Modus.code, aber mit dem Adressfeld davor: Wer eine Einladung
-        // annimmt, hat noch kein Konto und kommt nicht über „Passwort
-        // vergessen" — die Adresse muss er hier selbst eintragen.
-        _Modus.einladung => [
-            TextField(
-              controller: _mail,
-              decoration: const InputDecoration(
-                labelText: 'E-Mail-Adresse',
-                helperText: 'Die Adresse, an die die Einladung ging',
-              ),
-              keyboardType: TextInputType.emailAddress,
-              autocorrect: false,
-              focusNode: _fokusErstes,
-              autofocus: true,
-              textInputAction: TextInputAction.next,
-              autofillHints: const [AutofillHints.email],
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _code,
-              decoration: const InputDecoration(
-                labelText: 'Code aus der Einladung',
-                helperText: 'Sechs Ziffern',
-              ),
-              keyboardType: TextInputType.number,
-              autocorrect: false,
-              textInputAction: TextInputAction.next,
-              autofillHints: const [AutofillHints.oneTimeCode],
-            ),
-            const SizedBox(height: 8),
-            PasswordField(
-              controller: _neu1,
-              labelText: 'Passwort wählen',
-              helperText: 'Mindestens 8 Zeichen',
-              autofillHints: const [AutofillHints.newPassword],
-              textInputAction: TextInputAction.next,
-            ),
-            const SizedBox(height: 8),
-            PasswordField(
-              controller: _neu2,
-              labelText: 'Passwort wiederholen',
-              autofillHints: const [AutofillHints.newPassword],
-              textInputAction: TextInputAction.done,
-              onSubmitted: (_) => _busy ? null : _einladungAnnehmen(),
-            ),
-          ],
-      };
+    _Modus.anmelden => [
+      TextField(
+        controller: _user,
+        decoration: const InputDecoration(
+          labelText: 'Nutzername',
+          helperText: 'Vom Zugangszettel (oder vollständige E-Mail)',
+        ),
+        keyboardType: TextInputType.emailAddress,
+        autocorrect: false,
+        focusNode: _fokusErstes,
+        autofocus: true,
+        textInputAction: TextInputAction.next,
+        autofillHints: const [AutofillHints.username],
+      ),
+      const SizedBox(height: 8),
+      PasswordField(
+        controller: _password,
+        labelText: 'Passwort',
+        autofillHints: const [AutofillHints.password],
+        textInputAction: TextInputAction.done,
+        onSubmitted: (_) => _busy ? null : _signIn(),
+      ),
+    ],
+    _Modus.adresse => [
+      TextField(
+        controller: _mail,
+        decoration: const InputDecoration(labelText: 'E-Mail-Adresse'),
+        keyboardType: TextInputType.emailAddress,
+        autocorrect: false,
+        focusNode: _fokusErstes,
+        autofocus: true,
+        textInputAction: TextInputAction.done,
+        autofillHints: const [AutofillHints.email],
+        onSubmitted: (_) => _busy ? null : _codeAnfordern(),
+      ),
+    ],
+    _Modus.zweiterFaktor => [
+      TextField(
+        controller: _totp,
+        decoration: const InputDecoration(
+          labelText: 'Code aus der Authenticator-App',
+          helperText: 'Sechs Ziffern, wechselt alle 30 Sekunden',
+        ),
+        keyboardType: TextInputType.number,
+        autocorrect: false,
+        focusNode: _fokusErstes,
+        autofocus: true,
+        textInputAction: TextInputAction.done,
+        autofillHints: const [AutofillHints.oneTimeCode],
+        onSubmitted: (_) => _busy ? null : _zweitenFaktorPruefen(),
+      ),
+    ],
+    _Modus.code => [
+      TextField(
+        controller: _code,
+        decoration: const InputDecoration(
+          labelText: 'Code aus der E-Mail',
+          helperText: 'Sechs Ziffern',
+        ),
+        keyboardType: TextInputType.number,
+        autocorrect: false,
+        focusNode: _fokusErstes,
+        autofocus: true,
+        textInputAction: TextInputAction.next,
+        autofillHints: const [AutofillHints.oneTimeCode],
+      ),
+      const SizedBox(height: 8),
+      PasswordField(
+        controller: _neu1,
+        labelText: 'Neues Passwort',
+        helperText: 'Mindestens 8 Zeichen',
+        autofillHints: const [AutofillHints.newPassword],
+        textInputAction: TextInputAction.next,
+      ),
+      const SizedBox(height: 8),
+      PasswordField(
+        controller: _neu2,
+        labelText: 'Passwort wiederholen',
+        autofillHints: const [AutofillHints.newPassword],
+        textInputAction: TextInputAction.done,
+        onSubmitted: (_) => _busy ? null : _codeEinloesen(),
+      ),
+    ],
+    // Wie _Modus.code, aber mit dem Adressfeld davor: Wer eine Einladung
+    // annimmt, hat noch kein Konto und kommt nicht über „Passwort
+    // vergessen" — die Adresse muss er hier selbst eintragen.
+    _Modus.einladung => [
+      TextField(
+        controller: _mail,
+        decoration: const InputDecoration(
+          labelText: 'E-Mail-Adresse',
+          helperText: 'Die Adresse, an die die Einladung ging',
+        ),
+        keyboardType: TextInputType.emailAddress,
+        autocorrect: false,
+        focusNode: _fokusErstes,
+        autofocus: true,
+        textInputAction: TextInputAction.next,
+        autofillHints: const [AutofillHints.email],
+      ),
+      const SizedBox(height: 8),
+      TextField(
+        controller: _code,
+        decoration: const InputDecoration(
+          labelText: 'Code aus der Einladung',
+          helperText: 'Sechs Ziffern',
+        ),
+        keyboardType: TextInputType.number,
+        autocorrect: false,
+        textInputAction: TextInputAction.next,
+        autofillHints: const [AutofillHints.oneTimeCode],
+      ),
+      const SizedBox(height: 8),
+      PasswordField(
+        controller: _neu1,
+        labelText: 'Passwort wählen',
+        helperText: 'Mindestens 8 Zeichen',
+        autofillHints: const [AutofillHints.newPassword],
+        textInputAction: TextInputAction.next,
+      ),
+      const SizedBox(height: 8),
+      PasswordField(
+        controller: _neu2,
+        labelText: 'Passwort wiederholen',
+        autofillHints: const [AutofillHints.newPassword],
+        textInputAction: TextInputAction.done,
+        onSubmitted: (_) => _busy ? null : _einladungAnnehmen(),
+      ),
+    ],
+  };
 
   List<Widget> _nebenwege() => switch (_modus) {
-        _Modus.anmelden => [
-            TextButton(
-              onPressed: _busy ? null : () => _wechsle(_Modus.adresse),
-              child: const Text('Passwort vergessen?'),
-            ),
-            TextButton(
-              onPressed: _busy ? null : () => _wechsle(_Modus.einladung),
-              child: const Text('Ich habe eine Einladung'),
-            ),
-            const Text(
-              'Keine Registrierung nötig — den Zugang vergibt der Kommandant: '
-              'per Einladung an deine E-Mail-Adresse oder mit einem '
-              'Zugangszettel aus dem Gerätehaus.',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-            TextButton(
-              onPressed: () => context.push('/server-settings'),
-              child: const Text('Servereinstellungen'),
-            ),
-          ],
-        _Modus.adresse => [
-            TextButton(
-              onPressed: _busy ? null : () => _wechsle(_Modus.anmelden),
-              child: const Text('Zurück zur Anmeldung'),
-            ),
-          ],
-        _Modus.zweiterFaktor => [
-            TextButton(
-              onPressed: _busy ? null : _abbrechen,
-              child: const Text('Abbrechen'),
-            ),
-            const Text(
-              'Kein Zugriff auf die Authenticator-App? Ein Admin kann den '
-              'zweiten Faktor in der Nutzerverwaltung zurücksetzen.',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-          ],
-        _Modus.code => [
-            TextButton(
-              onPressed: _busy ? null : () => _wechsle(_Modus.adresse),
-              child: const Text('Neuen Code anfordern'),
-            ),
-            TextButton(
-              onPressed: _busy ? null : () => _wechsle(_Modus.anmelden),
-              child: const Text('Zurück zur Anmeldung'),
-            ),
-          ],
-        _Modus.einladung => [
-            TextButton(
-              onPressed: _busy ? null : () => _wechsle(_Modus.anmelden),
-              child: const Text('Zurück zur Anmeldung'),
-            ),
-            const Text(
-              'Keine Einladung erhalten? Der Kommandant kann sie erneut '
-              'schicken — der Code gilt mindestens eine Stunde.',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-          ],
-      };
+    _Modus.anmelden => [
+      TextButton(
+        onPressed: _busy ? null : () => _wechsle(_Modus.adresse),
+        child: const Text('Passwort vergessen?'),
+      ),
+      TextButton(
+        onPressed: _busy ? null : () => _wechsle(_Modus.einladung),
+        child: const Text('Ich habe eine Einladung'),
+      ),
+      const Text(
+        'Keine Registrierung nötig — den Zugang vergibt der Kommandant: '
+        'per Einladung an deine E-Mail-Adresse oder mit einem '
+        'Zugangszettel aus dem Gerätehaus.',
+        textAlign: TextAlign.center,
+        style: TextStyle(fontSize: 12, color: Colors.grey),
+      ),
+      TextButton(
+        onPressed: () => context.push('/server-settings'),
+        child: const Text('Servereinstellungen'),
+      ),
+    ],
+    _Modus.adresse => [
+      TextButton(
+        onPressed: _busy ? null : () => _wechsle(_Modus.anmelden),
+        child: const Text('Zurück zur Anmeldung'),
+      ),
+    ],
+    _Modus.zweiterFaktor => [
+      TextButton(
+        onPressed: _busy ? null : _abbrechen,
+        child: const Text('Abbrechen'),
+      ),
+      const Text(
+        'Kein Zugriff auf die Authenticator-App? Ein Admin kann den '
+        'zweiten Faktor in der Nutzerverwaltung zurücksetzen.',
+        textAlign: TextAlign.center,
+        style: TextStyle(fontSize: 12, color: Colors.grey),
+      ),
+    ],
+    _Modus.code => [
+      TextButton(
+        onPressed: _busy ? null : () => _wechsle(_Modus.adresse),
+        child: const Text('Neuen Code anfordern'),
+      ),
+      TextButton(
+        onPressed: _busy ? null : () => _wechsle(_Modus.anmelden),
+        child: const Text('Zurück zur Anmeldung'),
+      ),
+    ],
+    _Modus.einladung => [
+      TextButton(
+        onPressed: _busy ? null : () => _wechsle(_Modus.anmelden),
+        child: const Text('Zurück zur Anmeldung'),
+      ),
+      const Text(
+        'Keine Einladung erhalten? Der Kommandant kann sie erneut '
+        'schicken — der Code gilt mindestens eine Stunde.',
+        textAlign: TextAlign.center,
+        style: TextStyle(fontSize: 12, color: Colors.grey),
+      ),
+    ],
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -611,7 +636,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 400),
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24, vertical: eng ? 12 : 24),
+                padding: EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: eng ? 12 : 24,
+                ),
                 // ⚠️ Der Schlüssel ist der eigentliche Fix für #120: Flutter
                 // baut den Autofill-Kontext (und damit das DOM-Formular, an
                 // dem ein Passwortmanager andockt) EINMAL je AutofillGroup
@@ -633,23 +661,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             // kommt aus derselben Geometrie wie das
                             // App-Icon (#175).
                             FwMarke(
-                                groesse: 34,
-                                vordergrund: theme.colorScheme.primary,
-                                grund: theme.colorScheme.surface),
+                              groesse: 34,
+                              vordergrund: theme.colorScheme.primary,
+                              grund: theme.colorScheme.surface,
+                            ),
                             const SizedBox(width: 8),
-                            Text('Feuerwehr-Lernapp',
-                                style: theme.textTheme.titleMedium),
+                            Text(
+                              'Feuerwehr-Lernapp',
+                              style: theme.textTheme.titleMedium,
+                            ),
                           ],
                         )
                       else ...[
                         FwMarke(
-                            groesse: 92,
-                            vordergrund: theme.colorScheme.primary,
-                            grund: theme.colorScheme.surface),
+                          groesse: 92,
+                          vordergrund: theme.colorScheme.primary,
+                          grund: theme.colorScheme.surface,
+                        ),
                         const SizedBox(height: 8),
-                        Text('Feuerwehr-Lernapp',
-                            textAlign: TextAlign.center,
-                            style: theme.textTheme.headlineSmall),
+                        Text(
+                          'Feuerwehr-Lernapp',
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.headlineSmall,
+                        ),
                       ],
                       SizedBox(height: eng ? 4 : 16),
                       // Zeigt VOR dem Fehlversuch, ob der Server überhaupt
@@ -671,27 +705,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           padding: const EdgeInsets.only(top: 12),
                           child: Text(
                             _hinweis!,
-                            style:
-                                TextStyle(color: theme.colorScheme.primary),
+                            style: TextStyle(color: theme.colorScheme.primary),
                           ),
                         ),
                       SizedBox(height: eng ? 8 : 16),
                       FilledButton(
                         onPressed: _busy ? null : _absenden,
-                        child: _busy
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                    strokeWidth: 2),
-                              )
-                            : Text(switch (_modus) {
-                                _Modus.anmelden => 'Anmelden',
-                                _Modus.adresse => 'Code anfordern',
-                                _Modus.code => 'Passwort setzen',
-                                _Modus.einladung => 'Einladung annehmen',
-                                _Modus.zweiterFaktor => 'Bestätigen',
-                              }),
+                        child:
+                            _busy
+                                ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                                : Text(switch (_modus) {
+                                  _Modus.anmelden => 'Anmelden',
+                                  _Modus.adresse => 'Code anfordern',
+                                  _Modus.code => 'Passwort setzen',
+                                  _Modus.einladung => 'Einladung annehmen',
+                                  _Modus.zweiterFaktor => 'Bestätigen',
+                                }),
                       ),
                       ..._nebenwege(),
                     ],

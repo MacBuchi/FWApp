@@ -1,6 +1,7 @@
 /// mark_done_dialog.dart – Shared dialog to log a completed Prüfung /
 /// replaced expiry item and advance its due date.
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/features/inspection/domain/entities/inspection_schedule.dart';
@@ -8,14 +9,19 @@ import 'package:fwapp/features/inspection/presentation/providers/inspection_prov
 
 /// Shows the dialog and, if confirmed, marks [schedule] done via the repository.
 Future<void> markScheduleDone(
-    BuildContext context, WidgetRef ref, InspectionSchedule schedule) async {
+  BuildContext context,
+  WidgetRef ref,
+  InspectionSchedule schedule,
+) async {
   final result = await showDialog<MarkDoneResult>(
     context: context,
     builder: (_) => MarkDoneDialog(schedule: schedule),
   );
   if (result == null || !context.mounted) return;
   try {
-    await ref.read(inspectionRepositoryProvider).markDone(
+    await ref
+        .read(inspectionRepositoryProvider)
+        .markDone(
           schedule,
           doneAt: DateTime.now(),
           doneBy: result.doneBy,
@@ -23,15 +29,21 @@ Future<void> markScheduleDone(
           nextDueAt: result.nextDueAt,
         );
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(schedule.kind == InspectionKind.expiry
-              ? 'Als ersetzt vermerkt.'
-              : 'Prüfung als erledigt vermerkt.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            schedule.kind == InspectionKind.expiry
+                ? 'Als ersetzt vermerkt.'
+                : 'Prüfung als erledigt vermerkt.',
+          ),
+        ),
+      );
     }
   } catch (e) {
     if (context.mounted) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Fehler: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Fehler: $e')));
     }
   }
 }
@@ -75,8 +87,9 @@ class _MarkDoneDialogState extends State<MarkDoneDialog> {
         children: [
           TextField(
             controller: _doneByController,
-            decoration:
-                const InputDecoration(labelText: 'Erledigt von (optional)'),
+            decoration: const InputDecoration(
+              labelText: 'Erledigt von (optional)',
+            ),
           ),
           TextField(
             controller: _noteController,
@@ -86,12 +99,14 @@ class _MarkDoneDialogState extends State<MarkDoneDialog> {
             const SizedBox(height: 12),
             OutlinedButton.icon(
               icon: const Icon(Icons.event),
-              label: Text(_nextDueAt == null
-                  ? 'Neues Ablaufdatum wählen'
-                  : 'Neues Ablaufdatum: '
-                      '${_nextDueAt!.day.toString().padLeft(2, '0')}.'
-                      '${_nextDueAt!.month.toString().padLeft(2, '0')}.'
-                      '${_nextDueAt!.year}'),
+              label: Text(
+                _nextDueAt == null
+                    ? 'Neues Ablaufdatum wählen'
+                    : 'Neues Ablaufdatum: '
+                        '${_nextDueAt!.day.toString().padLeft(2, '0')}.'
+                        '${_nextDueAt!.month.toString().padLeft(2, '0')}.'
+                        '${_nextDueAt!.year}',
+              ),
               onPressed: () async {
                 final picked = await showDatePicker(
                   context: context,
@@ -111,13 +126,16 @@ class _MarkDoneDialogState extends State<MarkDoneDialog> {
           child: const Text('Abbrechen'),
         ),
         FilledButton(
-          onPressed: (_isExpiry && _nextDueAt == null)
-              ? null
-              : () => Navigator.of(context).pop(MarkDoneResult(
-                    doneBy: _doneByController.text.trim(),
-                    note: _noteController.text.trim(),
-                    nextDueAt: _nextDueAt,
-                  )),
+          onPressed:
+              (_isExpiry && _nextDueAt == null)
+                  ? null
+                  : () => Navigator.of(context).pop(
+                    MarkDoneResult(
+                      doneBy: _doneByController.text.trim(),
+                      note: _noteController.text.trim(),
+                      nextDueAt: _nextDueAt,
+                    ),
+                  ),
           child: const Text('Speichern'),
         ),
       ],

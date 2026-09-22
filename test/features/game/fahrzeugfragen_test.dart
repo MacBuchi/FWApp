@@ -28,17 +28,20 @@ void main() {
 
   List<PartyFrage> wohin(List<PartyFrage> f) =>
       f.where((x) => x.text == 'Auf welchem Fahrzeug liegt das?').toList();
-  List<PartyFrage> kfzFragen(List<PartyFrage> f) => f
-      .where((x) => x.text == 'Welches Kennzeichen hat dieses Fahrzeug?')
-      .toList();
+  List<PartyFrage> kfzFragen(List<PartyFrage> f) =>
+      f
+          .where((x) => x.text == 'Welches Kennzeichen hat dieses Fahrzeug?')
+          .toList();
 
   group('Auf welchem Fahrzeug liegt das?', () {
     test('ein Gerät auf genau einem Wagen ergibt eine Frage', () {
-      final fragen = wohin(baueFahrzeugfragen([
-        wagen('HLF 20', ['Spreizer']),
-        wagen('LF 20', ['Schaumrohr']),
-        wagen('DLK 23/13', ['Rettungskorb']),
-      ], zufall));
+      final fragen = wohin(
+        baueFahrzeugfragen([
+          wagen('HLF 20', ['Spreizer']),
+          wagen('LF 20', ['Schaumrohr']),
+          wagen('DLK 23/13', ['Rettungskorb']),
+        ], zufall),
+      );
 
       expect(fragen, hasLength(3));
       final spreizer = fragen.firstWhere((f) => f.kopfzeile == 'Spreizer');
@@ -49,11 +52,13 @@ void main() {
     test('ein Gerät auf MEHREREN Wagen ergibt KEINE Frage', () {
       // Der Kern: Ein B-Schlauch liegt auf jedem Wagen. Die Frage hätte drei
       // richtige Antworten.
-      final fragen = wohin(baueFahrzeugfragen([
-        wagen('HLF 20', ['B-Druckschlauch', 'Spreizer']),
-        wagen('LF 20', ['B-Druckschlauch']),
-        wagen('DLK 23/13', ['B-Druckschlauch']),
-      ], zufall));
+      final fragen = wohin(
+        baueFahrzeugfragen([
+          wagen('HLF 20', ['B-Druckschlauch', 'Spreizer']),
+          wagen('LF 20', ['B-Druckschlauch']),
+          wagen('DLK 23/13', ['B-Druckschlauch']),
+        ], zufall),
+      );
 
       expect(fragen.map((f) => f.kopfzeile), ['Spreizer']);
     });
@@ -61,11 +66,13 @@ void main() {
     test('dasselbe Gerät zweimal auf DEMSELBEN Wagen bleibt eindeutig', () {
       // Zwei Datensätze, ein Wagen — die Antwort ist trotzdem eindeutig.
       // Gezählt werden Fahrzeuge, nicht Zeilen.
-      final fragen = wohin(baueFahrzeugfragen([
-        wagen('HLF 20', ['Strahlrohr', 'Strahlrohr']),
-        wagen('LF 20', ['Schaumrohr']),
-        wagen('DLK 23/13', ['Rettungskorb']),
-      ], zufall));
+      final fragen = wohin(
+        baueFahrzeugfragen([
+          wagen('HLF 20', ['Strahlrohr', 'Strahlrohr']),
+          wagen('LF 20', ['Schaumrohr']),
+          wagen('DLK 23/13', ['Rettungskorb']),
+        ], zufall),
+      );
 
       final strahlrohr =
           fragen.where((f) => f.kopfzeile == 'Strahlrohr').toList();
@@ -76,13 +83,15 @@ void main() {
     });
 
     test('die Antworten sind verschieden und die richtige ist dabei', () {
-      final fragen = wohin(baueFahrzeugfragen([
-        wagen('HLF 20', ['Spreizer']),
-        wagen('LF 20', ['Schaumrohr']),
-        wagen('DLK 23/13', ['Rettungskorb']),
-        wagen('MTW', ['Funkgerät']),
-        wagen('AB-G', ['Pumpe']),
-      ], zufall));
+      final fragen = wohin(
+        baueFahrzeugfragen([
+          wagen('HLF 20', ['Spreizer']),
+          wagen('LF 20', ['Schaumrohr']),
+          wagen('DLK 23/13', ['Rettungskorb']),
+          wagen('MTW', ['Funkgerät']),
+          wagen('AB-G', ['Pumpe']),
+        ], zufall),
+      );
 
       for (final f in fragen) {
         final texte = f.antworten.map((a) => a.text).toList();
@@ -95,40 +104,49 @@ void main() {
 
   group('Welches Kennzeichen hat dieses Fahrzeug?', () {
     test('nur Fahrzeuge mit erfasstem Kennzeichen', () {
-      final fragen = kfzFragen(baueFahrzeugfragen([
-        wagen('HLF 20', [], kfz: 'FW-AB 1'),
-        wagen('LF 20', [], kfz: 'FW-AB 2'),
-        wagen('DLK 23/13', [], kfz: 'FW-AB 3'),
-        wagen('MTW', []),
-      ], zufall));
+      final fragen = kfzFragen(
+        baueFahrzeugfragen([
+          wagen('HLF 20', [], kfz: 'FW-AB 1'),
+          wagen('LF 20', [], kfz: 'FW-AB 2'),
+          wagen('DLK 23/13', [], kfz: 'FW-AB 3'),
+          wagen('MTW', []),
+        ], zufall),
+      );
 
-      expect(fragen.map((f) => f.kopfzeile),
-          containsAll(['HLF 20', 'LF 20', 'DLK 23/13']));
+      expect(
+        fragen.map((f) => f.kopfzeile),
+        containsAll(['HLF 20', 'LF 20', 'DLK 23/13']),
+      );
       expect(fragen.map((f) => f.kopfzeile), isNot(contains('MTW')));
     });
 
     test('unter drei Kennzeichen entsteht keine Frage', () {
-      final fragen = kfzFragen(baueFahrzeugfragen([
-        wagen('HLF 20', [], kfz: 'FW-AB 1'),
-        wagen('LF 20', [], kfz: 'FW-AB 2'),
-        wagen('DLK 23/13', []),
-      ], zufall));
+      final fragen = kfzFragen(
+        baueFahrzeugfragen([
+          wagen('HLF 20', [], kfz: 'FW-AB 1'),
+          wagen('LF 20', [], kfz: 'FW-AB 2'),
+          wagen('DLK 23/13', []),
+        ], zufall),
+      );
       expect(fragen, isEmpty);
     });
 
     test('ein doppelt erfasstes Kennzeichen fällt heraus', () {
       // Ein Tippfehler im Bestand macht sonst zwei richtige Antworten.
-      final fragen = kfzFragen(baueFahrzeugfragen([
-        wagen('HLF 20', [], kfz: 'FW-AB 1'),
-        wagen('LF 20', [], kfz: 'FW-AB 1'),
-        wagen('DLK 23/13', [], kfz: 'FW-AB 3'),
-        wagen('MTW', [], kfz: 'FW-AB 4'),
-      ], zufall));
+      final fragen = kfzFragen(
+        baueFahrzeugfragen([
+          wagen('HLF 20', [], kfz: 'FW-AB 1'),
+          wagen('LF 20', [], kfz: 'FW-AB 1'),
+          wagen('DLK 23/13', [], kfz: 'FW-AB 3'),
+          wagen('MTW', [], kfz: 'FW-AB 4'),
+        ], zufall),
+      );
 
-      expect(fragen.map((f) => f.kopfzeile),
-          isNot(anyElement(isIn(['HLF 20', 'LF 20']))));
-      expect(fragen.map((f) => f.kopfzeile),
-          containsAll(['DLK 23/13', 'MTW']));
+      expect(
+        fragen.map((f) => f.kopfzeile),
+        isNot(anyElement(isIn(['HLF 20', 'LF 20']))),
+      );
+      expect(fragen.map((f) => f.kopfzeile), containsAll(['DLK 23/13', 'MTW']));
     });
   });
 

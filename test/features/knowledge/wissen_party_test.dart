@@ -43,9 +43,9 @@ void main() {
         quelleWerk: Value(mitQuelle ? 'FwG BW' : null),
         quelleFundstelle: Value(mitQuelle ? '§ 8 Abs. 2' : null),
         quelleStand: Value(mitQuelle ? '2025-02-25' : null),
-        quelleUrl: Value(mitQuelle
-            ? 'https://www.landesrecht-bw.de/perma?a=FeuerwG_BW'
-            : null),
+        quelleUrl: Value(
+          mitQuelle ? 'https://www.landesrecht-bw.de/perma?a=FeuerwG_BW' : null,
+        ),
         geltung: Value(geltung),
         land: Value(land),
         stand: Value(Fragenstand.freigegeben.schluessel),

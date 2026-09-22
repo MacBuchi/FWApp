@@ -27,30 +27,40 @@ void main() {
   /// die Wärmebildkamera in keinem.
   Future<void> seedFuhrpark() async {
     final hlf = await db.vehicleDao.insertVehicle(
-        VehiclesCompanion.insert(name: 'HLF 20', type: 'HLF 20'));
-    final lf = await db.vehicleDao
-        .insertVehicle(VehiclesCompanion.insert(name: 'LF 20', type: 'LF 20'));
+      VehiclesCompanion.insert(name: 'HLF 20', type: 'HLF 20'),
+    );
+    final lf = await db.vehicleDao.insertVehicle(
+      VehiclesCompanion.insert(name: 'LF 20', type: 'LF 20'),
+    );
 
     Future<int> fach(int vehicleId, String label, String seite) =>
-        db.compartmentDao.insertCompartment(CompartmentsCompanion.insert(
-            vehicleId: vehicleId, label: label, seite: Value(seite)));
+        db.compartmentDao.insertCompartment(
+          CompartmentsCompanion.insert(
+            vehicleId: vehicleId,
+            label: label,
+            seite: Value(seite),
+          ),
+        );
     final g3Hlf = await fach(hlf, 'G3', 'fahrerseite');
     final g1Hlf = await fach(hlf, 'G1', 'beifahrerseite');
     final g4Lf = await fach(lf, 'G4', 'heck');
 
     Future<int> geraet(String name, {String? kurz}) =>
-        db.equipmentDao.insertEquipment(EquipmentItemsCompanion.insert(
-            name: name, shortName: Value(kurz)));
+        db.equipmentDao.insertEquipment(
+          EquipmentItemsCompanion.insert(name: name, shortName: Value(kurz)),
+        );
     final spreizer = await geraet('Spreizer');
     final schlauch = await geraet('C-Schläuche', kurz: 'C42');
     await geraet('Wärmebildkamera');
 
     Future<void> lege(int fachId, int geraetId, int menge) =>
         db.assignmentDao.insertAssignment(
-            EquipmentAssignmentsCompanion.insert(
-                compartmentId: fachId,
-                equipmentId: geraetId,
-                quantity: Value(menge)));
+          EquipmentAssignmentsCompanion.insert(
+            compartmentId: fachId,
+            equipmentId: geraetId,
+            quantity: Value(menge),
+          ),
+        );
     await lege(g3Hlf, spreizer, 1);
     await lege(g1Hlf, schlauch, 6);
     await lege(g4Lf, schlauch, 4);
@@ -60,10 +70,9 @@ void main() {
     tester.view.physicalSize = const Size(1000, 2200);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(buildTestApp(
-      db: db,
-      home: GeraeteSucheScreen(vehicleId: vehicleId),
-    ));
+    await tester.pumpWidget(
+      buildTestApp(db: db, home: GeraeteSucheScreen(vehicleId: vehicleId)),
+    );
     await tester.pumpAndSettle();
   }
 
@@ -72,8 +81,7 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('ohne Eingabe steht da, wozu der Schirm gut ist',
-      (tester) async {
+  testWidgets('ohne Eingabe steht da, wozu der Schirm gut ist', (tester) async {
     await seedFuhrpark();
     await pumpe(tester);
 
@@ -97,8 +105,9 @@ void main() {
     await endTestApp(tester);
   });
 
-  testWidgets('ein Gerät in zwei Fahrzeugen zeigt beide Fundorte mit Menge',
-      (tester) async {
+  testWidgets('ein Gerät in zwei Fahrzeugen zeigt beide Fundorte mit Menge', (
+    tester,
+  ) async {
     await seedFuhrpark();
     await pumpe(tester);
     await tippe(tester, 'schlauche');
@@ -112,29 +121,35 @@ void main() {
     await endTestApp(tester);
   });
 
-  testWidgets('auf ein Fahrzeug vorgewählt: was fehlt, steht trotzdem da',
-      (tester) async {
+  testWidgets('auf ein Fahrzeug vorgewählt: was fehlt, steht trotzdem da', (
+    tester,
+  ) async {
     // Der Fall, für den die Fahrzeug-Suche überhaupt gebaut wurde: Man steht
     // am LF und sucht den Spreizer. „Keine Treffer" wäre sachlich falsch.
     await seedFuhrpark();
-    final lf = (await db.vehicleDao.getAll())
-        .firstWhere((v) => v.name == 'LF 20');
+    final lf = (await db.vehicleDao.getAll()).firstWhere(
+      (v) => v.name == 'LF 20',
+    );
     await pumpe(tester, vehicleId: lf.id);
     await tippe(tester, 'spreizer');
 
-    expect(find.text('Nicht in diesem Fahrzeug — aber im Fuhrpark'),
-        findsOneWidget);
+    expect(
+      find.text('Nicht in diesem Fahrzeug — aber im Fuhrpark'),
+      findsOneWidget,
+    );
     expect(find.text('HLF 20'), findsOneWidget);
     expect(find.text('G3'), findsOneWidget);
 
     await endTestApp(tester);
   });
 
-  testWidgets('im eigenen Fahrzeug wird der Fahrzeugname nicht wiederholt',
-      (tester) async {
+  testWidgets('im eigenen Fahrzeug wird der Fahrzeugname nicht wiederholt', (
+    tester,
+  ) async {
     await seedFuhrpark();
-    final hlf = (await db.vehicleDao.getAll())
-        .firstWhere((v) => v.name == 'HLF 20');
+    final hlf = (await db.vehicleDao.getAll()).firstWhere(
+      (v) => v.name == 'HLF 20',
+    );
     await pumpe(tester, vehicleId: hlf.id);
     await tippe(tester, 'spreizer');
 
@@ -145,8 +160,9 @@ void main() {
     await endTestApp(tester);
   });
 
-  testWidgets('was im Katalog steht, aber nirgends liegt, wird gesagt',
-      (tester) async {
+  testWidgets('was im Katalog steht, aber nirgends liegt, wird gesagt', (
+    tester,
+  ) async {
     await seedFuhrpark();
     await pumpe(tester);
     await tippe(tester, 'wärmebild');
@@ -194,21 +210,35 @@ void main() {
     // Dieselbe Engstelle wie in Issue #172, nur an zwei neuen Stellen: die
     // Fahrzeugwahl und der Fahrzeugname an jedem Fundort. Flutter lässt den
     // Test bei „RenderFlex overflowed" fallen.
-    await db.vehicleDao.insertVehicle(VehiclesCompanion.insert(
-        name: 'HLF 20/16 Florian Musterstadt 1/44', type: 'HLF 20'));
+    await db.vehicleDao.insertVehicle(
+      VehiclesCompanion.insert(
+        name: 'HLF 20/16 Florian Musterstadt 1/44',
+        type: 'HLF 20',
+      ),
+    );
     final fach = await db.compartmentDao.insertCompartment(
-        CompartmentsCompanion.insert(
-            vehicleId: 1, label: 'G1', seite: const Value('fahrerseite')));
+      CompartmentsCompanion.insert(
+        vehicleId: 1,
+        label: 'G1',
+        seite: const Value('fahrerseite'),
+      ),
+    );
     final geraet = await db.equipmentDao.insertEquipment(
-        EquipmentItemsCompanion.insert(name: 'Hydraulischer Rettungsspreizer'));
+      EquipmentItemsCompanion.insert(name: 'Hydraulischer Rettungsspreizer'),
+    );
     await db.assignmentDao.insertAssignment(
-        EquipmentAssignmentsCompanion.insert(
-            compartmentId: fach, equipmentId: geraet));
+      EquipmentAssignmentsCompanion.insert(
+        compartmentId: fach,
+        equipmentId: geraet,
+      ),
+    );
 
     tester.view.physicalSize = const Size(360, 800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(buildTestApp(db: db, home: const GeraeteSucheScreen()));
+    await tester.pumpWidget(
+      buildTestApp(db: db, home: const GeraeteSucheScreen()),
+    );
     await tester.pumpAndSettle();
     await tippe(tester, 'spreizer');
 

@@ -41,16 +41,19 @@ class GesamtwehrScreen extends ConsumerWidget {
       ),
       body: organisation.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => _Hinweis(
-          icon: Icons.cloud_off,
-          text: 'Die Abteilung konnte nicht geladen werden:\n'
-              '${gesamtwehrFehlerText(e)}',
-        ),
+        error:
+            (e, _) => _Hinweis(
+              icon: Icons.cloud_off,
+              text:
+                  'Die Abteilung konnte nicht geladen werden:\n'
+                  '${gesamtwehrFehlerText(e)}',
+            ),
         data: (org) {
           if (org == null) {
             return const _Hinweis(
               icon: Icons.link_off,
-              text: 'Dieser Server kennt noch keine Abteilungen. '
+              text:
+                  'Dieser Server kennt noch keine Abteilungen. '
                   'Die Gesamtwehr gibt es erst ab Serverstand 1.5.5.',
             );
           }
@@ -92,15 +95,17 @@ class _AbteilungsKarte extends ConsumerWidget {
     // Die Wehr umbenennen darf nur ihr Feuerwehrkommandant — enger als die
     // Abteilung, aus demselben Grund wie beim Kopfbereich: Sonst ändert der
     // Kommandant der kleinsten Abteilung den Auftritt der ganzen Wehr.
-    final darfWehr = org.gesamtwehrId != null &&
+    final darfWehr =
+        org.gesamtwehrId != null &&
         (kommandiert?.contains(org.gesamtwehrId) ?? false);
 
-    final wartet = org.freigegeben
-        ? null
-        : Chip(
-            label: const Text('wartet'),
-            backgroundColor: farben.tertiaryContainer,
-          );
+    final wartet =
+        org.freigegeben
+            ? null
+            : Chip(
+              label: const Text('wartet'),
+              backgroundColor: farben.tertiaryContainer,
+            );
 
     return Card(
       child: Column(
@@ -108,34 +113,52 @@ class _AbteilungsKarte extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.fire_truck),
             title: Text(org.abteilungName),
-            subtitle: Text(org.freigegeben
-                ? 'Deine Abteilung'
-                : 'Deine Abteilung — noch nicht freigegeben'),
+            subtitle: Text(
+              org.freigegeben
+                  ? 'Deine Abteilung'
+                  : 'Deine Abteilung — noch nicht freigegeben',
+            ),
             trailing: _Anhang(
               chip: wartet,
-              stift: darfAbteilung
-                  ? _Stift(
-                      tooltip: 'Abteilung umbenennen',
-                      onTap: () => _benenneAbteilungUm(
-                          context, ref, org.abteilungId, org.abteilungName),
-                    )
-                  : null,
+              stift:
+                  darfAbteilung
+                      ? _Stift(
+                        tooltip: 'Abteilung umbenennen',
+                        onTap:
+                            () => _benenneAbteilungUm(
+                              context,
+                              ref,
+                              org.abteilungId,
+                              org.abteilungName,
+                            ),
+                      )
+                      : null,
             ),
           ),
           const Divider(indent: 16, endIndent: 16),
           ListTile(
             leading: const Icon(Icons.account_tree),
-            title: Text(org.gesamtwehrName ?? 'Keiner Gesamtwehr angeschlossen'),
-            subtitle: Text(org.verbunden
-                ? 'Gesamtwehr — ihre Abteilungen sehen einander lesend'
-                : 'Die Abteilung arbeitet eigenständig'),
-            trailing: darfWehr
-                ? _Stift(
-                    tooltip: 'Gesamtwehr umbenennen',
-                    onTap: () => _benenneWehrUm(context, ref, org.gesamtwehrId!,
-                        org.gesamtwehrName ?? ''),
-                  )
-                : null,
+            title: Text(
+              org.gesamtwehrName ?? 'Keiner Gesamtwehr angeschlossen',
+            ),
+            subtitle: Text(
+              org.verbunden
+                  ? 'Gesamtwehr — ihre Abteilungen sehen einander lesend'
+                  : 'Die Abteilung arbeitet eigenständig',
+            ),
+            trailing:
+                darfWehr
+                    ? _Stift(
+                      tooltip: 'Gesamtwehr umbenennen',
+                      onTap:
+                          () => _benenneWehrUm(
+                            context,
+                            ref,
+                            org.gesamtwehrId!,
+                            org.gesamtwehrName ?? '',
+                          ),
+                    )
+                    : null,
           ),
         ],
       ),
@@ -158,8 +181,7 @@ class _SchwesterAbteilungen extends ConsumerWidget {
     final alle = ref.watch(abteilungenProvider).value ?? const [];
     final schwestern = [
       for (final a in alle)
-        if (a.id != org.abteilungId && a.gesamtwehrId == org.gesamtwehrId)
-          a,
+        if (a.id != org.abteilungId && a.gesamtwehrId == org.gesamtwehrId) a,
     ];
     final benennbar = [
       for (final a in schwestern)
@@ -179,8 +201,10 @@ class _SchwesterAbteilungen extends ConsumerWidget {
         children: [
           const Padding(
             padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
-            child: Text('Weitere Abteilungen der Gesamtwehr',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            child: Text(
+              'Weitere Abteilungen der Gesamtwehr',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
           for (final a in benennbar)
             ListTile(
@@ -204,10 +228,10 @@ class _Stift extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => IconButton(
-        icon: const Icon(Icons.edit_outlined),
-        tooltip: tooltip,
-        onPressed: onTap,
-      );
+    icon: const Icon(Icons.edit_outlined),
+    tooltip: tooltip,
+    onPressed: onTap,
+  );
 }
 
 /// Chip und Stift nebeneinander, ohne dass eines von beiden ein leeres
@@ -240,8 +264,12 @@ Future<void> _benenneAbteilungUm(
     knopf: 'Umbenennen',
   );
   if (name == null || name == bisher || !context.mounted) return;
-  await _fuehreAus(context, ref, 'Heißt jetzt „$name".',
-      (dienst) => dienst.benenneAbteilungUm(id, name));
+  await _fuehreAus(
+    context,
+    ref,
+    'Heißt jetzt „$name".',
+    (dienst) => dienst.benenneAbteilungUm(id, name),
+  );
 }
 
 Future<void> _benenneWehrUm(
@@ -259,8 +287,12 @@ Future<void> _benenneWehrUm(
     knopf: 'Umbenennen',
   );
   if (name == null || name == bisher || !context.mounted) return;
-  await _fuehreAus(context, ref, 'Heißt jetzt „$name".',
-      (dienst) => dienst.benenneGesamtwehrUm(id, name));
+  await _fuehreAus(
+    context,
+    ref,
+    'Heißt jetzt „$name".',
+    (dienst) => dienst.benenneGesamtwehrUm(id, name),
+  );
 }
 
 /// Die Seite ohne Klammer: gründen oder beitreten — oder warten.
@@ -279,8 +311,9 @@ class _OhneKlammer extends ConsumerWidget {
           leading: const Icon(Icons.hourglass_top),
           title: const Text('Antrag läuft'),
           subtitle: const Text(
-              'Die Gesamtwehr muss den Anschluss noch bestätigen. '
-              'Bis dahin arbeitet die Abteilung normal weiter.'),
+            'Die Gesamtwehr muss den Anschluss noch bestätigen. '
+            'Bis dahin arbeitet die Abteilung normal weiter.',
+          ),
         ),
       );
     }
@@ -290,8 +323,10 @@ class _OhneKlammer extends ConsumerWidget {
         children: [
           if (antrag != null && antrag.status == 'rejected')
             ListTile(
-              leading: Icon(Icons.info_outline,
-                  color: Theme.of(context).colorScheme.error),
+              leading: Icon(
+                Icons.info_outline,
+                color: Theme.of(context).colorScheme.error,
+              ),
               title: const Text('Der letzte Antrag wurde abgelehnt'),
               subtitle: Text(antrag.antwort ?? 'Ohne Begründung.'),
             ),
@@ -300,8 +335,9 @@ class _OhneKlammer extends ConsumerWidget {
               leading: const Icon(Icons.add_home_work),
               title: const Text('Gesamtwehr gründen'),
               subtitle: const Text(
-                  'Die Klammer über mehrere Abteilungen — deine wird das '
-                  'erste Mitglied'),
+                'Die Klammer über mehrere Abteilungen — deine wird das '
+                'erste Mitglied',
+              ),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => _gruenden(context, ref),
             ),
@@ -311,7 +347,8 @@ class _OhneKlammer extends ConsumerWidget {
             leading: const Icon(Icons.group_add),
             title: const Text('Anschluss beantragen'),
             subtitle: const Text(
-                'An eine bestehende Gesamtwehr — deren Admin entscheidet'),
+              'An eine bestehende Gesamtwehr — deren Admin entscheidet',
+            ),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => _beantragen(context, ref),
           ),
@@ -328,8 +365,12 @@ class _OhneKlammer extends ConsumerWidget {
       beispiel: 'z. B. Gesamtfeuerwehr Musterstadt',
     );
     if (name == null || !context.mounted) return;
-    await _fuehreAus(context, ref, 'Gesamtwehr „$name" gegründet.',
-        (dienst) => dienst.gruendeGesamtwehr(name));
+    await _fuehreAus(
+      context,
+      ref,
+      'Gesamtwehr „$name" gegründet.',
+      (dienst) => dienst.gruendeGesamtwehr(name),
+    );
   }
 
   Future<void> _beantragen(BuildContext context, WidgetRef ref) async {
@@ -344,9 +385,13 @@ class _OhneKlammer extends ConsumerWidget {
       builder: (_) => _AntragDialog(wehren: wehren),
     );
     if (wahl == null || !context.mounted) return;
-    await _fuehreAus(context, ref, 'Antrag gestellt.',
-        (dienst) => dienst.beantrageVerbindung(wahl.id,
-            nachricht: wahl.nachricht));
+    await _fuehreAus(
+      context,
+      ref,
+      'Antrag gestellt.',
+      (dienst) =>
+          dienst.beantrageVerbindung(wahl.id, nachricht: wahl.nachricht),
+    );
   }
 }
 
@@ -356,25 +401,31 @@ class _WeitereAbteilung extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) => Card(
-        child: ListTile(
-          leading: const Icon(Icons.add_business),
-          title: const Text('Weitere Abteilung anlegen'),
-          subtitle: Text('In „${org.gesamtwehrName ?? 'deiner Gesamtwehr'}" — '
-              'sofort einsatzbereit, du bürgst als Admin dafür'),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () async {
-            final name = await _frageName(
-              context,
-              titel: 'Abteilung anlegen',
-              feld: 'Name der Abteilung',
-              beispiel: 'z. B. Abteilung Nord',
-            );
-            if (name == null || !context.mounted) return;
-            await _fuehreAus(context, ref, 'Abteilung „$name" angelegt.',
-                (dienst) => dienst.legeAbteilungAn(name));
-          },
-        ),
-      );
+    child: ListTile(
+      leading: const Icon(Icons.add_business),
+      title: const Text('Weitere Abteilung anlegen'),
+      subtitle: Text(
+        'In „${org.gesamtwehrName ?? 'deiner Gesamtwehr'}" — '
+        'sofort einsatzbereit, du bürgst als Admin dafür',
+      ),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () async {
+        final name = await _frageName(
+          context,
+          titel: 'Abteilung anlegen',
+          feld: 'Name der Abteilung',
+          beispiel: 'z. B. Abteilung Nord',
+        );
+        if (name == null || !context.mounted) return;
+        await _fuehreAus(
+          context,
+          ref,
+          'Abteilung „$name" angelegt.',
+          (dienst) => dienst.legeAbteilungAn(name),
+        );
+      },
+    ),
+  );
 }
 
 /// Einstieg in die Branding-Pflege (#57 P5). Nur für den Feuerwehrkommandanten
@@ -393,10 +444,12 @@ class _KopfbereichKarte extends ConsumerWidget {
       child: ListTile(
         leading: const Icon(Icons.photo_size_select_actual_outlined),
         title: const Text('Kopfbereich der Startseite'),
-        subtitle: Text(gepflegt
-            ? 'Bild und Begrüßung — sehen alle Abteilungen'
-            : 'Noch nicht eingerichtet — Bild und Begrüßung für alle '
-                'Abteilungen'),
+        subtitle: Text(
+          gepflegt
+              ? 'Bild und Begrüßung — sehen alle Abteilungen'
+              : 'Noch nicht eingerichtet — Bild und Begrüßung für alle '
+                  'Abteilungen',
+        ),
         trailing: const Icon(Icons.chevron_right),
         onTap: () => context.push('/gesamtwehr/kopfbereich'),
       ),
@@ -418,8 +471,10 @@ class _OffeneAnfragen extends ConsumerWidget {
         children: [
           const Padding(
             padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
-            child: Text('Offene Anfragen',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            child: Text(
+              'Offene Anfragen',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
           for (final a in anfragen)
             ListTile(
@@ -448,30 +503,39 @@ class _OffeneAnfragen extends ConsumerWidget {
     );
   }
 
-  Future<void> _entscheiden(BuildContext context, WidgetRef ref,
-      VerbindungsAnfrage a, bool freigeben) async {
+  Future<void> _entscheiden(
+    BuildContext context,
+    WidgetRef ref,
+    VerbindungsAnfrage a,
+    bool freigeben,
+  ) async {
     // Pop über den Dialog-Kontext, siehe _frageName.
     final bestaetigt = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(freigeben ? 'Anschluss freigeben?' : 'Antrag ablehnen?'),
-        content: Text(freigeben
-            ? '„${a.abteilungName}" wird Teil deiner Gesamtwehr. Beide '
-                'Abteilungen können danach den Bestand der jeweils anderen '
-                'lesen — bearbeiten weiterhin nur die eigene.'
-            : '„${a.abteilungName}" bleibt eigenständig. Ein neuer Antrag '
-                'ist jederzeit möglich.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Abbrechen'),
+      builder:
+          (ctx) => AlertDialog(
+            title: Text(
+              freigeben ? 'Anschluss freigeben?' : 'Antrag ablehnen?',
+            ),
+            content: Text(
+              freigeben
+                  ? '„${a.abteilungName}" wird Teil deiner Gesamtwehr. Beide '
+                      'Abteilungen können danach den Bestand der jeweils anderen '
+                      'lesen — bearbeiten weiterhin nur die eigene.'
+                  : '„${a.abteilungName}" bleibt eigenständig. Ein neuer Antrag '
+                      'ist jederzeit möglich.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Abbrechen'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text(freigeben ? 'Freigeben' : 'Ablehnen'),
+              ),
+            ],
           ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(freigeben ? 'Freigeben' : 'Ablehnen'),
-          ),
-        ],
-      ),
     );
     if (bestaetigt != true || !context.mounted) return;
     await _fuehreAus(
@@ -505,42 +569,45 @@ class _AntragDialogState extends State<_AntragDialog> {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
-        title: const Text('Anschluss beantragen'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            DropdownButtonFormField<String>(
-              initialValue: _gewaehlt,
-              decoration: const InputDecoration(labelText: 'Gesamtwehr'),
-              items: [
-                for (final w in widget.wehren)
-                  DropdownMenuItem(value: w.id, child: Text(w.name)),
-              ],
-              onChanged: (v) => setState(() => _gewaehlt = v ?? _gewaehlt),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _nachricht,
-              decoration: const InputDecoration(
-                labelText: 'Nachricht (optional)',
-                hintText: 'Wer ihr seid, wer angefragt hat',
-              ),
-              maxLines: 2,
-            ),
+    title: const Text('Anschluss beantragen'),
+    content: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        DropdownButtonFormField<String>(
+          initialValue: _gewaehlt,
+          decoration: const InputDecoration(labelText: 'Gesamtwehr'),
+          items: [
+            for (final w in widget.wehren)
+              DropdownMenuItem(value: w.id, child: Text(w.name)),
           ],
+          onChanged: (v) => setState(() => _gewaehlt = v ?? _gewaehlt),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Abbrechen'),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _nachricht,
+          decoration: const InputDecoration(
+            labelText: 'Nachricht (optional)',
+            hintText: 'Wer ihr seid, wer angefragt hat',
           ),
-          FilledButton(
-            onPressed: () => Navigator.pop(
-                context, (id: _gewaehlt, nachricht: _nachricht.text)),
-            child: const Text('Antrag stellen'),
-          ),
-        ],
-      );
+          maxLines: 2,
+        ),
+      ],
+    ),
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.pop(context),
+        child: const Text('Abbrechen'),
+      ),
+      FilledButton(
+        onPressed:
+            () => Navigator.pop(context, (
+              id: _gewaehlt,
+              nachricht: _nachricht.text,
+            )),
+        child: const Text('Antrag stellen'),
+      ),
+    ],
+  );
 }
 
 class _Erklaerung extends StatelessWidget {
@@ -548,17 +615,17 @@ class _Erklaerung extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Card(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        child: const Padding(
-          padding: EdgeInsets.all(16),
-          child: Text(
-            'Jede Abteilung führt ihren eigenen Bestand und veröffentlicht ihn '
-            'selbst. Die Gesamtwehr verbindet mehrere Abteilungen: Sie sehen '
-            'den Bestand der anderen, ändern können sie ihn nicht. Nur der '
-            'Admin der Gesamtwehr darf überall bearbeiten.',
-          ),
-        ),
-      );
+    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+    child: const Padding(
+      padding: EdgeInsets.all(16),
+      child: Text(
+        'Jede Abteilung führt ihren eigenen Bestand und veröffentlicht ihn '
+        'selbst. Die Gesamtwehr verbindet mehrere Abteilungen: Sie sehen '
+        'den Bestand der anderen, ändern können sie ihn nicht. Nur der '
+        'Admin der Gesamtwehr darf überall bearbeiten.',
+      ),
+    ),
+  );
 }
 
 class _Hinweis extends StatelessWidget {
@@ -568,18 +635,18 @@ class _Hinweis extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 48),
-              const SizedBox(height: 12),
-              Text(text, textAlign: TextAlign.center),
-            ],
-          ),
-        ),
-      );
+    child: Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 48),
+          const SizedBox(height: 12),
+          Text(text, textAlign: TextAlign.center),
+        ],
+      ),
+    ),
+  );
 }
 
 // ── Gemeinsame Helfer ─────────────────────────────────────────────────────
@@ -594,13 +661,14 @@ Future<String?> _frageName(
 }) async {
   final name = await showDialog<String>(
     context: context,
-    builder: (_) => _NameDialog(
-      titel: titel,
-      feld: feld,
-      beispiel: beispiel,
-      vorbelegt: vorbelegt,
-      knopf: knopf,
-    ),
+    builder:
+        (_) => _NameDialog(
+          titel: titel,
+          feld: feld,
+          beispiel: beispiel,
+          vorbelegt: vorbelegt,
+          knopf: knopf,
+        ),
   );
   final sauber = name?.trim();
   return (sauber == null || sauber.isEmpty) ? null : sauber;
@@ -645,25 +713,27 @@ class _NameDialogState extends State<_NameDialog> {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
-        title: Text(widget.titel),
-        content: TextField(
-          controller: _steuerung,
-          autofocus: true,
-          decoration: InputDecoration(
-              labelText: widget.feld, hintText: widget.beispiel),
-          onSubmitted: (v) => Navigator.pop(context, v),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Abbrechen'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, _steuerung.text),
-            child: Text(widget.knopf),
-          ),
-        ],
-      );
+    title: Text(widget.titel),
+    content: TextField(
+      controller: _steuerung,
+      autofocus: true,
+      decoration: InputDecoration(
+        labelText: widget.feld,
+        hintText: widget.beispiel,
+      ),
+      onSubmitted: (v) => Navigator.pop(context, v),
+    ),
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.pop(context),
+        child: const Text('Abbrechen'),
+      ),
+      FilledButton(
+        onPressed: () => Navigator.pop(context, _steuerung.text),
+        child: Text(widget.knopf),
+      ),
+    ],
+  );
 }
 
 /// Führt einen Vorgang aus und meldet das Ergebnis — Erfolg wie Fehler landen
@@ -688,6 +758,5 @@ Future<void> _fuehreAus(
 }
 
 void _melde(BuildContext context, String text) {
-  ScaffoldMessenger.of(context)
-      .showSnackBar(SnackBar(content: Text(text)));
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
 }

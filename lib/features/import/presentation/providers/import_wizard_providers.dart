@@ -1,6 +1,7 @@
 /// import_wizard_providers.dart – State and notifier for the 4-step
 /// Beladeliste import wizard.
 library;
+
 import 'dart:convert';
 
 import 'package:flutter/services.dart' show rootBundle;
@@ -20,8 +21,12 @@ Map<String, List<String>> parseBundledAliases(String json) {
   if (decoded['aliases'] is Map<String, dynamic>) {
     decoded = decoded['aliases'] as Map<String, dynamic>;
   }
-  return decoded.map((k, v) => MapEntry(
-      k, v is List ? v.map((e) => e.toString()).toList() : <String>[]));
+  return decoded.map(
+    (k, v) => MapEntry(
+      k,
+      v is List ? v.map((e) => e.toString()).toList() : <String>[],
+    ),
+  );
 }
 
 /// Parses the standard catalog into an alias map (id → alias spellings).
@@ -81,19 +86,18 @@ class ImportWizardState {
     String? error,
     bool clearError = false,
     bool clearResult = false,
-  }) =>
-      ImportWizardState(
-        step: step ?? this.step,
-        file: file ?? this.file,
-        tableIndex: tableIndex ?? this.tableIndex,
-        mapping: mapping ?? this.mapping,
-        rows: rows ?? this.rows,
-        matches: matches ?? this.matches,
-        decisions: decisions ?? this.decisions,
-        busy: busy ?? this.busy,
-        result: clearResult ? null : (result ?? this.result),
-        error: clearError ? null : (error ?? this.error),
-      );
+  }) => ImportWizardState(
+    step: step ?? this.step,
+    file: file ?? this.file,
+    tableIndex: tableIndex ?? this.tableIndex,
+    mapping: mapping ?? this.mapping,
+    rows: rows ?? this.rows,
+    matches: matches ?? this.matches,
+    decisions: decisions ?? this.decisions,
+    busy: busy ?? this.busy,
+    result: clearResult ? null : (result ?? this.result),
+    error: clearError ? null : (error ?? this.error),
+  );
 }
 
 @riverpod
@@ -142,8 +146,10 @@ class ImportWizardNotifier extends _$ImportWizardNotifier {
     final mapping = state.mapping;
     if (table == null || mapping == null || !mapping.isValid) {
       state = state.copyWith(
-          error: 'Bitte Spalten für Fach und Gerät wählen und ein Fahrzeug '
-              'festlegen.');
+        error:
+            'Bitte Spalten für Fach und Gerät wählen und ein Fahrzeug '
+            'festlegen.',
+      );
       return;
     }
     state = state.copyWith(busy: true, clearError: true);
@@ -151,8 +157,9 @@ class ImportWizardNotifier extends _$ImportWizardNotifier {
       final rows = ImportParser.applyMapping(table, mapping);
       if (rows.isEmpty) {
         state = state.copyWith(
-            busy: false,
-            error: 'Mit dieser Zuordnung ergeben sich keine Datenzeilen.');
+          busy: false,
+          error: 'Mit dieser Zuordnung ergeben sich keine Datenzeilen.',
+        );
         return;
       }
       final matcher = await _createMatcher();
@@ -165,18 +172,21 @@ class ImportWizardNotifier extends _$ImportWizardNotifier {
         matches[key] = match;
         decisions[key] = switch (match.kind) {
           MatchKind.exact || MatchKind.alias || MatchKind.fuzzy => RowDecision(
-              action: RowAction.useEquipment,
-              equipmentId: match.best!.equipmentId,
-              // Learn fuzzy confirmations so the next import matches directly.
-              rememberAlias: match.kind == MatchKind.fuzzy,
-            ),
-          MatchKind.none =>
-            const RowDecision(action: RowAction.createCustom),
+            action: RowAction.useEquipment,
+            equipmentId: match.best!.equipmentId,
+            // Learn fuzzy confirmations so the next import matches directly.
+            rememberAlias: match.kind == MatchKind.fuzzy,
+          ),
+          MatchKind.none => const RowDecision(action: RowAction.createCustom),
         };
       }
       state = state.copyWith(
-          step: 2, rows: rows, matches: matches, decisions: decisions,
-          busy: false);
+        step: 2,
+        rows: rows,
+        matches: matches,
+        decisions: decisions,
+        busy: false,
+      );
     } catch (e) {
       state = state.copyWith(busy: false, error: 'Abgleich fehlgeschlagen: $e');
     }
@@ -188,20 +198,26 @@ class ImportWizardNotifier extends _$ImportWizardNotifier {
     final userAliases = await db.select(db.userAliases).get();
     var bundled = <String, List<String>>{};
     try {
-      final raw = await rootBundle
-          .loadString('assets/equipment_library/aliases.json');
+      final raw = await rootBundle.loadString(
+        'assets/equipment_library/aliases.json',
+      );
       bundled = parseBundledAliases(raw);
     } catch (_) {
       // No bundled aliases – matcher still works on names + user aliases.
     }
     try {
-      final raw = await rootBundle
-          .loadString('assets/equipment_library/catalog/standard_catalog.json');
+      final raw = await rootBundle.loadString(
+        'assets/equipment_library/catalog/standard_catalog.json',
+      );
       // Additiv mergen: aliases.json und Katalog-Aliasse ergänzen sich,
       // gleiche Library-IDs dürfen einander nicht verdrängen.
-      parseCatalogAliases(raw).forEach((id, names) => bundled.update(
-          id, (existing) => [...existing, ...names],
-          ifAbsent: () => names));
+      parseCatalogAliases(raw).forEach(
+        (id, names) => bundled.update(
+          id,
+          (existing) => [...existing, ...names],
+          ifAbsent: () => names,
+        ),
+      );
     } catch (_) {
       // Catalog missing – nothing to merge.
     }
@@ -214,8 +230,8 @@ class ImportWizardNotifier extends _$ImportWizardNotifier {
 
   // ── Step 2: Abgleich ──
 
-  void setDecision(String key, RowDecision decision) => state = state
-      .copyWith(decisions: {...state.decisions, key: decision});
+  void setDecision(String key, RowDecision decision) =>
+      state = state.copyWith(decisions: {...state.decisions, key: decision});
 
   void toConfirm() => state = state.copyWith(step: 3, clearError: true);
 
@@ -224,8 +240,9 @@ class ImportWizardNotifier extends _$ImportWizardNotifier {
   Future<void> applyImport() async {
     state = state.copyWith(busy: true, clearError: true);
     try {
-      final result = await ImportService(ref.read(appDatabaseProvider))
-          .apply(rows: state.rows, decisions: state.decisions);
+      final result = await ImportService(
+        ref.read(appDatabaseProvider),
+      ).apply(rows: state.rows, decisions: state.decisions);
       state = state.copyWith(busy: false, result: result);
     } catch (e) {
       state = state.copyWith(busy: false, error: 'Import fehlgeschlagen: $e');

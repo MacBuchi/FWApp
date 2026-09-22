@@ -1,5 +1,6 @@
 /// game_menu_screen.dart – Navigation hub for all training game modes.
 library;
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fwapp/core/widgets/abteilung_switcher.dart';
@@ -114,15 +115,19 @@ class _GameCard extends StatelessWidget {
             children: [
               Icon(icon, color: Colors.white, size: 40),
               const Spacer(),
-              Text(title,
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15)),
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                ),
+              ),
               const SizedBox(height: 4),
-              Text(subtitle,
-                  style: const TextStyle(
-                      color: Colors.white70, fontSize: 12)),
+              Text(
+                subtitle,
+                style: const TextStyle(color: Colors.white70, fontSize: 12),
+              ),
             ],
           ),
         ),

@@ -31,15 +31,16 @@ class AbteilungTile extends ConsumerWidget {
     final selected = abteilungen.where((a) => a.id == selectedId).firstOrNull;
     final istHeimat = selectedId != null && selectedId == own;
 
-    final rechte = selected == null
-        ? null
-        : abteilungsRechteText(
-            selected,
-            istHeimat: istHeimat,
-            mitgliedschaften: ref.watch(meineMitgliedschaftenProvider).value,
-            kommandierteGesamtwehren:
-                ref.watch(meineKommandoGesamtwehrenProvider).value,
-          );
+    final rechte =
+        selected == null
+            ? null
+            : abteilungsRechteText(
+              selected,
+              istHeimat: istHeimat,
+              mitgliedschaften: ref.watch(meineMitgliedschaftenProvider).value,
+              kommandierteGesamtwehren:
+                  ref.watch(meineKommandoGesamtwehrenProvider).value,
+            );
     final wechselbar = abteilungen.length > 1;
 
     return ListTile(

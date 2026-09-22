@@ -23,17 +23,20 @@ void main() {
   setUp(() async {
     db = createTestDatabase();
     fahrzeug = await db.vehicleDao.insertVehicle(
-        VehiclesCompanion.insert(name: 'HLF 20', type: 'HLF 20'));
+      VehiclesCompanion.insert(name: 'HLF 20', type: 'HLF 20'),
+    );
   });
   tearDown(() => db.close());
 
   Future<int> fach(String label, {String? foto}) =>
-      db.compartmentDao.insertCompartment(CompartmentsCompanion.insert(
-        vehicleId: fahrzeug,
-        label: label,
-        seite: const Value('fahrerseite'),
-        imagePath: Value(foto),
-      ));
+      db.compartmentDao.insertCompartment(
+        CompartmentsCompanion.insert(
+          vehicleId: fahrzeug,
+          label: label,
+          seite: const Value('fahrerseite'),
+          imagePath: Value(foto),
+        ),
+      );
 
   Future<void> pumpe(WidgetTester tester, Widget screen) async {
     tester.view.physicalSize = const Size(1100, 2200);
@@ -54,8 +57,7 @@ void main() {
       await endTestApp(tester);
     });
 
-    testWidgets('ein Fach mit Foto zeigt es statt des Symbols',
-        (tester) async {
+    testWidgets('ein Fach mit Foto zeigt es statt des Symbols', (tester) async {
       await fach('G1', foto: 'assets/equipment_library/images/beispiel.png');
       await pumpe(tester, CompartmentManagerScreen(vehicleId: fahrzeug));
 
@@ -64,8 +66,9 @@ void main() {
       await endTestApp(tester);
     });
 
-    testWidgets('der Griff zum Umsortieren bleibt daneben stehen',
-        (tester) async {
+    testWidgets('der Griff zum Umsortieren bleibt daneben stehen', (
+      tester,
+    ) async {
       // Das Foto darf die Bedienung dieser Liste nicht verdrängen — sie ist
       // eine Reihenfolge-Liste, und ohne Griff ließe sie sich nicht mehr
       // sortieren.
@@ -87,8 +90,10 @@ void main() {
     }
 
     testWidgets('das Fach-Foto steht im aufgeklappten Fach', (tester) async {
-      final id = await fach('G1',
-          foto: 'assets/equipment_library/images/beispiel.png');
+      final id = await fach(
+        'G1',
+        foto: 'assets/equipment_library/images/beispiel.png',
+      );
       await pumpe(tester, VehicleDetailScreen(vehicleId: fahrzeug));
 
       // Zugeklappt gehört es nicht auf den Schirm — sonst wäre die
@@ -104,8 +109,10 @@ void main() {
     testWidgets('ein Tipp aufs Foto öffnet die Großansicht', (tester) async {
       // Auf einem Handy ist ein 160 Pixel hoher Streifen zu wenig, um ein
       // Fach wiederzuerkennen.
-      final id = await fach('G1',
-          foto: 'assets/equipment_library/images/beispiel.png');
+      final id = await fach(
+        'G1',
+        foto: 'assets/equipment_library/images/beispiel.png',
+      );
       await pumpe(tester, VehicleDetailScreen(vehicleId: fahrzeug));
       await klappeAuf(tester, 'G1');
 
@@ -117,8 +124,9 @@ void main() {
       await endTestApp(tester);
     });
 
-    testWidgets('ein Fach ohne Foto bekommt keinen leeren Platzhalter',
-        (tester) async {
+    testWidgets('ein Fach ohne Foto bekommt keinen leeren Platzhalter', (
+      tester,
+    ) async {
       // Ein grauer Kasten „kein Bild" an jedem Fach wäre in einer Liste mit
       // dreißig Fächern nur Rauschen.
       final id = await fach('G1');

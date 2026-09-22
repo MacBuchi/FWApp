@@ -26,44 +26,52 @@ Future<bool> darfVerlieren(
 }) async {
   final ok = await showDialog<bool>(
     context: context,
-    builder: (ctx) => AlertDialog(
-      title: const Text('Das ist hier noch nicht veröffentlicht'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ⚠️ Der Satz ist bewusst ohne Rückbezug gebaut („die es hier
-            // gibt … verschwinden sie"). Der müsste sich nach Zahl UND
-            // Geschlecht des letzten Postens richten — bei „1 Fahrzeug"
-            // stand dort erst „die … verschwinden sie", und ein falscher
-            // Satz liest sich wie ein Fehler im Programm.
-            Text('Auf dem Server fehlt, was hier angelegt wurde: '
-                '${verlust.beschreibung}. Beim $vorgang wird das '
-                'gelöscht.'),
-            if (darfVeroeffentlichen) ...[
-              const SizedBox(height: 12),
-              Text('Erst veröffentlichen, dann ${vorgang.toLowerCase()} '
-                  '— dann bleibt alles erhalten.',
-                  style: const TextStyle(fontWeight: FontWeight.bold)),
-            ] else ...[
-              const SizedBox(height: 12),
-              const Text('Wer den Bestand pflegen darf, kann ihn vorher '
-                  'veröffentlichen.'),
-            ],
+    builder:
+        (ctx) => AlertDialog(
+          title: const Text('Das ist hier noch nicht veröffentlicht'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ⚠️ Der Satz ist bewusst ohne Rückbezug gebaut („die es hier
+                // gibt … verschwinden sie"). Der müsste sich nach Zahl UND
+                // Geschlecht des letzten Postens richten — bei „1 Fahrzeug"
+                // stand dort erst „die … verschwinden sie", und ein falscher
+                // Satz liest sich wie ein Fehler im Programm.
+                Text(
+                  'Auf dem Server fehlt, was hier angelegt wurde: '
+                  '${verlust.beschreibung}. Beim $vorgang wird das '
+                  'gelöscht.',
+                ),
+                if (darfVeroeffentlichen) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    'Erst veröffentlichen, dann ${vorgang.toLowerCase()} '
+                    '— dann bleibt alles erhalten.',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ] else ...[
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Wer den Bestand pflegen darf, kann ihn vorher '
+                    'veröffentlichen.',
+                  ),
+                ],
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Abbrechen'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text('Trotzdem ${vorgang.toLowerCase()}'),
+            ),
           ],
         ),
-      ),
-      actions: [
-        TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Abbrechen')),
-        FilledButton(
-          onPressed: () => Navigator.pop(ctx, true),
-          child: Text('Trotzdem ${vorgang.toLowerCase()}'),
-        ),
-      ],
-    ),
   );
   return ok ?? false;
 }

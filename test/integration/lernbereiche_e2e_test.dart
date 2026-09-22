@@ -83,10 +83,10 @@ Future<void> main() async {
       wehr1,
       wehr2,
     ]);
-    await s
-        .from('abgeschaltete_lernbereiche')
-        .delete()
-        .inFilter('gesamtwehr_id', [wehr1, wehr2]);
+    await s.from('abgeschaltete_lernbereiche').delete().inFilter(
+      'gesamtwehr_id',
+      [wehr1, wehr2],
+    );
   });
 
   setUpAll(() async {
@@ -110,21 +110,23 @@ Future<void> main() async {
     await asService((s) async {
       for (final name in ['Lernwehr Eins', 'Lernwehr Zwei']) {
         final slug = name.toLowerCase().replaceAll(' ', '-');
-        final gw = await s
-            .from('gesamtwehren')
-            .insert({'name': name, 'slug': slug})
-            .select('id')
-            .single();
-        final abt = await s
-            .from('abteilungen')
-            .insert({
-              'name': '$name Abteilung',
-              'slug': '$slug-abt',
-              'status': 'active',
-              'gesamtwehr_id': gw['id'],
-            })
-            .select('id')
-            .single();
+        final gw =
+            await s
+                .from('gesamtwehren')
+                .insert({'name': name, 'slug': slug})
+                .select('id')
+                .single();
+        final abt =
+            await s
+                .from('abteilungen')
+                .insert({
+                  'name': '$name Abteilung',
+                  'slug': '$slug-abt',
+                  'status': 'active',
+                  'gesamtwehr_id': gw['id'],
+                })
+                .select('id')
+                .single();
         if (name.endsWith('Eins')) {
           wehr1 = gw['id'] as String;
           abteilung1 = abt['id'] as String;
@@ -157,19 +159,20 @@ Future<void> main() async {
         (wehr1, 'Wie lang ist ein B-Schlauch?'),
         (wehr2, 'Wie breit ist ein C-Schlauch?'),
       ]) {
-        final f = await s
-            .from('quiz_questions')
-            .insert({
-              'gesamtwehr_id': eintrag.$1,
-              'gebiet': 'geraetekunde',
-              'frage': eintrag.$2,
-              'antworten_json': '["20 m","5 m"]',
-              'richtige_json': '[0]',
-              'herkunft': 'eigen',
-              'stand': 'freigegeben',
-            })
-            .select('id')
-            .single();
+        final f =
+            await s
+                .from('quiz_questions')
+                .insert({
+                  'gesamtwehr_id': eintrag.$1,
+                  'gebiet': 'geraetekunde',
+                  'frage': eintrag.$2,
+                  'antworten_json': '["20 m","5 m"]',
+                  'richtige_json': '[0]',
+                  'herkunft': 'eigen',
+                  'stand': 'freigegeben',
+                })
+                .select('id')
+                .single();
         if (eintrag.$1 == wehr1) {
           frage1 = f['id'] as String;
         } else {
@@ -206,12 +209,15 @@ Future<void> main() async {
 
   group('Lernbereiche abschalten', () {
     test('der Gerätewart schaltet ein Gebiet ab und wieder ein', () async {
-      await wart.rpc('setze_lernbereich', params: {
-        'gw': wehr1,
-        'p_gebiet': 'atemschutz',
-        'p_kapitel': null,
-        'aus': true,
-      });
+      await wart.rpc(
+        'setze_lernbereich',
+        params: {
+          'gw': wehr1,
+          'p_gebiet': 'atemschutz',
+          'p_kapitel': null,
+          'aus': true,
+        },
+      );
 
       final aus = await wart
           .from('abgeschaltete_lernbereiche')
@@ -221,12 +227,15 @@ Future<void> main() async {
       expect(aus.single['gebiet'], 'atemschutz');
       expect(aus.single['kapitel'], isNull, reason: 'NULL = ganzes Gebiet');
 
-      await wart.rpc('setze_lernbereich', params: {
-        'gw': wehr1,
-        'p_gebiet': 'atemschutz',
-        'p_kapitel': null,
-        'aus': false,
-      });
+      await wart.rpc(
+        'setze_lernbereich',
+        params: {
+          'gw': wehr1,
+          'p_gebiet': 'atemschutz',
+          'p_kapitel': null,
+          'aus': false,
+        },
+      );
       expect(
         await wart
             .from('abgeschaltete_lernbereiche')
@@ -242,12 +251,15 @@ Future<void> main() async {
       // beliebig oft zu — und dann bliebe beim Einschalten eine Zeile
       // stehen und das Gebiet stumm abgeschaltet.
       for (var i = 0; i < 2; i++) {
-        await wart.rpc('setze_lernbereich', params: {
-          'gw': wehr1,
-          'p_gebiet': 'funk',
-          'p_kapitel': null,
-          'aus': true,
-        });
+        await wart.rpc(
+          'setze_lernbereich',
+          params: {
+            'gw': wehr1,
+            'p_gebiet': 'funk',
+            'p_kapitel': null,
+            'aus': true,
+          },
+        );
       }
       expect(
         await wart
@@ -259,18 +271,24 @@ Future<void> main() async {
     });
 
     test('Gebiet und Kapitel sind zwei verschiedene Zeilen', () async {
-      await wart.rpc('setze_lernbereich', params: {
-        'gw': wehr1,
-        'p_gebiet': 'gefahrgut',
-        'p_kapitel': 'Dekontamination',
-        'aus': true,
-      });
-      await wart.rpc('setze_lernbereich', params: {
-        'gw': wehr1,
-        'p_gebiet': 'gefahrgut',
-        'p_kapitel': null,
-        'aus': true,
-      });
+      await wart.rpc(
+        'setze_lernbereich',
+        params: {
+          'gw': wehr1,
+          'p_gebiet': 'gefahrgut',
+          'p_kapitel': 'Dekontamination',
+          'aus': true,
+        },
+      );
+      await wart.rpc(
+        'setze_lernbereich',
+        params: {
+          'gw': wehr1,
+          'p_gebiet': 'gefahrgut',
+          'p_kapitel': null,
+          'aus': true,
+        },
+      );
       expect(
         await wart
             .from('abgeschaltete_lernbereiche')
@@ -283,12 +301,10 @@ Future<void> main() async {
     test('ein Leerstring meint dasselbe wie NULL: das ganze Gebiet', () async {
       // Sonst legte ein Client mit '' eine zweite Zeile neben die mit NULL,
       // und das Einschalten träfe nur eine davon.
-      await wart.rpc('setze_lernbereich', params: {
-        'gw': wehr1,
-        'p_gebiet': 'funk',
-        'p_kapitel': '',
-        'aus': true,
-      });
+      await wart.rpc(
+        'setze_lernbereich',
+        params: {'gw': wehr1, 'p_gebiet': 'funk', 'p_kapitel': '', 'aus': true},
+      );
       final aus = await wart
           .from('abgeschaltete_lernbereiche')
           .select()
@@ -301,62 +317,82 @@ Future<void> main() async {
       // Die Entscheidung gilt für die ganze Wehr — sie gehört dem
       // Gerätewart, nicht jedem mit Konto.
       await expectLater(
-        mitglied.rpc('setze_lernbereich', params: {
-          'gw': wehr1,
-          'p_gebiet': 'atemschutz',
-          'p_kapitel': null,
-          'aus': true,
-        }),
+        mitglied.rpc(
+          'setze_lernbereich',
+          params: {
+            'gw': wehr1,
+            'p_gebiet': 'atemschutz',
+            'p_kapitel': null,
+            'aus': true,
+          },
+        ),
         throwsA(isA<PostgrestException>()),
       );
       expect(
-        await asService((s) => s
-            .from('abgeschaltete_lernbereiche')
-            .select()
-            .eq('gesamtwehr_id', wehr1)),
+        await asService(
+          (s) => s
+              .from('abgeschaltete_lernbereiche')
+              .select()
+              .eq('gesamtwehr_id', wehr1),
+        ),
         isEmpty,
       );
     });
 
-    test('ein Gerätewart einer FREMDEN Wehr darf nicht in unsere schalten',
-        () async {
-      await expectLater(
-        fremder.rpc('setze_lernbereich', params: {
+    test(
+      'ein Gerätewart einer FREMDEN Wehr darf nicht in unsere schalten',
+      () async {
+        await expectLater(
+          fremder.rpc(
+            'setze_lernbereich',
+            params: {
+              'gw': wehr1,
+              'p_gebiet': 'atemschutz',
+              'p_kapitel': null,
+              'aus': true,
+            },
+          ),
+          throwsA(isA<PostgrestException>()),
+        );
+      },
+    );
+
+    test(
+      'jeder in der Wehr SIEHT die Abschaltung — sie wirkt auf jedem Gerät',
+      () async {
+        await wart.rpc(
+          'setze_lernbereich',
+          params: {
+            'gw': wehr1,
+            'p_gebiet': 'atemschutz',
+            'p_kapitel': null,
+            'aus': true,
+          },
+        );
+        expect(
+          await mitglied
+              .from('abgeschaltete_lernbereiche')
+              .select()
+              .eq('gesamtwehr_id', wehr1),
+          hasLength(1),
+        );
+      },
+    );
+
+    test('eine fremde Wehr sieht davon nichts', () async {
+      await wart.rpc(
+        'setze_lernbereich',
+        params: {
           'gw': wehr1,
           'p_gebiet': 'atemschutz',
           'p_kapitel': null,
           'aus': true,
-        }),
-        throwsA(isA<PostgrestException>()),
+        },
       );
-    });
-
-    test('jeder in der Wehr SIEHT die Abschaltung — sie wirkt auf jedem Gerät',
-        () async {
-      await wart.rpc('setze_lernbereich', params: {
-        'gw': wehr1,
-        'p_gebiet': 'atemschutz',
-        'p_kapitel': null,
-        'aus': true,
-      });
       expect(
-        await mitglied
-            .from('abgeschaltete_lernbereiche')
-            .select()
-            .eq('gesamtwehr_id', wehr1),
-        hasLength(1),
+        await fremder.from('abgeschaltete_lernbereiche').select(),
+        isEmpty,
       );
-    });
-
-    test('eine fremde Wehr sieht davon nichts', () async {
-      await wart.rpc('setze_lernbereich', params: {
-        'gw': wehr1,
-        'p_gebiet': 'atemschutz',
-        'p_kapitel': null,
-        'aus': true,
-      });
-      expect(await fremder.from('abgeschaltete_lernbereiche').select(),
-          isEmpty);
     });
 
     test('an der Funktion vorbei geht nichts', () async {
@@ -368,10 +404,12 @@ Future<void> main() async {
         });
       });
       expect(
-        await asService((s) => s
-            .from('abgeschaltete_lernbereiche')
-            .select()
-            .eq('gesamtwehr_id', wehr1)),
+        await asService(
+          (s) => s
+              .from('abgeschaltete_lernbereiche')
+              .select()
+              .eq('gesamtwehr_id', wehr1),
+        ),
         isEmpty,
       );
     });
@@ -381,69 +419,89 @@ Future<void> main() async {
     test('jedes Mitglied darf einen Hinweis geben', () async {
       // Dieselbe Linie wie beim Einreichen einer Frage: beitragen darf
       // jeder, entscheiden nur der Gerätewart.
-      await mitglied.rpc('melde_frage_hinweis', params: {
-        'gw': wehr1,
-        'p_frage': frage1,
-        'text_hinweis': 'Seit der Neufassung sind es 20 m, nicht 15 m.',
-        'melder_name': 'Truppführer',
-      });
+      await mitglied.rpc(
+        'melde_frage_hinweis',
+        params: {
+          'gw': wehr1,
+          'p_frage': frage1,
+          'text_hinweis': 'Seit der Neufassung sind es 20 m, nicht 15 m.',
+          'melder_name': 'Truppführer',
+        },
+      );
 
-      final hinweise =
-          await wart.from('frage_hinweise').select().eq('gesamtwehr_id', wehr1);
+      final hinweise = await wart
+          .from('frage_hinweise')
+          .select()
+          .eq('gesamtwehr_id', wehr1);
       expect(hinweise, hasLength(1));
       expect(hinweise.single['von_name'], 'Truppführer');
       expect(hinweise.single['erledigt_am'], isNull);
     });
 
-    test('eine Frage einer FREMDEN Wehr lässt sich nicht unterschieben',
-        () async {
-      // Ohne diese Prüfung könnte man an eine fremde Frage schreiben, indem
-      // man die eigene Wehr-ID mitschickt.
-      await expectLater(
-        mitglied.rpc('melde_frage_hinweis', params: {
-          'gw': wehr1,
-          'p_frage': frage2,
-          'text_hinweis': 'Gehört gar nicht hierher.',
-        }),
-        throwsA(isA<PostgrestException>()),
-      );
-    });
+    test(
+      'eine Frage einer FREMDEN Wehr lässt sich nicht unterschieben',
+      () async {
+        // Ohne diese Prüfung könnte man an eine fremde Frage schreiben, indem
+        // man die eigene Wehr-ID mitschickt.
+        await expectLater(
+          mitglied.rpc(
+            'melde_frage_hinweis',
+            params: {
+              'gw': wehr1,
+              'p_frage': frage2,
+              'text_hinweis': 'Gehört gar nicht hierher.',
+            },
+          ),
+          throwsA(isA<PostgrestException>()),
+        );
+      },
+    );
 
     test('zu kurzer Text wird abgelehnt', () async {
       await expectLater(
-        mitglied.rpc('melde_frage_hinweis', params: {
-          'gw': wehr1,
-          'p_frage': frage1,
-          'text_hinweis': 'x',
-        }),
+        mitglied.rpc(
+          'melde_frage_hinweis',
+          params: {'gw': wehr1, 'p_frage': frage1, 'text_hinweis': 'x'},
+        ),
         throwsA(isA<PostgrestException>()),
       );
     });
 
     test('nur der Gerätewart hakt ab', () async {
-      await mitglied.rpc('melde_frage_hinweis', params: {
-        'gw': wehr1,
-        'p_frage': frage1,
-        'text_hinweis': 'Antwort b) ist auch richtig.',
-      });
-      final id = (await wart
-              .from('frage_hinweise')
-              .select('id')
-              .eq('gesamtwehr_id', wehr1)
-              .single())['id']
-          as String;
+      await mitglied.rpc(
+        'melde_frage_hinweis',
+        params: {
+          'gw': wehr1,
+          'p_frage': frage1,
+          'text_hinweis': 'Antwort b) ist auch richtig.',
+        },
+      );
+      final id =
+          (await wart
+                  .from('frage_hinweise')
+                  .select('id')
+                  .eq('gesamtwehr_id', wehr1)
+                  .single())['id']
+              as String;
 
       await expectLater(
-        mitglied.rpc('erledige_frage_hinweis',
-            params: {'hinweis_id': id, 'erledigt': true}),
+        mitglied.rpc(
+          'erledige_frage_hinweis',
+          params: {'hinweis_id': id, 'erledigt': true},
+        ),
         throwsA(isA<PostgrestException>()),
       );
 
-      await wart.rpc('erledige_frage_hinweis',
-          params: {'hinweis_id': id, 'erledigt': true});
+      await wart.rpc(
+        'erledige_frage_hinweis',
+        params: {'hinweis_id': id, 'erledigt': true},
+      );
       expect(
-        (await wart.from('frage_hinweise').select().eq('id', id).single())[
-            'erledigt_am'],
+        (await wart
+            .from('frage_hinweise')
+            .select()
+            .eq('id', id)
+            .single())['erledigt_am'],
         isNotNull,
       );
     });
@@ -451,22 +509,30 @@ Future<void> main() async {
     test('abhaken lässt sich zurücknehmen', () async {
       // Wer versehentlich abhakt, soll das können, ohne dass der Hinweis
       // verloren geht.
-      await mitglied.rpc('melde_frage_hinweis', params: {
-        'gw': wehr1,
-        'p_frage': frage1,
-        'text_hinweis': 'Doch noch offen.',
-      });
-      final id = (await wart
-              .from('frage_hinweise')
-              .select('id')
-              .eq('gesamtwehr_id', wehr1)
-              .single())['id']
-          as String;
+      await mitglied.rpc(
+        'melde_frage_hinweis',
+        params: {
+          'gw': wehr1,
+          'p_frage': frage1,
+          'text_hinweis': 'Doch noch offen.',
+        },
+      );
+      final id =
+          (await wart
+                  .from('frage_hinweise')
+                  .select('id')
+                  .eq('gesamtwehr_id', wehr1)
+                  .single())['id']
+              as String;
 
-      await wart.rpc('erledige_frage_hinweis',
-          params: {'hinweis_id': id, 'erledigt': true});
-      await wart.rpc('erledige_frage_hinweis',
-          params: {'hinweis_id': id, 'erledigt': false});
+      await wart.rpc(
+        'erledige_frage_hinweis',
+        params: {'hinweis_id': id, 'erledigt': true},
+      );
+      await wart.rpc(
+        'erledige_frage_hinweis',
+        params: {'hinweis_id': id, 'erledigt': false},
+      );
 
       final zeile =
           await wart.from('frage_hinweise').select().eq('id', id).single();
@@ -476,11 +542,14 @@ Future<void> main() async {
 
     test('eine fremde Wehr liest die Hinweise nicht', () async {
       // Das ist der Kern von #194: Der Hinweis bleibt in der Wehr.
-      await mitglied.rpc('melde_frage_hinweis', params: {
-        'gw': wehr1,
-        'p_frage': frage1,
-        'text_hinweis': 'Bleibt unter uns.',
-      });
+      await mitglied.rpc(
+        'melde_frage_hinweis',
+        params: {
+          'gw': wehr1,
+          'p_frage': frage1,
+          'text_hinweis': 'Bleibt unter uns.',
+        },
+      );
       expect(await fremder.from('frage_hinweise').select(), isEmpty);
     });
 
@@ -494,7 +563,8 @@ Future<void> main() async {
       });
       expect(
         await asService(
-            (s) => s.from('frage_hinweise').select().eq('gesamtwehr_id', wehr1)),
+          (s) => s.from('frage_hinweise').select().eq('gesamtwehr_id', wehr1),
+        ),
         isEmpty,
       );
     });

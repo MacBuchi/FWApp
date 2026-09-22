@@ -48,33 +48,38 @@ void main() {
   tearDown(() => db.close());
 
   Widget host(Zustellstand stand) => buildTestApp(
-        db: db,
-        home: const UserManagementScreen(),
-        overrides: [
-          managedUsersProvider.overrideWith((ref) async => const <ManagedUser>[]),
-          abteilungenProvider.overrideWith((ref) async => const [_stadt]),
-          myAbteilungIdProvider.overrideWith((ref) async => 'A'),
-          meineKommandoGesamtwehrenProvider
-              .overrideWith((ref) async => const <String>{}),
-          supabaseClientProvider.overrideWithValue(null),
-          offeneEinladungenProvider.overrideWith((ref) async => [_einladung]),
-          einladungZustellungProvider.overrideWith((ref) async => stand),
-        ],
-      );
+    db: db,
+    home: const UserManagementScreen(),
+    overrides: [
+      managedUsersProvider.overrideWith((ref) async => const <ManagedUser>[]),
+      abteilungenProvider.overrideWith((ref) async => const [_stadt]),
+      myAbteilungIdProvider.overrideWith((ref) async => 'A'),
+      meineKommandoGesamtwehrenProvider.overrideWith(
+        (ref) async => const <String>{},
+      ),
+      supabaseClientProvider.overrideWithValue(null),
+      offeneEinladungenProvider.overrideWith((ref) async => [_einladung]),
+      einladungZustellungProvider.overrideWith((ref) async => stand),
+    ],
+  );
 
-  Zustellstand stand(Zustellung z) => Zustellstand(
-        verfuegbar: true,
-        gekuerzt: 0,
-        proEinladung: {'e1': z},
-      );
+  Zustellstand stand(Zustellung z) =>
+      Zustellstand(verfuegbar: true, gekuerzt: 0, proEinladung: {'e1': z});
 
-  testWidgets('eine verworfene Einladung nennt Grund und Zeitpunkt',
-      (tester) async {
-    await tester.pumpWidget(host(stand(Zustellung(
-      Zustellzustand.gescheitert,
-      grund: 'vorübergehend abgelehnt (Internal Error: DKIM Bad request)',
-      zeit: DateTime.utc(2026, 8, 4, 19, 41),
-    ))));
+  testWidgets('eine verworfene Einladung nennt Grund und Zeitpunkt', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      host(
+        stand(
+          Zustellung(
+            Zustellzustand.gescheitert,
+            grund: 'vorübergehend abgelehnt (Internal Error: DKIM Bad request)',
+            zeit: DateTime.utc(2026, 8, 4, 19, 41),
+          ),
+        ),
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(
@@ -88,10 +93,16 @@ void main() {
     expect(find.byIcon(Icons.report_gmailerrorred), findsOneWidget);
   });
 
-  testWidgets('eine zugestellte Einladung sieht anders aus als eine offene',
-      (tester) async {
-    await tester.pumpWidget(host(stand(
-        Zustellung(Zustellzustand.zugestellt, zeit: DateTime.utc(2026, 8, 4)))));
+  testWidgets('eine zugestellte Einladung sieht anders aus als eine offene', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      host(
+        stand(
+          Zustellung(Zustellzustand.zugestellt, zeit: DateTime.utc(2026, 8, 4)),
+        ),
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(find.textContaining('zugestellt'), findsOneWidget);
@@ -99,8 +110,9 @@ void main() {
     expect(find.byIcon(Icons.report_gmailerrorred), findsNothing);
   });
 
-  testWidgets('ohne Auskunft steht „nicht prüfbar" statt einer Beruhigung',
-      (tester) async {
+  testWidgets('ohne Auskunft steht „nicht prüfbar" statt einer Beruhigung', (
+    tester,
+  ) async {
     // Der Zustand auf jedem Server ohne Brevo-Schlüssel. Er darf NICHT wie
     // „alles in Ordnung" aussehen — das war der Fehler, den #121 meldet.
     await tester.pumpWidget(host(Zustellstand.leer));
@@ -110,8 +122,9 @@ void main() {
     expect(find.byIcon(Icons.report_gmailerrorred), findsNothing);
   });
 
-  testWidgets('der Ausweg steht auch ohne Zustell-Auskunft im Menü',
-      (tester) async {
+  testWidgets('der Ausweg steht auch ohne Zustell-Auskunft im Menü', (
+    tester,
+  ) async {
     await tester.pumpWidget(host(Zustellstand.leer));
     await tester.pumpAndSettle();
 
@@ -121,12 +134,19 @@ void main() {
     expect(find.text('Erneut senden'), findsOneWidget);
   });
 
-  testWidgets('der Zettel-Dialog kommt mit dem, was die Einladung weiß',
-      (tester) async {
-    await tester.pumpWidget(host(stand(const Zustellung(
-      Zustellzustand.gescheitert,
-      grund: 'Adresse existiert nicht',
-    ))));
+  testWidgets('der Zettel-Dialog kommt mit dem, was die Einladung weiß', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      host(
+        stand(
+          const Zustellung(
+            Zustellzustand.gescheitert,
+            grund: 'Adresse existiert nicht',
+          ),
+        ),
+      ),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.byIcon(Icons.more_vert).first);
@@ -148,13 +168,12 @@ void main() {
     expect(find.textContaining('NICHT selbst'), findsOneWidget);
   });
 
-  testWidgets('gekürzte Prüfung wird gesagt, nicht verschwiegen',
-      (tester) async {
-    await tester.pumpWidget(host(const Zustellstand(
-      verfuegbar: true,
-      gekuerzt: 3,
-      proEinladung: {},
-    )));
+  testWidgets('gekürzte Prüfung wird gesagt, nicht verschwiegen', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      host(const Zustellstand(verfuegbar: true, gekuerzt: 3, proEinladung: {})),
+    );
     await tester.pumpAndSettle();
     expect(find.textContaining('nur für die ersten'), findsOneWidget);
   });

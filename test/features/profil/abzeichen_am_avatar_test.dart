@@ -61,8 +61,9 @@ void main() {
       expect(_marke(tester).size!, greaterThan(klein));
     });
 
-    testWidgets('sitzt links unten, wo das Rollen-Abzeichen nicht steht',
-        (tester) async {
+    testWidgets('sitzt links unten, wo das Rollen-Abzeichen nicht steht', (
+      tester,
+    ) async {
       // In der Nutzerverwaltung klebt rechts unten am selben Kopf das
       // Rollen-Abzeichen (`_KontoAvatar`). Wandert die Marke dorthin, liegen
       // zwei Zeichen übereinander und beide sind unlesbar.
@@ -80,8 +81,9 @@ void main() {
       expect(marke.dy, greaterThan(kopf.center.dy), reason: 'nicht unten');
     });
 
-    testWidgets('ist auch dann vorlesbar, wenn der Kopf stumm bleibt',
-        (tester) async {
+    testWidgets('ist auch dann vorlesbar, wenn der Kopf stumm bleibt', (
+      tester,
+    ) async {
       // Der Regelfall: In der Einstellungs-Kachel steht der Kopf ohne
       // Beschriftung (er wiederholte sonst den Namen). Die Stufe steht dort
       // aber in KEINEM Text daneben — ohne eigene Beschriftung wäre sie für
@@ -109,8 +111,9 @@ void main() {
       expect(find.text('Noch 4 Level bis Silber.'), findsOneWidget);
     });
 
-    testWidgets('sagt vor der ersten Stufe, dass noch keine da ist',
-        (tester) async {
+    testWidgets('sagt vor der ersten Stufe, dass noch keine da ist', (
+      tester,
+    ) async {
       await _zeige(tester, const AbzeichenZeile(level: 1));
       expect(find.text('Noch kein Leistungsabzeichen'), findsOneWidget);
       // Und das Symbol trägt dann keine Metallfarbe — sonst stünde ein

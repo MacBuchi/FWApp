@@ -29,7 +29,10 @@ class _GestellterZufall implements Random {
 void main() {
   group('normalisiereTagCode', () {
     test('macht aus zwei Schreibweisen denselben Code', () {
-      expect(normalisiereTagCode('fw-7k2m9q'), normalisiereTagCode('FW-7K2M9Q'));
+      expect(
+        normalisiereTagCode('fw-7k2m9q'),
+        normalisiereTagCode('FW-7K2M9Q'),
+      );
     });
 
     test('wirft Leerraum weg, auch das Zeilenende vom Lesegerät', () {
@@ -77,7 +80,22 @@ void main() {
     test('weicht einem schon vergebenen Code aus', () {
       // Erster Griff liefert lauter Index 0 → „FW-0000000"; der ist belegt,
       // der zweite Griff muss etwas anderes bringen.
-      final zufall = _GestellterZufall([0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1]);
+      final zufall = _GestellterZufall([
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+      ]);
       final code = erzeugeTagCode({'FW-0000000'}, zufall: zufall);
       expect(code, isNot('FW-0000000'));
       expect(code, 'FW-1111111');
@@ -87,8 +105,9 @@ void main() {
       // Ein Zufall, der immer dasselbe liefert, und dieser Code ist belegt:
       // Das ist kein Pech, sondern ein Defekt — also sichtbar abbrechen.
       expect(
-        () => erzeugeTagCode({'FW-0000000'},
-            zufall: _GestellterZufall(const [0])),
+        () => erzeugeTagCode({
+          'FW-0000000',
+        }, zufall: _GestellterZufall(const [0])),
         throwsStateError,
       );
     });

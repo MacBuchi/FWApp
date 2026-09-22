@@ -1,5 +1,6 @@
 /// equipment_repository.dart – Abstract interface for equipment data access.
 library;
+
 import 'package:fwapp/features/equipment/domain/entities/equipment_item.dart';
 
 abstract class EquipmentRepository {

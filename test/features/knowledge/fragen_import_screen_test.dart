@@ -24,61 +24,76 @@ void main() {
     'richtig',
   ];
 
-  List<String> zeile(String frage, String richtig) =>
-      [frage, 'geraetekunde', 'A', 'B', 'C', richtig];
+  List<String> zeile(String frage, String richtig) => [
+    frage,
+    'geraetekunde',
+    'A',
+    'B',
+    'C',
+    richtig,
+  ];
 
-  Future<FrageImportErgebnis> lese(List<List<String>> rows,
-          {Set<String> vorhanden = const {}}) async =>
-      leseFragen(ImportTable(name: 'fragen.csv', rows: rows),
-          vorhandeneFragen: vorhanden);
+  Future<FrageImportErgebnis> lese(
+    List<List<String>> rows, {
+    Set<String> vorhanden = const {},
+  }) async => leseFragen(
+    ImportTable(name: 'fragen.csv', rows: rows),
+    vorhandeneFragen: vorhanden,
+  );
 
   Future<void> zeige(WidgetTester tester, FrageImportErgebnis e) async {
     tester.view.physicalSize = const Size(1200, 2400);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(MaterialApp(
-      home: Scaffold(
-        body: SingleChildScrollView(
-          child: FragenImportBefund(
-            ergebnis: e,
-            dateiname: 'fragen.csv',
-            aufUebernehmen: (_) {},
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: FragenImportBefund(
+              ergebnis: e,
+              dateiname: 'fragen.csv',
+              aufUebernehmen: (_) {},
+            ),
           ),
         ),
       ),
-    ));
+    );
     await tester.pumpAndSettle();
   }
 
   testWidgets('zählt, was bereit ist', (tester) async {
     await zeige(
-        tester,
-        await lese([
-          kopf,
-          zeile('Erste Frage mit Zeichen?', '1'),
-          zeile('Zweite Frage mit Zeichen?', '2'),
-        ]));
+      tester,
+      await lese([
+        kopf,
+        zeile('Erste Frage mit Zeichen?', '1'),
+        zeile('Zweite Frage mit Zeichen?', '2'),
+      ]),
+    );
 
     expect(find.textContaining('2 Fragen bereit'), findsOneWidget);
     expect(find.text('2 übernehmen'), findsOneWidget);
   });
 
-  testWidgets('eine einzelne Frage heißt „Frage", nicht „Fragen"',
-      (tester) async {
+  testWidgets('eine einzelne Frage heißt „Frage", nicht „Fragen"', (
+    tester,
+  ) async {
     await zeige(tester, await lese([kopf, zeile('Nur eine Frage?', '1')]));
     expect(find.textContaining('1 Frage bereit'), findsOneWidget);
   });
 
-  testWidgets('nennt die Zeilennummer aus der Tabellenkalkulation',
-      (tester) async {
+  testWidgets('nennt die Zeilennummer aus der Tabellenkalkulation', (
+    tester,
+  ) async {
     // Kopfzeile ist 1, die kaputte Zeile hier also 3.
     await zeige(
-        tester,
-        await lese([
-          kopf,
-          zeile('Gute Frage mit Zeichen?', '1'),
-          zeile('Kaputte Frage mit Zeichen?', '99'),
-        ]));
+      tester,
+      await lese([
+        kopf,
+        zeile('Gute Frage mit Zeichen?', '1'),
+        zeile('Kaputte Frage mit Zeichen?', '99'),
+      ]),
+    );
 
     expect(find.text('Zeilen zum Nachbessern'), findsOneWidget);
     expect(find.text('Zeile 3'), findsOneWidget);
@@ -102,23 +117,27 @@ void main() {
 
   testWidgets('meldet unbekannte Spalten beim Namen', (tester) async {
     await zeige(
-        tester,
-        await lese([
-          [...kopf, 'Erklaerungg'],
-          [...zeile('Eine Frage mit Zeichen?', '1'), 'vertippt'],
-        ]));
+      tester,
+      await lese([
+        [...kopf, 'Erklaerungg'],
+        [...zeile('Eine Frage mit Zeichen?', '1'), 'vertippt'],
+      ]),
+    );
 
     expect(find.textContaining('Erklaerungg'), findsOneWidget);
   });
 
   testWidgets('ohne übernehmbare Zeile gibt es keinen Knopf', (tester) async {
     await zeige(
-        tester, await lese([kopf, zeile('Kaputte Frage mit Zeichen?', '99')]));
+      tester,
+      await lese([kopf, zeile('Kaputte Frage mit Zeichen?', '99')]),
+    );
     expect(find.textContaining('übernehmen'), findsNothing);
   });
 
-  testWidgets('der Knopf reicht genau die übernehmbaren Zeilen weiter',
-      (tester) async {
+  testWidgets('der Knopf reicht genau die übernehmbaren Zeilen weiter', (
+    tester,
+  ) async {
     List<FrageImportZeile>? bekommen;
     final e = await lese([
       kopf,
@@ -126,17 +145,19 @@ void main() {
       zeile('Kaputte Frage mit Zeichen?', '99'),
     ]);
 
-    await tester.pumpWidget(MaterialApp(
-      home: Scaffold(
-        body: SingleChildScrollView(
-          child: FragenImportBefund(
-            ergebnis: e,
-            dateiname: 'fragen.csv',
-            aufUebernehmen: (z) => bekommen = z,
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: FragenImportBefund(
+              ergebnis: e,
+              dateiname: 'fragen.csv',
+              aufUebernehmen: (z) => bekommen = z,
+            ),
           ),
         ),
       ),
-    ));
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.text('1 übernehmen'));
     await tester.pumpAndSettle();

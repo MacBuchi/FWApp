@@ -24,13 +24,19 @@ import '../../helpers/widget_harness.dart';
 void main() {
   group('der Satz vor dem Entfernen', () {
     test('nennt Fächer und Beladung mit richtiger Beugung', () {
-      final text =
-          fahrzeugEntfernenText(name: 'HLF 20', faecher: 1, beladung: 1);
+      final text = fahrzeugEntfernenText(
+        name: 'HLF 20',
+        faecher: 1,
+        beladung: 1,
+      );
       expect(text, contains('1 Fach '));
       expect(text, contains('1 Eintrag der Beladeliste'));
 
-      final viele =
-          fahrzeugEntfernenText(name: 'HLF 20', faecher: 18, beladung: 42);
+      final viele = fahrzeugEntfernenText(
+        name: 'HLF 20',
+        faecher: 18,
+        beladung: 42,
+      );
       expect(viele, contains('18 Fächer'));
       expect(viele, contains('42 Einträge der Beladeliste'));
     });
@@ -38,8 +44,11 @@ void main() {
     test('sagt dazu, dass die Geräte im Bestand bleiben', () {
       // Die eigentliche Entscheidungshilfe: Ohne diesen Satz liest sich das
       // Entfernen eines Fahrzeugs wie das Löschen des halben Bestands.
-      final text =
-          fahrzeugEntfernenText(name: 'HLF 20', faecher: 18, beladung: 42);
+      final text = fahrzeugEntfernenText(
+        name: 'HLF 20',
+        faecher: 18,
+        beladung: 42,
+      );
       expect(text, contains('Geräte selbst bleiben im Bestand'));
       expect(text, contains('Prüfhistorie'));
     });
@@ -50,8 +59,11 @@ void main() {
       expect(leer, isNot(contains('Fach')));
       expect(leer, isNot(contains('Beladeliste')));
 
-      final nurFaecher =
-          fahrzeugEntfernenText(name: 'MTW', faecher: 3, beladung: 0);
+      final nurFaecher = fahrzeugEntfernenText(
+        name: 'MTW',
+        faecher: 3,
+        beladung: 0,
+      );
       expect(nurFaecher, contains('3 Fächer'));
       expect(nurFaecher, isNot(contains('Beladeliste')));
     });
@@ -74,16 +86,22 @@ void main() {
     setUp(() async {
       db = createTestDatabase();
       vehicleId = await db.vehicleDao.insertVehicle(
-          VehiclesCompanion.insert(name: 'HLF 20', type: 'HLF 20'));
+        VehiclesCompanion.insert(name: 'HLF 20', type: 'HLF 20'),
+      );
       final fach = await db.compartmentDao.insertCompartment(
-          CompartmentsCompanion.insert(vehicleId: vehicleId, label: 'G1'));
+        CompartmentsCompanion.insert(vehicleId: vehicleId, label: 'G1'),
+      );
       await db.compartmentDao.insertCompartment(
-          CompartmentsCompanion.insert(vehicleId: vehicleId, label: 'G2'));
-      final geraet = await db.equipmentDao
-          .insertEquipment(EquipmentItemsCompanion.insert(name: 'Leitkegel'));
+        CompartmentsCompanion.insert(vehicleId: vehicleId, label: 'G2'),
+      );
+      final geraet = await db.equipmentDao.insertEquipment(
+        EquipmentItemsCompanion.insert(name: 'Leitkegel'),
+      );
       await db.assignmentDao.insertAssignment(
         EquipmentAssignmentsCompanion.insert(
-            compartmentId: fach, equipmentId: geraet),
+          compartmentId: fach,
+          equipmentId: geraet,
+        ),
       );
     });
 
@@ -96,8 +114,10 @@ void main() {
     /// stünde da „Fahrzeug nicht gefunden" — der Screen hängt an einer
     /// Zeile, die es nicht mehr gibt. Mit einem nackten MaterialApp könnte
     /// man das gar nicht prüfen.
-    Future<void> oeffne(WidgetTester tester,
-        {bool darfBearbeiten = true}) async {
+    Future<void> oeffne(
+      WidgetTester tester, {
+      bool darfBearbeiten = true,
+    }) async {
       final router = GoRouter(
         initialLocation: '/vehicles/detail',
         routes: [
@@ -114,13 +134,15 @@ void main() {
         ],
       );
       addTearDown(router.dispose);
-      await tester.pumpWidget(ProviderScope(
-        overrides: [
-          appDatabaseProvider.overrideWithValue(db),
-          if (!darfBearbeiten) canEditProvider.overrideWithValue(false),
-        ],
-        child: MaterialApp.router(routerConfig: router),
-      ));
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            appDatabaseProvider.overrideWithValue(db),
+            if (!darfBearbeiten) canEditProvider.overrideWithValue(false),
+          ],
+          child: MaterialApp.router(routerConfig: router),
+        ),
+      );
       await tester.pumpAndSettle();
     }
 
@@ -156,8 +178,9 @@ void main() {
       await endTestApp(tester);
     });
 
-    testWidgets('Entfernen löscht Fahrzeug, Fächer und Beladung',
-        (tester) async {
+    testWidgets('Entfernen löscht Fahrzeug, Fächer und Beladung', (
+      tester,
+    ) async {
       await oeffne(tester);
       await tester.tap(find.byType(PopupMenuButton<String>));
       await tester.pumpAndSettle();

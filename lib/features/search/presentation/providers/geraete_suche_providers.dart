@@ -29,12 +29,8 @@ part 'geraete_suche_providers.g.dart';
 Future<List<GeraetTreffer>> durchsuchbarerBestand(Ref ref) async {
   final db = ref.watch(appDatabaseProvider);
 
-  final fahrzeuge = {
-    for (final v in await db.vehicleDao.getAll()) v.id: v,
-  };
-  final faecher = {
-    for (final c in await db.compartmentDao.getAll()) c.id: c,
-  };
+  final fahrzeuge = {for (final v in await db.vehicleDao.getAll()) v.id: v};
+  final faecher = {for (final c in await db.compartmentDao.getAll()) c.id: c};
   final zuweisungen = await db.assignmentDao.getAll();
 
   // Codes je Gerät, über die geführten Einheiten (Issue #176). Zwei
@@ -47,11 +43,15 @@ Future<List<GeraetTreffer>> durchsuchbarerBestand(Ref ref) async {
   for (final t in await db.tagDao.alleTags()) {
     final einheit = einheiten[t.instanceId];
     if (einheit == null) continue;
-    codes.putIfAbsent(einheit.equipmentId, () => []).add(Geraetecode(
-          code: t.code,
-          kennung: einheit.identifier,
-          compartmentId: einheit.compartmentId,
-        ));
+    codes
+        .putIfAbsent(einheit.equipmentId, () => [])
+        .add(
+          Geraetecode(
+            code: t.code,
+            kennung: einheit.identifier,
+            compartmentId: einheit.compartmentId,
+          ),
+        );
   }
 
   // Fundorte je Gerät sammeln. Ein Gerät kann in mehreren Fahrzeugen und
@@ -63,13 +63,17 @@ Future<List<GeraetTreffer>> durchsuchbarerBestand(Ref ref) async {
     if (fach == null) continue;
     final fahrzeug = fahrzeuge[fach.vehicleId];
     if (fahrzeug == null) continue;
-    fundorte.putIfAbsent(z.equipmentId, () => []).add(Fundort(
-          vehicleId: fahrzeug.id,
-          fahrzeug: fahrzeug.name,
-          compartmentId: fach.id,
-          fach: FachAntwort.ausFach(fach),
-          menge: z.quantity,
-        ));
+    fundorte
+        .putIfAbsent(z.equipmentId, () => [])
+        .add(
+          Fundort(
+            vehicleId: fahrzeug.id,
+            fahrzeug: fahrzeug.name,
+            compartmentId: fach.id,
+            fach: FachAntwort.ausFach(fach),
+            menge: z.quantity,
+          ),
+        );
   }
 
   // Innerhalb eines Geräts nach Fahrzeug sortieren, damit die Fundorte in

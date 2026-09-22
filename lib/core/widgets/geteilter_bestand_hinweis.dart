@@ -39,8 +39,11 @@ class GeteilterBestandHinweis extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(offen ? Icons.cloud_upload_outlined : Icons.groups,
-              size: 20, color: vordergrund),
+          Icon(
+            offen ? Icons.cloud_upload_outlined : Icons.groups,
+            size: 20,
+            color: vordergrund,
+          ),
           const SizedBox(width: 8),
           Expanded(child: Text(text, style: TextStyle(color: vordergrund))),
         ],

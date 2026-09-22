@@ -1,5 +1,6 @@
 /// vehicle.dart – Vehicle domain entity (pure Dart, no Flutter/Drift dependencies).
 library;
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'vehicle.freezed.dart';

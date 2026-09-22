@@ -51,10 +51,7 @@ void applyImageTransform(
 Offset _rotateScale(Offset p, double scale, double rotation) {
   final c = math.cos(rotation);
   final s = math.sin(rotation);
-  return Offset(
-    scale * (p.dx * c - p.dy * s),
-    scale * (p.dx * s + p.dy * c),
-  );
+  return Offset(scale * (p.dx * c - p.dy * s), scale * (p.dx * s + p.dy * c));
 }
 
 /// Welcher Bildpunkt liegt gerade unter [screenPoint]? Umkehrung der
@@ -65,8 +62,7 @@ Offset imagePointAt({
   required Offset offset,
   required double scale,
   required double rotation,
-}) =>
-    _rotateScale(screenPoint - center - offset, 1 / scale, -rotation);
+}) => _rotateScale(screenPoint - center - offset, 1 / scale, -rotation);
 
 /// Welche Verschiebung hält [imagePoint] unter [screenPoint], wenn mit
 /// [scale] und [rotation] gearbeitet wird?
@@ -80,8 +76,7 @@ Offset offsetForAnchor({
   required Offset center,
   required double scale,
   required double rotation,
-}) =>
-    screenPoint - center - _rotateScale(imagePoint, scale, rotation);
+}) => screenPoint - center - _rotateScale(imagePoint, scale, rotation);
 
 /// Zielgröße für einen Rahmen: gleiches Seitenverhältnis, längste Seite auf
 /// [kCropRenderMaxDimension] gedeckelt, aber nie hochskaliert.
@@ -149,8 +144,7 @@ Future<Uint8List> renderCrop({
       out.height.toInt(),
     );
     try {
-      final data =
-          await rendered.toByteData(format: ui.ImageByteFormat.png);
+      final data = await rendered.toByteData(format: ui.ImageByteFormat.png);
       if (data == null) {
         throw StateError('Zuschnitt konnte nicht codiert werden.');
       }

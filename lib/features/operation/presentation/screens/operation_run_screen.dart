@@ -2,6 +2,7 @@
 /// Schnittdarstellung; Fach antippen öffnet die Geräte als Fotokacheln, die
 /// bei Entnahme abgehakt werden. Einsatzrelevante Geräte sind hervorgehoben.
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -45,14 +46,16 @@ class OperationRunScreen extends ConsumerWidget {
               onPressed: () => context.push('/operation/summary'),
             ),
           ],
-          bottom: op.vehicleIds.length > 1
-              ? TabBar(
-                  isScrollable: true,
-                  tabs: [
-                    for (final id in op.vehicleIds) _VehicleTab(vehicleId: id),
-                  ],
-                )
-              : null,
+          bottom:
+              op.vehicleIds.length > 1
+                  ? TabBar(
+                    isScrollable: true,
+                    tabs: [
+                      for (final id in op.vehicleIds)
+                        _VehicleTab(vehicleId: id),
+                    ],
+                  )
+                  : null,
         ),
         body: TabBarView(
           children: [
@@ -87,8 +90,9 @@ class _VehicleUnloadView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final op = ref.watch(operationProvider);
-    final compartmentsAsync =
-        ref.watch(compartmentListStreamProvider(vehicleId));
+    final compartmentsAsync = ref.watch(
+      compartmentListStreamProvider(vehicleId),
+    );
     final assignments =
         ref.watch(assignmentsByVehicleProvider(vehicleId)).value ?? const [];
 
@@ -97,8 +101,7 @@ class _VehicleUnloadView extends ConsumerWidget {
     for (final a in assignments) {
       byCompartment.putIfAbsent(a.compartmentId, () => []).add(a.id);
     }
-    final takenTotal =
-        assignments.where((a) => op.isTaken(a.id)).length;
+    final takenTotal = assignments.where((a) => op.isTaken(a.id)).length;
 
     return compartmentsAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -109,13 +112,14 @@ class _VehicleUnloadView extends ConsumerWidget {
           final ids = byCompartment[c.id] ?? const [];
           final taken = ids.where(op.isTaken).length;
           tileStates[c.id] = CutawayTileState(
-            status: ids.isEmpty
-                ? CutawayTileStatus.normal
-                : taken == ids.length
+            status:
+                ids.isEmpty
+                    ? CutawayTileStatus.normal
+                    : taken == ids.length
                     ? CutawayTileStatus.correct
                     : taken > 0
-                        ? CutawayTileStatus.selected
-                        : CutawayTileStatus.normal,
+                    ? CutawayTileStatus.selected
+                    : CutawayTileStatus.normal,
             statusText: ids.isEmpty ? null : '$taken/${ids.length}',
           );
         }
@@ -128,12 +132,13 @@ class _VehicleUnloadView extends ConsumerWidget {
             VehicleCutawayView(
               compartments: compartments,
               tileStates: tileStates,
-              onTapCompartment: (c) => showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                showDragHandle: true,
-                builder: (_) => _CompartmentUnloadSheet(compartment: c),
-              ),
+              onTapCompartment:
+                  (c) => showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    showDragHandle: true,
+                    builder: (_) => _CompartmentUnloadSheet(compartment: c),
+                  ),
             ),
             const SizedBox(height: 8),
             const Text(
@@ -157,22 +162,27 @@ class _ProgressBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final done = total > 0 && taken == total;
     return Card(
-      color: done
-          ? Colors.green.withValues(alpha: 0.15)
-          : Theme.of(context).colorScheme.surfaceContainerHigh,
+      color:
+          done
+              ? Colors.green.withValues(alpha: 0.15)
+              : Theme.of(context).colorScheme.surfaceContainerHigh,
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Row(
           children: [
-            Icon(done ? Icons.check_circle : Icons.inventory_2,
-                color: done ? Colors.green.shade700 : null),
+            Icon(
+              done ? Icons.check_circle : Icons.inventory_2,
+              color: done ? Colors.green.shade700 : null,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(done ? 'Fahrzeug leer geräumt' : 'Ausladen',
-                      style: const TextStyle(fontWeight: FontWeight.w600)),
+                  Text(
+                    done ? 'Fahrzeug leer geräumt' : 'Ausladen',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
                   const SizedBox(height: 4),
                   ClipRRect(
                     borderRadius: BorderRadius.circular(4),
@@ -185,9 +195,10 @@ class _ProgressBanner extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            Text('$taken/$total',
-                style: const TextStyle(
-                    fontWeight: FontWeight.w700, fontSize: 16)),
+            Text(
+              '$taken/$total',
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+            ),
           ],
         ),
       ),
@@ -201,47 +212,62 @@ class _CompartmentUnloadSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final assignmentsAsync =
-        ref.watch(assignmentListStreamProvider(compartment.id));
+    final assignmentsAsync = ref.watch(
+      assignmentListStreamProvider(compartment.id),
+    );
     return SafeArea(
       child: DraggableScrollableSheet(
         expand: false,
         initialChildSize: 0.7,
         maxChildSize: 0.95,
-        builder: (context, scrollController) => Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-              child: Row(
-                children: [
-                  Text(compartment.label,
-                      style: Theme.of(context).textTheme.titleLarge),
-                ],
-              ),
-            ),
-            Expanded(
-              child: assignmentsAsync.when(
-                loading: () =>
-                    const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Center(child: Text('Fehler: $e')),
-                data: (assignments) => assignments.isEmpty
-                    ? const Center(
-                        child: Text('Kein Gerät zugewiesen.',
-                            style: TextStyle(color: Colors.grey)))
-                    : ListView.builder(
-                        controller: scrollController,
-                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
-                        itemCount: assignments.length,
-                        itemBuilder: (context, i) => _UnloadTile(
-                          assignmentId: assignments[i].id,
-                          equipmentId: assignments[i].equipmentId,
-                          quantity: assignments[i].quantity,
-                        ),
+        builder:
+            (context, scrollController) => Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                  child: Row(
+                    children: [
+                      Text(
+                        compartment.label,
+                        style: Theme.of(context).textTheme.titleLarge,
                       ),
-              ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: assignmentsAsync.when(
+                    loading:
+                        () => const Center(child: CircularProgressIndicator()),
+                    error: (e, _) => Center(child: Text('Fehler: $e')),
+                    data:
+                        (assignments) =>
+                            assignments.isEmpty
+                                ? const Center(
+                                  child: Text(
+                                    'Kein Gerät zugewiesen.',
+                                    style: TextStyle(color: Colors.grey),
+                                  ),
+                                )
+                                : ListView.builder(
+                                  controller: scrollController,
+                                  padding: const EdgeInsets.fromLTRB(
+                                    12,
+                                    0,
+                                    12,
+                                    16,
+                                  ),
+                                  itemCount: assignments.length,
+                                  itemBuilder:
+                                      (context, i) => _UnloadTile(
+                                        assignmentId: assignments[i].id,
+                                        equipmentId: assignments[i].equipmentId,
+                                        quantity: assignments[i].quantity,
+                                      ),
+                                ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
       ),
     );
   }
@@ -260,17 +286,20 @@ class _UnloadTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final taken = ref.watch(
-        operationProvider.select((s) => s.isTaken(assignmentId)));
+      operationProvider.select((s) => s.isTaken(assignmentId)),
+    );
     final scenario = ref.watch(operationProvider.select((s) => s.scenario));
     final item = ref.watch(equipmentDetailProvider(equipmentId)).value;
 
-    final relevant = scenario != null &&
+    final relevant =
+        scenario != null &&
         (item?.deploymentScenarios.contains(scenario.jsonKey) ?? false);
 
     return Card(
-      color: taken
-          ? Theme.of(context).colorScheme.surfaceContainerLow
-          : relevant
+      color:
+          taken
+              ? Theme.of(context).colorScheme.surfaceContainerLow
+              : relevant
               ? Theme.of(context).colorScheme.primaryContainer
               : null,
       child: ListTile(
@@ -295,16 +324,18 @@ class _UnloadTile extends ConsumerWidget {
             if (quantity > 1) Text('× $quantity  '),
             if (relevant && !taken)
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.primary,
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: Text('Einsatzrelevant',
-                    style: TextStyle(
-                        fontSize: 10,
-                        color: Theme.of(context).colorScheme.onPrimary)),
+                child: Text(
+                  'Einsatzrelevant',
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                ),
               ),
           ],
         ),
@@ -313,8 +344,9 @@ class _UnloadTile extends ConsumerWidget {
           color: taken ? Colors.green : Colors.grey,
           size: 28,
         ),
-        onTap: () =>
-            ref.read(operationProvider.notifier).toggleTaken(assignmentId),
+        onTap:
+            () =>
+                ref.read(operationProvider.notifier).toggleTaken(assignmentId),
       ),
     );
   }

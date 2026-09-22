@@ -99,8 +99,8 @@ class AnhangSpeicher {
     this.client,
     Future<Directory> Function()? ordner,
     bool? imBrowser,
-  })  : ordner = ordner ?? getApplicationDocumentsDirectory,
-        imBrowser = imBrowser ?? kIsWeb;
+  }) : ordner = ordner ?? getApplicationDocumentsDirectory,
+       imBrowser = imBrowser ?? kIsWeb;
 
   /// Warum das Anhängen im Browser nicht geht, in einem Satz für den
   /// Gerätewart.
@@ -130,16 +130,20 @@ class AnhangSpeicher {
     // eine Prüfung in der Oberfläche allein ist deshalb keine.
     if (imBrowser) throw const AnhangAbgelehnt(kNurInDerApp);
 
-    final typ = (mimeType == null || mimeType.isEmpty)
-        ? mimeAusName(dateiname)
-        : mimeType;
+    final typ =
+        (mimeType == null || mimeType.isEmpty)
+            ? mimeAusName(dateiname)
+            : mimeType;
     if (!kErlaubteAnhangTypen.contains(typ)) {
       throw const AnhangAbgelehnt(
-          'Nur Bilder (JPG, PNG, WebP) und PDF-Dateien.');
+        'Nur Bilder (JPG, PNG, WebP) und PDF-Dateien.',
+      );
     }
     if (bytes.length > kMaxAnhangBytes) {
-      throw AnhangAbgelehnt('Die Datei ist zu groß — höchstens '
-          '${kMaxAnhangBytes ~/ (1024 * 1024)} MB.');
+      throw AnhangAbgelehnt(
+        'Die Datei ist zu groß — höchstens '
+        '${kMaxAnhangBytes ~/ (1024 * 1024)} MB.',
+      );
     }
 
     final lokal = await _schreibeLokal(dateiname, bytes);
@@ -176,8 +180,9 @@ class AnhangSpeicher {
     final objekt = objektImBucket(marker, kVehicleAttachmentsBucket);
     if (objekt == null) return null;
     try {
-      final bytes =
-          await c.storage.from(kVehicleAttachmentsBucket).download(objekt);
+      final bytes = await c.storage
+          .from(kVehicleAttachmentsBucket)
+          .download(objekt);
       final pfad = await _schreibeLokal(anhang.title, bytes);
       await db.attachmentDao.setLocalPath(anhang.id, pfad);
       return pfad;
@@ -192,8 +197,10 @@ class AnhangSpeicher {
   /// Die lokale Zeile fällt zuletzt — solange sie steht, ist der Anhang
   /// wiederfindbar. Ein fehlgeschlagenes Löschen auf dem Server hinterlässt
   /// höchstens eine verwaiste Datei, nie einen Geist in der Liste.
-  Future<void> entfernen(VehicleAttachmentData anhang,
-      {String? abteilungId}) async {
+  Future<void> entfernen(
+    VehicleAttachmentData anhang, {
+    String? abteilungId,
+  }) async {
     final lokal = anhang.localPath;
     if (lokal != null && !imBrowser) {
       try {
@@ -205,7 +212,10 @@ class AnhangSpeicher {
     }
 
     final c = client;
-    final objekt = objektImBucket(anhang.storagePath, kVehicleAttachmentsBucket);
+    final objekt = objektImBucket(
+      anhang.storagePath,
+      kVehicleAttachmentsBucket,
+    );
     if (c != null && objekt != null) {
       try {
         await c.storage.from(kVehicleAttachmentsBucket).remove([objekt]);
@@ -264,10 +274,12 @@ class AnhangSpeicher {
   Future<int> zieheAnhaenge(String abteilungId) async {
     final c = client;
     if (c == null) return 0;
-    final zeilen = List<Map<String, dynamic>>.from(await c
-        .from('vehicle_attachments')
-        .select()
-        .eq('abteilung_id', abteilungId));
+    final zeilen = List<Map<String, dynamic>>.from(
+      await c
+          .from('vehicle_attachments')
+          .select()
+          .eq('abteilung_id', abteilungId),
+    );
 
     final lokalBekannt = {
       for (final a in await db.attachmentDao.getAll()) a.id: a,
@@ -276,17 +288,19 @@ class AnhangSpeicher {
     for (final r in zeilen) {
       final id = (r['id'] as num).toInt();
       gezogen.add(id);
-      await db.attachmentDao.upsert(VehicleAttachmentsCompanion(
-        id: Value(id),
-        vehicleId: Value((r['vehicle_id'] as num).toInt()),
-        title: Value(r['title'] as String),
-        kind: Value(r['kind'] as String),
-        mimeType: Value(r['mime_type'] as String),
-        storagePath: Value(r['storage_path'] as String?),
-        sizeBytes: Value((r['size_bytes'] as num?)?.toInt() ?? 0),
-        // Die Kopie auf diesem Gerät bleibt, was sie war.
-        localPath: Value(lokalBekannt[id]?.localPath),
-      ));
+      await db.attachmentDao.upsert(
+        VehicleAttachmentsCompanion(
+          id: Value(id),
+          vehicleId: Value((r['vehicle_id'] as num).toInt()),
+          title: Value(r['title'] as String),
+          kind: Value(r['kind'] as String),
+          mimeType: Value(r['mime_type'] as String),
+          storagePath: Value(r['storage_path'] as String?),
+          sizeBytes: Value((r['size_bytes'] as num?)?.toInt() ?? 0),
+          // Die Kopie auf diesem Gerät bleibt, was sie war.
+          localPath: Value(lokalBekannt[id]?.localPath),
+        ),
+      );
     }
 
     // Was der Server nicht mehr kennt, ist gelöscht — aber nur, wenn es
@@ -309,19 +323,21 @@ class AnhangSpeicher {
     // Ohne Abteilung gibt es keinen gültigen Objektnamen — der Ordner IST
     // die Abteilung, und der Server lehnt alles andere ab.
     if (c == null || abteilungId == null) return;
-    final objekt = '$abteilungId/${id}_${DateTime.now().millisecondsSinceEpoch}'
+    final objekt =
+        '$abteilungId/${id}_${DateTime.now().millisecondsSinceEpoch}'
         '${_endung(typ)}';
     try {
-      await c.storage.from(kVehicleAttachmentsBucket).uploadBinary(
+      await c.storage
+          .from(kVehicleAttachmentsBucket)
+          .uploadBinary(
             objekt,
             bytes,
             fileOptions: FileOptions(contentType: typ, upsert: true),
           );
       final marker = '$kSupabaseImagePrefix$kVehicleAttachmentsBucket/$objekt';
-      await db.attachmentDao.upsert(VehicleAttachmentsCompanion(
-        id: Value(id),
-        storagePath: Value(marker),
-      ));
+      await db.attachmentDao.upsert(
+        VehicleAttachmentsCompanion(id: Value(id), storagePath: Value(marker)),
+      );
       final zeile = await db.attachmentDao.getById(id);
       if (zeile != null) {
         await c.from('vehicle_attachments').upsert({
@@ -343,11 +359,11 @@ class AnhangSpeicher {
   }
 
   String _endung(String typ) => switch (typ) {
-        'application/pdf' => '.pdf',
-        'image/png' => '.png',
-        'image/webp' => '.webp',
-        _ => '.jpg',
-      };
+    'application/pdf' => '.pdf',
+    'image/png' => '.png',
+    'image/webp' => '.webp',
+    _ => '.jpg',
+  };
 
   /// Schreibt unter einem eindeutigen Namen in den App-Ordner. Zeitstempel
   /// wie bei den Bildern: Eine ersetzte Datei darf nie denselben Pfad
@@ -362,7 +378,7 @@ class AnhangSpeicher {
     final ziel = p.join(
       dir.path,
       'anhang_${DateTime.now().microsecondsSinceEpoch}'
-          '${p.extension(dateiname)}',
+      '${p.extension(dateiname)}',
     );
     final datei = await File(ziel).create(recursive: true);
     await datei.writeAsBytes(bytes, flush: true);

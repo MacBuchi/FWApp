@@ -4,6 +4,7 @@
 /// Inventurdaten sind rein lokal und werden nicht synchronisiert
 /// (siehe CONTRIBUTING.md „Schichtung je Feature").
 library;
+
 import 'dart:convert';
 
 import 'package:drift/drift.dart';
@@ -16,9 +17,10 @@ import 'package:fwapp/features/inventory/data/tag_code.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';
 
 /// Live checks of a session (stream).
-final inventoryChecksProvider =
-    StreamProvider.family<List<InventoryCheckData>, int>((ref, sessionId) =>
-        ref.watch(inventoryDaoProvider).watchChecks(sessionId));
+final inventoryChecksProvider = StreamProvider.family<
+  List<InventoryCheckData>,
+  int
+>((ref, sessionId) => ref.watch(inventoryDaoProvider).watchChecks(sessionId));
 
 /// Aggregated progress/result for a session.
 class InventorySummary {
@@ -55,12 +57,13 @@ class InventorySummary {
       }
     }
     return InventorySummary(
-        total: checks.length,
-        checked: checked,
-        ok: ok,
-        missing: missing,
-        damaged: damaged,
-        repair: repair);
+      total: checks.length,
+      checked: checked,
+      ok: ok,
+      missing: missing,
+      damaged: damaged,
+      repair: repair,
+    );
   }
 
   bool get complete => total > 0 && checked == total;
@@ -99,45 +102,50 @@ class InventurBerichtKopf {
 /// Drei Abfragen für den ganzen Bericht, nicht eine je Zeile: Ein
 /// Fahrzeugbericht hat gut hundert Zeilen.
 final inventurEinheitenProvider =
-    FutureProvider.family<Map<int, List<InventurEinheit>>, int>(
-        (ref, sessionId) async {
-  final db = ref.watch(appDatabaseProvider);
-  final checks = await db.inventoryDao.getChecks(sessionId);
-  final alleEinheiten = await db.inspectionDao.getAllInstances();
+    FutureProvider.family<Map<int, List<InventurEinheit>>, int>((
+      ref,
+      sessionId,
+    ) async {
+      final db = ref.watch(appDatabaseProvider);
+      final checks = await db.inventoryDao.getChecks(sessionId);
+      final alleEinheiten = await db.inspectionDao.getAllInstances();
 
-  final codes = <int, List<String>>{};
-  for (final t in await db.tagDao.alleTags()) {
-    (codes[t.instanceId] ??= []).add(t.code);
-  }
+      final codes = <int, List<String>>{};
+      for (final t in await db.tagDao.alleTags()) {
+        (codes[t.instanceId] ??= []).add(t.code);
+      }
 
-  return {
-    for (final c in checks)
-      c.id: [
-        for (final e in alleEinheiten)
-          if (e.equipmentId == c.equipmentId &&
-              e.compartmentId == c.compartmentId)
-            InventurEinheit(
-              id: e.id,
-              kennung: e.identifier,
-              codes: codes[e.id] ?? const [],
-            ),
-      ],
-  };
-});
+      return {
+        for (final c in checks)
+          c.id: [
+            for (final e in alleEinheiten)
+              if (e.equipmentId == c.equipmentId &&
+                  e.compartmentId == c.compartmentId)
+                InventurEinheit(
+                  id: e.id,
+                  kennung: e.identifier,
+                  codes: codes[e.id] ?? const [],
+                ),
+          ],
+      };
+    });
 
 final inventurBerichtKopfProvider =
     FutureProvider.family<InventurBerichtKopf, int>((ref, sessionId) async {
-  final session = await ref.watch(inventoryDaoProvider).getSession(sessionId);
-  if (session == null) {
-    return InventurBerichtKopf(fahrzeug: '', zeitpunkt: DateTime.now());
-  }
-  final fahrzeug =
-      await ref.watch(vehicleDetailProvider(session.vehicleId).future);
-  return InventurBerichtKopf(
-    fahrzeug: fahrzeug?.name ?? 'Fahrzeug ${session.vehicleId}',
-    zeitpunkt: session.finishedAt ?? session.startedAt,
-  );
-});
+      final session = await ref
+          .watch(inventoryDaoProvider)
+          .getSession(sessionId);
+      if (session == null) {
+        return InventurBerichtKopf(fahrzeug: '', zeitpunkt: DateTime.now());
+      }
+      final fahrzeug = await ref.watch(
+        vehicleDetailProvider(session.vehicleId).future,
+      );
+      return InventurBerichtKopf(
+        fahrzeug: fahrzeug?.name ?? 'Fahrzeug ${session.vehicleId}',
+        zeitpunkt: session.finishedAt ?? session.startedAt,
+      );
+    });
 
 /// Was beim Abhaken per Code herauskam.
 sealed class AbhakErgebnis {
@@ -192,15 +200,15 @@ class CodeLeer extends AbhakErgebnis {
 /// Fassung war es zweimal derselbe `switch` — AGENTS.md, „Zweitverwendung =
 /// Extraktion".
 String abhakMeldung(AbhakErgebnis ergebnis) => switch (ergebnis) {
-      Abgehakt(:final geraet, :final fach, :final ist, :final soll) =>
-        '$geraet · $fach — $ist von $soll',
-      SchonGezaehlt(:final geraet, :final ist, :final soll) =>
-        '$geraet war schon gezählt — weiterhin $ist von $soll',
-      CodeUnbekannt() => 'Dieser Code klebt auf keinem erfassten Gerät.',
-      CodeNichtInDieserInventur(:final geraet) =>
-        '$geraet gehört nicht zu diesem Fahrzeug.',
-      CodeLeer() => 'Da stand kein Code.',
-    };
+  Abgehakt(:final geraet, :final fach, :final ist, :final soll) =>
+    '$geraet · $fach — $ist von $soll',
+  SchonGezaehlt(:final geraet, :final ist, :final soll) =>
+    '$geraet war schon gezählt — weiterhin $ist von $soll',
+  CodeUnbekannt() => 'Dieser Code klebt auf keinem erfassten Gerät.',
+  CodeNichtInDieserInventur(:final geraet) =>
+    '$geraet gehört nicht zu diesem Fahrzeug.',
+  CodeLeer() => 'Da stand kein Code.',
+};
 
 class InventoryService {
   final AppDatabase db;
@@ -213,7 +221,8 @@ class InventoryService {
     if (open != null) return open.id;
 
     final sessionId = await db.inventoryDao.createSession(
-        InventorySessionsCompanion.insert(vehicleId: vehicleId));
+      InventorySessionsCompanion.insert(vehicleId: vehicleId),
+    );
 
     final compartments = await db.compartmentDao.getByVehicle(vehicleId);
     final checks = <InventoryChecksCompanion>[];
@@ -221,30 +230,35 @@ class InventoryService {
       final assignments = await db.assignmentDao.getByCompartment(c.id);
       for (final a in assignments) {
         final eq = await db.equipmentDao.getById(a.equipmentId);
-        checks.add(InventoryChecksCompanion.insert(
-          sessionId: sessionId,
-          equipmentId: Value(a.equipmentId),
-          compartmentId: Value(c.id),
-          equipmentName: eq?.name ?? 'Gerät ${a.equipmentId}',
-          compartmentLabel: c.label,
-          targetQuantity: Value(a.quantity),
-        ));
+        checks.add(
+          InventoryChecksCompanion.insert(
+            sessionId: sessionId,
+            equipmentId: Value(a.equipmentId),
+            compartmentId: Value(c.id),
+            equipmentName: eq?.name ?? 'Gerät ${a.equipmentId}',
+            compartmentLabel: c.label,
+            targetQuantity: Value(a.quantity),
+          ),
+        );
       }
     }
     if (checks.isNotEmpty) await db.inventoryDao.insertChecks(checks);
     return sessionId;
   }
 
-  Future<void> setStatus(int checkId, String status,
-          {int? actualQuantity, String? note}) =>
-      db.inventoryDao.updateCheck(
-        checkId,
-        InventoryChecksCompanion(
-          status: Value(status),
-          actualQuantity: Value(actualQuantity),
-          note: note == null ? const Value.absent() : Value(note),
-        ),
-      );
+  Future<void> setStatus(
+    int checkId,
+    String status, {
+    int? actualQuantity,
+    String? note,
+  }) => db.inventoryDao.updateCheck(
+    checkId,
+    InventoryChecksCompanion(
+      status: Value(status),
+      actualQuantity: Value(actualQuantity),
+      note: note == null ? const Value.absent() : Value(note),
+    ),
+  );
 
   /// Hakt das Gerät ab, auf dem [roh] klebt (Issues #177/#179).
   ///
@@ -272,7 +286,9 @@ class InventoryService {
   /// hin, kommt die Antwort zum ersten zurück, damit die Meldung nicht von
   /// der Reihenfolge abhängt.
   Future<AbhakErgebnis> hakeKandidatenAb(
-      int sessionId, List<String> kandidaten) async {
+    int sessionId,
+    List<String> kandidaten,
+  ) async {
     AbhakErgebnis? erste;
     for (final kandidat in kandidaten) {
       final ergebnis = await hakeCodeAb(sessionId, kandidat);
@@ -292,7 +308,7 @@ class InventoryService {
     if (einheit == null) return const CodeUnbekannt();
     final geraetename =
         (await db.equipmentDao.getById(einheit.equipmentId))?.name ??
-            'Gerät ${einheit.equipmentId}';
+        'Gerät ${einheit.equipmentId}';
 
     final checks = await db.inventoryDao.getChecks(sessionId);
     final passend = checks.where((c) => c.equipmentId == einheit.equipmentId);
@@ -309,8 +325,12 @@ class InventoryService {
     // Zahl daneben: Nur so ist derselbe Aufkleber zweimal derselbe.
     final gezaehlt = _leseEinheiten(check.countedInstancesJson);
     if (gezaehlt.contains(einheit.id)) {
-      return SchonGezaehlt(geraetename, check.compartmentLabel,
-          gezaehlt.length, check.targetQuantity);
+      return SchonGezaehlt(
+        geraetename,
+        check.compartmentLabel,
+        gezaehlt.length,
+        check.targetQuantity,
+      );
     }
     gezaehlt.add(einheit.id);
 
@@ -319,15 +339,19 @@ class InventoryService {
     await db.inventoryDao.updateCheck(
       check.id,
       InventoryChecksCompanion(
-        status: Value(vollstaendig
-            ? InventoryChecks.statusOk
-            : InventoryChecks.statusOpen),
+        status: Value(
+          vollstaendig ? InventoryChecks.statusOk : InventoryChecks.statusOpen,
+        ),
         actualQuantity: Value(ist),
         countedInstancesJson: Value(jsonEncode(gezaehlt.toList()..sort())),
       ),
     );
     return Abgehakt(
-        geraetename, check.compartmentLabel, ist, check.targetQuantity);
+      geraetename,
+      check.compartmentLabel,
+      ist,
+      check.targetQuantity,
+    );
   }
 
   /// Liest die Einheiten-Menge. Ein kaputter oder leerer Wert ist eine leere
@@ -351,4 +375,5 @@ class InventoryService {
 }
 
 final inventoryServiceProvider = Provider<InventoryService>(
-    (ref) => InventoryService(ref.watch(appDatabaseProvider)));
+  (ref) => InventoryService(ref.watch(appDatabaseProvider)),
+);

@@ -2,6 +2,7 @@
 /// Supabase-Tabelle `feedback`. Ein GitHub-Actions-Bot macht daraus
 /// öffentliche Issues im Repo (siehe tool/feedback_bot.py).
 library;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -89,10 +90,11 @@ Future<void> submitFeedback(
 
 /// Der Sendeweg als Naht — dieselbe Signatur wie [submitFeedback], nur ohne
 /// den Client.
-typedef FeedbackSender = Future<void> Function({
-  required FeedbackType type,
-  required String message,
-});
+typedef FeedbackSender =
+    Future<void> Function({
+      required FeedbackType type,
+      required String message,
+    });
 
 /// Sendet über den angemeldeten Client.
 ///

@@ -1,5 +1,6 @@
 /// equipment_detail_screen.dart – Full equipment detail view.
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -29,13 +30,15 @@ class EquipmentDetailScreen extends ConsumerWidget {
     final itemAsync = ref.watch(equipmentDetailProvider(equipmentId));
 
     return itemAsync.when(
-      loading: () => const Scaffold(
-          body: Center(child: CircularProgressIndicator())),
+      loading:
+          () =>
+              const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (e, _) => Scaffold(body: Center(child: Text('Fehler: $e'))),
       data: (item) {
         if (item == null) {
           return const Scaffold(
-              body: Center(child: Text('Gerät nicht gefunden.')));
+            body: Center(child: Text('Gerät nicht gefunden.')),
+          );
         }
         return Scaffold(
           appBar: AppBar(
@@ -45,8 +48,7 @@ class EquipmentDetailScreen extends ConsumerWidget {
                 IconButton(
                   icon: const Icon(Icons.edit),
                   tooltip: 'Bearbeiten',
-                  onPressed: () =>
-                      context.push('/equipment/$equipmentId/edit'),
+                  onPressed: () => context.push('/equipment/$equipmentId/edit'),
                 ),
                 PopupMenuButton<String>(
                   tooltip: 'Weitere Aktionen',
@@ -54,29 +56,30 @@ class EquipmentDetailScreen extends ConsumerWidget {
                   // Wurzel-Navigator läge das Menü UNTER der
                   // NavigationBar (AGENTS.md § Stolperfallen).
                   useRootNavigator: true,
-                  itemBuilder: (_) => [
-                    // Vorschlagen kann man nur, was NICHT schon im Katalog
-                    // steht — und nur angemeldet, denn der Vorschlag läuft
-                    // über die Feedback-Tabelle (Issue #103).
-                    if (item.libraryEquipmentId == null &&
-                        ref.read(sessionStreamProvider).value != null)
-                      const PopupMenuItem(
-                        value: 'vorschlagen',
-                        child: ListTile(
-                          leading: Icon(Icons.outbox_outlined),
-                          title: Text('Für den Katalog vorschlagen'),
-                          contentPadding: EdgeInsets.zero,
+                  itemBuilder:
+                      (_) => [
+                        // Vorschlagen kann man nur, was NICHT schon im Katalog
+                        // steht — und nur angemeldet, denn der Vorschlag läuft
+                        // über die Feedback-Tabelle (Issue #103).
+                        if (item.libraryEquipmentId == null &&
+                            ref.read(sessionStreamProvider).value != null)
+                          const PopupMenuItem(
+                            value: 'vorschlagen',
+                            child: ListTile(
+                              leading: Icon(Icons.outbox_outlined),
+                              title: Text('Für den Katalog vorschlagen'),
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                          ),
+                        const PopupMenuItem(
+                          value: 'entfernen',
+                          child: ListTile(
+                            leading: Icon(Icons.delete_outline),
+                            title: Text('Gerät entfernen'),
+                            contentPadding: EdgeInsets.zero,
+                          ),
                         ),
-                      ),
-                    const PopupMenuItem(
-                      value: 'entfernen',
-                      child: ListTile(
-                        leading: Icon(Icons.delete_outline),
-                        title: Text('Gerät entfernen'),
-                        contentPadding: EdgeInsets.zero,
-                      ),
-                    ),
-                  ],
+                      ],
                   onSelected: (v) {
                     if (v == 'entfernen') _entfernen(context, ref, item);
                     if (v == 'vorschlagen') _vorschlagen(context, ref, item);
@@ -117,11 +120,13 @@ class EquipmentDetailScreen extends ConsumerWidget {
                 Center(
                   child: OutlinedButton.icon(
                     icon: const Icon(Icons.photo_camera),
-                    label: Text(item.imagePath == null ||
-                            item.imagePath!.isEmpty ||
-                            isPictogramPath(item.imagePath)
-                        ? 'Foto aufnehmen'
-                        : 'Foto ersetzen'),
+                    label: Text(
+                      item.imagePath == null ||
+                              item.imagePath!.isEmpty ||
+                              isPictogramPath(item.imagePath)
+                          ? 'Foto aufnehmen'
+                          : 'Foto ersetzen',
+                    ),
                     onPressed: () => _changeImage(context, ref, item),
                   ),
                 ),
@@ -133,13 +138,15 @@ class EquipmentDetailScreen extends ConsumerWidget {
               if (item.typeDirty && item.remoteTypeId != null) ...[
                 const GeteilterBestandHinweis(
                   offen: true,
-                  text: 'Änderung noch nicht verteilt — sie geht beim '
+                  text:
+                      'Änderung noch nicht verteilt — sie geht beim '
                       'nächsten Aktualisieren an die Gesamtwehr.',
                 ),
                 const SizedBox(height: 12),
               ] else if (item.remoteTypeId != null) ...[
                 const GeteilterBestandHinweis(
-                  text: 'Geteilter Bestand der Gesamtwehr — dieses Gerät '
+                  text:
+                      'Geteilter Bestand der Gesamtwehr — dieses Gerät '
                       'steht allen Abteilungen gleich zur Verfügung.',
                 ),
                 const SizedBox(height: 12),
@@ -150,25 +157,23 @@ class EquipmentDetailScreen extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .errorContainer,
+                    color: Theme.of(context).colorScheme.errorContainer,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.info_outline,
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onErrorContainer),
+                      Icon(
+                        Icons.info_outline,
+                        color: Theme.of(context).colorScheme.onErrorContainer,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           'Benutzerdefiniertes Gerät – nicht aus der Bibliothek',
                           style: TextStyle(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onErrorContainer),
+                            color:
+                                Theme.of(context).colorScheme.onErrorContainer,
+                          ),
                         ),
                       ),
                     ],
@@ -177,8 +182,10 @@ class EquipmentDetailScreen extends ConsumerWidget {
 
               if (item.description.isNotEmpty) ...[
                 const SizedBox(height: 16),
-                Text('Beschreibung',
-                    style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'Beschreibung',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 const SizedBox(height: 4),
                 Text(item.description),
               ],
@@ -186,101 +193,122 @@ class EquipmentDetailScreen extends ConsumerWidget {
               // Equipment Functions
               if (item.equipmentFunctions.isNotEmpty) ...[
                 const SizedBox(height: 16),
-                Text('Funktion',
-                    style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'Funktion',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 const SizedBox(height: 4),
                 Wrap(
                   spacing: 6,
                   runSpacing: 4,
-                  children: item.equipmentFunctions
-                      .map((f) => Chip(
-                            label: Text(
-                                EquipmentFunction.fromJson(f)?.label ??
-                                    f),
-                            visualDensity: VisualDensity.compact,
-                          ))
-                      .toList(),
+                  children:
+                      item.equipmentFunctions
+                          .map(
+                            (f) => Chip(
+                              label: Text(
+                                EquipmentFunction.fromJson(f)?.label ?? f,
+                              ),
+                              visualDensity: VisualDensity.compact,
+                            ),
+                          )
+                          .toList(),
                 ),
               ],
 
               // Deployment Scenarios
               if (item.deploymentScenarios.isNotEmpty) ...[
                 const SizedBox(height: 16),
-                Text('Einsatzszenarien',
-                    style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'Einsatzszenarien',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 const SizedBox(height: 4),
                 Wrap(
                   spacing: 6,
                   runSpacing: 4,
-                  children: item.deploymentScenarios
-                      .map((s) => Chip(
-                            label: Text(
-                                DeploymentScenario.fromJson(s)?.label ??
-                                    s),
-                            visualDensity: VisualDensity.compact,
-                            backgroundColor: Theme.of(context)
-                                .colorScheme
-                                .secondaryContainer,
-                          ))
-                      .toList(),
+                  children:
+                      item.deploymentScenarios
+                          .map(
+                            (s) => Chip(
+                              label: Text(
+                                DeploymentScenario.fromJson(s)?.label ?? s,
+                              ),
+                              visualDensity: VisualDensity.compact,
+                              backgroundColor:
+                                  Theme.of(
+                                    context,
+                                  ).colorScheme.secondaryContainer,
+                            ),
+                          )
+                          .toList(),
                 ),
               ],
 
               // Typical use (from library)
               if (item.typicalUse.isNotEmpty) ...[
                 const SizedBox(height: 16),
-                Text('Typische Verwendung',
-                    style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'Typische Verwendung',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 const SizedBox(height: 4),
-                ...item.typicalUse.map((u) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('• '),
-                          Expanded(child: Text(u)),
-                        ],
-                      ),
-                    )),
+                ...item.typicalUse.map(
+                  (u) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [const Text('• '), Expanded(child: Text(u))],
+                    ),
+                  ),
+                ),
               ],
 
               // Extra attributes (technical data)
               if (item.extraAttributes.isNotEmpty) ...[
                 const SizedBox(height: 16),
-                Text('Technische Daten',
-                    style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'Technische Daten',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 const SizedBox(height: 4),
-                ...item.extraAttributes.entries.map((e) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('${e.key}: ',
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold)),
-                          Expanded(child: Text('${e.value}')),
-                        ],
-                      ),
-                    )),
+                ...item.extraAttributes.entries.map(
+                  (e) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${e.key}: ',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Expanded(child: Text('${e.value}')),
+                      ],
+                    ),
+                  ),
+                ),
               ],
 
               // Training questions (flashcard content, from library)
               if (item.trainingQuestions.isNotEmpty) ...[
                 const SizedBox(height: 16),
-                Text('Trainingsfragen',
-                    style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'Trainingsfragen',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 const SizedBox(height: 4),
-                ...item.trainingQuestions.map((q) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Icon(Icons.help_outline, size: 18),
-                          const SizedBox(width: 6),
-                          Expanded(child: Text(q)),
-                        ],
-                      ),
-                    )),
+                ...item.trainingQuestions.map(
+                  (q) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.help_outline, size: 18),
+                        const SizedBox(width: 6),
+                        Expanded(child: Text(q)),
+                      ],
+                    ),
+                  ),
+                ),
               ],
 
               // Physical instances with Prüfterminen (Gerätewart)
@@ -288,8 +316,7 @@ class EquipmentDetailScreen extends ConsumerWidget {
               EquipmentInstancesSection(equipmentId: equipmentId),
 
               // Training URL
-              if (item.trainingUrl != null &&
-                  item.trainingUrl!.isNotEmpty) ...[
+              if (item.trainingUrl != null && item.trainingUrl!.isNotEmpty) ...[
                 const SizedBox(height: 16),
                 OutlinedButton.icon(
                   icon: const Icon(Icons.open_in_browser),
@@ -303,18 +330,26 @@ class EquipmentDetailScreen extends ConsumerWidget {
                     var opened = false;
                     if (uri != null) {
                       try {
-                        opened = await launchUrl(uri,
-                            mode: LaunchMode.externalApplication);
+                        opened = await launchUrl(
+                          uri,
+                          mode: LaunchMode.externalApplication,
+                        );
                       } catch (e) {
-                        appLog.w('Lernmaterial "${item.trainingUrl}" '
-                            'ließ sich nicht öffnen: $e');
+                        appLog.w(
+                          'Lernmaterial "${item.trainingUrl}" '
+                          'ließ sich nicht öffnen: $e',
+                        );
                       }
                     }
                     if (!opened) {
-                      messenger.showSnackBar(SnackBar(
-                        content: Text('Link ließ sich nicht öffnen: '
-                            '${item.trainingUrl}'),
-                      ));
+                      messenger.showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Link ließ sich nicht öffnen: '
+                            '${item.trainingUrl}',
+                          ),
+                        ),
+                      );
                     }
                   },
                 ),
@@ -335,7 +370,10 @@ class EquipmentDetailScreen extends ConsumerWidget {
   /// hier derselbe Öffentlichkeits-Hinweis wie im Feedback-Dialog — der Text
   /// landet für jeden lesbar auf GitHub.
   Future<void> _vorschlagen(
-      BuildContext context, WidgetRef ref, EquipmentItem item) async {
+    BuildContext context,
+    WidgetRef ref,
+    EquipmentItem item,
+  ) async {
     final messenger = ScaffoldMessenger.of(context);
     final abteilung = abteilungsName(
       ref.read(selectedAbteilungIdProvider) ??
@@ -351,46 +389,54 @@ class EquipmentDetailScreen extends ConsumerWidget {
 
     final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Für den Katalog vorschlagen?'),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('Das geht an die Entwicklung, damit der Typ in den '
-                  'mitgelieferten Gerätekatalog aufgenommen werden kann. '
-                  'Übermittelt wird genau das hier:'),
-              const SizedBox(height: 12),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Theme.of(ctx).colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(text,
-                    style: const TextStyle(fontSize: 13, height: 1.4)),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Für den Katalog vorschlagen?'),
+            content: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Das geht an die Entwicklung, damit der Typ in den '
+                    'mitgelieferten Gerätekatalog aufgenommen werden kann. '
+                    'Übermittelt wird genau das hier:',
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Theme.of(ctx).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      text,
+                      style: const TextStyle(fontSize: 13, height: 1.4),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Kein Foto — der Text erscheint öffentlich auf GitHub.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 12),
-              Text(
-                'Kein Foto — der Text erscheint öffentlich auf GitHub.',
-                style: TextStyle(
-                    fontSize: 12,
-                    color: Theme.of(ctx).colorScheme.onSurfaceVariant),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Abbrechen'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Vorschlagen'),
               ),
             ],
           ),
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Abbrechen')),
-          FilledButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Vorschlagen')),
-        ],
-      ),
     );
     if (ok != true) return;
 
@@ -400,12 +446,16 @@ class EquipmentDetailScreen extends ConsumerWidget {
         type: FeedbackType.katalog,
         message: text,
       );
-      messenger.showSnackBar(const SnackBar(
-          content: Text('Vorschlag ist raus — danke! 📖')));
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Vorschlag ist raus — danke! 📖')),
+      );
     } catch (e) {
       appLog.w('Katalog-Vorschlag fehlgeschlagen', error: e);
-      messenger.showSnackBar(const SnackBar(
-          content: Text('Senden fehlgeschlagen. Internetverbindung prüfen?')));
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Senden fehlgeschlagen. Internetverbindung prüfen?'),
+        ),
+      );
     }
   }
 
@@ -417,29 +467,39 @@ class EquipmentDetailScreen extends ConsumerWidget {
   /// (Marcus' Regel, docs/NUTZERKONZEPT.md §4). Zentral ist beides derselbe
   /// Vorgang — der Unterschied ist, was hier ehrlich angesagt wird.
   Future<void> _entfernen(
-      BuildContext context, WidgetRef ref, EquipmentItem item) async {
+    BuildContext context,
+    WidgetRef ref,
+    EquipmentItem item,
+  ) async {
     final messenger = ScaffoldMessenger.of(context);
     final typen = ref.read(equipmentTypeSyncProvider);
     final geteilt = item.remoteTypeId != null && typen != null;
 
     // Was hier hängt, weiß die lokale Datei — auch ohne Netz. Was in den
     // anderen Abteilungen hängt, weiß nur der Server.
-    final hier = await ref.read(equipmentRepositoryProvider)
+    final hier = await ref
+        .read(equipmentRepositoryProvider)
         .verwendungHier(item.id);
     VerwendungAnderswo anderswo;
     try {
-      anderswo = geteilt
-          ? await typen.verwendungAnderswo(item.id)
-          : const VerwendungAnderswo();
+      anderswo =
+          geteilt
+              ? await typen.verwendungAnderswo(item.id)
+              : const VerwendungAnderswo();
     } catch (e) {
       // Ohne die fremden Abteilungen ist „löschen oder archivieren" nicht zu
       // entscheiden. Raten wäre hier der teuerste Fehler: Ein hartes Löschen
       // risse einer anderen Abteilung die Beladung auf.
       appLog.w('Verwendung des Gerätetyps nicht ermittelbar', error: e);
-      messenger.showSnackBar(const SnackBar(
-          content: Text('Zum Entfernen braucht es eine Serververbindung — '
-              'sonst ist nicht zu sehen, ob eine andere Abteilung das '
-              'Gerät noch benutzt.')));
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Zum Entfernen braucht es eine Serververbindung — '
+            'sonst ist nicht zu sehen, ob eine andere Abteilung das '
+            'Gerät noch benutzt.',
+          ),
+        ),
+      );
       return;
     }
     if (!context.mounted) return;
@@ -467,21 +527,24 @@ class EquipmentDetailScreen extends ConsumerWidget {
 
     final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(archivieren ? 'Gerät archivieren?' : 'Gerät löschen?'),
-        content: SingleChildScrollView(child: Text(zeilen.join('\n\n'))),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Abbrechen')),
-          FilledButton(
-            style: FilledButton.styleFrom(
-                backgroundColor: Theme.of(ctx).colorScheme.error),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(archivieren ? 'Archivieren' : 'Löschen'),
+      builder:
+          (ctx) => AlertDialog(
+            title: Text(archivieren ? 'Gerät archivieren?' : 'Gerät löschen?'),
+            content: SingleChildScrollView(child: Text(zeilen.join('\n\n'))),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Abbrechen'),
+              ),
+              FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: Theme.of(ctx).colorScheme.error,
+                ),
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text(archivieren ? 'Archivieren' : 'Löschen'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
     if (ok != true || !context.mounted) return;
 
@@ -491,13 +554,19 @@ class EquipmentDetailScreen extends ConsumerWidget {
       if (geteilt) await typen.ausBestandNehmen(item.id);
       await ref.read(equipmentRepositoryProvider).delete(item.id);
     } on TypKonfliktException {
-      messenger.showSnackBar(const SnackBar(
-          content: Text('Jemand hat das Gerät zwischenzeitlich geändert. '
-              'Bitte erst „Jetzt aktualisieren", dann erneut entscheiden.')));
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Jemand hat das Gerät zwischenzeitlich geändert. '
+            'Bitte erst „Jetzt aktualisieren", dann erneut entscheiden.',
+          ),
+        ),
+      );
       return;
     } catch (e) {
       messenger.showSnackBar(
-          SnackBar(content: Text('Entfernen fehlgeschlagen: $e')));
+        SnackBar(content: Text('Entfernen fehlgeschlagen: $e')),
+      );
       return;
     }
 
@@ -505,34 +574,45 @@ class EquipmentDetailScreen extends ConsumerWidget {
     // Löschen von selbst, und ein Auffrischen mitten im Seitenwechsel würde
     // die abgehende Seite noch einmal bauen lassen.
     if (context.mounted) context.pop();
-    messenger.showSnackBar(SnackBar(
-        content: Text(archivieren
-            ? '„${item.name}" archiviert.'
-            : '„${item.name}" gelöscht.')));
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          archivieren
+              ? '„${item.name}" archiviert.'
+              : '„${item.name}" gelöscht.',
+        ),
+      ),
+    );
   }
 
   /// Bildquelle wählen: Foto (Kamera/Galerie, wird zentral hochgeladen)
   /// oder Symbolbild aus der Bildbibliothek.
   Future<void> _changeImage(
-      BuildContext context, WidgetRef ref, EquipmentItem item) async {
+    BuildContext context,
+    WidgetRef ref,
+    EquipmentItem item,
+  ) async {
     final choice = await showModalBottomSheet<String>(
       context: context,
-      builder: (context) => SafeArea(
-        child: Wrap(children: [
-          ListTile(
-            leading: const Icon(Icons.photo_camera),
-            title: const Text('Foto aufnehmen'),
-            subtitle: const Text('Wird zentral hochgeladen'),
-            onTap: () => Navigator.pop(context, 'photo'),
+      builder:
+          (context) => SafeArea(
+            child: Wrap(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.photo_camera),
+                  title: const Text('Foto aufnehmen'),
+                  subtitle: const Text('Wird zentral hochgeladen'),
+                  onTap: () => Navigator.pop(context, 'photo'),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.image_search),
+                  title: const Text('Symbolbild aus Bildbibliothek'),
+                  subtitle: const Text('Intuitive Suche über alle Normgeräte'),
+                  onTap: () => Navigator.pop(context, 'library'),
+                ),
+              ],
+            ),
           ),
-          ListTile(
-            leading: const Icon(Icons.image_search),
-            title: const Text('Symbolbild aus Bildbibliothek'),
-            subtitle: const Text('Intuitive Suche über alle Normgeräte'),
-            onTap: () => Navigator.pop(context, 'library'),
-          ),
-        ]),
-      ),
     );
     if (!context.mounted || choice == null) return;
     if (choice == 'library') {
@@ -543,7 +623,10 @@ class EquipmentDetailScreen extends ConsumerWidget {
   }
 
   Future<void> _pickFromLibrary(
-      BuildContext context, WidgetRef ref, EquipmentItem item) async {
+    BuildContext context,
+    WidgetRef ref,
+    EquipmentItem item,
+  ) async {
     final asset = await pickFromImageLibrary(context);
     if (asset == null) return;
     await ref
@@ -551,23 +634,32 @@ class EquipmentDetailScreen extends ConsumerWidget {
         .update(item.copyWith(imagePath: asset));
     // Das Symbolbild ist ein mitgeliefertes Asset — es gilt auf jedem Gerät
     // und darf deshalb sofort an die Gesamtwehr (Stufe ②).
-    final geteilt =
-        await typenSofortTeilen(ref.read(equipmentTypeSyncProvider));
+    final geteilt = await typenSofortTeilen(
+      ref.read(equipmentTypeSyncProvider),
+    );
     ref.invalidate(equipmentDetailProvider(item.id));
     ref.invalidate(equipmentListProvider);
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(geteilt
-              ? 'Symbolbild übernommen — alle Abteilungen sehen es.'
-              : 'Symbolbild übernommen. Zum Verteilen an alle '
-                  'Geräte: Einstellungen → Veröffentlichen.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            geteilt
+                ? 'Symbolbild übernommen — alle Abteilungen sehen es.'
+                : 'Symbolbild übernommen. Zum Verteilen an alle '
+                    'Geräte: Einstellungen → Veröffentlichen.',
+          ),
+        ),
+      );
     }
   }
 
   /// Camera on mobile, gallery/file dialog elsewhere. Uploads to the central
   /// bucket when connected; otherwise the photo stays local to this device.
   Future<void> _captureAndUploadPhoto(
-      BuildContext context, WidgetRef ref, EquipmentItem item) async {
+    BuildContext context,
+    WidgetRef ref,
+    EquipmentItem item,
+  ) async {
     // Quelle waehlen, zuschneiden, drehen (Issue #56). Das Ergebnis liegt als
     // Bytes vor und geht direkt in den Upload — das funktioniert auch in der
     // Web-App, wo es keinen lokalen Dateipfad gibt.
@@ -589,9 +681,14 @@ class EquipmentDetailScreen extends ConsumerWidget {
         uploaded = true;
       } catch (e) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text('Foto nur lokal gespeichert – Upload '
-                  'fehlgeschlagen: $e')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Foto nur lokal gespeichert – Upload '
+                'fehlgeschlagen: $e',
+              ),
+            ),
+          );
         }
       }
     }
@@ -600,9 +697,14 @@ class EquipmentDetailScreen extends ConsumerWidget {
     // wuerde copyWith(imagePath: null) das vorhandene Bild loeschen.
     if (newPath == null) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Foto konnte nicht gespeichert werden — dafür '
-                'braucht es eine Serververbindung.')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Foto konnte nicht gespeichert werden — dafür '
+              'braucht es eine Serververbindung.',
+            ),
+          ),
+        );
       }
       return;
     }
@@ -613,16 +715,22 @@ class EquipmentDetailScreen extends ConsumerWidget {
     // Nur ein hochgeladenes Foto ist teilbar; ein reiner Gerätepfad bliebe
     // für die anderen Abteilungen tot — der Push hält solche Zeilen selbst
     // zurück, hier wird gar nicht erst danach gefragt.
-    final geteilt = uploaded &&
+    final geteilt =
+        uploaded &&
         await typenSofortTeilen(ref.read(equipmentTypeSyncProvider));
     ref.invalidate(equipmentDetailProvider(item.id));
     ref.invalidate(equipmentListProvider);
     if (context.mounted && uploaded) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(geteilt
-              ? 'Foto hochgeladen — alle Abteilungen sehen es.'
-              : 'Foto hochgeladen. Zum Verteilen an alle Geräte: '
-                  'Einstellungen → Veröffentlichen.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            geteilt
+                ? 'Foto hochgeladen — alle Abteilungen sehen es.'
+                : 'Foto hochgeladen. Zum Verteilen an alle Geräte: '
+                    'Einstellungen → Veröffentlichen.',
+          ),
+        ),
+      );
     }
   }
 }

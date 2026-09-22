@@ -129,6 +129,7 @@ String _norm(String s) => s.toLowerCase().trim();
 /// andere ist ein Befund an einer Zeile, kein Abbruch.
 FrageImportErgebnis leseFragen(
   ImportTable tabelle, {
+
   /// Wortlaute, die es schon gibt — zum Erkennen von Doppelten. Normalisiert
   /// wie im Seeder.
   Set<String> vorhandeneFragen = const {},
@@ -160,18 +161,21 @@ FrageImportErgebnis leseFragen(
 
   if (!position.containsKey('frage')) {
     throw const FormatException(
-        'In der Kopfzeile fehlt die Spalte „frage". Lade dir die Vorlage '
-        'herunter, wenn du unsicher bist.');
+      'In der Kopfzeile fehlt die Spalte „frage". Lade dir die Vorlage '
+      'herunter, wenn du unsicher bist.',
+    );
   }
   if (antwortSpalten.isEmpty) {
     throw const FormatException(
-        'Es gibt keine Spalte „antwort1". Ohne Antworten ist es keine Frage.');
+      'Es gibt keine Spalte „antwort1". Ohne Antworten ist es keine Frage.',
+    );
   }
 
   // Nach Antwortnummer sortiert, damit „antwort10" nicht zwischen 1 und 2
   // landet — die Reihenfolge entscheidet, worauf sich „richtig" bezieht.
-  final sortierteAntworten = antwortSpalten.entries.toList()
-    ..sort((a, b) => a.value.compareTo(b.value));
+  final sortierteAntworten =
+      antwortSpalten.entries.toList()
+        ..sort((a, b) => a.value.compareTo(b.value));
 
   final gesehen = <String>{...vorhandeneFragen};
   final zeilen = <FrageImportZeile>[];
@@ -196,14 +200,17 @@ FrageImportErgebnis leseFragen(
     final richtigeRoh = zelle('richtig');
     final richtige = _leseRichtige(richtigeRoh, antworten.length);
     if (richtige == null) {
-      zeilen.add(FrageImportZeile(
-        zeile: r + 1,
-        fehler: richtigeRoh.isEmpty
-            ? 'Die Spalte „richtig" ist leer.'
-            : 'Mit „$richtigeRoh" ist nicht zu erkennen, welche Antwort '
-                'richtig ist. Erlaubt sind Nummern (1, 2) oder Buchstaben '
-                '(a, b), mehrere durch Komma getrennt.',
-      ));
+      zeilen.add(
+        FrageImportZeile(
+          zeile: r + 1,
+          fehler:
+              richtigeRoh.isEmpty
+                  ? 'Die Spalte „richtig" ist leer.'
+                  : 'Mit „$richtigeRoh" ist nicht zu erkennen, welche Antwort '
+                      'richtig ist. Erlaubt sind Nummern (1, 2) oder Buchstaben '
+                      '(a, b), mehrere durch Komma getrennt.',
+        ),
+      );
       continue;
     }
 
@@ -222,57 +229,67 @@ FrageImportErgebnis leseFragen(
     final gebietRoh = zelle('gebiet');
     final gebiet = _leseGebiet(gebietRoh);
     if (gebiet == null) {
-      zeilen.add(FrageImportZeile(
-        zeile: r + 1,
-        fehler: gebietRoh.isEmpty
-            ? 'Die Spalte „gebiet" ist leer.'
-            : 'Das Sachgebiet „$gebietRoh" gibt es nicht.',
-      ));
+      zeilen.add(
+        FrageImportZeile(
+          zeile: r + 1,
+          fehler:
+              gebietRoh.isEmpty
+                  ? 'Die Spalte „gebiet" ist leer.'
+                  : 'Das Sachgebiet „$gebietRoh" gibt es nicht.',
+        ),
+      );
       continue;
     }
 
     final werk = zelle('quelle');
     final geltungRoh = _norm(zelle('geltung'));
-    final geltung = geltungRoh == 'land'
-        ? Geltungsbereich.land
-        : Geltungsbereich.bund;
+    final geltung =
+        geltungRoh == 'land' ? Geltungsbereich.land : Geltungsbereich.bund;
     final land = zelle('land').toUpperCase();
     if (geltung == Geltungsbereich.land && !kBundeslaender.containsKey(land)) {
-      zeilen.add(FrageImportZeile(
-        zeile: r + 1,
-        fehler: 'Bei „geltung: land" braucht es ein Länderkürzel in der '
-            'Spalte „land" (z. B. BW).',
-      ));
+      zeilen.add(
+        FrageImportZeile(
+          zeile: r + 1,
+          fehler:
+              'Bei „geltung: land" braucht es ein Länderkürzel in der '
+              'Spalte „land" (z. B. BW).',
+        ),
+      );
       continue;
     }
 
-    zeilen.add(FrageImportZeile(
-      zeile: r + 1,
-      // Doppelte auch INNERHALB der Datei erkennen, nicht nur gegen den
-      // Bestand: Eine Datei, die dieselbe Frage zweimal enthält, legt sie
-      // sonst zweimal an, und das fällt erst beim Lernen auf.
-      doppelt: !gesehen.add(schluesselFuer(text)),
-      frage: ImportierteFrage(
-        gebiet: gebiet,
-        frage: text,
-        antworten: antworten,
-        richtige: richtige,
-        erklaerung: zelle('erklaerung').isEmpty ? null : zelle('erklaerung'),
-        kapitel: zelle('kapitel').isEmpty ? null : zelle('kapitel'),
-        quelle: werk.isEmpty
-            ? null
-            : Fragenquelle(
-                werk: werk,
-                fundstelle:
-                    zelle('fundstelle').isEmpty ? null : zelle('fundstelle'),
-                stand: zelle('stand').isEmpty ? null : zelle('stand'),
-                url: zelle('url').isEmpty ? null : zelle('url'),
-              ),
-        geltung: geltung,
-        land: geltung == Geltungsbereich.land ? land : null,
-        geraet: zelle('geraet').isEmpty ? null : zelle('geraet'),
+    zeilen.add(
+      FrageImportZeile(
+        zeile: r + 1,
+        // Doppelte auch INNERHALB der Datei erkennen, nicht nur gegen den
+        // Bestand: Eine Datei, die dieselbe Frage zweimal enthält, legt sie
+        // sonst zweimal an, und das fällt erst beim Lernen auf.
+        doppelt: !gesehen.add(schluesselFuer(text)),
+        frage: ImportierteFrage(
+          gebiet: gebiet,
+          frage: text,
+          antworten: antworten,
+          richtige: richtige,
+          erklaerung: zelle('erklaerung').isEmpty ? null : zelle('erklaerung'),
+          kapitel: zelle('kapitel').isEmpty ? null : zelle('kapitel'),
+          quelle:
+              werk.isEmpty
+                  ? null
+                  : Fragenquelle(
+                    werk: werk,
+                    fundstelle:
+                        zelle('fundstelle').isEmpty
+                            ? null
+                            : zelle('fundstelle'),
+                    stand: zelle('stand').isEmpty ? null : zelle('stand'),
+                    url: zelle('url').isEmpty ? null : zelle('url'),
+                  ),
+          geltung: geltung,
+          land: geltung == Geltungsbereich.land ? land : null,
+          geraet: zelle('geraet').isEmpty ? null : zelle('geraet'),
+        ),
       ),
-    ));
+    );
   }
 
   return FrageImportErgebnis(zeilen: zeilen, unbekannteSpalten: unbekannt);
@@ -291,11 +308,12 @@ String schluesselFuer(String frage) =>
 /// importierten Frage die Antwort daneben — und zwar systematisch, was
 /// schlimmer ist als zufällig, weil es plausibel aussieht.
 Set<int>? _leseRichtige(String roh, int anzahlAntworten) {
-  final teile = roh
-      .split(RegExp(r'[,;/ ]+|\bund\b'))
-      .map((t) => t.trim().toLowerCase())
-      .where((t) => t.isNotEmpty)
-      .toList();
+  final teile =
+      roh
+          .split(RegExp(r'[,;/ ]+|\bund\b'))
+          .map((t) => t.trim().toLowerCase())
+          .where((t) => t.isNotEmpty)
+          .toList();
   if (teile.isEmpty) return null;
 
   final indizes = <int>{};

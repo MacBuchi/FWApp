@@ -77,32 +77,40 @@ class EquipmentTypeSync {
     if (_ohneGesamtwehr) return null;
     if (_gesamtwehrId != null) return _gesamtwehrId;
     try {
-      final abteilung = abteilungOverride ??
-          (await client.from('profiles').select('abteilung_id').maybeSingle())
-              ?['abteilung_id'] as String?;
+      final abteilung =
+          abteilungOverride ??
+          (await client
+                  .from('profiles')
+                  .select('abteilung_id')
+                  .maybeSingle())?['abteilung_id']
+              as String?;
       if (abteilung == null) {
         _ohneGesamtwehr = true;
         return null;
       }
       _abteilungId = abteilung;
-      final row = await client
-          .from('abteilungen')
-          .select('gesamtwehr_id')
-          .eq('id', abteilung)
-          .maybeSingle();
+      final row =
+          await client
+              .from('abteilungen')
+              .select('gesamtwehr_id')
+              .eq('id', abteilung)
+              .maybeSingle();
       _gesamtwehrId = row?['gesamtwehr_id'] as String?;
       if (_gesamtwehrId == null) _ohneGesamtwehr = true;
     } catch (e) {
-      appLog.i('Gesamtwehr nicht ermittelbar (Alt-Server?) — Typ-Sync aus',
-          error: e);
+      appLog.i(
+        'Gesamtwehr nicht ermittelbar (Alt-Server?) — Typ-Sync aus',
+        error: e,
+      );
       _ohneGesamtwehr = true;
     }
     return _gesamtwehrId;
   }
 
   Future<SyncMetaData> _meta() async {
-    final row = await (db.select(db.syncMeta)..where((t) => t.id.equals(1)))
-        .getSingleOrNull();
+    final row =
+        await (db.select(db.syncMeta)
+          ..where((t) => t.id.equals(1))).getSingleOrNull();
     if (row != null) return row;
     await db.into(db.syncMeta).insert(const SyncMetaCompanion());
     return (db.select(db.syncMeta)..where((t) => t.id.equals(1))).getSingle();
@@ -129,20 +137,21 @@ class EquipmentTypeSync {
     final meta = await _meta();
     final seit = force ? null : meta.lastTypeCursor;
     try {
-      var query = client.from('equipment_types').select().eq(
-            'gesamtwehr_id',
-            gw,
-          );
+      var query = client
+          .from('equipment_types')
+          .select()
+          .eq('gesamtwehr_id', gw);
       if (seit != null) query = query.gt('updated_at', seit);
       final rows = List<Map<String, dynamic>>.from(
-          await query.order('updated_at'));
+        await query.order('updated_at'),
+      );
       if (rows.isEmpty) return 0;
 
       // Die noch unverbundenen Geräte EINMAL laden: Der Abgleich läuft über
       // den normalisierten Namen, den SQLite nicht kennt.
-      final offen = await (db.select(db.equipmentItems)
-            ..where((t) => t.remoteTypeId.isNull()))
-          .get();
+      final offen =
+          await (db.select(db.equipmentItems)
+            ..where((t) => t.remoteTypeId.isNull())).get();
       final nachKatalogId = <String, EquipmentItemData>{};
       final nachName = <String, EquipmentItemData>{};
       for (final e in offen) {
@@ -161,8 +170,9 @@ class EquipmentTypeSync {
         for (final r in rows) {
           await _anwenden(r, nachKatalogId, nachName);
         }
-        await (db.update(db.syncMeta)..where((t) => t.id.equals(1)))
-            .write(SyncMetaCompanion(lastTypeCursor: Value(cursor)));
+        await (db.update(db.syncMeta)..where(
+          (t) => t.id.equals(1),
+        )).write(SyncMetaCompanion(lastTypeCursor: Value(cursor)));
       });
       appLog.i('Typ-Sync: ${rows.length} Gerätetypen gezogen.');
       return rows.length;
@@ -182,14 +192,15 @@ class EquipmentTypeSync {
     final typId = r['id'] as String;
     final archiviert = r['deleted_at'] != null;
 
-    var lokal = await (db.select(db.equipmentItems)
-          ..where((t) => t.remoteTypeId.equals(typId)))
-        .getSingleOrNull();
+    var lokal =
+        await (db.select(db.equipmentItems)
+          ..where((t) => t.remoteTypeId.equals(typId))).getSingleOrNull();
 
     // Erstverbindung: an ein vorhandenes Gerät anhängen statt verdoppeln.
     if (lokal == null && !archiviert) {
       final katalogId = r['library_equipment_id'] as String?;
-      lokal = (katalogId == null ? null : nachKatalogId[katalogId]) ??
+      lokal =
+          (katalogId == null ? null : nachKatalogId[katalogId]) ??
           nachName[normalizeEquipmentName(r['name'] as String)];
       if (lokal != null) {
         nachKatalogId.removeWhere((_, v) => v.id == lokal!.id);
@@ -235,15 +246,17 @@ class EquipmentTypeSync {
   }
 
   Future<bool> _wirdBenutzt(int equipmentId) async {
-    final zuordnung = await (db.select(db.equipmentAssignments)
-          ..where((t) => t.equipmentId.equals(equipmentId))
-          ..limit(1))
-        .getSingleOrNull();
+    final zuordnung =
+        await (db.select(db.equipmentAssignments)
+              ..where((t) => t.equipmentId.equals(equipmentId))
+              ..limit(1))
+            .getSingleOrNull();
     if (zuordnung != null) return true;
-    final exemplar = await (db.select(db.equipmentInstances)
-          ..where((t) => t.equipmentId.equals(equipmentId))
-          ..limit(1))
-        .getSingleOrNull();
+    final exemplar =
+        await (db.select(db.equipmentInstances)
+              ..where((t) => t.equipmentId.equals(equipmentId))
+              ..limit(1))
+            .getSingleOrNull();
     return exemplar != null;
   }
 
@@ -257,25 +270,25 @@ class EquipmentTypeSync {
   /// NULL. Ein Aufruf, der nur ein einzelnes Feld setzen will (etwa
   /// [ausBestandNehmen]), löschte sonst das Foto der ganzen Wehr.
   Map<String, dynamic> _zeile(EquipmentItemData e, {String? deletedAt}) => {
-        if (e.remoteTypeId != null) 'id': e.remoteTypeId,
-        'name': e.name,
-        'short_name': e.shortName,
-        'equipment_functions_json': e.equipmentFunctionsJson,
-        'deployment_scenarios_json': e.deploymentScenariosJson,
-        'description': e.description,
-        'image_path': e.imagePath,
-        'training_url': e.trainingUrl,
-        'library_equipment_id': e.libraryEquipmentId,
-        'is_custom': e.isCustom,
-        'extra_attributes_json': e.extraAttributesJson,
-        'training_questions_json': e.trainingQuestionsJson,
-        'typical_use_json': e.typicalUseJson,
-        if (deletedAt != null) 'deleted_at': deletedAt,
-        // Die Zeilen-Version, wie der Server sie zuletzt meldete — NICHT die
-        // lokale Uhr. Der Server lehnt ab, wenn er seither weitergezogen ist.
-        // `null` bei einem neuen Typ: Dann gibt es nichts zu überholen.
-        'updated_at': e.remoteTypeUpdatedAt,
-      };
+    if (e.remoteTypeId != null) 'id': e.remoteTypeId,
+    'name': e.name,
+    'short_name': e.shortName,
+    'equipment_functions_json': e.equipmentFunctionsJson,
+    'deployment_scenarios_json': e.deploymentScenariosJson,
+    'description': e.description,
+    'image_path': e.imagePath,
+    'training_url': e.trainingUrl,
+    'library_equipment_id': e.libraryEquipmentId,
+    'is_custom': e.isCustom,
+    'extra_attributes_json': e.extraAttributesJson,
+    'training_questions_json': e.trainingQuestionsJson,
+    'typical_use_json': e.typicalUseJson,
+    if (deletedAt != null) 'deleted_at': deletedAt,
+    // Die Zeilen-Version, wie der Server sie zuletzt meldete — NICHT die
+    // lokale Uhr. Der Server lehnt ab, wenn er seither weitergezogen ist.
+    // `null` bei einem neuen Typ: Dann gibt es nichts zu überholen.
+    'updated_at': e.remoteTypeUpdatedAt,
+  };
 
   /// Schiebt alle lokal geänderten Typen hoch. Das Kennzeichen `typeDirty`
   /// setzt, wer den Typ ändert — hier wird es nur abgeräumt.
@@ -285,9 +298,9 @@ class EquipmentTypeSync {
     final gw = await _gesamtwehr();
     if (gw == null) return 0;
 
-    final vorgemerkt = await (db.select(db.equipmentItems)
-          ..where((t) => t.typeDirty.equals(true)))
-        .get();
+    final vorgemerkt =
+        await (db.select(db.equipmentItems)
+          ..where((t) => t.typeDirty.equals(true))).get();
 
     // ⚠️ Ein Foto, das nur auf DIESEM Gerät liegt (Kamera/Galerie, Upload
     // noch nicht durch), ist für die anderen Abteilungen ein toter Pfad —
@@ -299,16 +312,21 @@ class EquipmentTypeSync {
         if (!isLocalImagePath(e.imagePath)) e,
     ];
     if (offen.length != vorgemerkt.length) {
-      appLog.i('Typ-Sync: ${vorgemerkt.length - offen.length} Typen warten '
-          'noch auf ihren Foto-Upload.');
+      appLog.i(
+        'Typ-Sync: ${vorgemerkt.length - offen.length} Typen warten '
+        'noch auf ihren Foto-Upload.',
+      );
     }
     if (offen.isEmpty) return 0;
 
     try {
-      final antwort = await client.rpc('push_equipment_types', params: {
-        'gw': gw,
-        'aenderungen': [for (final e in offen) _zeile(e)],
-      });
+      final antwort = await client.rpc(
+        'push_equipment_types',
+        params: {
+          'gw': gw,
+          'aenderungen': [for (final e in offen) _zeile(e)],
+        },
+      );
 
       // Der Server antwortet mit den zentral gültigen Zeilen IN DERSELBEN
       // REIHENFOLGE — er baut sie in der Schleife über die Eingabe auf. Nur
@@ -316,8 +334,10 @@ class EquipmentTypeSync {
       // nicht, wird nichts abgeräumt und der nächste Lauf versucht es neu.
       final zeilen = List<Map<String, dynamic>>.from(antwort as List);
       if (zeilen.length != offen.length) {
-        appLog.w('Typ-Sync: Antwort passt nicht zur Anfrage '
-            '(${zeilen.length} statt ${offen.length}) — nichts abgeräumt.');
+        appLog.w(
+          'Typ-Sync: Antwort passt nicht zur Anfrage '
+          '(${zeilen.length} statt ${offen.length}) — nichts abgeräumt.',
+        );
         return 0;
       }
 
@@ -360,7 +380,8 @@ class EquipmentTypeSync {
     }
 
     final rows = List<Map<String, dynamic>>.from(
-        await client.rpc('equipment_type_verwendung', params: {'ziel': typId}));
+      await client.rpc('equipment_type_verwendung', params: {'ziel': typId}),
+    );
     var summe = 0;
     var abteilungen = 0;
     for (final r in rows) {
@@ -393,12 +414,15 @@ class EquipmentTypeSync {
     final geraet = await db.equipmentDao.getById(lokaleId);
     if (gw == null || geraet?.remoteTypeId == null) return;
 
-    final antwort = await client.rpc('push_equipment_types', params: {
-      'gw': gw,
-      'aenderungen': [
-        _zeile(geraet!, deletedAt: DateTime.now().toUtc().toIso8601String()),
-      ],
-    });
+    final antwort = await client.rpc(
+      'push_equipment_types',
+      params: {
+        'gw': gw,
+        'aenderungen': [
+          _zeile(geraet!, deletedAt: DateTime.now().toUtc().toIso8601String()),
+        ],
+      },
+    );
     final zeilen = List<Map<String, dynamic>>.from(antwort as List);
     if (zeilen.length != 1 || zeilen.single['deleted_at'] == null) {
       throw TypKonfliktException();
@@ -417,8 +441,10 @@ Future<bool> typenSofortTeilen(EquipmentTypeSync? sync) async {
   try {
     return await sync.push() > 0;
   } catch (e) {
-    appLog.w('Typ-Sync: Sofort-Verteilen fehlgeschlagen — bleibt vorgemerkt',
-        error: e);
+    appLog.w(
+      'Typ-Sync: Sofort-Verteilen fehlgeschlagen — bleibt vorgemerkt',
+      error: e,
+    );
     return false;
   }
 }

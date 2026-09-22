@@ -52,19 +52,24 @@ Future<void> waitFor(
   Finder finder, {
   Duration timeout = const Duration(seconds: 30),
 }) async {
-  for (var waited = Duration.zero;
-      waited < timeout;
-      waited += const Duration(milliseconds: 100)) {
+  for (
+    var waited = Duration.zero;
+    waited < timeout;
+    waited += const Duration(milliseconds: 100)
+  ) {
     if (matches(finder)) return;
     await tester.pump(const Duration(milliseconds: 100));
   }
-  final sichtbar = tester
-      .widgetList<Text>(find.byType(Text))
-      .map((t) => t.data)
-      .whereType<String>()
-      .toList();
-  fail('Nach ${timeout.inSeconds}s nicht gefunden: '
-      '${finder.describeMatch(Plurality.one)}\nSichtbar: $sichtbar');
+  final sichtbar =
+      tester
+          .widgetList<Text>(find.byType(Text))
+          .map((t) => t.data)
+          .whereType<String>()
+          .toList();
+  fail(
+    'Nach ${timeout.inSeconds}s nicht gefunden: '
+    '${finder.describeMatch(Plurality.one)}\nSichtbar: $sichtbar',
+  );
 }
 
 Future<void> shoot(WidgetTester tester, String name) async {

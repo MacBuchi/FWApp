@@ -20,8 +20,10 @@ const _w = 216, _h = 384;
 
 Future<String> _bild({required double t, bool voll = true}) async {
   final recorder = ui.PictureRecorder();
-  SplashPainter(fortschritt: t, voll: voll)
-      .paint(Canvas(recorder), const Size(216, 384));
+  SplashPainter(
+    fortschritt: t,
+    voll: voll,
+  ).paint(Canvas(recorder), const Size(216, 384));
   final bild = await recorder.endRecording().toImage(_w, _h);
   final daten = await bild.toByteData(format: ui.ImageByteFormat.rawRgba);
   bild.dispose();
@@ -95,8 +97,9 @@ void main() {
     // Und sie zeigt dasselbe wie die Zeichen-Szene der vollen Fassung an
     // der entsprechenden Stelle.
     final kurzMitte = await _bild(t: 0.5, voll: false);
-    final vollLogoMitte =
-        await _bild(t: (kFachMs + kPruefenMs + kZeichenMs / 2) / kSplashVollMs);
+    final vollLogoMitte = await _bild(
+      t: (kFachMs + kPruefenMs + kZeichenMs / 2) / kSplashVollMs,
+    );
     expect(kurzMitte, vollLogoMitte);
   });
 

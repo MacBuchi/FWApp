@@ -6,6 +6,7 @@
 /// auch die historischen Konten `admin@fw.local`/`member@fw.local` und
 /// künftige externe Adressen.
 library;
+
 import 'dart:math';
 
 /// Domain-Konvention der abteilungsinternen Konten.
@@ -97,6 +98,8 @@ String? validateNewPassword(String password, String repeat) {
 String generateInitialPassword({int length = 10}) {
   const alphabet = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789';
   final rng = Random.secure();
-  return List.generate(length, (_) => alphabet[rng.nextInt(alphabet.length)])
-      .join();
+  return List.generate(
+    length,
+    (_) => alphabet[rng.nextInt(alphabet.length)],
+  ).join();
 }

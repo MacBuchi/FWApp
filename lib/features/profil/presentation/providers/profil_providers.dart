@@ -62,11 +62,12 @@ final meinProfilProvider = FutureProvider<MeinProfil?>((ref) async {
   if (client == null || session == null) return null;
   final id = session.user.id;
   try {
-    final row = await client
-        .from('profiles')
-        .select('username, anzeigename, avatar')
-        .eq('id', id)
-        .maybeSingle();
+    final row =
+        await client
+            .from('profiles')
+            .select('username, anzeigename, avatar')
+            .eq('id', id)
+            .maybeSingle();
     return MeinProfil(
       anzeigename: row?['anzeigename'] as String?,
       username: row?['username'] as String?,
@@ -78,11 +79,12 @@ final meinProfilProvider = FutureProvider<MeinProfil?>((ref) async {
     // ist dort das Einzige, was es zu zeigen gibt.
     appLog.i('Profilspalten nicht ladbar (Alt-Server?)', error: e);
     try {
-      final row = await client
-          .from('profiles')
-          .select('username')
-          .eq('id', id)
-          .maybeSingle();
+      final row =
+          await client
+              .from('profiles')
+              .select('username')
+              .eq('id', id)
+              .maybeSingle();
       return MeinProfil(username: row?['username'] as String?);
     } catch (e2) {
       appLog.i('Profil gar nicht ladbar', error: e2);
@@ -109,10 +111,13 @@ class ProfilService {
     required String anzeigename,
     required AvatarKonfiguration avatar,
   }) async {
-    await _client.rpc('mein_profil_setzen', params: {
-      'neuer_anzeigename': anzeigename.trim(),
-      'neuer_avatar': avatar.kodiert,
-    });
+    await _client.rpc(
+      'mein_profil_setzen',
+      params: {
+        'neuer_anzeigename': anzeigename.trim(),
+        'neuer_avatar': avatar.kodiert,
+      },
+    );
     _ref.invalidate(meinProfilProvider);
   }
 }

@@ -1,6 +1,7 @@
 /// branding_test.dart – Kopfbereich der Gesamtwehr (#57 P5): Modell,
 /// Zwischenspeicher-Format, Bucket-Trennung und die Frage, wer pflegen darf.
 library;
+
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,34 +20,43 @@ void main() {
     test('istLeer erkennt den ungepflegten Zustand', () {
       expect(const GesamtwehrBranding(gesamtwehrId: _gw).istLeer, isTrue);
       expect(
-        const GesamtwehrBranding(gesamtwehrId: _gw, titel: '', willkommenstext: '')
-            .istLeer,
+        const GesamtwehrBranding(
+          gesamtwehrId: _gw,
+          titel: '',
+          willkommenstext: '',
+        ).istLeer,
         isTrue,
       );
       expect(
-        const GesamtwehrBranding(gesamtwehrId: _gw, willkommenstext: 'Moin')
-            .istLeer,
+        const GesamtwehrBranding(
+          gesamtwehrId: _gw,
+          willkommenstext: 'Moin',
+        ).istLeer,
         isFalse,
       );
       expect(
         const GesamtwehrBranding(
-                gesamtwehrId: _gw,
-                bildPfad: 'supabase://gesamtwehr-branding/$_gw/1.jpg')
-            .istLeer,
+          gesamtwehrId: _gw,
+          bildPfad: 'supabase://gesamtwehr-branding/$_gw/1.jpg',
+        ).istLeer,
         isFalse,
       );
     });
 
     test('ohne eigenen Titel steht der Name der Gesamtwehr im Kopf', () {
       const ohne = GesamtwehrBranding(gesamtwehrId: _gw);
-      expect(ohne.anzeigeTitel('Gesamtfeuerwehr Musterstadt'),
-          'Gesamtfeuerwehr Musterstadt');
+      expect(
+        ohne.anzeigeTitel('Gesamtfeuerwehr Musterstadt'),
+        'Gesamtfeuerwehr Musterstadt',
+      );
       const mit = GesamtwehrBranding(gesamtwehrId: _gw, titel: 'Unsere Wehr');
       expect(mit.anzeigeTitel('Gesamtfeuerwehr Musterstadt'), 'Unsere Wehr');
       // Leerer Titel ist kein Titel — sonst stünde eine leere Zeile im Bild.
       const leer = GesamtwehrBranding(gesamtwehrId: _gw, titel: '');
-      expect(leer.anzeigeTitel('Gesamtfeuerwehr Musterstadt'),
-          'Gesamtfeuerwehr Musterstadt');
+      expect(
+        leer.anzeigeTitel('Gesamtfeuerwehr Musterstadt'),
+        'Gesamtfeuerwehr Musterstadt',
+      );
     });
 
     test('überlebt den Weg durch den Zwischenspeicher unverändert', () {
@@ -57,7 +67,8 @@ void main() {
         bildPfad: 'supabase://gesamtwehr-branding/$_gw/1700.jpg',
       );
       final zurueck = GesamtwehrBranding.fromJson(
-          jsonDecode(jsonEncode(original.toJson())) as Map<String, dynamic>);
+        jsonDecode(jsonEncode(original.toJson())) as Map<String, dynamic>,
+      );
       expect(zurueck, isNotNull);
       expect(zurueck!.gesamtwehrId, original.gesamtwehrId);
       expect(zurueck.titel, original.titel);
@@ -98,32 +109,42 @@ void main() {
     test('gibt den Objektnamen nur für den eigenen Bucket heraus', () {
       expect(
         objektImBucket(
-            'supabase://gesamtwehr-branding/$_gw/1700.jpg', kBrandingBucket),
+          'supabase://gesamtwehr-branding/$_gw/1700.jpg',
+          kBrandingBucket,
+        ),
         '$_gw/1700.jpg',
       );
       expect(
-        objektImBucket('supabase://equipment-images/eq_7_1.jpg',
-            kEquipmentImagesBucket),
+        objektImBucket(
+          'supabase://equipment-images/eq_7_1.jpg',
+          kEquipmentImagesBucket,
+        ),
         'eq_7_1.jpg',
       );
     });
 
-    test('ein Marker aus dem FREMDEN Bucket wird abgewiesen, nicht zerschnitten',
-        () {
-      // Der eigentliche Fehler: Wer nur „ist ein supabase://-Marker" prüft und
-      // dann blind das eigene Präfix abschneidet, bekommt hier einen
-      // verstümmelten Objektnamen zurück und löscht damit daneben.
-      expect(
-        objektImBucket('supabase://equipment-images/eq_7_1.jpg',
-            kBrandingBucket),
-        isNull,
-      );
-      expect(
-        objektImBucket(
-            'supabase://gesamtwehr-branding/$_gw/1.jpg', kEquipmentImagesBucket),
-        isNull,
-      );
-    });
+    test(
+      'ein Marker aus dem FREMDEN Bucket wird abgewiesen, nicht zerschnitten',
+      () {
+        // Der eigentliche Fehler: Wer nur „ist ein supabase://-Marker" prüft und
+        // dann blind das eigene Präfix abschneidet, bekommt hier einen
+        // verstümmelten Objektnamen zurück und löscht damit daneben.
+        expect(
+          objektImBucket(
+            'supabase://equipment-images/eq_7_1.jpg',
+            kBrandingBucket,
+          ),
+          isNull,
+        );
+        expect(
+          objektImBucket(
+            'supabase://gesamtwehr-branding/$_gw/1.jpg',
+            kEquipmentImagesBucket,
+          ),
+          isNull,
+        );
+      },
+    );
 
     test('nicht-Marker und null bleiben ohne Ergebnis', () {
       expect(objektImBucket(null, kBrandingBucket), isNull);
@@ -150,11 +171,14 @@ void main() {
       GesamtwehrBezug? bezug,
       Set<String>? kommandiert,
     }) async {
-      final container = ProviderContainer(overrides: [
-        aktuelleGesamtwehrProvider.overrideWith((ref) async => bezug),
-        meineKommandoGesamtwehrenProvider
-            .overrideWith((ref) async => kommandiert),
-      ]);
+      final container = ProviderContainer(
+        overrides: [
+          aktuelleGesamtwehrProvider.overrideWith((ref) async => bezug),
+          meineKommandoGesamtwehrenProvider.overrideWith(
+            (ref) async => kommandiert,
+          ),
+        ],
+      );
       addTearDown(container.dispose);
       return container.read(darfBrandingPflegenProvider.future);
     }
@@ -162,7 +186,9 @@ void main() {
     test('der Feuerwehrkommandant dieser Wehr darf', () async {
       expect(
         await pruefe(
-            bezug: const GesamtwehrBezug(id: _gw), kommandiert: const {_gw}),
+          bezug: const GesamtwehrBezug(id: _gw),
+          kommandiert: const {_gw},
+        ),
         isTrue,
       );
     });
@@ -170,8 +196,9 @@ void main() {
     test('der Kommandant einer ANDEREN Wehr darf hier nicht', () async {
       expect(
         await pruefe(
-            bezug: const GesamtwehrBezug(id: _gw),
-            kommandiert: const {_andereGw}),
+          bezug: const GesamtwehrBezug(id: _gw),
+          kommandiert: const {_andereGw},
+        ),
         isFalse,
       );
     });
@@ -179,7 +206,9 @@ void main() {
     test('ein Gerätewart ohne Kommando darf nicht', () async {
       expect(
         await pruefe(
-            bezug: const GesamtwehrBezug(id: _gw), kommandiert: const {}),
+          bezug: const GesamtwehrBezug(id: _gw),
+          kommandiert: const {},
+        ),
         isFalse,
       );
     });

@@ -1,6 +1,7 @@
 /// inspection_schedule.dart – Recurring Prüfung or one-shot Ablaufdatum for an
 /// equipment instance (pure Dart, no Flutter/Drift dependencies).
 library;
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'inspection_schedule.freezed.dart';

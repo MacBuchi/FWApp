@@ -440,4 +440,4 @@ final class FilteredEquipmentProvider
   }
 }
 
-String _$filteredEquipmentHash() => r'f8b194ca1a9023ee376cfa9f596e264ff8d3162a';
+String _$filteredEquipmentHash() => r'b6f2e8ec17bec4aca27de3f11e2f17b0d68d69dc';

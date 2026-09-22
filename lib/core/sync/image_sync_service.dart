@@ -4,6 +4,7 @@
 /// `supabase://<bucket>/<object>` marker that resolves on every device (see
 /// image_utils.dart).
 library;
+
 import 'dart:typed_data';
 
 import 'package:cross_file/cross_file.dart';
@@ -20,7 +21,6 @@ const kEquipmentImagesBucket = 'equipment-images';
 /// Storage-Policies lesen sie aus dem ersten Pfadsegment.
 const kBrandingBucket = 'gesamtwehr-branding';
 
-
 class ImageSyncService {
   final SupabaseClient client;
   ImageSyncService(this.client);
@@ -32,12 +32,11 @@ class ImageSyncService {
     required int equipmentId,
     required String localPath,
     String? previousPath,
-  }) async =>
-      uploadEquipmentImageBytes(
-        equipmentId: equipmentId,
-        bytes: await XFile(localPath).readAsBytes(),
-        previousPath: previousPath,
-      );
+  }) async => uploadEquipmentImageBytes(
+    equipmentId: equipmentId,
+    bytes: await XFile(localPath).readAsBytes(),
+    previousPath: previousPath,
+  );
 
   /// Wie [uploadEquipmentImage], nimmt das Bild aber direkt als Bytes.
   ///
@@ -48,15 +47,14 @@ class ImageSyncService {
     required int equipmentId,
     required Uint8List bytes,
     String? previousPath,
-  }) =>
-      _hochladen(
-        bucket: kEquipmentImagesBucket,
-        // Timestamped name: each upload gets a fresh cache identity, so stale
-        // caches on member devices can never mask a newer photo.
-        object: 'eq_${equipmentId}_${DateTime.now().millisecondsSinceEpoch}.jpg',
-        bytes: bytes,
-        previousPath: previousPath,
-      );
+  }) => _hochladen(
+    bucket: kEquipmentImagesBucket,
+    // Timestamped name: each upload gets a fresh cache identity, so stale
+    // caches on member devices can never mask a newer photo.
+    object: 'eq_${equipmentId}_${DateTime.now().millisecondsSinceEpoch}.jpg',
+    bytes: bytes,
+    previousPath: previousPath,
+  );
 
   /// Foto eines Geräteraums (Issue #181).
   ///
@@ -71,14 +69,12 @@ class ImageSyncService {
     required int compartmentId,
     required Uint8List bytes,
     String? previousPath,
-  }) =>
-      _hochladen(
-        bucket: kEquipmentImagesBucket,
-        object:
-            'co_${compartmentId}_${DateTime.now().millisecondsSinceEpoch}.jpg',
-        bytes: bytes,
-        previousPath: previousPath,
-      );
+  }) => _hochladen(
+    bucket: kEquipmentImagesBucket,
+    object: 'co_${compartmentId}_${DateTime.now().millisecondsSinceEpoch}.jpg',
+    bytes: bytes,
+    previousPath: previousPath,
+  );
 
   /// Kopfbild einer Gesamtwehr (#57 P5).
   ///
@@ -90,13 +86,12 @@ class ImageSyncService {
     required String gesamtwehrId,
     required Uint8List bytes,
     String? previousPath,
-  }) =>
-      _hochladen(
-        bucket: kBrandingBucket,
-        object: '$gesamtwehrId/${DateTime.now().millisecondsSinceEpoch}.jpg',
-        bytes: bytes,
-        previousPath: previousPath,
-      );
+  }) => _hochladen(
+    bucket: kBrandingBucket,
+    object: '$gesamtwehrId/${DateTime.now().millisecondsSinceEpoch}.jpg',
+    bytes: bytes,
+    previousPath: previousPath,
+  );
 
   /// Gemeinsamer Weg: verkleinern, hochladen, Vorgänger best-effort aufräumen,
   /// Marker zurückgeben.
@@ -107,11 +102,15 @@ class ImageSyncService {
     String? previousPath,
   }) async {
     final jpeg = await compute(compressImageForUpload, bytes);
-    await client.storage.from(bucket).uploadBinary(
+    await client.storage
+        .from(bucket)
+        .uploadBinary(
           object,
           jpeg,
-          fileOptions:
-              const FileOptions(contentType: 'image/jpeg', upsert: true),
+          fileOptions: const FileOptions(
+            contentType: 'image/jpeg',
+            upsert: true,
+          ),
         );
 
     // Nur aufräumen, was wirklich in DIESEM Bucket liegt — siehe

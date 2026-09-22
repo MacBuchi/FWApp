@@ -1,5 +1,6 @@
 /// inspection_repository_impl.dart – Drift-backed implementation of InspectionRepository.
 library;
+
 import 'package:drift/drift.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/features/inspection/domain/entities/due_inspection_entry.dart';
@@ -20,28 +21,31 @@ class InspectionRepositoryImpl implements InspectionRepository {
           .map((rows) => rows.map(_toInstance).toList());
 
   @override
-  Future<int> insertInstance(EquipmentInstance instance) =>
-      _dao.insertInstance(EquipmentInstancesCompanion.insert(
-        equipmentId: instance.equipmentId,
-        vehicleId: Value(instance.vehicleId),
-        compartmentId: Value(instance.compartmentId),
-        identifier: Value(instance.identifier),
-        notes: Value(instance.notes),
-        isActive: Value(instance.isActive),
-      ));
+  Future<int> insertInstance(EquipmentInstance instance) => _dao.insertInstance(
+    EquipmentInstancesCompanion.insert(
+      equipmentId: instance.equipmentId,
+      vehicleId: Value(instance.vehicleId),
+      compartmentId: Value(instance.compartmentId),
+      identifier: Value(instance.identifier),
+      notes: Value(instance.notes),
+      isActive: Value(instance.isActive),
+    ),
+  );
 
   @override
   Future<void> updateInstance(EquipmentInstance instance) =>
-      _dao.updateInstance(EquipmentInstancesCompanion(
-        id: Value(instance.id),
-        equipmentId: Value(instance.equipmentId),
-        vehicleId: Value(instance.vehicleId),
-        compartmentId: Value(instance.compartmentId),
-        identifier: Value(instance.identifier),
-        notes: Value(instance.notes),
-        isActive: Value(instance.isActive),
-        updatedAt: Value(DateTime.now()),
-      ));
+      _dao.updateInstance(
+        EquipmentInstancesCompanion(
+          id: Value(instance.id),
+          equipmentId: Value(instance.equipmentId),
+          vehicleId: Value(instance.vehicleId),
+          compartmentId: Value(instance.compartmentId),
+          identifier: Value(instance.identifier),
+          notes: Value(instance.notes),
+          isActive: Value(instance.isActive),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
 
   @override
   Future<void> deleteInstance(int id) => _dao.deleteInstance(id);
@@ -56,15 +60,17 @@ class InspectionRepositoryImpl implements InspectionRepository {
 
   @override
   Future<int> insertSchedule(InspectionSchedule schedule) =>
-      _dao.insertSchedule(InspectionSchedulesCompanion.insert(
-        instanceId: schedule.instanceId,
-        kind: schedule.kind.dbValue,
-        title: schedule.title,
-        intervalMonths: Value(schedule.intervalMonths),
-        lastDoneAt: Value(schedule.lastDoneAt),
-        dueAt: schedule.dueAt,
-        notes: Value(schedule.notes),
-      ));
+      _dao.insertSchedule(
+        InspectionSchedulesCompanion.insert(
+          instanceId: schedule.instanceId,
+          kind: schedule.kind.dbValue,
+          title: schedule.title,
+          intervalMonths: Value(schedule.intervalMonths),
+          lastDoneAt: Value(schedule.lastDoneAt),
+          dueAt: schedule.dueAt,
+          notes: Value(schedule.notes),
+        ),
+      );
 
   @override
   Future<void> updateSchedule(InspectionSchedule schedule) =>
@@ -79,13 +85,15 @@ class InspectionRepositoryImpl implements InspectionRepository {
   Future<List<InspectionLogEntry>> getLog(int scheduleId) async {
     final rows = await _dao.getLogBySchedule(scheduleId);
     return rows
-        .map((r) => InspectionLogEntry(
-              id: r.id,
-              scheduleId: r.scheduleId,
-              doneAt: r.doneAt,
-              doneBy: r.doneBy,
-              note: r.note,
-            ))
+        .map(
+          (r) => InspectionLogEntry(
+            id: r.id,
+            scheduleId: r.scheduleId,
+            doneAt: r.doneAt,
+            doneBy: r.doneBy,
+            note: r.note,
+          ),
+        )
         .toList();
   }
 
@@ -103,35 +111,49 @@ class InspectionRepositoryImpl implements InspectionRepository {
     } else if (schedule.kind == InspectionKind.recurring &&
         schedule.intervalMonths != null) {
       newDueAt = DateTime(
-          doneAt.year, doneAt.month + schedule.intervalMonths!, doneAt.day);
+        doneAt.year,
+        doneAt.month + schedule.intervalMonths!,
+        doneAt.day,
+      );
     } else {
       throw ArgumentError(
-          'nextDueAt is required for expiry schedules (new replacement date)');
+        'nextDueAt is required for expiry schedules (new replacement date)',
+      );
     }
-    await _dao.insertLogEntry(InspectionLogCompanion.insert(
-      scheduleId: schedule.id,
-      doneAt: doneAt,
-      doneBy: Value(doneBy),
-      note: Value(note),
-    ));
-    await _dao.updateSchedule(_toScheduleCompanion(
-      schedule.copyWith(lastDoneAt: doneAt, dueAt: newDueAt),
-    ));
+    await _dao.insertLogEntry(
+      InspectionLogCompanion.insert(
+        scheduleId: schedule.id,
+        doneAt: doneAt,
+        doneBy: Value(doneBy),
+        note: Value(note),
+      ),
+    );
+    await _dao.updateSchedule(
+      _toScheduleCompanion(
+        schedule.copyWith(lastDoneAt: doneAt, dueAt: newDueAt),
+      ),
+    );
   }
 
   // ── Due queries ──
 
   @override
-  Stream<List<DueInspectionEntry>> watchDueSoon({int withinDays = 30}) =>
-      _dao.watchDueSoon(withinDays: withinDays).map((rows) => rows
-          .map((row) => DueInspectionEntry(
-                schedule: _toSchedule(row.schedule),
-                instance: _toInstance(row.instance),
-                equipmentName: row.equipment.name,
-                equipmentImagePath: row.equipment.imagePath,
-                vehicleName: row.vehicle?.name,
-              ))
-          .toList());
+  Stream<List<DueInspectionEntry>> watchDueSoon({int withinDays = 30}) => _dao
+      .watchDueSoon(withinDays: withinDays)
+      .map(
+        (rows) =>
+            rows
+                .map(
+                  (row) => DueInspectionEntry(
+                    schedule: _toSchedule(row.schedule),
+                    instance: _toInstance(row.instance),
+                    equipmentName: row.equipment.name,
+                    equipmentImagePath: row.equipment.imagePath,
+                    vehicleName: row.vehicle?.name,
+                  ),
+                )
+                .toList(),
+      );
 
   @override
   Stream<Map<int, DueCounts>> watchDueCountsByVehicle({int withinDays = 30}) =>
@@ -139,17 +161,16 @@ class InspectionRepositoryImpl implements InspectionRepository {
 
   // ── Mapping ──
 
-  EquipmentInstance _toInstance(EquipmentInstanceData row) =>
-      EquipmentInstance(
-        id: row.id,
-        equipmentId: row.equipmentId,
-        vehicleId: row.vehicleId,
-        compartmentId: row.compartmentId,
-        identifier: row.identifier,
-        notes: row.notes,
-        isActive: row.isActive,
-        updatedAt: row.updatedAt,
-      );
+  EquipmentInstance _toInstance(EquipmentInstanceData row) => EquipmentInstance(
+    id: row.id,
+    equipmentId: row.equipmentId,
+    vehicleId: row.vehicleId,
+    compartmentId: row.compartmentId,
+    identifier: row.identifier,
+    notes: row.notes,
+    isActive: row.isActive,
+    updatedAt: row.updatedAt,
+  );
 
   InspectionSchedule _toSchedule(InspectionScheduleData row) =>
       InspectionSchedule(

@@ -35,7 +35,8 @@ void main() {
     tempDir = await Directory.systemTemp.createTemp('fwapp_unterlagen_test');
     speicher = AnhangSpeicher(db: db, ordner: () async => tempDir);
     fahrzeug = await db.vehicleDao.insertVehicle(
-        VehiclesCompanion.insert(name: 'HLF 20', type: 'HLF 20'));
+      VehiclesCompanion.insert(name: 'HLF 20', type: 'HLF 20'),
+    );
   });
 
   tearDown(() async {
@@ -43,29 +44,35 @@ void main() {
     if (tempDir.existsSync()) await tempDir.delete(recursive: true);
   });
 
-  Future<void> pumpe(WidgetTester tester,
-      {bool darfBearbeiten = true, bool imBrowser = false}) async {
+  Future<void> pumpe(
+    WidgetTester tester, {
+    bool darfBearbeiten = true,
+    bool imBrowser = false,
+  }) async {
     if (imBrowser) {
       speicher = AnhangSpeicher(
-          db: db, ordner: () async => tempDir, imBrowser: true);
+        db: db,
+        ordner: () async => tempDir,
+        imBrowser: true,
+      );
     }
     tester.view.physicalSize = const Size(1000, 2000);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(ProviderScope(
-      overrides: [
-        appDatabaseProvider.overrideWithValue(db),
-        anhangSpeicherProvider.overrideWithValue(speicher),
-        if (!darfBearbeiten) canEditProvider.overrideWithValue(false),
-      ],
-      child: MaterialApp(
-        home: Scaffold(
-          body: ListView(
-            children: [FahrzeugUnterlagen(vehicleId: fahrzeug)],
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appDatabaseProvider.overrideWithValue(db),
+          anhangSpeicherProvider.overrideWithValue(speicher),
+          if (!darfBearbeiten) canEditProvider.overrideWithValue(false),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: ListView(children: [FahrzeugUnterlagen(vehicleId: fahrzeug)]),
           ),
         ),
       ),
-    ));
+    );
     await tester.pumpAndSettle();
   }
 
@@ -73,21 +80,25 @@ void main() {
   ///
   /// `runAsync`, weil hier eine echte Datei geschrieben wird — siehe Kopf.
   Future<void> lokalerAnhang(WidgetTester tester, String name) =>
-      tester.runAsync(() => speicher.hinzufuegen(
-            vehicleId: fahrzeug,
-            dateiname: name,
-            bytes: Uint8List.fromList(List.filled(2048, 7)),
-          ));
+      tester.runAsync(
+        () => speicher.hinzufuegen(
+          vehicleId: fahrzeug,
+          dateiname: name,
+          bytes: Uint8List.fromList(List.filled(2048, 7)),
+        ),
+      );
 
   /// Ein Anhang, den nur der Server hat — der Fall, den die Offline-Anzeige
   /// überhaupt erst nötig macht.
   Future<void> nurAufDemServer(String name) =>
-      db.attachmentDao.insertAttachment(VehicleAttachmentsCompanion.insert(
-        vehicleId: fahrzeug,
-        title: name,
-        storagePath: Value('supabase://vehicle-attachments/abt/$name'),
-        sizeBytes: const Value(5 * 1024 * 1024),
-      ));
+      db.attachmentDao.insertAttachment(
+        VehicleAttachmentsCompanion.insert(
+          vehicleId: fahrzeug,
+          title: name,
+          storagePath: Value('supabase://vehicle-attachments/abt/$name'),
+          sizeBytes: const Value(5 * 1024 * 1024),
+        ),
+      );
 
   testWidgets('ohne Anhänge steht da, was hier hingehört', (tester) async {
     await pumpe(tester);
@@ -99,8 +110,9 @@ void main() {
     await endTestApp(tester);
   });
 
-  testWidgets('wer nicht bearbeiten darf, sieht weder Anhängen noch Löschen',
-      (tester) async {
+  testWidgets('wer nicht bearbeiten darf, sieht weder Anhängen noch Löschen', (
+    tester,
+  ) async {
     await lokalerAnhang(tester, 'Fahrzeugschein.pdf');
     await pumpe(tester, darfBearbeiten: false);
 
@@ -114,8 +126,9 @@ void main() {
     await endTestApp(tester);
   });
 
-  testWidgets('eine lokale Datei meldet sich als „auf diesem Gerät"',
-      (tester) async {
+  testWidgets('eine lokale Datei meldet sich als „auf diesem Gerät"', (
+    tester,
+  ) async {
     await lokalerAnhang(tester, 'Betriebsanleitung.pdf');
     await pumpe(tester);
 
@@ -128,8 +141,9 @@ void main() {
     await endTestApp(tester);
   });
 
-  testWidgets('was nur der Server hat, sagt genau das — mit Knopf zum Holen',
-      (tester) async {
+  testWidgets('was nur der Server hat, sagt genau das — mit Knopf zum Holen', (
+    tester,
+  ) async {
     await nurAufDemServer('Pruefbescheinigung.pdf');
     await pumpe(tester);
 
@@ -156,8 +170,9 @@ void main() {
     await endTestApp(tester);
   });
 
-  testWidgets('ein Pfad auf eine gelöschte Datei gilt nicht als vorhanden',
-      (tester) async {
+  testWidgets('ein Pfad auf eine gelöschte Datei gilt nicht als vorhanden', (
+    tester,
+  ) async {
     // Der Fall, der die Anzeige zur Lüge machen würde: Die Zeile trägt einen
     // localPath, aber die Datei ist weg (Speicher aufgeräumt, App neu
     // installiert). Dann ist sie nicht offline verfügbar.
@@ -172,8 +187,9 @@ void main() {
     await endTestApp(tester);
   });
 
-  testWidgets('Löschen fragt nach und nimmt die Zeile dann weg',
-      (tester) async {
+  testWidgets('Löschen fragt nach und nimmt die Zeile dann weg', (
+    tester,
+  ) async {
     // Bewusst ein Anhang OHNE lokale Datei: Das Löschen der Datei selbst
     // prüft `anhang_speicher_test.dart` in einem normalen `test()`, wo echte
     // Ein-/Ausgabe funktioniert. Hier geht es um Dialog und Liste — und ein
@@ -222,8 +238,9 @@ void main() {
       await endTestApp(tester);
     });
 
-    testWidgets('eine Zeile vom Server sagt beim Antippen die Wahrheit',
-        (tester) async {
+    testWidgets('eine Zeile vom Server sagt beim Antippen die Wahrheit', (
+      tester,
+    ) async {
       // ⚠️ „ließ sich gerade nicht laden" wäre hier falsch: Die Datei LIEGT
       // auf dem Server. Die Auskunft schickte den Gerätewart auf die Suche
       // nach einem Netzproblem, das es nicht gibt.
@@ -243,8 +260,10 @@ void main() {
       await nurAufDemServer('Betriebsanleitung.pdf');
       await pumpe(tester, imBrowser: true);
 
-      expect(find.textContaining('für den Einsatz herunterladen'),
-          findsNothing);
+      expect(
+        find.textContaining('für den Einsatz herunterladen'),
+        findsNothing,
+      );
 
       await endTestApp(tester);
     });

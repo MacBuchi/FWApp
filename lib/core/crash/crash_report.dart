@@ -62,17 +62,17 @@ class CrashReport {
   });
 
   Map<String, dynamic> toJson() => {
-        'v': kCrashFormatVersion,
-        'time': time.toIso8601String(),
-        'appVersion': appVersion,
-        'source': source,
-        'error': error,
-        'stackTrace': stackTrace,
-        'fingerprint': fingerprint,
-        'device': device,
-        'locale': locale,
-        'log': log,
-      };
+    'v': kCrashFormatVersion,
+    'time': time.toIso8601String(),
+    'appVersion': appVersion,
+    'source': source,
+    'error': error,
+    'stackTrace': stackTrace,
+    'fingerprint': fingerprint,
+    'device': device,
+    'locale': locale,
+    'log': log,
+  };
 
   /// Liest einen Bericht. Liefert `null`, wenn der Eintrag unbrauchbar ist —
   /// ein kaputter Bericht darf den Start nicht blockieren.
@@ -107,10 +107,11 @@ class CrashReport {
 
   /// Text für das GitHub-Issue bzw. die Zwischenablage.
   String toReportText() {
-    final buffer = StringBuffer()
-      ..writeln('Absturz vom ${time.toLocal()}')
-      ..writeln('App-Version: $appVersion')
-      ..writeln('Quelle: $source');
+    final buffer =
+        StringBuffer()
+          ..writeln('Absturz vom ${time.toLocal()}')
+          ..writeln('App-Version: $appVersion')
+          ..writeln('Quelle: $source');
     if (device.isNotEmpty) buffer.writeln('Gerät: $device');
     if (locale.isNotEmpty) buffer.writeln('Sprache: $locale');
     buffer

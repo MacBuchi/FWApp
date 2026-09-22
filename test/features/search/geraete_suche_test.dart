@@ -17,14 +17,13 @@ Fundort fundort({
   String fach = 'G1',
   String? seite = 'fahrerseite',
   int menge = 1,
-}) =>
-    Fundort(
-      vehicleId: vehicleId,
-      fahrzeug: fahrzeug,
-      compartmentId: compartmentId,
-      fach: FachAntwort(label: fach, seite: seite),
-      menge: menge,
-    );
+}) => Fundort(
+  vehicleId: vehicleId,
+  fahrzeug: fahrzeug,
+  compartmentId: compartmentId,
+  fach: FachAntwort(label: fach, seite: seite),
+  menge: menge,
+);
 
 GeraetTreffer geraet(
   int id,
@@ -32,14 +31,13 @@ GeraetTreffer geraet(
   String? kurzname,
   List<Fundort> fundorte = const [],
   List<Geraetecode> codes = const [],
-}) =>
-    GeraetTreffer(
-      equipmentId: id,
-      name: name,
-      kurzname: kurzname,
-      fundorte: fundorte,
-      codes: codes,
-    );
+}) => GeraetTreffer(
+  equipmentId: id,
+  name: name,
+  kurzname: kurzname,
+  fundorte: fundorte,
+  codes: codes,
+);
 
 void main() {
   group('suchform', () {
@@ -58,21 +56,30 @@ void main() {
   });
 
   group('sucheGeraete', () {
-    final spreizer = geraet(1, 'Spreizer',
-        fundorte: [fundort(fach: 'G3', menge: 1)]);
-    final schlauch = geraet(2, 'C-Schläuche',
-        kurzname: 'C42',
-        fundorte: [
-          fundort(fach: 'G1', menge: 6),
-          fundort(vehicleId: 2, fahrzeug: 'LF 20', fach: 'G4', menge: 4),
-        ]);
-    final schere = geraet(3, 'Akku-Rettungsschere',
-        fundorte: [fundort(vehicleId: 2, fahrzeug: 'LF 20', fach: 'G2')]);
+    final spreizer = geraet(
+      1,
+      'Spreizer',
+      fundorte: [fundort(fach: 'G3', menge: 1)],
+    );
+    final schlauch = geraet(
+      2,
+      'C-Schläuche',
+      kurzname: 'C42',
+      fundorte: [
+        fundort(fach: 'G1', menge: 6),
+        fundort(vehicleId: 2, fahrzeug: 'LF 20', fach: 'G4', menge: 4),
+      ],
+    );
+    final schere = geraet(
+      3,
+      'Akku-Rettungsschere',
+      fundorte: [fundort(vehicleId: 2, fahrzeug: 'LF 20', fach: 'G2')],
+    );
     final nirgends = geraet(4, 'Wärmebildkamera');
     final bestand = [spreizer, schlauch, schere, nirgends];
 
-    SucheErgebnis suche(String eingabe, {int? vehicleId}) => sucheGeraete(
-        bestand: bestand, eingabe: eingabe, vehicleId: vehicleId);
+    SucheErgebnis suche(String eingabe, {int? vehicleId}) =>
+        sucheGeraete(bestand: bestand, eingabe: eingabe, vehicleId: vehicleId);
 
     test('leere Eingabe liefert nichts, nicht den ganzen Bestand', () {
       // Der ganze Bestand wäre keine Suche, sondern die Fahrzeugansicht.
@@ -174,7 +181,10 @@ void main() {
       ],
       codes: [
         const Geraetecode(
-            code: 'FW-7K2M9Q', kennung: 'SR 2', compartmentId: 20),
+          code: 'FW-7K2M9Q',
+          kennung: 'SR 2',
+          compartmentId: 20,
+        ),
       ],
     );
     final spreizer = geraet(2, 'Spreizer', fundorte: [fundort(fach: 'G3')]);
@@ -199,9 +209,11 @@ void main() {
     test('Schreibweise und Leerraum sind egal — wie beim Scannen', () {
       // Ein Handscanner hängt gern ein Zeilenende an.
       for (final eingabe in ['fw-7k2m9q', '  FW-7K2M9Q\n', 'FW- 7K2 M9Q']) {
-        expect(sucheGeraete(bestand: bestand, eingabe: eingabe).codeTreffer,
-            isNotNull,
-            reason: 'Eingabe: $eingabe');
+        expect(
+          sucheGeraete(bestand: bestand, eingabe: eingabe).codeTreffer,
+          isNotNull,
+          reason: 'Eingabe: $eingabe',
+        );
       }
     });
 
@@ -228,17 +240,22 @@ void main() {
 
     test('am falschen Fahrzeug sagt die Suche, wo es hingehört', () {
       // Jemand steht am MTW und hat ein Teil aus dem HLF in der Hand.
-      final e =
-          sucheGeraete(bestand: bestand, eingabe: 'FW-7K2M9Q', vehicleId: 99);
+      final e = sucheGeraete(
+        bestand: bestand,
+        eingabe: 'FW-7K2M9Q',
+        vehicleId: 99,
+      );
       expect(e.treffer, isEmpty);
       expect(e.woanders.single.name, 'Strahlrohr C');
       expect(e.codeTreffer, isNotNull);
     });
 
     test('ein Code auf einem nirgends verlasteten Gerät sagt genau das', () {
-      final reserve = geraet(3, 'Pressluftatmer', codes: [
-        const Geraetecode(code: 'FW-AAAAAAA', kennung: 'Reserve 1'),
-      ]);
+      final reserve = geraet(
+        3,
+        'Pressluftatmer',
+        codes: [const Geraetecode(code: 'FW-AAAAAAA', kennung: 'Reserve 1')],
+      );
       final e = sucheGeraete(bestand: [reserve], eingabe: 'FW-AAAAAAA');
       expect(e.nirgends.single.name, 'Pressluftatmer');
       expect(e.codeTreffer?.kennung, 'Reserve 1');

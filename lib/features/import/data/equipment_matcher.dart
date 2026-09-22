@@ -2,6 +2,7 @@
 /// the database: exact name → bundled aliases.json → learned UserAliases →
 /// normalized fuzzy matching (token overlap + Levenshtein, pure Dart).
 library;
+
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/utils/equipment_naming.dart';
 import 'package:fwapp/features/import/domain/import_models.dart';
@@ -26,8 +27,11 @@ class EquipmentMatcher {
   }) {
     final byLibraryId = <String, EquipmentItemData>{};
     for (final item in equipment) {
-      final candidate =
-          MatchCandidate(equipmentId: item.id, equipmentName: item.name, score: 1);
+      final candidate = MatchCandidate(
+        equipmentId: item.id,
+        equipmentName: item.name,
+        score: 1,
+      );
       _exactByName[normalize(item.name)] = candidate;
       if (item.shortName != null && item.shortName!.isNotEmpty) {
         _byAlias.putIfAbsent(normalize(item.shortName!), () => candidate);
@@ -35,17 +39,22 @@ class EquipmentMatcher {
       if (item.libraryEquipmentId != null) {
         byLibraryId[item.libraryEquipmentId!] = item;
       }
-      _index.add(_IndexedEquipment(
-        candidate: candidate,
-        normalized: normalize(item.name),
-        tokens: _tokens(item.name),
-      ));
+      _index.add(
+        _IndexedEquipment(
+          candidate: candidate,
+          normalized: normalize(item.name),
+          tokens: _tokens(item.name),
+        ),
+      );
     }
     bundledAliases.forEach((libraryId, aliases) {
       final item = byLibraryId[libraryId];
       if (item == null) return;
-      final candidate =
-          MatchCandidate(equipmentId: item.id, equipmentName: item.name, score: 1);
+      final candidate = MatchCandidate(
+        equipmentId: item.id,
+        equipmentName: item.name,
+        score: 1,
+      );
       for (final alias in aliases) {
         _byAlias.putIfAbsent(normalize(alias), () => candidate);
       }
@@ -55,7 +64,10 @@ class EquipmentMatcher {
       final item = byId[alias.equipmentId];
       if (item == null) continue;
       _byAlias[normalize(alias.alias)] = MatchCandidate(
-          equipmentId: item.id, equipmentName: item.name, score: 1);
+        equipmentId: item.id,
+        equipmentName: item.name,
+        score: 1,
+      );
     }
   }
 
@@ -66,12 +78,18 @@ class EquipmentMatcher {
     final exact = _exactByName[normalized];
     if (exact != null) {
       return EquipmentMatch(
-          kind: MatchKind.exact, best: exact, suggestions: [exact]);
+        kind: MatchKind.exact,
+        best: exact,
+        suggestions: [exact],
+      );
     }
     final alias = _byAlias[normalized];
     if (alias != null) {
       return EquipmentMatch(
-          kind: MatchKind.alias, best: alias, suggestions: [alias]);
+        kind: MatchKind.alias,
+        best: alias,
+        suggestions: [alias],
+      );
     }
 
     // Fuzzy: rank all items, keep the top 3 above the suggestion threshold.
@@ -80,20 +98,23 @@ class EquipmentMatcher {
     for (final entry in _index) {
       final score = _similarity(normalized, tokens, entry);
       if (score >= suggestionThreshold) {
-        scored.add(MatchCandidate(
-          equipmentId: entry.candidate.equipmentId,
-          equipmentName: entry.candidate.equipmentName,
-          score: score,
-        ));
+        scored.add(
+          MatchCandidate(
+            equipmentId: entry.candidate.equipmentId,
+            equipmentName: entry.candidate.equipmentName,
+            score: score,
+          ),
+        );
       }
     }
     scored.sort((a, b) => b.score.compareTo(a.score));
     final suggestions = scored.take(3).toList();
     if (suggestions.isNotEmpty && suggestions.first.score >= fuzzyThreshold) {
       return EquipmentMatch(
-          kind: MatchKind.fuzzy,
-          best: suggestions.first,
-          suggestions: suggestions);
+        kind: MatchKind.fuzzy,
+        best: suggestions.first,
+        suggestions: suggestions,
+      );
     }
     return EquipmentMatch(kind: MatchKind.none, suggestions: suggestions);
   }
@@ -113,7 +134,10 @@ class EquipmentMatcher {
   /// Combines token overlap (Sørensen–Dice over token sets) with a
   /// normalized Levenshtein ratio; the higher of the two wins.
   static double _similarity(
-      String normalized, Set<String> tokens, _IndexedEquipment entry) {
+    String normalized,
+    Set<String> tokens,
+    _IndexedEquipment entry,
+  ) {
     double dice = 0;
     if (tokens.isNotEmpty && entry.tokens.isNotEmpty) {
       final common = tokens.intersection(entry.tokens).length;

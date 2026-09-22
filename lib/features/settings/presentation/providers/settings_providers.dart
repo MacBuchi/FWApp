@@ -1,5 +1,6 @@
 /// settings_providers.dart – Riverpod providers for app settings (theme, sync).
 library;
+
 import 'package:flutter/material.dart' show Color, ThemeMode;
 import 'package:fwapp/core/theme/app_palette.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -20,13 +21,17 @@ const _kSupabaseKey = 'supabase_key';
 /// config/fwapp.local.json.example) — instanzspezifische Werte gehören
 /// nicht ins öffentliche Repo. Ohne Build-Flags bleibt alles leer und wird
 /// in den Settings von Hand eingetragen.
-const kDefaultSupabaseUrl =
-    String.fromEnvironment('FWAPP_SUPABASE_URL', defaultValue: '');
+const kDefaultSupabaseUrl = String.fromEnvironment(
+  'FWAPP_SUPABASE_URL',
+  defaultValue: '',
+);
 
 /// Anon-Key ist clientseitig-öffentlich (steckt in jedem verteilten Build);
 /// Datenzugriff schützt RLS.
-const kDefaultSupabaseAnonKey =
-    String.fromEnvironment('FWAPP_SUPABASE_ANON_KEY', defaultValue: '');
+const kDefaultSupabaseAnonKey = String.fromEnvironment(
+  'FWAPP_SUPABASE_ANON_KEY',
+  defaultValue: '',
+);
 
 @Riverpod(keepAlive: true)
 Future<SharedPreferences> sharedPreferences(Ref ref) =>

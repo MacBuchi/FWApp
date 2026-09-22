@@ -12,10 +12,10 @@ import 'package:fwapp/core/sync/auth_utils.dart';
 import 'package:fwapp/features/settings/domain/zustellung.dart';
 
 Zustellereignis _ev(String art, int minute, {String? grund}) => Zustellereignis(
-      art: art,
-      zeit: DateTime.utc(2026, 8, 4, 19, minute),
-      grund: grund,
-    );
+  art: art,
+  zeit: DateTime.utc(2026, 8, 4, 19, minute),
+  grund: grund,
+);
 
 void main() {
   group('die Einordnung', () {
@@ -26,11 +26,15 @@ void main() {
     });
 
     test('angenommen, aber noch kein Ergebnis = unterwegs', () {
-      expect(zustellungAus([_ev('requests', 1)]).zustand,
-          Zustellzustand.unterwegs);
+      expect(
+        zustellungAus([_ev('requests', 1)]).zustand,
+        Zustellzustand.unterwegs,
+      );
       // `deferred` heißt: Der Anbieter lässt warten. Kein Grund zur Sorge.
-      expect(zustellungAus([_ev('requests', 1), _ev('deferred', 2)]).zustand,
-          Zustellzustand.unterwegs);
+      expect(
+        zustellungAus([_ev('requests', 1), _ev('deferred', 2)]).zustand,
+        Zustellzustand.unterwegs,
+      );
     });
 
     test('zugestellt ist zugestellt', () {
@@ -39,20 +43,22 @@ void main() {
       expect(z.zeit, DateTime.utc(2026, 8, 4, 19, 2));
     });
 
-    test('der Fall aus dem Feld: Soft Bounce ohne Zustellung ist ein Ausfall',
-        () {
-      // „Vorübergehend" klingt harmlos und ist es nicht: Kommt kein
-      // späteres `delivered`, ist die Mail genauso weg wie bei einem harten
-      // Bounce — und niemand hat es gemerkt.
-      final z = zustellungAus([
-        _ev('requests', 1),
-        _ev('softBounces', 2, grund: 'Internal Error: DKIM Bad request'),
-      ]);
-      expect(z.zustand, Zustellzustand.gescheitert);
-      expect(z.grund, contains('Internal Error: DKIM Bad request'));
-      expect(z.grund, contains('vorübergehend abgelehnt'));
-      expect(z.zeit, DateTime.utc(2026, 8, 4, 19, 2));
-    });
+    test(
+      'der Fall aus dem Feld: Soft Bounce ohne Zustellung ist ein Ausfall',
+      () {
+        // „Vorübergehend" klingt harmlos und ist es nicht: Kommt kein
+        // späteres `delivered`, ist die Mail genauso weg wie bei einem harten
+        // Bounce — und niemand hat es gemerkt.
+        final z = zustellungAus([
+          _ev('requests', 1),
+          _ev('softBounces', 2, grund: 'Internal Error: DKIM Bad request'),
+        ]);
+        expect(z.zustand, Zustellzustand.gescheitert);
+        expect(z.grund, contains('Internal Error: DKIM Bad request'));
+        expect(z.grund, contains('vorübergehend abgelehnt'));
+        expect(z.zeit, DateTime.utc(2026, 8, 4, 19, 2));
+      },
+    );
 
     test('ein geglückter Wiederholungsversuch hebt den Soft Bounce auf', () {
       // Brevo versucht es erneut. Klappt es, wäre eine Warnung falscher
@@ -85,9 +91,14 @@ void main() {
 
     test('die Reihenfolge der Liste ändert nichts', () {
       // Brevo liefert neueste zuerst; darauf darf sich nichts verlassen.
-      final vorwaerts = zustellungAus([_ev('softBounces', 2), _ev('delivered', 5)]);
-      final rueckwaerts =
-          zustellungAus([_ev('delivered', 5), _ev('softBounces', 2)]);
+      final vorwaerts = zustellungAus([
+        _ev('softBounces', 2),
+        _ev('delivered', 5),
+      ]);
+      final rueckwaerts = zustellungAus([
+        _ev('delivered', 5),
+        _ev('softBounces', 2),
+      ]);
       expect(vorwaerts.zustand, rueckwaerts.zustand);
     });
 
@@ -95,8 +106,10 @@ void main() {
       // `opened` sollte gar nicht ankommen (der Server wirft es weg, weil
       // Postfach-Scanner es auslösen). Käme es doch, darf es kein Urteil
       // begründen.
-      expect(zustellungAus([_ev('opened', 4)]).zustand,
-          Zustellzustand.unterwegs);
+      expect(
+        zustellungAus([_ev('opened', 4)]).zustand,
+        Zustellzustand.unterwegs,
+      );
     });
 
     test('ohne Begründung steht wenigstens die Art da', () {
@@ -113,7 +126,10 @@ void main() {
 
   group('die Zeile darunter', () {
     test('benennt den Zustand', () {
-      expect(zustellungText(zustellungAus([_ev('delivered', 1)])), 'zugestellt');
+      expect(
+        zustellungText(zustellungAus([_ev('delivered', 1)])),
+        'zugestellt',
+      );
       expect(zustellungText(zustellungAus([_ev('requests', 1)])), 'unterwegs');
       expect(zustellungText(Zustellung.unbekannt), 'Zustellung nicht prüfbar');
       expect(

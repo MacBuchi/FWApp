@@ -86,9 +86,9 @@ Future<void> main() async {
     String? bildPfad,
     String? geraet,
     String stand = 'freigegeben',
-  }) async =>
-      asService((s) async {
-        final zeile = await s
+  }) async => asService((s) async {
+    final zeile =
+        await s
             .from('quiz_questions')
             .insert({
               'gesamtwehr_id': wehr,
@@ -104,8 +104,8 @@ Future<void> main() async {
             })
             .select('id')
             .single();
-        return zeile['id'] as String;
-      });
+    return zeile['id'] as String;
+  });
 
   Future<int> lokal({
     String frage = 'Lokale Frage mit Fragezeichen?',
@@ -113,17 +113,18 @@ Future<void> main() async {
     String stand = 'eingereicht',
     bool dirty = true,
     String? remoteId,
-  }) =>
-      db.wissenDao.insertFrage(WissensfragenCompanion.insert(
-        gebiet: 'geraetekunde',
-        frage: frage,
-        antwortenJson: const Value('["Richtig","Falsch"]'),
-        richtigeJson: const Value('[0]'),
-        herkunft: Value(herkunft),
-        stand: Value(stand),
-        remoteId: Value(remoteId),
-        dirty: Value(dirty),
-      ));
+  }) => db.wissenDao.insertFrage(
+    WissensfragenCompanion.insert(
+      gebiet: 'geraetekunde',
+      frage: frage,
+      antwortenJson: const Value('["Richtig","Falsch"]'),
+      richtigeJson: const Value('[0]'),
+      herkunft: Value(herkunft),
+      stand: Value(stand),
+      remoteId: Value(remoteId),
+      dirty: Value(dirty),
+    ),
+  );
 
   setUpAll(() async {
     await stackSperreHolen();
@@ -133,22 +134,24 @@ Future<void> main() async {
       password: 'test1234',
     );
     await asService((s) async {
-      final gw = await s
-          .from('gesamtwehren')
-          .insert({'name': 'Sync Wehr', 'slug': 'sync-wehr'})
-          .select('id')
-          .single();
+      final gw =
+          await s
+              .from('gesamtwehren')
+              .insert({'name': 'Sync Wehr', 'slug': 'sync-wehr'})
+              .select('id')
+              .single();
       wehr = gw['id'] as String;
-      final abt = await s
-          .from('abteilungen')
-          .insert({
-            'name': 'Sync Abteilung',
-            'slug': 'sync-abt',
-            'status': 'active',
-            'gesamtwehr_id': wehr,
-          })
-          .select('id')
-          .single();
+      final abt =
+          await s
+              .from('abteilungen')
+              .insert({
+                'name': 'Sync Abteilung',
+                'slug': 'sync-abt',
+                'status': 'active',
+                'gesamtwehr_id': wehr,
+              })
+              .select('id')
+              .single();
       abteilung = abt['id'] as String;
       await s.from('memberships').upsert({
         'user_id': wart.auth.currentUser!.id,
@@ -196,44 +199,61 @@ Future<void> main() async {
 
       final danach = (await db.wissenDao.getById(id))!;
       expect(danach.remoteId, isNotNull);
-      expect(danach.dirty, isFalse,
-          reason: 'Was geschoben ist, darf nicht erneut geschoben werden.');
-    });
-
-    test('eine MITGELIEFERTE Frage geht NICHT hinaus, wird aber sauber',
-        () async {
-      // Mitgeliefertes steht auf jedem Gerät im Asset. Es hochzuladen hieße,
-      // denselben Grundstock für jede Wehr ein zweites Mal zu speichern.
-      final id = await lokal(herkunft: 'mitgeliefert');
-      await sync.schiebe(wehr);
-
-      final danach = (await db.wissenDao.getById(id))!;
-      expect(danach.remoteId, isNull);
-      expect(danach.dirty, isFalse,
-          reason: 'Sonst versucht es jeder Abgleich erneut.');
       expect(
-        await asService(
-            (s) => s.from('quiz_questions').select().eq('gesamtwehr_id', wehr)),
-        isEmpty,
+        danach.dirty,
+        isFalse,
+        reason: 'Was geschoben ist, darf nicht erneut geschoben werden.',
       );
     });
 
-    test('neu geht IMMER als eingereicht hinaus — und wird dann gesetzt',
-        () async {
-      // Die Insert-Policy lässt nichts anderes zu: Niemand gibt seine eigene
-      // Frage frei. Wer freigeben darf, tut es im zweiten Zug.
-      final id = await lokal(stand: 'freigegeben');
-      await sync.schiebe(wehr);
+    test(
+      'eine MITGELIEFERTE Frage geht NICHT hinaus, wird aber sauber',
+      () async {
+        // Mitgeliefertes steht auf jedem Gerät im Asset. Es hochzuladen hieße,
+        // denselben Grundstock für jede Wehr ein zweites Mal zu speichern.
+        final id = await lokal(herkunft: 'mitgeliefert');
+        await sync.schiebe(wehr);
 
-      final danach = (await db.wissenDao.getById(id))!;
-      final serverZeile = await asService((s) => s
-          .from('quiz_questions')
-          .select('stand')
-          .eq('id', danach.remoteId!)
-          .single());
-      expect(serverZeile['stand'], 'freigegeben',
-          reason: 'Der zweite Zug muss den Stand nachziehen.');
-    });
+        final danach = (await db.wissenDao.getById(id))!;
+        expect(danach.remoteId, isNull);
+        expect(
+          danach.dirty,
+          isFalse,
+          reason: 'Sonst versucht es jeder Abgleich erneut.',
+        );
+        expect(
+          await asService(
+            (s) => s.from('quiz_questions').select().eq('gesamtwehr_id', wehr),
+          ),
+          isEmpty,
+        );
+      },
+    );
+
+    test(
+      'neu geht IMMER als eingereicht hinaus — und wird dann gesetzt',
+      () async {
+        // Die Insert-Policy lässt nichts anderes zu: Niemand gibt seine eigene
+        // Frage frei. Wer freigeben darf, tut es im zweiten Zug.
+        final id = await lokal(stand: 'freigegeben');
+        await sync.schiebe(wehr);
+
+        final danach = (await db.wissenDao.getById(id))!;
+        final serverZeile = await asService(
+          (s) =>
+              s
+                  .from('quiz_questions')
+                  .select('stand')
+                  .eq('id', danach.remoteId!)
+                  .single(),
+        );
+        expect(
+          serverZeile['stand'],
+          'freigegeben',
+          reason: 'Der zweite Zug muss den Stand nachziehen.',
+        );
+      },
+    );
 
     test('eine saubere Frage wird gar nicht erst angefasst', () async {
       await lokal(dirty: false);
@@ -266,12 +286,17 @@ Future<void> main() async {
       // und zwar ohne Fehlermeldung.
       final remoteId = await aufDemServer(frage: 'Fassung vom Server?');
       final id = await lokal(
-          frage: 'Meine geänderte Fassung?', dirty: true, remoteId: remoteId);
+        frage: 'Meine geänderte Fassung?',
+        dirty: true,
+        remoteId: remoteId,
+      );
 
       await sync.ziehe(wehr);
 
-      expect((await db.wissenDao.getById(id))!.frage,
-          'Meine geänderte Fassung?');
+      expect(
+        (await db.wissenDao.getById(id))!.frage,
+        'Meine geänderte Fassung?',
+      );
     });
 
     test('eine SAUBERE lokale Frage wird sehr wohl aktualisiert', () async {
@@ -279,7 +304,10 @@ Future<void> main() async {
       // nichts mehr ankommt.
       final remoteId = await aufDemServer(frage: 'Fassung vom Server?');
       final id = await lokal(
-          frage: 'Alte Fassung?', dirty: false, remoteId: remoteId);
+        frage: 'Alte Fassung?',
+        dirty: false,
+        remoteId: remoteId,
+      );
 
       await sync.ziehe(wehr);
 
@@ -289,9 +317,12 @@ Future<void> main() async {
     test('entfernt, was der Server als gelöscht meldet', () async {
       final remoteId = await aufDemServer();
       final id = await lokal(dirty: false, remoteId: remoteId);
-      await asService((s) => s.from('quiz_questions').update(
-          {'deleted_at': DateTime.now().toUtc().toIso8601String()}).eq(
-          'id', remoteId));
+      await asService(
+        (s) => s
+            .from('quiz_questions')
+            .update({'deleted_at': DateTime.now().toUtc().toIso8601String()})
+            .eq('id', remoteId),
+      );
 
       await sync.ziehe(wehr);
 
@@ -308,11 +339,14 @@ Future<void> main() async {
 
     await sync.archiviere(f, wehr);
 
-    final zeile = await asService((s) => s
-        .from('quiz_questions')
-        .select('deleted_at')
-        .eq('id', remoteId)
-        .single());
+    final zeile = await asService(
+      (s) =>
+          s
+              .from('quiz_questions')
+              .select('deleted_at')
+              .eq('id', remoteId)
+              .single(),
+    );
     expect(zeile['deleted_at'], isNotNull);
     expect(await db.wissenDao.getById(id), isNull);
   });
@@ -320,8 +354,10 @@ Future<void> main() async {
   group('Lernbereiche', () {
     test('abschalten, spiegeln, wieder einschalten', () async {
       await sync.setzeLernbereich(wehr, gebiet: 'atemschutz', aus: true);
-      expect((await db.wissenDao.getAbgeschaltet()).single.gebiet,
-          'atemschutz');
+      expect(
+        (await db.wissenDao.getAbgeschaltet()).single.gebiet,
+        'atemschutz',
+      );
 
       await sync.setzeLernbereich(wehr, gebiet: 'atemschutz', aus: false);
       expect(await db.wissenDao.getAbgeschaltet(), isEmpty);
@@ -331,8 +367,12 @@ Future<void> main() async {
       // Kein `deleted_at` nötig: Eine Zeile, die nicht mehr kommt, ist wieder
       // eingeschaltet. Das gilt nur, solange der Zug wirklich ersetzt.
       await sync.setzeLernbereich(wehr, gebiet: 'funk', aus: true);
-      await asService((s) =>
-          s.from('abgeschaltete_lernbereiche').delete().eq('gesamtwehr_id', wehr));
+      await asService(
+        (s) => s
+            .from('abgeschaltete_lernbereiche')
+            .delete()
+            .eq('gesamtwehr_id', wehr),
+      );
 
       await sync.zieheLernbereiche(wehr);
 
@@ -343,10 +383,12 @@ Future<void> main() async {
   group('Hinweise', () {
     test('melden landet im Spiegel, abhaken auch', () async {
       final remoteId = await aufDemServer();
-      await sync.meldeHinweis(wehr,
-          frageRemoteId: remoteId,
-          text: 'Antwort b) stimmt seit 2024 auch.',
-          melderName: 'Truppführer');
+      await sync.meldeHinweis(
+        wehr,
+        frageRemoteId: remoteId,
+        text: 'Antwort b) stimmt seit 2024 auch.',
+        melderName: 'Truppführer',
+      );
 
       final offen = await db.wissenDao.watchOffeneHinweise().first;
       expect(offen, hasLength(1));

@@ -19,10 +19,16 @@ void main() {
     });
 
     test('nennt die Adresse nur, wenn es eine gibt', () {
-      final ohne =
-          zugangsNachricht(nutzername: 'max.m', passwort: 'x', webUrl: '');
+      final ohne = zugangsNachricht(
+        nutzername: 'max.m',
+        passwort: 'x',
+        webUrl: '',
+      );
       final mit = zugangsNachricht(
-          nutzername: 'max.m', passwort: 'x', webUrl: 'https://beispiel.test');
+        nutzername: 'max.m',
+        passwort: 'x',
+        webUrl: 'https://beispiel.test',
+      );
 
       expect(mit, contains('https://beispiel.test'));
       // Eine nachnutzende Wehr, die ohne --dart-define baut, darf keinen
@@ -56,7 +62,8 @@ void main() {
       expect(
         seed,
         contains('MITGLIED_PASSWORT = "$kDemoPasswort"'),
-        reason: 'tool/demo_wehr.py legt ein anderes Passwort an, als die App '
+        reason:
+            'tool/demo_wehr.py legt ein anderes Passwort an, als die App '
             'verschickt.',
       );
       expect(
@@ -70,7 +77,8 @@ void main() {
       expect(
         block.substring(0, block.indexOf('},')),
         allOf(contains('"rolle": "member"'), contains('"oeffentlich": True')),
-        reason: 'Das öffentliche Passwort gehört ausschließlich dem lesenden '
+        reason:
+            'Das öffentliche Passwort gehört ausschließlich dem lesenden '
             'Konto.',
       );
     });

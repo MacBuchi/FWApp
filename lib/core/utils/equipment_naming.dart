@@ -13,11 +13,12 @@
 library;
 
 /// Kleinschreibung, Umlaute ausgeschrieben, alles andere zu einem Leerzeichen.
-String normalizeEquipmentName(String s) => s
-    .toLowerCase()
-    .replaceAll('ä', 'ae')
-    .replaceAll('ö', 'oe')
-    .replaceAll('ü', 'ue')
-    .replaceAll('ß', 'ss')
-    .replaceAll(RegExp(r'[^a-z0-9]+'), ' ')
-    .trim();
+String normalizeEquipmentName(String s) =>
+    s
+        .toLowerCase()
+        .replaceAll('ä', 'ae')
+        .replaceAll('ö', 'oe')
+        .replaceAll('ü', 'ue')
+        .replaceAll('ß', 'ss')
+        .replaceAll(RegExp(r'[^a-z0-9]+'), ' ')
+        .trim();

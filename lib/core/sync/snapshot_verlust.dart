@@ -57,18 +57,16 @@ class SnapshotVerlust {
   }
 
   static String _name(String tabelle, int anzahl) => switch (tabelle) {
-        'vehicles' => anzahl == 1 ? 'Fahrzeug' : 'Fahrzeuge',
-        'compartments' => anzahl == 1 ? 'Fach' : 'Fächer',
-        'equipment_items' => anzahl == 1 ? 'Gerät' : 'Geräte',
-        'equipment_assignments' =>
-          anzahl == 1 ? 'Zuordnung' : 'Zuordnungen',
-        'equipment_instances' =>
-          anzahl == 1 ? 'Geräte-Einheit' : 'Geräte-Einheiten',
-        'inspection_schedules' => anzahl == 1 ? 'Prüftermin' : 'Prüftermine',
-        'inspection_log' =>
-          anzahl == 1 ? 'Prüfeintrag' : 'Prüfeinträge',
-        _ => anzahl == 1 ? 'Eintrag' : 'Einträge',
-      };
+    'vehicles' => anzahl == 1 ? 'Fahrzeug' : 'Fahrzeuge',
+    'compartments' => anzahl == 1 ? 'Fach' : 'Fächer',
+    'equipment_items' => anzahl == 1 ? 'Gerät' : 'Geräte',
+    'equipment_assignments' => anzahl == 1 ? 'Zuordnung' : 'Zuordnungen',
+    'equipment_instances' =>
+      anzahl == 1 ? 'Geräte-Einheit' : 'Geräte-Einheiten',
+    'inspection_schedules' => anzahl == 1 ? 'Prüftermin' : 'Prüftermine',
+    'inspection_log' => anzahl == 1 ? 'Prüfeintrag' : 'Prüfeinträge',
+    _ => anzahl == 1 ? 'Eintrag' : 'Einträge',
+  };
 }
 
 /// Zählt, wie viele lokale Zeilen der Zug WIRKLICH löschen würde.
@@ -82,18 +80,20 @@ Future<SnapshotVerlust> berechneVerlust(
   Map<String, List<Map<String, dynamic>>> data,
 ) async {
   Future<int> zaehle(String tabelle, TableInfo<Table, dynamic> t) async {
-    final ids = (data[tabelle] ?? const [])
-        .map((r) => (r['id'] as num).toInt())
-        .toList();
+    final ids =
+        (data[tabelle] ?? const [])
+            .map((r) => (r['id'] as num).toInt())
+            .toList();
     final spalte = t.columnsByName['id']! as GeneratedColumn<int>;
     // ⚠️ Nur Zeilen, die schon einmal oben waren. Seit #67 bleibt
     // Unveröffentlichtes beim Zug stehen — es mitzuzählen hieße, vor einem
     // Verlust zu warnen, den es nicht mehr gibt.
     final veroeffentlicht = t.columnsByName['dirty']! as GeneratedColumn<bool>;
     final anzahl = countAll();
-    final abfrage = db.selectOnly(t)
-      ..addColumns([anzahl])
-      ..where(spalte.isNotIn(ids) & veroeffentlicht.equals(false));
+    final abfrage =
+        db.selectOnly(t)
+          ..addColumns([anzahl])
+          ..where(spalte.isNotIn(ids) & veroeffentlicht.equals(false));
     return await abfrage.map((r) => r.read(anzahl)!).getSingle();
   }
 
@@ -101,12 +101,18 @@ Future<SnapshotVerlust> berechneVerlust(
     'vehicles': await zaehle('vehicles', db.vehicles),
     'compartments': await zaehle('compartments', db.compartments),
     'equipment_items': await zaehle('equipment_items', db.equipmentItems),
-    'equipment_assignments':
-        await zaehle('equipment_assignments', db.equipmentAssignments),
-    'equipment_instances':
-        await zaehle('equipment_instances', db.equipmentInstances),
-    'inspection_schedules':
-        await zaehle('inspection_schedules', db.inspectionSchedules),
+    'equipment_assignments': await zaehle(
+      'equipment_assignments',
+      db.equipmentAssignments,
+    ),
+    'equipment_instances': await zaehle(
+      'equipment_instances',
+      db.equipmentInstances,
+    ),
+    'inspection_schedules': await zaehle(
+      'inspection_schedules',
+      db.inspectionSchedules,
+    ),
     'inspection_log': await zaehle('inspection_log', db.inspectionLog),
   });
 }

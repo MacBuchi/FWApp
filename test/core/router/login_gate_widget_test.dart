@@ -6,6 +6,7 @@
 /// Funktion nicht beantworten kann — kommt der gesperrte Screen wirklich nie
 /// auf den Bildschirm?
 library;
+
 import 'package:flutter/material.dart';
 import 'package:riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
@@ -34,14 +35,16 @@ void main() {
   /// null (kein echter Supabase-Client im Test), der Anmeldezustand kommt
   /// über den Callback — genau dafür ist er ein Callback.
   List<Override> ausgeloggt() => [
-        supabaseReadyProvider.overrideWithValue(true),
-        supabaseClientProvider.overrideWithValue(null),
-        signedInReaderProvider.overrideWithValue(() => false),
-        serverHealthProvider.overrideWith((ref) async => true),
-      ];
+    supabaseReadyProvider.overrideWithValue(true),
+    supabaseClientProvider.overrideWithValue(null),
+    signedInReaderProvider.overrideWithValue(() => false),
+    serverHealthProvider.overrideWith((ref) async => true),
+  ];
 
   testWidgets('ohne Sitzung landet man auf der Anmeldung', (tester) async {
-    await tester.pumpWidget(buildRoutedTestApp(db: db, overrides: ausgeloggt()));
+    await tester.pumpWidget(
+      buildRoutedTestApp(db: db, overrides: ausgeloggt()),
+    );
     await tester.pumpAndSettle();
 
     expect(find.byType(LoginScreen), findsOneWidget);
@@ -51,9 +54,12 @@ void main() {
     await endTestApp(tester);
   });
 
-  testWidgets('auch ein Deep-Link kommt nicht an der Anmeldung vorbei',
-      (tester) async {
-    await tester.pumpWidget(buildRoutedTestApp(db: db, overrides: ausgeloggt()));
+  testWidgets('auch ein Deep-Link kommt nicht an der Anmeldung vorbei', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      buildRoutedTestApp(db: db, overrides: ausgeloggt()),
+    );
     await tester.pumpAndSettle();
 
     containerOf(tester).read(routerProvider).go('/import');
@@ -63,9 +69,12 @@ void main() {
     await endTestApp(tester);
   });
 
-  testWidgets('der Notausgang bleibt ohne Anmeldung erreichbar',
-      (tester) async {
-    await tester.pumpWidget(buildRoutedTestApp(db: db, overrides: ausgeloggt()));
+  testWidgets('der Notausgang bleibt ohne Anmeldung erreichbar', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      buildRoutedTestApp(db: db, overrides: ausgeloggt()),
+    );
     await tester.pumpAndSettle();
 
     // ensureVisible zuerst: Ein Tap außerhalb des sichtbaren Bereichs warnt
@@ -81,11 +90,14 @@ void main() {
     await endTestApp(tester);
   });
 
-  testWidgets('containerOf findet den Scope trotz MaterialApp.router',
-      (tester) async {
+  testWidgets('containerOf findet den Scope trotz MaterialApp.router', (
+    tester,
+  ) async {
     // Absicherung des Test-Werkzeugs selbst: containerOf sucht nach
     // MaterialApp — das muss auch für die Router-Variante gelten.
-    await tester.pumpWidget(buildRoutedTestApp(db: db, overrides: ausgeloggt()));
+    await tester.pumpWidget(
+      buildRoutedTestApp(db: db, overrides: ausgeloggt()),
+    );
     await tester.pumpAndSettle();
     expect(containerOf(tester).read(supabaseReadyProvider), isTrue);
     await endTestApp(tester);

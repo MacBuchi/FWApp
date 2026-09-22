@@ -1,5 +1,6 @@
 /// compartment_providers.dart – Riverpod providers for compartment feature.
 library;
+
 import 'package:fwapp/core/database/database_providers.dart';
 import 'package:fwapp/features/compartment/data/repositories/compartment_repository_impl.dart';
 import 'package:fwapp/features/compartment/domain/entities/compartment.dart';
@@ -13,11 +14,9 @@ CompartmentRepository compartmentRepository(Ref ref) =>
     CompartmentRepositoryImpl(ref.watch(compartmentDaoProvider));
 
 @riverpod
-Stream<List<Compartment>> compartmentListStream(
-        Ref ref, int vehicleId) =>
+Stream<List<Compartment>> compartmentListStream(Ref ref, int vehicleId) =>
     ref.watch(compartmentRepositoryProvider).watchByVehicle(vehicleId);
 
 @riverpod
-Future<List<Compartment>> compartmentList(
-        Ref ref, int vehicleId) =>
+Future<List<Compartment>> compartmentList(Ref ref, int vehicleId) =>
     ref.watch(compartmentRepositoryProvider).getByVehicle(vehicleId);

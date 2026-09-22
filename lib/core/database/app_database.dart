@@ -1,6 +1,7 @@
 /// app_database.dart – Drift database definition: tables, DAOs, and database singleton.
 /// Platform-conditional connection (NativeDatabase on mobile, WasmDatabase on web).
 library;
+
 import 'package:drift/drift.dart';
 import 'package:fwapp/core/database/connection/connection.dart';
 
@@ -40,10 +41,8 @@ class Vehicles extends Table with SyncDirty {
   TextColumn get type => text()();
   TextColumn get licensePlate => text().nullable()();
   TextColumn get imagePath => text().nullable()();
-  DateTimeColumn get createdAt =>
-      dateTime().withDefault(currentDateAndTime)();
-  DateTimeColumn get updatedAt =>
-      dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 }
 
 @DataClassName('CompartmentData')
@@ -75,8 +74,7 @@ class Compartments extends Table with SyncDirty {
   /// derselbe Bucket — das Schreibrecht ist dasselbe, es ist der Gerätewart.
   TextColumn get imagePath => text().nullable()();
 
-  DateTimeColumn get updatedAt =>
-      dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 }
 
 /// Unterlagen und Bilder am Fahrzeug (Issue #182): Betriebsanleitung,
@@ -111,8 +109,7 @@ class VehicleAttachments extends Table {
   TextColumn get localPath => text().nullable()();
 
   IntColumn get sizeBytes => integer().withDefault(const Constant(0))();
-  DateTimeColumn get updatedAt =>
-      dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 }
 
 /// Die Wissensdatenbank hinter den Quizfragen (Issue #174).
@@ -208,8 +205,7 @@ class Wissensfragen extends Table {
   /// Lokal geändert und noch nicht geteilt.
   BoolColumn get dirty => boolean().withDefault(const Constant(false))();
 
-  DateTimeColumn get updatedAt =>
-      dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 }
 
 /// Was diese Wehr NICHT abgefragt haben will (Marcus, 2026-08-28).
@@ -265,8 +261,7 @@ class Fragenhinweise extends Table {
   /// Anzeigename des Meldenden, rein zur Nachvollziehbarkeit.
   TextColumn get vonName => text().nullable()();
 
-  DateTimeColumn get createdAt =>
-      dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 
   /// Abgehakt vom Gerätewart. `null` = liegt offen.
   DateTimeColumn get erledigtAm => dateTime().nullable()();
@@ -281,21 +276,17 @@ class EquipmentItems extends Table with SyncDirty {
       text().withDefault(const Constant('[]'))();
   TextColumn get deploymentScenariosJson =>
       text().withDefault(const Constant('[]'))();
-  TextColumn get description =>
-      text().withDefault(const Constant(''))();
+  TextColumn get description => text().withDefault(const Constant(''))();
   TextColumn get imagePath => text().nullable()();
   TextColumn get trainingUrl => text().nullable()();
   TextColumn get libraryEquipmentId => text().nullable()();
-  BoolColumn get isCustom =>
-      boolean().withDefault(const Constant(false))();
+  BoolColumn get isCustom => boolean().withDefault(const Constant(false))();
   TextColumn get extraAttributesJson =>
       text().withDefault(const Constant('{}'))();
   TextColumn get trainingQuestionsJson =>
       text().withDefault(const Constant('[]'))();
-  TextColumn get typicalUseJson =>
-      text().withDefault(const Constant('[]'))();
-  DateTimeColumn get updatedAt =>
-      dateTime().withDefault(currentDateAndTime)();
+  TextColumn get typicalUseJson => text().withDefault(const Constant('[]'))();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 
   /// UUID des geteilten Gerätetyps der Gesamtwehr (Nutzerkonzept Stufe ②,
   /// Issue #99). `null` heißt: noch nicht mit dem geteilten Bestand
@@ -329,8 +320,7 @@ class EquipmentAssignments extends Table with SyncDirty {
   IntColumn get equipmentId =>
       integer().references(EquipmentItems, #id, onDelete: KeyAction.cascade)();
   IntColumn get quantity => integer().withDefault(const Constant(1))();
-  DateTimeColumn get updatedAt =>
-      dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 }
 
 /// A physical, trackable instance of an equipment type (e.g. "Flasche 3").
@@ -343,15 +333,21 @@ class EquipmentInstances extends Table with SyncDirty {
   IntColumn get equipmentId =>
       integer().references(EquipmentItems, #id, onDelete: KeyAction.cascade)();
   IntColumn get vehicleId =>
-      integer().nullable().references(Vehicles, #id, onDelete: KeyAction.setNull)();
-  IntColumn get compartmentId => integer()
-      .nullable()
-      .references(Compartments, #id, onDelete: KeyAction.setNull)();
+      integer().nullable().references(
+        Vehicles,
+        #id,
+        onDelete: KeyAction.setNull,
+      )();
+  IntColumn get compartmentId =>
+      integer().nullable().references(
+        Compartments,
+        #id,
+        onDelete: KeyAction.setNull,
+      )();
   TextColumn get identifier => text().nullable()();
   TextColumn get notes => text().withDefault(const Constant(''))();
   BoolColumn get isActive => boolean().withDefault(const Constant(true))();
-  DateTimeColumn get updatedAt =>
-      dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 }
 
 /// Ein maschinenlesbarer Code an EINER physischen Einheit (Issues #177/#179).
@@ -378,8 +374,12 @@ class EquipmentTags extends Table {
   static const kindNfc = 'nfc';
 
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get instanceId => integer()
-      .references(EquipmentInstances, #id, onDelete: KeyAction.cascade)();
+  IntColumn get instanceId =>
+      integer().references(
+        EquipmentInstances,
+        #id,
+        onDelete: KeyAction.cascade,
+      )();
 
   /// Der Code, wie ihn ein Lesegerät liefert — **normalisiert** abgelegt
   /// (siehe `normalisiereTagCode`). Eindeutig: Ein Code zeigt auf genau
@@ -436,23 +436,30 @@ class InspectionSchedules extends Table with SyncDirty {
   static const kindExpiry = 'expiry';
 
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get instanceId => integer()
-      .references(EquipmentInstances, #id, onDelete: KeyAction.cascade)();
+  IntColumn get instanceId =>
+      integer().references(
+        EquipmentInstances,
+        #id,
+        onDelete: KeyAction.cascade,
+      )();
   TextColumn get kind => text()();
   TextColumn get title => text()();
   IntColumn get intervalMonths => integer().nullable()();
   DateTimeColumn get lastDoneAt => dateTime().nullable()();
   DateTimeColumn get dueAt => dateTime()();
   TextColumn get notes => text().withDefault(const Constant(''))();
-  DateTimeColumn get updatedAt =>
-      dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 }
 
 @DataClassName('InspectionLogData')
 class InspectionLog extends Table with SyncDirty {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get scheduleId => integer()
-      .references(InspectionSchedules, #id, onDelete: KeyAction.cascade)();
+  IntColumn get scheduleId =>
+      integer().references(
+        InspectionSchedules,
+        #id,
+        onDelete: KeyAction.cascade,
+      )();
   DateTimeColumn get doneAt => dateTime()();
   TextColumn get doneBy => text().withDefault(const Constant(''))();
   TextColumn get note => text().withDefault(const Constant(''))();
@@ -466,16 +473,14 @@ class UserAliases extends Table {
   TextColumn get alias => text().unique()();
   IntColumn get equipmentId =>
       integer().references(EquipmentItems, #id, onDelete: KeyAction.cascade)();
-  DateTimeColumn get updatedAt =>
-      dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 }
 
 /// Single-row sync bookkeeping (id is always 1).
 @DataClassName('SyncMetaData')
 class SyncMeta extends Table {
   IntColumn get id => integer().withDefault(const Constant(1))();
-  IntColumn get lastPulledVersion =>
-      integer().withDefault(const Constant(0))();
+  IntColumn get lastPulledVersion => integer().withDefault(const Constant(0))();
   DateTimeColumn get lastPulledAt => dateTime().nullable()();
   BoolColumn get localDirty => boolean().withDefault(const Constant(false))();
 
@@ -501,8 +506,7 @@ class InventorySessions extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get vehicleId =>
       integer().references(Vehicles, #id, onDelete: KeyAction.cascade)();
-  DateTimeColumn get startedAt =>
-      dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get startedAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get finishedAt => dateTime().nullable()();
   TextColumn get doneBy => text().withDefault(const Constant(''))();
 }
@@ -527,7 +531,11 @@ class InventoryChecks extends Table {
 
   IntColumn get id => integer().autoIncrement()();
   IntColumn get sessionId =>
-      integer().references(InventorySessions, #id, onDelete: KeyAction.cascade)();
+      integer().references(
+        InventorySessions,
+        #id,
+        onDelete: KeyAction.cascade,
+      )();
   IntColumn get equipmentId => integer().nullable()();
   IntColumn get compartmentId => integer().nullable()();
   TextColumn get equipmentName => text()();
@@ -568,8 +576,8 @@ class LearningProgress extends Table {
 
   @override
   List<Set<Column>> get uniqueKeys => [
-        {equipmentId}
-      ];
+    {equipmentId},
+  ];
 }
 
 @DataClassName('QuizResultData')
@@ -579,9 +587,12 @@ class QuizResults extends Table {
   IntColumn get score => integer()();
   IntColumn get total => integer()();
   IntColumn get vehicleId =>
-      integer().nullable().references(Vehicles, #id, onDelete: KeyAction.setNull)();
-  DateTimeColumn get playedAt =>
-      dateTime().withDefault(currentDateAndTime)();
+      integer().nullable().references(
+        Vehicles,
+        #id,
+        onDelete: KeyAction.setNull,
+      )();
+  DateTimeColumn get playedAt => dateTime().withDefault(currentDateAndTime)();
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -589,8 +600,7 @@ class QuizResults extends Table {
 // ─────────────────────────────────────────────────────────────
 
 @DriftAccessor(tables: [Vehicles])
-class VehicleDao extends DatabaseAccessor<AppDatabase>
-    with _$VehicleDaoMixin {
+class VehicleDao extends DatabaseAccessor<AppDatabase> with _$VehicleDaoMixin {
   VehicleDao(super.db);
 
   Future<List<VehicleData>> getAll() =>
@@ -635,8 +645,8 @@ class CompartmentDao extends DatabaseAccessor<AppDatabase>
   /// [getByVehicle] je Fahrzeug wären bei zwölf Fahrzeugen zwölf Abfragen für
   /// jeden Tastendruck.
   Future<List<CompartmentData>> getAll() =>
-      (select(compartments)..orderBy([(t) => OrderingTerm.asc(t.position)]))
-          .get();
+      (select(compartments)
+        ..orderBy([(t) => OrderingTerm.asc(t.position)])).get();
 
   Stream<List<CompartmentData>> watchByVehicle(int vehicleId) =>
       (select(compartments)
@@ -658,7 +668,8 @@ class CompartmentDao extends DatabaseAccessor<AppDatabase>
 }
 
 @DriftAccessor(
-    tables: [EquipmentItems, EquipmentAssignments, EquipmentInstances])
+  tables: [EquipmentItems, EquipmentAssignments, EquipmentInstances],
+)
 class EquipmentDao extends DatabaseAccessor<AppDatabase>
     with _$EquipmentDaoMixin {
   EquipmentDao(super.db);
@@ -668,30 +679,27 @@ class EquipmentDao extends DatabaseAccessor<AppDatabase>
   /// Entfernen danach gefragt (Issue #99).
   Future<List<AssignmentData>> assignmentsFor(int equipmentId) =>
       (select(equipmentAssignments)
-            ..where((t) => t.equipmentId.equals(equipmentId)))
-          .get();
+        ..where((t) => t.equipmentId.equals(equipmentId))).get();
 
   Future<List<EquipmentInstanceData>> instancesFor(int equipmentId) =>
       (select(equipmentInstances)
-            ..where((t) => t.equipmentId.equals(equipmentId)))
-          .get();
+        ..where((t) => t.equipmentId.equals(equipmentId))).get();
 
   Future<List<EquipmentItemData>> getAll() =>
-      (select(equipmentItems)..orderBy([(t) => OrderingTerm.asc(t.name)]))
-          .get();
+      (select(equipmentItems)
+        ..orderBy([(t) => OrderingTerm.asc(t.name)])).get();
 
   Stream<List<EquipmentItemData>> watchAll() =>
-      (select(equipmentItems)..orderBy([(t) => OrderingTerm.asc(t.name)]))
-          .watch();
+      (select(equipmentItems)
+        ..orderBy([(t) => OrderingTerm.asc(t.name)])).watch();
 
   Future<EquipmentItemData?> getById(int id) =>
-      (select(equipmentItems)..where((t) => t.id.equals(id)))
-          .getSingleOrNull();
+      (select(equipmentItems)..where((t) => t.id.equals(id))).getSingleOrNull();
 
   Future<EquipmentItemData?> getByLibraryId(String libraryId) =>
-      (select(equipmentItems)
-            ..where((t) => t.libraryEquipmentId.equals(libraryId)))
-          .getSingleOrNull();
+      (select(equipmentItems)..where(
+        (t) => t.libraryEquipmentId.equals(libraryId),
+      )).getSingleOrNull();
 
   Future<int> insertEquipment(EquipmentItemsCompanion e) =>
       into(equipmentItems).insertOnConflictUpdate(e);
@@ -717,7 +725,8 @@ class EquipmentDao extends DatabaseAccessor<AppDatabase>
   Future<List<EquipmentItemData>> search(String query) =>
       (select(equipmentItems)
             ..where(
-                (t) => t.name.like('%$query%') | t.description.like('%$query%'))
+              (t) => t.name.like('%$query%') | t.description.like('%$query%'),
+            )
             ..orderBy([(t) => OrderingTerm.asc(t.name)]))
           .get();
 }
@@ -729,18 +738,15 @@ class AssignmentDao extends DatabaseAccessor<AppDatabase>
 
   Future<List<AssignmentData>> getByCompartment(int compartmentId) =>
       (select(equipmentAssignments)
-            ..where((t) => t.compartmentId.equals(compartmentId)))
-          .get();
+        ..where((t) => t.compartmentId.equals(compartmentId))).get();
 
   Stream<List<AssignmentData>> watchByCompartment(int compartmentId) =>
       (select(equipmentAssignments)
-            ..where((t) => t.compartmentId.equals(compartmentId)))
-          .watch();
+        ..where((t) => t.compartmentId.equals(compartmentId))).watch();
 
   Future<List<AssignmentData>> getByEquipment(int equipmentId) =>
       (select(equipmentAssignments)
-            ..where((t) => t.equipmentId.equals(equipmentId)))
-          .get();
+        ..where((t) => t.equipmentId.equals(equipmentId))).get();
 
   /// Die gesamte Verlastung auf einmal (Issue #180) — siehe
   /// [CompartmentDao.getAll].
@@ -748,14 +754,12 @@ class AssignmentDao extends DatabaseAccessor<AppDatabase>
 
   /// All assignments for all compartments of a vehicle.
   Future<List<AssignmentData>> getByVehicle(int vehicleId) async {
-    final compIds = await (select(compartments)
-          ..where((t) => t.vehicleId.equals(vehicleId)))
-        .map((c) => c.id)
-        .get();
+    final compIds =
+        await (select(compartments)
+          ..where((t) => t.vehicleId.equals(vehicleId))).map((c) => c.id).get();
     if (compIds.isEmpty) return [];
     return (select(equipmentAssignments)
-          ..where((t) => t.compartmentId.isIn(compIds)))
-        .get();
+      ..where((t) => t.compartmentId.isIn(compIds))).get();
   }
 
   Future<int> insertAssignment(EquipmentAssignmentsCompanion a) =>
@@ -769,9 +773,10 @@ class AssignmentDao extends DatabaseAccessor<AppDatabase>
   /// Doppelte in [equipmentIds] selbst.
   Future<int> assignMany(int compartmentId, List<int> equipmentIds) =>
       transaction(() async {
-        final gesehen = (await getByCompartment(compartmentId))
-            .map((a) => a.equipmentId)
-            .toSet();
+        final gesehen =
+            (await getByCompartment(
+              compartmentId,
+            )).map((a) => a.equipmentId).toSet();
         var geschrieben = 0;
         for (final id in equipmentIds) {
           if (!gesehen.add(id)) continue;
@@ -802,31 +807,35 @@ class AssignmentDao extends DatabaseAccessor<AppDatabase>
         };
         var bewegt = 0;
         for (final id in assignmentIds) {
-          final zeile = await (select(equipmentAssignments)
-                ..where((t) => t.id.equals(id)))
-              .getSingleOrNull();
+          final zeile =
+              await (select(equipmentAssignments)
+                ..where((t) => t.id.equals(id))).getSingleOrNull();
           if (zeile == null || zeile.compartmentId == zielCompartmentId) {
             continue;
           }
           final vorhanden = imZiel[zeile.equipmentId];
           if (vorhanden == null) {
-            await (update(equipmentAssignments)..where((t) => t.id.equals(id)))
-                .write(EquipmentAssignmentsCompanion(
-              compartmentId: Value(zielCompartmentId),
-              updatedAt: Value(DateTime.now()),
-            ));
-            imZiel[zeile.equipmentId] =
-                zeile.copyWith(compartmentId: zielCompartmentId);
+            await (update(equipmentAssignments)
+              ..where((t) => t.id.equals(id))).write(
+              EquipmentAssignmentsCompanion(
+                compartmentId: Value(zielCompartmentId),
+                updatedAt: Value(DateTime.now()),
+              ),
+            );
+            imZiel[zeile.equipmentId] = zeile.copyWith(
+              compartmentId: zielCompartmentId,
+            );
           } else {
             final summe = vorhanden.quantity + zeile.quantity;
             await (update(equipmentAssignments)
-                  ..where((t) => t.id.equals(vorhanden.id)))
-                .write(EquipmentAssignmentsCompanion(
-              quantity: Value(summe),
-              updatedAt: Value(DateTime.now()),
-            ));
-            await (delete(equipmentAssignments)..where((t) => t.id.equals(id)))
-                .go();
+              ..where((t) => t.id.equals(vorhanden.id))).write(
+              EquipmentAssignmentsCompanion(
+                quantity: Value(summe),
+                updatedAt: Value(DateTime.now()),
+              ),
+            );
+            await (delete(equipmentAssignments)
+              ..where((t) => t.id.equals(id))).go();
             imZiel[zeile.equipmentId] = vorhanden.copyWith(quantity: summe);
           }
           bewegt++;
@@ -865,13 +874,15 @@ class DueInspection {
 /// Overdue / due-soon counts for one vehicle (for list badges).
 typedef VehicleDueCounts = ({int overdueCount, int dueSoonCount});
 
-@DriftAccessor(tables: [
-  InspectionSchedules,
-  EquipmentInstances,
-  InspectionLog,
-  EquipmentItems,
-  Vehicles,
-])
+@DriftAccessor(
+  tables: [
+    InspectionSchedules,
+    EquipmentInstances,
+    InspectionLog,
+    EquipmentItems,
+    Vehicles,
+  ],
+)
 class InspectionDao extends DatabaseAccessor<AppDatabase>
     with _$InspectionDaoMixin {
   InspectionDao(super.db);
@@ -879,7 +890,8 @@ class InspectionDao extends DatabaseAccessor<AppDatabase>
   // ── Instances ──
 
   Stream<List<EquipmentInstanceData>> watchInstancesByEquipment(
-          int equipmentId) =>
+    int equipmentId,
+  ) =>
       (select(equipmentInstances)
             ..where((t) => t.equipmentId.equals(equipmentId))
             ..orderBy([(t) => OrderingTerm.asc(t.identifier)]))
@@ -909,7 +921,8 @@ class InspectionDao extends DatabaseAccessor<AppDatabase>
   // ── Schedules ──
 
   Stream<List<InspectionScheduleData>> watchSchedulesByInstance(
-          int instanceId) =>
+    int instanceId,
+  ) =>
       (select(inspectionSchedules)
             ..where((t) => t.instanceId.equals(instanceId))
             ..orderBy([(t) => OrderingTerm.asc(t.dueAt)]))
@@ -941,31 +954,46 @@ class InspectionDao extends DatabaseAccessor<AppDatabase>
   /// ordered by dueAt (overdue first).
   Stream<List<DueInspection>> watchDueSoon({int withinDays = 30}) {
     final cutoff = DateTime.now().add(Duration(days: withinDays));
-    final query = select(inspectionSchedules).join([
-      innerJoin(equipmentInstances,
-          equipmentInstances.id.equalsExp(inspectionSchedules.instanceId)),
-      innerJoin(equipmentItems,
-          equipmentItems.id.equalsExp(equipmentInstances.equipmentId)),
-      leftOuterJoin(
-          vehicles, vehicles.id.equalsExp(equipmentInstances.vehicleId)),
-    ])
-      ..where(equipmentInstances.isActive.equals(true) &
-          inspectionSchedules.dueAt.isSmallerOrEqualValue(cutoff))
-      ..orderBy([OrderingTerm.asc(inspectionSchedules.dueAt)]);
-    return query.watch().map((rows) => rows
-        .map((row) => DueInspection(
-              schedule: row.readTable(inspectionSchedules),
-              instance: row.readTable(equipmentInstances),
-              equipment: row.readTable(equipmentItems),
-              vehicle: row.readTableOrNull(vehicles),
-            ))
-        .toList());
+    final query =
+        select(inspectionSchedules).join([
+            innerJoin(
+              equipmentInstances,
+              equipmentInstances.id.equalsExp(inspectionSchedules.instanceId),
+            ),
+            innerJoin(
+              equipmentItems,
+              equipmentItems.id.equalsExp(equipmentInstances.equipmentId),
+            ),
+            leftOuterJoin(
+              vehicles,
+              vehicles.id.equalsExp(equipmentInstances.vehicleId),
+            ),
+          ])
+          ..where(
+            equipmentInstances.isActive.equals(true) &
+                inspectionSchedules.dueAt.isSmallerOrEqualValue(cutoff),
+          )
+          ..orderBy([OrderingTerm.asc(inspectionSchedules.dueAt)]);
+    return query.watch().map(
+      (rows) =>
+          rows
+              .map(
+                (row) => DueInspection(
+                  schedule: row.readTable(inspectionSchedules),
+                  instance: row.readTable(equipmentInstances),
+                  equipment: row.readTable(equipmentItems),
+                  vehicle: row.readTableOrNull(vehicles),
+                ),
+              )
+              .toList(),
+    );
   }
 
   /// Per-vehicle overdue / due-soon counts (instances without a vehicle are
   /// not included). Aggregated in Dart — the due set is small by design.
-  Stream<Map<int, VehicleDueCounts>> watchDueCountsByVehicle(
-      {int withinDays = 30}) {
+  Stream<Map<int, VehicleDueCounts>> watchDueCountsByVehicle({
+    int withinDays = 30,
+  }) {
     return watchDueSoon(withinDays: withinDays).map((dues) {
       final now = DateTime.now();
       final counts = <int, ({int overdue, int dueSoon})>{};
@@ -973,12 +1001,15 @@ class InspectionDao extends DatabaseAccessor<AppDatabase>
         final vehicleId = due.instance.vehicleId;
         if (vehicleId == null) continue;
         final prev = counts[vehicleId] ?? (overdue: 0, dueSoon: 0);
-        counts[vehicleId] = due.isOverdue(now)
-            ? (overdue: prev.overdue + 1, dueSoon: prev.dueSoon)
-            : (overdue: prev.overdue, dueSoon: prev.dueSoon + 1);
+        counts[vehicleId] =
+            due.isOverdue(now)
+                ? (overdue: prev.overdue + 1, dueSoon: prev.dueSoon)
+                : (overdue: prev.overdue, dueSoon: prev.dueSoon + 1);
       }
-      return counts.map((k, v) => MapEntry(
-          k, (overdueCount: v.overdue, dueSoonCount: v.dueSoon)));
+      return counts.map(
+        (k, v) =>
+            MapEntry(k, (overdueCount: v.overdue, dueSoonCount: v.dueSoon)),
+      );
     });
   }
 }
@@ -993,9 +1024,9 @@ class QuizDao extends DatabaseAccessor<AppDatabase> with _$QuizDaoMixin {
             ..limit(limit))
           .get();
 
-  Stream<List<QuizResultData>> watchAll() => (select(quizResults)
-        ..orderBy([(t) => OrderingTerm.desc(t.playedAt)]))
-      .watch();
+  Stream<List<QuizResultData>> watchAll() =>
+      (select(quizResults)
+        ..orderBy([(t) => OrderingTerm.desc(t.playedAt)])).watch();
 
   Future<int> insertResult(QuizResultsCompanion r) =>
       into(quizResults).insert(r);
@@ -1010,14 +1041,15 @@ class InventoryDao extends DatabaseAccessor<AppDatabase>
       into(inventorySessions).insert(s);
 
   Future<InventorySessionData?> getSession(int id) =>
-      (select(inventorySessions)..where((t) => t.id.equals(id)))
-          .getSingleOrNull();
+      (select(inventorySessions)
+        ..where((t) => t.id.equals(id))).getSingleOrNull();
 
   /// Most recent unfinished session for a vehicle, if any.
   Future<InventorySessionData?> getOpenSession(int vehicleId) =>
       (select(inventorySessions)
-            ..where((t) =>
-                t.vehicleId.equals(vehicleId) & t.finishedAt.isNull())
+            ..where(
+              (t) => t.vehicleId.equals(vehicleId) & t.finishedAt.isNull(),
+            )
             ..orderBy([(t) => OrderingTerm.desc(t.startedAt)])
             ..limit(1))
           .getSingleOrNull();
@@ -1026,20 +1058,23 @@ class InventoryDao extends DatabaseAccessor<AppDatabase>
       batch((b) => b.insertAll(inventoryChecks, checks));
 
   Stream<List<InventoryCheckData>> watchChecks(int sessionId) =>
-      (select(inventoryChecks)..where((t) => t.sessionId.equals(sessionId)))
-          .watch();
+      (select(inventoryChecks)
+        ..where((t) => t.sessionId.equals(sessionId))).watch();
 
   Future<List<InventoryCheckData>> getChecks(int sessionId) =>
-      (select(inventoryChecks)..where((t) => t.sessionId.equals(sessionId)))
-          .get();
+      (select(inventoryChecks)
+        ..where((t) => t.sessionId.equals(sessionId))).get();
 
   Future<void> updateCheck(int id, InventoryChecksCompanion c) =>
       (update(inventoryChecks)..where((t) => t.id.equals(id))).write(c);
 
   Future<void> finishSession(int id, {String doneBy = ''}) =>
       (update(inventorySessions)..where((t) => t.id.equals(id))).write(
-          InventorySessionsCompanion(
-              finishedAt: Value(DateTime.now()), doneBy: Value(doneBy)));
+        InventorySessionsCompanion(
+          finishedAt: Value(DateTime.now()),
+          doneBy: Value(doneBy),
+        ),
+      );
 
   Future<void> deleteSession(int id) =>
       (delete(inventorySessions)..where((t) => t.id.equals(id))).go();
@@ -1088,14 +1123,14 @@ class LearningDao extends DatabaseAccessor<AppDatabase>
 
 /// Die Wissensdatenbank (Issue #174).
 @DriftAccessor(
-    tables: [Wissensfragen, AbgeschalteteLernbereiche, Fragenhinweise])
-class WissenDao extends DatabaseAccessor<AppDatabase>
-    with _$WissenDaoMixin {
+  tables: [Wissensfragen, AbgeschalteteLernbereiche, Fragenhinweise],
+)
+class WissenDao extends DatabaseAccessor<AppDatabase> with _$WissenDaoMixin {
   WissenDao(super.db);
 
   Stream<List<WissensfrageData>> watchAll() =>
-      (select(wissensfragen)..orderBy([(t) => OrderingTerm.asc(t.frage)]))
-          .watch();
+      (select(wissensfragen)
+        ..orderBy([(t) => OrderingTerm.asc(t.frage)])).watch();
 
   Future<List<WissensfrageData>> getAll() => select(wissensfragen).get();
 
@@ -1110,11 +1145,12 @@ class WissenDao extends DatabaseAccessor<AppDatabase>
   /// nicht mitreißen. Wer das für einen Fehler hält und `isNull`-Gleichheit
   /// nachrüstet, schaltet mit „Dekontamination" das halbe Gefahrgut ab.
   Expression<bool> _abgeschaltet($WissensfragenTable f) => existsQuery(
-        select(abgeschalteteLernbereiche)
-          ..where((a) =>
-              a.gebiet.equalsExp(f.gebiet) &
-              (a.kapitel.isNull() | a.kapitel.equalsExp(f.kapitel))),
-      );
+    select(abgeschalteteLernbereiche)..where(
+      (a) =>
+          a.gebiet.equalsExp(f.gebiet) &
+          (a.kapitel.isNull() | a.kapitel.equalsExp(f.kapitel)),
+    ),
+  );
 
   /// Nur, was wirklich gestellt werden darf.
   ///
@@ -1127,9 +1163,12 @@ class WissenDao extends DatabaseAccessor<AppDatabase>
       (select(wissensfragen)
             ..where((t) => t.stand.equals('freigegeben'))
             ..where((t) => _abgeschaltet(t).not())
-            ..where((t) => gebiet == null
-                ? const Constant(true)
-                : t.gebiet.equals(gebiet)))
+            ..where(
+              (t) =>
+                  gebiet == null
+                      ? const Constant(true)
+                      : t.gebiet.equals(gebiet),
+            ))
           .get();
 
   /// Der Strom der spielbaren Fragen.
@@ -1138,10 +1177,11 @@ class WissenDao extends DatabaseAccessor<AppDatabase>
   /// Ein `FutureProvider`, der einen Strom `watch`t, wird bei dessen erster
   /// Emission verworfen — wer sein `.future` abwartet, wartet dann ewig.
   /// Genau daran hing der Start einer Partie fest, bis es auffiel.
-  Stream<List<WissensfrageData>> watchSpielbare() => (select(wissensfragen)
-        ..where((t) => t.stand.equals('freigegeben'))
-        ..where((t) => _abgeschaltet(t).not()))
-      .watch();
+  Stream<List<WissensfrageData>> watchSpielbare() =>
+      (select(wissensfragen)
+            ..where((t) => t.stand.equals('freigegeben'))
+            ..where((t) => _abgeschaltet(t).not()))
+          .watch();
 
   /// Die abgeschalteten Lernbereiche, live.
   ///
@@ -1158,7 +1198,8 @@ class WissenDao extends DatabaseAccessor<AppDatabase>
 
   /// Ersetzt den Spiegel vollständig — siehe den Kopf der Tabelle.
   Future<void> ersetzeAbgeschaltet(
-      List<AbgeschalteteLernbereicheCompanion> zeilen) async {
+    List<AbgeschalteteLernbereicheCompanion> zeilen,
+  ) async {
     await transaction(() async {
       await delete(abgeschalteteLernbereiche).go();
       for (final z in zeilen) {
@@ -1167,18 +1208,18 @@ class WissenDao extends DatabaseAccessor<AppDatabase>
     });
   }
 
-  Stream<List<WissensfrageData>> watchOffen() => (select(wissensfragen)
-        ..where((t) => t.stand.equals('eingereicht'))
-        ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)]))
-      .watch();
+  Stream<List<WissensfrageData>> watchOffen() =>
+      (select(wissensfragen)
+            ..where((t) => t.stand.equals('eingereicht'))
+            ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)]))
+          .watch();
 
   Future<WissensfrageData?> getById(int id) =>
-      (select(wissensfragen)..where((t) => t.id.equals(id)))
-          .getSingleOrNull();
+      (select(wissensfragen)..where((t) => t.id.equals(id))).getSingleOrNull();
 
   Future<WissensfrageData?> getByRemoteId(String remoteId) =>
-      (select(wissensfragen)..where((t) => t.remoteId.equals(remoteId)))
-          .getSingleOrNull();
+      (select(wissensfragen)
+        ..where((t) => t.remoteId.equals(remoteId))).getSingleOrNull();
 
   Future<int> insertFrage(WissensfragenCompanion f) =>
       into(wissensfragen).insert(f);
@@ -1193,8 +1234,7 @@ class WissenDao extends DatabaseAccessor<AppDatabase>
   /// `id` und `stand` fliegt mit `InvalidDataException` heraus — beim
   /// Freigeben einer Frage, also genau im wichtigsten Zug.
   Future<int> aendere(int id, WissensfragenCompanion aenderung) =>
-      (update(wissensfragen)..where((t) => t.id.equals(id)))
-          .write(aenderung);
+      (update(wissensfragen)..where((t) => t.id.equals(id))).write(aenderung);
 
   Future<bool> updateFrage(WissensfragenCompanion f) =>
       update(wissensfragen).replace(f);
@@ -1227,11 +1267,13 @@ class WissenDao extends DatabaseAccessor<AppDatabase>
 
   /// Wie viele Fragen je Gebiet — Grundlage der Übersicht.
   Future<Map<String, int>> zaehleJeGebiet({bool nurFreigegeben = true}) async {
-    final zeilen = await (select(wissensfragen)
-          ..where((t) => nurFreigegeben
-              ? t.stand.equals('freigegeben')
-              : const Constant(true)))
-        .get();
+    final zeilen =
+        await (select(wissensfragen)..where(
+          (t) =>
+              nurFreigegeben
+                  ? t.stand.equals('freigegeben')
+                  : const Constant(true),
+        )).get();
     final zaehlung = <String, int>{};
     for (final z in zeilen) {
       zaehlung[z.gebiet] = (zaehlung[z.gebiet] ?? 0) + 1;
@@ -1253,8 +1295,7 @@ class TagDao extends DatabaseAccessor<AppDatabase> with _$TagDaoMixin {
 
   Future<List<EquipmentTagData>> getByInstance(int instanceId) =>
       (select(equipmentTags)
-            ..where((t) => t.instanceId.equals(instanceId) & _lebend(t)))
-          .get();
+        ..where((t) => t.instanceId.equals(instanceId) & _lebend(t))).get();
 
   /// Was noch klebt — ein Grabstein zählt nicht dazu
   /// ([EquipmentTags.deletedAt]).
@@ -1266,21 +1307,21 @@ class TagDao extends DatabaseAccessor<AppDatabase> with _$TagDaoMixin {
   /// soll beim Scannen nicht mehr auf das Gerät geführt werden, nur weil
   /// der Grabstein noch auf sein Hochladen wartet.
   Future<EquipmentTagData?> findByCode(String code) =>
-      (select(equipmentTags)..where((t) => t.code.equals(code) & _lebend(t)))
-          .getSingleOrNull();
+      (select(equipmentTags)
+        ..where((t) => t.code.equals(code) & _lebend(t))).getSingleOrNull();
 
   /// Derselbe Griff, aber **mit** Grabsteinen — für den Abgleich und für das
   /// Wiederverknüpfen desselben Codes, siehe `tag_sync.dart`.
   Future<EquipmentTagData?> findByCodeAuchEntfernt(String code) =>
-      (select(equipmentTags)..where((t) => t.code.equals(code)))
-          .getSingleOrNull();
+      (select(equipmentTags)
+        ..where((t) => t.code.equals(code))).getSingleOrNull();
 
   Future<int> insertTag(EquipmentTagsCompanion t) =>
       into(equipmentTags).insert(t);
 
   Future<void> aendere(int id, EquipmentTagsCompanion aenderung) async {
-    await (update(equipmentTags)..where((t) => t.id.equals(id)))
-        .write(aenderung);
+    await (update(equipmentTags)
+      ..where((t) => t.id.equals(id))).write(aenderung);
   }
 
   Future<int> deleteTag(int id) =>
@@ -1307,8 +1348,8 @@ class TagDao extends DatabaseAccessor<AppDatabase> with _$TagDaoMixin {
   /// `InspectionDao`, weil dieser Accessor die Tabelle ohnehin führt — der
   /// Umweg über einen zweiten DAO brächte nichts.
   Future<EquipmentInstanceData?> getInstanceById(int id) =>
-      (select(equipmentInstances)..where((t) => t.id.equals(id)))
-          .getSingleOrNull();
+      (select(equipmentInstances)
+        ..where((t) => t.id.equals(id))).getSingleOrNull();
 }
 
 /// Unterlagen am Fahrzeug (Issue #182).
@@ -1333,8 +1374,8 @@ class AttachmentDao extends DatabaseAccessor<AppDatabase>
       select(vehicleAttachments).get();
 
   Future<VehicleAttachmentData?> getById(int id) =>
-      (select(vehicleAttachments)..where((t) => t.id.equals(id)))
-          .getSingleOrNull();
+      (select(vehicleAttachments)
+        ..where((t) => t.id.equals(id))).getSingleOrNull();
 
   Future<int> insertAttachment(VehicleAttachmentsCompanion a) =>
       into(vehicleAttachments).insert(a);
@@ -1346,9 +1387,10 @@ class AttachmentDao extends DatabaseAccessor<AppDatabase>
       (delete(vehicleAttachments)..where((t) => t.id.equals(id))).go();
 
   /// Merkt die Kopie auf diesem Gerät — die Offline-Zusage aus #182.
-  Future<int> setLocalPath(int id, String? pfad) =>
-      (update(vehicleAttachments)..where((t) => t.id.equals(id)))
-          .write(VehicleAttachmentsCompanion(localPath: Value(pfad)));
+  Future<int> setLocalPath(int id, String? pfad) => (update(vehicleAttachments)
+    ..where(
+      (t) => t.id.equals(id),
+    )).write(VehicleAttachmentsCompanion(localPath: Value(pfad)));
 }
 
 @DriftDatabase(
@@ -1394,235 +1436,237 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onCreate: (m) => m.createAll(),
-        onUpgrade: (m, from, to) async {
-          if (from < 2) {
-            await m.createTable(equipmentInstances);
-            await m.createTable(inspectionSchedules);
-            await m.createTable(inspectionLog);
-            await m.createTable(userAliases);
-            await m.createTable(syncMeta);
-            await m.addColumn(equipmentItems, equipmentItems.shortName);
-            await m.addColumn(
-                equipmentItems, equipmentItems.trainingQuestionsJson);
-            await m.addColumn(equipmentItems, equipmentItems.typicalUseJson);
-          }
-          if (from < 3) {
-            await m.createTable(learningProgress);
-          }
-          if (from < 4) {
-            await m.createTable(inventorySessions);
-            await m.createTable(inventoryChecks);
-          }
-          if (from < 5) {
-            // Gerätetypen auf Gesamtwehr-Ebene (Issue #99). Alle drei
-            // Spalten sind nullable bzw. haben einen Default — ein
-            // Bestandsgerät läuft ohne Zutun weiter und verbindet sich beim
-            // ersten Typ-Sync.
-            await m.addColumn(equipmentItems, equipmentItems.remoteTypeId);
-            await m.addColumn(
-                equipmentItems, equipmentItems.remoteTypeUpdatedAt);
-            await m.addColumn(equipmentItems, equipmentItems.typeDirty);
-            // ⚠️ `syncMeta` entsteht oben per createTable — und createTable
-            // legt IMMER die heutige Definition an, inklusive dieser Spalte.
-            // Wer von v1 kommt, hat sie damit schon; ein zweites addColumn
-            // bricht mit „duplicate column name" ab. `equipmentItems` gibt es
-            // dagegen seit v1, dort ist der Zusatz immer nötig.
-            if (from >= 2) {
-              await m.addColumn(syncMeta, syncMeta.lastTypeCursor);
-            }
-          }
-          if (from < 6) {
-            // Fahrzeugseite je Fach (Issue #126). Nullable ohne Default —
-            // bestehende Fächer laufen unverändert weiter und landen in der
-            // Ansicht im Bereich „Ohne Seite", bis jemand sie zuordnet.
-            await m.addColumn(compartments, compartments.seite);
-          }
-          if (from < 7) {
-            // Längsposition je Fach (Issue #141) — dieselbe Choreografie
-            // wie die Seite: nullable, kein Backfill, Vorschlag in der App.
-            await m.addColumn(compartments, compartments.laengsposition);
-          }
-          if (from < 8) {
-            // Foto je Geräteraum (#181) und Unterlagen am Fahrzeug (#182).
-            // Die Spalte ist nullable ohne Backfill wie ihre beiden
-            // Vorgängerinnen; die Tabelle entsteht leer.
-            await m.addColumn(compartments, compartments.imagePath);
-            await m.createTable(vehicleAttachments);
-          }
-          if (from < 9) {
-            // Wissensdatenbank (Issue #174). Entsteht leer; den Grundstock
-            // legt `wissen_seeder.dart` beim ersten Start aus dem Asset an,
-            // damit eine bestehende Installation nicht ohne Fragen dasteht.
-            await m.createTable(wissensfragen);
-          }
-          if (from < 10) {
-            // Mehrfachantworten, Quellenangabe und Geltungsbereich
-            // (Issue #174, zweite Stufe).
-            //
-            // ⚠️ Nur für Datenbanken, die die Tabelle schon als v9 haben.
-            // `createTable` oben legt IMMER die heutige Definition an —
-            // inklusive dieser Spalten. Wer von unterhalb v9 kommt, hat sie
-            // damit bereits, und ein zweites `addColumn` bricht mit
-            // „duplicate column name" ab. Dieselbe Falle wie bei `syncMeta`
-            // in v5, dort steht die Begründung ausführlich.
-            if (from >= 9) {
-            await m.addColumn(wissensfragen, wissensfragen.richtigeJson);
-            await m.addColumn(wissensfragen, wissensfragen.quelleWerk);
-            await m.addColumn(wissensfragen, wissensfragen.quelleFundstelle);
-            await m.addColumn(wissensfragen, wissensfragen.quelleStand);
-            await m.addColumn(wissensfragen, wissensfragen.quelleUrl);
-            await m.addColumn(wissensfragen, wissensfragen.geltung);
-            await m.addColumn(wissensfragen, wissensfragen.land);
+    onCreate: (m) => m.createAll(),
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        await m.createTable(equipmentInstances);
+        await m.createTable(inspectionSchedules);
+        await m.createTable(inspectionLog);
+        await m.createTable(userAliases);
+        await m.createTable(syncMeta);
+        await m.addColumn(equipmentItems, equipmentItems.shortName);
+        await m.addColumn(equipmentItems, equipmentItems.trainingQuestionsJson);
+        await m.addColumn(equipmentItems, equipmentItems.typicalUseJson);
+      }
+      if (from < 3) {
+        await m.createTable(learningProgress);
+      }
+      if (from < 4) {
+        await m.createTable(inventorySessions);
+        await m.createTable(inventoryChecks);
+      }
+      if (from < 5) {
+        // Gerätetypen auf Gesamtwehr-Ebene (Issue #99). Alle drei
+        // Spalten sind nullable bzw. haben einen Default — ein
+        // Bestandsgerät läuft ohne Zutun weiter und verbindet sich beim
+        // ersten Typ-Sync.
+        await m.addColumn(equipmentItems, equipmentItems.remoteTypeId);
+        await m.addColumn(equipmentItems, equipmentItems.remoteTypeUpdatedAt);
+        await m.addColumn(equipmentItems, equipmentItems.typeDirty);
+        // ⚠️ `syncMeta` entsteht oben per createTable — und createTable
+        // legt IMMER die heutige Definition an, inklusive dieser Spalte.
+        // Wer von v1 kommt, hat sie damit schon; ein zweites addColumn
+        // bricht mit „duplicate column name" ab. `equipmentItems` gibt es
+        // dagegen seit v1, dort ist der Zusatz immer nötig.
+        if (from >= 2) {
+          await m.addColumn(syncMeta, syncMeta.lastTypeCursor);
+        }
+      }
+      if (from < 6) {
+        // Fahrzeugseite je Fach (Issue #126). Nullable ohne Default —
+        // bestehende Fächer laufen unverändert weiter und landen in der
+        // Ansicht im Bereich „Ohne Seite", bis jemand sie zuordnet.
+        await m.addColumn(compartments, compartments.seite);
+      }
+      if (from < 7) {
+        // Längsposition je Fach (Issue #141) — dieselbe Choreografie
+        // wie die Seite: nullable, kein Backfill, Vorschlag in der App.
+        await m.addColumn(compartments, compartments.laengsposition);
+      }
+      if (from < 8) {
+        // Foto je Geräteraum (#181) und Unterlagen am Fahrzeug (#182).
+        // Die Spalte ist nullable ohne Backfill wie ihre beiden
+        // Vorgängerinnen; die Tabelle entsteht leer.
+        await m.addColumn(compartments, compartments.imagePath);
+        await m.createTable(vehicleAttachments);
+      }
+      if (from < 9) {
+        // Wissensdatenbank (Issue #174). Entsteht leer; den Grundstock
+        // legt `wissen_seeder.dart` beim ersten Start aus dem Asset an,
+        // damit eine bestehende Installation nicht ohne Fragen dasteht.
+        await m.createTable(wissensfragen);
+      }
+      if (from < 10) {
+        // Mehrfachantworten, Quellenangabe und Geltungsbereich
+        // (Issue #174, zweite Stufe).
+        //
+        // ⚠️ Nur für Datenbanken, die die Tabelle schon als v9 haben.
+        // `createTable` oben legt IMMER die heutige Definition an —
+        // inklusive dieser Spalten. Wer von unterhalb v9 kommt, hat sie
+        // damit bereits, und ein zweites `addColumn` bricht mit
+        // „duplicate column name" ab. Dieselbe Falle wie bei `syncMeta`
+        // in v5, dort steht die Begründung ausführlich.
+        if (from >= 9) {
+          await m.addColumn(wissensfragen, wissensfragen.richtigeJson);
+          await m.addColumn(wissensfragen, wissensfragen.quelleWerk);
+          await m.addColumn(wissensfragen, wissensfragen.quelleFundstelle);
+          await m.addColumn(wissensfragen, wissensfragen.quelleStand);
+          await m.addColumn(wissensfragen, wissensfragen.quelleUrl);
+          await m.addColumn(wissensfragen, wissensfragen.geltung);
+          await m.addColumn(wissensfragen, wissensfragen.land);
 
-            // Der bisherige Einzel-Index wird zur einelementigen Menge.
-            // ⚠️ Muss VOR dem Umbau der Tabelle laufen — danach gibt es die
-            // Spalte `richtig` nicht mehr.
-            await customStatement(
-                "UPDATE wissensfragen SET richtige_json = '[' || richtig "
-                "|| ']'");
-            // `richtig` fällt weg: Zwei Darstellungen derselben Sache laufen
-            // auseinander. `alterTable` baut die Tabelle nach der heutigen
-            // Definition neu und lässt die Spalte damit fallen.
-            //
-            // ⚠️ `newColumns` ist hier PFLICHT und wächst mit: „Die heutige
-            // Definition" ist wörtlich gemeint — sie trägt inzwischen auch
-            // `kapitel` und `bild_pfad` aus v11 und `geraet` aus v13. Ohne
-            // diesen Hinweis baut drift eine Kopier-Abfrage, die sie aus der
-            // ALTEN Tabelle liest, und die Migration bricht mit „no such
-            // column: kapitel" ab. Wer später eine Spalte ergänzt, trägt sie
-            // hier nach — `migration_test.dart` fängt das Vergessen.
-            await m.alterTable(TableMigration(
+          // Der bisherige Einzel-Index wird zur einelementigen Menge.
+          // ⚠️ Muss VOR dem Umbau der Tabelle laufen — danach gibt es die
+          // Spalte `richtig` nicht mehr.
+          await customStatement(
+            "UPDATE wissensfragen SET richtige_json = '[' || richtig "
+            "|| ']'",
+          );
+          // `richtig` fällt weg: Zwei Darstellungen derselben Sache laufen
+          // auseinander. `alterTable` baut die Tabelle nach der heutigen
+          // Definition neu und lässt die Spalte damit fallen.
+          //
+          // ⚠️ `newColumns` ist hier PFLICHT und wächst mit: „Die heutige
+          // Definition" ist wörtlich gemeint — sie trägt inzwischen auch
+          // `kapitel` und `bild_pfad` aus v11 und `geraet` aus v13. Ohne
+          // diesen Hinweis baut drift eine Kopier-Abfrage, die sie aus der
+          // ALTEN Tabelle liest, und die Migration bricht mit „no such
+          // column: kapitel" ab. Wer später eine Spalte ergänzt, trägt sie
+          // hier nach — `migration_test.dart` fängt das Vergessen.
+          await m.alterTable(
+            TableMigration(
               wissensfragen,
               newColumns: [
                 wissensfragen.kapitel,
                 wissensfragen.bildPfad,
                 wissensfragen.geraet,
               ],
-            ));
-            }
-          }
-          if (from < 11) {
-            // Unterkapitel und Bild an der Frage (Issue #174, ABC-Einsatz).
-            //
-            // Genau v10, nicht `>= 9`: Wer von unterhalb v9 kommt, hat die
-            // Spalten aus `createTable`; wer von v9 kommt, aus dem Neubau
-            // im Schritt darüber. Übrig bleibt der Sprung von v10.
-            if (from == 10) {
-              await m.addColumn(wissensfragen, wissensfragen.kapitel);
-              await m.addColumn(wissensfragen, wissensfragen.bildPfad);
-            }
-          }
-          if (from < 12) {
-            // Abgeschaltete Lernbereiche (Marcus 2026-08-28) und Hinweise an
-            // Fragen (Issue #194). Beide Tabellen entstehen leer und sind
-            // reine Spiegel — den Inhalt bringt der erste Abgleich. Deshalb
-            // kein Backfill: Vor dieser Version war nichts abgeschaltet, und
-            // das ist der richtige Ausgangszustand.
-            await m.createTable(abgeschalteteLernbereiche);
-            await m.createTable(fragenhinweise);
-          }
-          if (from < 13) {
-            // Der Gerätebezug an der Frage (Fuhrpark-Fragen). Nullable ohne
-            // Backfill: Bestandsfragen hängen an keinem Gerät, und das ist
-            // für sie der richtige Wert — der Generator legt die neuen
-            // Fragen beim nächsten Start dazu.
-            //
-            // ⚠️ Genau ab v10 — die Grenze ist nicht willkürlich:
-            //   * unter v9 entsteht die Tabelle per `createTable` und trägt
-            //     die heutige Definition, `geraet` also schon;
-            //   * von v9 aus läuft der `alterTable`-Neubau in Schritt 10, und
-            //     der baut sie ebenfalls nach der heutigen Definition;
-            //   * übrig bleiben v10, v11 und v12.
-            // Ohne diese Grenze bricht der Sprung von v9 mit „duplicate
-            // column name: geraet" ab. Genau das hat der Migrationstest
-            // gemeldet, bevor es ein Gerät konnte.
-            if (from >= 10) {
-              await m.addColumn(wissensfragen, wissensfragen.geraet);
-            }
-          }
-          if (from < 14) {
-            // Codes an Geräte-Einheiten (#177/#179). Die Tabelle entsteht
-            // leer und bleibt es, bis jemand einen Tag vergibt — es gibt
-            // nichts zurückzurechnen: Vor dieser Version klebte kein Code
-            // auf irgendetwas.
-            await m.createTable(equipmentTags);
-          }
-          if (from < 15) {
-            // Welche Einheiten für eine Prüfzeile schon gezählt wurden
-            // (#179). Laufende Inventuren starten mit einer leeren Menge —
-            // das ist richtig: Vor dieser Version wurde nicht über Einheiten
-            // gezählt, es gibt nichts zurückzurechnen. Die bereits
-            // eingetragene Stückzahl bleibt unangetastet.
-            //
-            // ⚠️ Nur ab v4 — dieselbe Falle wie bei `wissensfragen` in v10:
-            // `createTable(inventoryChecks)` im Schritt 4 legt IMMER die
-            // heutige Definition an, inklusive dieser Spalte. Wer von
-            // unterhalb v4 kommt, hat sie damit schon, und ein zweites
-            // `addColumn` bricht mit „duplicate column name" ab. Genau das
-            // hat der Migrationstest gemeldet, bevor es ein Gerät konnte.
-            if (from >= 4) {
-              await m.addColumn(
-                  inventoryChecks, inventoryChecks.countedInstancesJson);
-            }
-          }
-          if (from < 16) {
-            // Der Sync-Zustand der Codes (#177). Bestehende Codes gelten als
-            // ungeschoben — das ist richtig: Vor dieser Version gab es
-            // keinen Weg nach oben, also steht keiner von ihnen dort.
-            //
-            // ⚠️ Nur ab v14, dieselbe Falle wie eine Zeile höher:
-            // `createTable(equipmentTags)` im Schritt 14 legt IMMER die
-            // heutige Definition an, inklusive dieser beiden Spalten.
-            if (from >= 14) {
-              await m.addColumn(equipmentTags, equipmentTags.dirty);
-              await m.addColumn(equipmentTags, equipmentTags.deletedAt);
-            }
-          }
-          if (from < 17) {
-            // Das Kennzeichen „war schon oben" (#67). Bestehende Zeilen
-            // gelten als veröffentlicht: Was vor dem Update da war, hat
-            // der Zug bisher gelöscht, wenn der Server es nicht kannte —
-            // daran ändert dieses Update nichts rückwirkend. Alles, was
-            // DANACH entsteht, trägt die Vorbelegung `true`.
-            await m.addColumn(vehicles, vehicles.dirty);
-            await m.addColumn(equipmentItems, equipmentItems.dirty);
-            await m.addColumn(compartments, compartments.dirty);
-            await m.addColumn(
-                equipmentAssignments, equipmentAssignments.dirty);
-            // ⚠️ Nur ab v2 — dieselbe Falle wie bei `equipmentTags` eine
-            // Stufe höher: `createTable` im Schritt 2 legt IMMER die
-            // heutige Definition an, inklusive dieser Spalte. Wer von v1
-            // kommt, hat sie damit schon, und ein zweites `addColumn`
-            // bricht mit „duplicate column name" ab — also erst auf einem
-            // Gerät, das sehr lange nicht aktualisiert hat.
-            if (from >= 2) {
-              await m.addColumn(equipmentInstances, equipmentInstances.dirty);
-              await m.addColumn(inspectionSchedules, inspectionSchedules.dirty);
-              await m.addColumn(inspectionLog, inspectionLog.dirty);
-            }
-            // Ausgeschrieben statt `kSyncedTables`: Die Liste steht in
-            // `core/sync`, und diese Datei ist die Schicht darunter — ein
-            // Import wäre ein Zyklus.
-            for (final name in [
-              'vehicles',
-              'equipment_items',
-              'compartments',
-              'equipment_assignments',
-              'equipment_instances',
-              'inspection_schedules',
-              'inspection_log',
-            ]) {
-              await customStatement('UPDATE $name SET dirty = 0');
-            }
-          }
-        },
-        beforeOpen: (details) async {
-          // SQLite defaults to foreign_keys OFF; without this the declared
-          // onDelete cascades are not enforced.
-          await customStatement('PRAGMA foreign_keys = ON');
-        },
-      );
+            ),
+          );
+        }
+      }
+      if (from < 11) {
+        // Unterkapitel und Bild an der Frage (Issue #174, ABC-Einsatz).
+        //
+        // Genau v10, nicht `>= 9`: Wer von unterhalb v9 kommt, hat die
+        // Spalten aus `createTable`; wer von v9 kommt, aus dem Neubau
+        // im Schritt darüber. Übrig bleibt der Sprung von v10.
+        if (from == 10) {
+          await m.addColumn(wissensfragen, wissensfragen.kapitel);
+          await m.addColumn(wissensfragen, wissensfragen.bildPfad);
+        }
+      }
+      if (from < 12) {
+        // Abgeschaltete Lernbereiche (Marcus 2026-08-28) und Hinweise an
+        // Fragen (Issue #194). Beide Tabellen entstehen leer und sind
+        // reine Spiegel — den Inhalt bringt der erste Abgleich. Deshalb
+        // kein Backfill: Vor dieser Version war nichts abgeschaltet, und
+        // das ist der richtige Ausgangszustand.
+        await m.createTable(abgeschalteteLernbereiche);
+        await m.createTable(fragenhinweise);
+      }
+      if (from < 13) {
+        // Der Gerätebezug an der Frage (Fuhrpark-Fragen). Nullable ohne
+        // Backfill: Bestandsfragen hängen an keinem Gerät, und das ist
+        // für sie der richtige Wert — der Generator legt die neuen
+        // Fragen beim nächsten Start dazu.
+        //
+        // ⚠️ Genau ab v10 — die Grenze ist nicht willkürlich:
+        //   * unter v9 entsteht die Tabelle per `createTable` und trägt
+        //     die heutige Definition, `geraet` also schon;
+        //   * von v9 aus läuft der `alterTable`-Neubau in Schritt 10, und
+        //     der baut sie ebenfalls nach der heutigen Definition;
+        //   * übrig bleiben v10, v11 und v12.
+        // Ohne diese Grenze bricht der Sprung von v9 mit „duplicate
+        // column name: geraet" ab. Genau das hat der Migrationstest
+        // gemeldet, bevor es ein Gerät konnte.
+        if (from >= 10) {
+          await m.addColumn(wissensfragen, wissensfragen.geraet);
+        }
+      }
+      if (from < 14) {
+        // Codes an Geräte-Einheiten (#177/#179). Die Tabelle entsteht
+        // leer und bleibt es, bis jemand einen Tag vergibt — es gibt
+        // nichts zurückzurechnen: Vor dieser Version klebte kein Code
+        // auf irgendetwas.
+        await m.createTable(equipmentTags);
+      }
+      if (from < 15) {
+        // Welche Einheiten für eine Prüfzeile schon gezählt wurden
+        // (#179). Laufende Inventuren starten mit einer leeren Menge —
+        // das ist richtig: Vor dieser Version wurde nicht über Einheiten
+        // gezählt, es gibt nichts zurückzurechnen. Die bereits
+        // eingetragene Stückzahl bleibt unangetastet.
+        //
+        // ⚠️ Nur ab v4 — dieselbe Falle wie bei `wissensfragen` in v10:
+        // `createTable(inventoryChecks)` im Schritt 4 legt IMMER die
+        // heutige Definition an, inklusive dieser Spalte. Wer von
+        // unterhalb v4 kommt, hat sie damit schon, und ein zweites
+        // `addColumn` bricht mit „duplicate column name" ab. Genau das
+        // hat der Migrationstest gemeldet, bevor es ein Gerät konnte.
+        if (from >= 4) {
+          await m.addColumn(
+            inventoryChecks,
+            inventoryChecks.countedInstancesJson,
+          );
+        }
+      }
+      if (from < 16) {
+        // Der Sync-Zustand der Codes (#177). Bestehende Codes gelten als
+        // ungeschoben — das ist richtig: Vor dieser Version gab es
+        // keinen Weg nach oben, also steht keiner von ihnen dort.
+        //
+        // ⚠️ Nur ab v14, dieselbe Falle wie eine Zeile höher:
+        // `createTable(equipmentTags)` im Schritt 14 legt IMMER die
+        // heutige Definition an, inklusive dieser beiden Spalten.
+        if (from >= 14) {
+          await m.addColumn(equipmentTags, equipmentTags.dirty);
+          await m.addColumn(equipmentTags, equipmentTags.deletedAt);
+        }
+      }
+      if (from < 17) {
+        // Das Kennzeichen „war schon oben" (#67). Bestehende Zeilen
+        // gelten als veröffentlicht: Was vor dem Update da war, hat
+        // der Zug bisher gelöscht, wenn der Server es nicht kannte —
+        // daran ändert dieses Update nichts rückwirkend. Alles, was
+        // DANACH entsteht, trägt die Vorbelegung `true`.
+        await m.addColumn(vehicles, vehicles.dirty);
+        await m.addColumn(equipmentItems, equipmentItems.dirty);
+        await m.addColumn(compartments, compartments.dirty);
+        await m.addColumn(equipmentAssignments, equipmentAssignments.dirty);
+        // ⚠️ Nur ab v2 — dieselbe Falle wie bei `equipmentTags` eine
+        // Stufe höher: `createTable` im Schritt 2 legt IMMER die
+        // heutige Definition an, inklusive dieser Spalte. Wer von v1
+        // kommt, hat sie damit schon, und ein zweites `addColumn`
+        // bricht mit „duplicate column name" ab — also erst auf einem
+        // Gerät, das sehr lange nicht aktualisiert hat.
+        if (from >= 2) {
+          await m.addColumn(equipmentInstances, equipmentInstances.dirty);
+          await m.addColumn(inspectionSchedules, inspectionSchedules.dirty);
+          await m.addColumn(inspectionLog, inspectionLog.dirty);
+        }
+        // Ausgeschrieben statt `kSyncedTables`: Die Liste steht in
+        // `core/sync`, und diese Datei ist die Schicht darunter — ein
+        // Import wäre ein Zyklus.
+        for (final name in [
+          'vehicles',
+          'equipment_items',
+          'compartments',
+          'equipment_assignments',
+          'equipment_instances',
+          'inspection_schedules',
+          'inspection_log',
+        ]) {
+          await customStatement('UPDATE $name SET dirty = 0');
+        }
+      }
+    },
+    beforeOpen: (details) async {
+      // SQLite defaults to foreign_keys OFF; without this the declared
+      // onDelete cascades are not enforced.
+      await customStatement('PRAGMA foreign_keys = ON');
+    },
+  );
 
   /// [abteilungId] wählt die Datenbank-Datei der Abteilung (Issue #57
   /// Phase 2); null = eigene Abteilung in der angestammten Datei.

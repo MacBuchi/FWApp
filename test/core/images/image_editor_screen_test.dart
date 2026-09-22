@@ -11,6 +11,7 @@
 ///
 /// Die Transformationsmathematik selbst steht in crop_render_test.dart.
 library;
+
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -41,7 +42,8 @@ Future<void> _settleABit(WidgetTester tester) async {
 Future<void> _letRealWorkRun(WidgetTester tester, {int rounds = 3}) async {
   for (var i = 0; i < rounds; i++) {
     await tester.runAsync(
-        () => Future<void>.delayed(const Duration(milliseconds: 400)));
+      () => Future<void>.delayed(const Duration(milliseconds: 400)),
+    );
     await _settleABit(tester);
   }
 }
@@ -54,26 +56,33 @@ void main() {
     required void Function(Uint8List?) onResult,
     Uint8List? source,
   }) async {
-    await tester.pumpWidget(MaterialApp(
-      home: Builder(
-        builder: (context) => Scaffold(
-          body: Center(
-            child: ElevatedButton(
-              onPressed: () async {
-                final result = await Navigator.of(context).push<Uint8List>(
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        ImageEditorScreen(source: source ?? _testImage()),
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder:
+              (context) => Scaffold(
+                body: Center(
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      final result = await Navigator.of(
+                        context,
+                      ).push<Uint8List>(
+                        MaterialPageRoute(
+                          builder:
+                              (_) => ImageEditorScreen(
+                                source: source ?? _testImage(),
+                              ),
+                        ),
+                      );
+                      onResult(result);
+                    },
+                    child: const Text('start'),
                   ),
-                );
-                onResult(result);
-              },
-              child: const Text('start'),
-            ),
-          ),
+                ),
+              ),
         ),
       ),
-    ));
+    );
     await tester.tap(find.text('start'));
     // Erst pumpen, damit die Route gebaut ist und initState() das Laden
     // anstoesst — sonst liefe das runAsync-Fenster ins Leere und der Editor
@@ -87,8 +96,9 @@ void main() {
         find.ancestor(of: find.byIcon(icon), matching: find.byType(T)),
       );
 
-  testWidgets('zeigt Titel, beide Werkzeuge, beide Aktionen und den Hinweis',
-      (tester) async {
+  testWidgets('zeigt Titel, beide Werkzeuge, beide Aktionen und den Hinweis', (
+    tester,
+  ) async {
     await pumpEditor(tester, onResult: (_) {});
 
     expect(find.text('Bild zuschneiden'), findsOneWidget);
@@ -100,14 +110,16 @@ void main() {
     expect(find.textContaining('zwei Fingern'), findsOneWidget);
   });
 
-  testWidgets('ist nach dem Laden bedienbar (kein Dauer-Ladezustand)',
-      (tester) async {
+  testWidgets('ist nach dem Laden bedienbar (kein Dauer-Ladezustand)', (
+    tester,
+  ) async {
     await pumpEditor(tester, onResult: (_) {});
 
     // Solange das Bild fehlt, ist Übernehmen gesperrt — das darf nach dem
     // Laden nicht mehr so sein.
     final apply = tester.widget<FilledButton>(
-        find.widgetWithText(FilledButton, 'Übernehmen'));
+      find.widgetWithText(FilledButton, 'Übernehmen'),
+    );
     expect(apply.onPressed, isNotNull);
     expect(find.byType(CustomPaint), findsWidgets);
   });
@@ -115,10 +127,13 @@ void main() {
   testWidgets('Abbrechen liefert null zurück', (tester) async {
     Uint8List? result;
     var called = false;
-    await pumpEditor(tester, onResult: (r) {
-      result = r;
-      called = true;
-    });
+    await pumpEditor(
+      tester,
+      onResult: (r) {
+        result = r;
+        called = true;
+      },
+    );
 
     await tester.tap(find.text('Abbrechen'));
     await _settleABit(tester);
@@ -138,8 +153,11 @@ void main() {
       (FilledButton, 'Übernehmen'),
     ]) {
       final size = tester.getSize(find.widgetWithText(type, label));
-      expect(size.height, greaterThanOrEqualTo(48),
-          reason: '"$label" ist nur ${size.height} hoch');
+      expect(
+        size.height,
+        greaterThanOrEqualTo(48),
+        reason: '"$label" ist nur ${size.height} hoch',
+      );
     }
   });
 
@@ -151,8 +169,10 @@ void main() {
     await tester.tap(find.byIcon(Icons.rotate_right));
     await tester.pump();
 
-    expect(buttonWith<IconButton>(tester, Icons.rotate_right).onPressed,
-        isNotNull);
+    expect(
+      buttonWith<IconButton>(tester, Icons.rotate_right).onPressed,
+      isNotNull,
+    );
     expect(tester.takeException(), isNull);
     expect(find.text('Übernehmen'), findsOneWidget);
   });
@@ -167,8 +187,9 @@ void main() {
     expect(find.text('Bild zuschneiden'), findsOneWidget);
   });
 
-  testWidgets('Ziehen und Zwei-Finger-Geste laufen ohne Fehler durch',
-      (tester) async {
+  testWidgets('Ziehen und Zwei-Finger-Geste laufen ohne Fehler durch', (
+    tester,
+  ) async {
     await pumpEditor(tester, onResult: (_) {});
 
     final area = find.byType(CustomPaint).first;
@@ -201,12 +222,16 @@ void main() {
     await _letRealWorkRun(tester);
 
     expect(result, isNotNull);
-    expect(result!.length, greaterThan(100),
-        reason: 'ein leeres Ergebnis wäre kein Bild');
+    expect(
+      result!.length,
+      greaterThan(100),
+      reason: 'ein leeres Ergebnis wäre kein Bild',
+    );
   });
 
-  testWidgets('unlesbare Daten zeigen einen Hinweis statt eines Absturzes',
-      (tester) async {
+  testWidgets('unlesbare Daten zeigen einen Hinweis statt eines Absturzes', (
+    tester,
+  ) async {
     await pumpEditor(
       tester,
       onResult: (_) {},
@@ -216,7 +241,8 @@ void main() {
     expect(find.textContaining('nicht unterstützt'), findsOneWidget);
     // Übernehmen bleibt gesperrt — es gibt nichts zu übernehmen.
     final apply = tester.widget<FilledButton>(
-        find.widgetWithText(FilledButton, 'Übernehmen'));
+      find.widgetWithText(FilledButton, 'Übernehmen'),
+    );
     expect(apply.onPressed, isNull);
   });
 }

@@ -1,5 +1,6 @@
 /// equipment_form_screen.dart – Create / edit an equipment item.
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -61,8 +62,9 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
     if (widget.editId != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (!mounted) return;
-        final item =
-            await ref.read(equipmentDetailProvider(widget.editId!).future);
+        final item = await ref.read(
+          equipmentDetailProvider(widget.editId!).future,
+        );
         if (item != null && mounted) {
           _loadExisting(item);
         }
@@ -102,26 +104,29 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
     // bekommt captureImage sie uebergeben und zeigt kein zweites Sheet.
     final choice = await showModalBottomSheet<String>(
       context: context,
-      builder: (context) => SafeArea(
-        child: Wrap(children: [
-          if (cameraAvailable)
-            ListTile(
-              leading: const Icon(Icons.photo_camera),
-              title: const Text('Foto aufnehmen'),
-              onTap: () => Navigator.pop(context, 'camera'),
+      builder:
+          (context) => SafeArea(
+            child: Wrap(
+              children: [
+                if (cameraAvailable)
+                  ListTile(
+                    leading: const Icon(Icons.photo_camera),
+                    title: const Text('Foto aufnehmen'),
+                    onTap: () => Navigator.pop(context, 'camera'),
+                  ),
+                ListTile(
+                  leading: const Icon(Icons.photo_library),
+                  title: const Text('Aus Galerie'),
+                  onTap: () => Navigator.pop(context, 'gallery'),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.image_search),
+                  title: const Text('Aus Bildbibliothek (Symbolbild)'),
+                  onTap: () => Navigator.pop(context, 'library'),
+                ),
+              ],
             ),
-          ListTile(
-            leading: const Icon(Icons.photo_library),
-            title: const Text('Aus Galerie'),
-            onTap: () => Navigator.pop(context, 'gallery'),
           ),
-          ListTile(
-            leading: const Icon(Icons.image_search),
-            title: const Text('Aus Bildbibliothek (Symbolbild)'),
-            onTap: () => Navigator.pop(context, 'library'),
-          ),
-        ]),
-      ),
     );
     if (!mounted || choice == null) return;
 
@@ -158,25 +163,30 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('Foto nur lokal gespeichert – Upload '
-                'fehlgeschlagen: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Foto nur lokal gespeichert – Upload '
+              'fehlgeschlagen: $e',
+            ),
+          ),
+        );
       }
     }
   }
 
   /// Die Grundlage für ein neu angelegtes Gerät: eigenes, kein Katalog-Gerät.
   EquipmentItem _leeresGeraet() => EquipmentItem(
-        id: 0,
-        name: '',
-        equipmentFunctions: const [],
-        deploymentScenarios: const [],
-        description: '',
-        libraryEquipmentId: null,
-        isCustom: true,
-        extraAttributes: const {},
-        updatedAt: DateTime.now(),
-      );
+    id: 0,
+    name: '',
+    equipmentFunctions: const [],
+    deploymentScenarios: const [],
+    description: '',
+    libraryEquipmentId: null,
+    isCustom: true,
+    extraAttributes: const {},
+    updatedAt: DateTime.now(),
+  );
 
   /// Ein Gerät AUS dem Katalog anlegen (Issue #102).
   ///
@@ -196,7 +206,8 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
 
     final voll = _katalog?.eintrag(eintrag.id);
     _nameCtrl.text = eintrag.name;
-    if (_descCtrl.text.trim().isEmpty && (voll?.beschreibung ?? '').isNotEmpty) {
+    if (_descCtrl.text.trim().isEmpty &&
+        (voll?.beschreibung ?? '').isNotEmpty) {
       _descCtrl.text = voll!.beschreibung;
     }
     setState(() {
@@ -254,12 +265,18 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
       // Sofort verteilen: Der Typ gehört der Gesamtwehr, und „sofort überall
       // sichtbar" war die Vorgabe. Klappt es nicht, bleibt die Änderung
       // vorgemerkt und geht beim nächsten Aktualisieren mit.
-      final geteilt =
-          await typenSofortTeilen(ref.read(equipmentTypeSyncProvider));
+      final geteilt = await typenSofortTeilen(
+        ref.read(equipmentTypeSyncProvider),
+      );
       if (geteilt) {
-        messenger.showSnackBar(const SnackBar(
-            content: Text('Gespeichert — alle Abteilungen der Gesamtwehr '
-                'sehen die Änderung.')));
+        messenger.showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Gespeichert — alle Abteilungen der Gesamtwehr '
+              'sehen die Änderung.',
+            ),
+          ),
+        );
       }
       // Die neue ID ist das Pop-Ergebnis: Der Fach-Picker („neu anlegen")
       // weist das frisch angelegte Gerät damit direkt dem offenen Fach zu.
@@ -293,7 +310,8 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-            widget.editId == null ? 'Gerät anlegen' : 'Gerät bearbeiten'),
+          widget.editId == null ? 'Gerät anlegen' : 'Gerät bearbeiten',
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -302,7 +320,8 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
           // das muss VOR dem Speichern dastehen, nicht danach.
           if (_original?.remoteTypeId != null) ...[
             const GeteilterBestandHinweis(
-              text: 'Dieses Gerät gehört zum geteilten Bestand der '
+              text:
+                  'Dieses Gerät gehört zum geteilten Bestand der '
                   'Gesamtwehr. Änderungen sehen alle Abteilungen.',
             ),
             const SizedBox(height: 12),
@@ -323,7 +342,11 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
                     right: 8,
                     child: CircleAvatar(
                       backgroundColor: Colors.black54,
-                      child: const Icon(Icons.edit, color: Colors.white, size: 20),
+                      child: const Icon(
+                        Icons.edit,
+                        color: Colors.white,
+                        size: 20,
+                      ),
                     ),
                   ),
                 ],
@@ -358,8 +381,10 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
             Center(
               child: Chip(
                 avatar: const Icon(Icons.verified_outlined, size: 16),
-                label: Text('Katalog-Gerät '
-                    '„${_katalog?.eintrag(_original!.libraryEquipmentId!)?.name ?? _original!.libraryEquipmentId!}"'),
+                label: Text(
+                  'Katalog-Gerät '
+                  '„${_katalog?.eintrag(_original!.libraryEquipmentId!)?.name ?? _original!.libraryEquipmentId!}"',
+                ),
                 visualDensity: VisualDensity.compact,
               ),
             ),
@@ -379,70 +404,76 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
           const SizedBox(height: 12),
           TextField(
             controller: _urlCtrl,
-            decoration:
-                const InputDecoration(labelText: 'Lernmaterial-URL'),
+            decoration: const InputDecoration(labelText: 'Lernmaterial-URL'),
             keyboardType: TextInputType.url,
           ),
           const SizedBox(height: 16),
-          Text('Funktion',
-              style: Theme.of(context).textTheme.titleSmall),
+          Text('Funktion', style: Theme.of(context).textTheme.titleSmall),
           const SizedBox(height: 6),
           Wrap(
             spacing: 6,
             runSpacing: 4,
-            children: EquipmentFunction.values.map((f) {
-              final selected = _functions.contains(f.jsonKey);
-              return FilterChip(
-                label: Text(f.label, style: const TextStyle(fontSize: 12)),
-                selected: selected,
-                onSelected: (v) => setState(() {
-                  if (v) {
-                    _functions.add(f.jsonKey);
-                  } else {
-                    _functions.remove(f.jsonKey);
-                  }
-                }),
-              );
-            }).toList(),
+            children:
+                EquipmentFunction.values.map((f) {
+                  final selected = _functions.contains(f.jsonKey);
+                  return FilterChip(
+                    label: Text(f.label, style: const TextStyle(fontSize: 12)),
+                    selected: selected,
+                    onSelected:
+                        (v) => setState(() {
+                          if (v) {
+                            _functions.add(f.jsonKey);
+                          } else {
+                            _functions.remove(f.jsonKey);
+                          }
+                        }),
+                  );
+                }).toList(),
           ),
           const SizedBox(height: 16),
-          Text('Einsatzszenarien',
-              style: Theme.of(context).textTheme.titleSmall),
+          Text(
+            'Einsatzszenarien',
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
           const SizedBox(height: 6),
           Wrap(
             spacing: 6,
             runSpacing: 4,
-            children: DeploymentScenario.values.map((s) {
-              final selected = _scenarios.contains(s.jsonKey);
-              return FilterChip(
-                label: Text(s.label,
-                    style: const TextStyle(fontSize: 12)),
-                selected: selected,
-                onSelected: (v) => setState(() {
-                  if (v) {
-                    _scenarios.add(s.jsonKey);
-                  } else {
-                    _scenarios.remove(s.jsonKey);
-                  }
-                }),
-              );
-            }).toList(),
+            children:
+                DeploymentScenario.values.map((s) {
+                  final selected = _scenarios.contains(s.jsonKey);
+                  return FilterChip(
+                    label: Text(s.label, style: const TextStyle(fontSize: 12)),
+                    selected: selected,
+                    onSelected:
+                        (v) => setState(() {
+                          if (v) {
+                            _scenarios.add(s.jsonKey);
+                          } else {
+                            _scenarios.remove(s.jsonKey);
+                          }
+                        }),
+                  );
+                }).toList(),
           ),
           if (_error != null) ...[
             const SizedBox(height: 12),
-            Text(_error!,
-                style: TextStyle(
-                    color: Theme.of(context).colorScheme.error)),
+            Text(
+              _error!,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
           ],
           const SizedBox(height: 24),
           FilledButton(
             onPressed: _isSubmitting ? null : _submit,
-            child: _isSubmitting
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2))
-                : const Text('Speichern'),
+            child:
+                _isSubmitting
+                    ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                    : const Text('Speichern'),
           ),
         ],
       ),

@@ -1,6 +1,7 @@
 /// changelog_screen.dart – „Was ist neu?": Versionsübersicht aus der
 /// mitgelieferten CHANGELOG.md (Issue #51).
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -39,11 +40,12 @@ class ChangelogScreen extends ConsumerWidget {
               return ListView.builder(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 itemCount: releases.length,
-                itemBuilder: (context, i) => _ReleaseTile(
-                  release: releases[i],
-                  isInstalled: releases[i].version == installed,
-                  initiallyExpanded: i == 0,
-                ),
+                itemBuilder:
+                    (context, i) => _ReleaseTile(
+                      release: releases[i],
+                      isInstalled: releases[i].version == installed,
+                      initiallyExpanded: i == 0,
+                    ),
               );
             },
           );
@@ -72,8 +74,10 @@ class _ReleaseTile extends StatelessWidget {
       initiallyExpanded: initiallyExpanded,
       title: Row(
         children: [
-          Text('Version ${release.version}',
-              style: theme.textTheme.titleMedium),
+          Text(
+            'Version ${release.version}',
+            style: theme.textTheme.titleMedium,
+          ),
           if (isInstalled) ...[
             const SizedBox(width: 8),
             Chip(
@@ -94,8 +98,9 @@ class _ReleaseTile extends StatelessWidget {
             padding: const EdgeInsets.only(top: 8, bottom: 4),
             child: Text(
               section.title,
-              style: theme.textTheme.labelLarge
-                  ?.copyWith(color: theme.colorScheme.primary),
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: theme.colorScheme.primary,
+              ),
             ),
           ),
           for (final entry in section.entries)
@@ -103,10 +108,7 @@ class _ReleaseTile extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 4),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('•  '),
-                  Expanded(child: Text(entry)),
-                ],
+                children: [const Text('•  '), Expanded(child: Text(entry))],
               ),
             ),
         ],

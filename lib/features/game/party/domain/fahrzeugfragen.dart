@@ -104,10 +104,8 @@ Iterable<PartyFrage> _wohinGehoertDas(
         for (final x in fahrzeuge)
           if (x.name != f.name) x.name,
       ]..shuffle(zufall);
-      final antworten = [
-        f.name,
-        ...andere.take(kMaxFahrzeugAntworten - 1),
-      ]..shuffle(zufall);
+      final antworten = [f.name, ...andere.take(kMaxFahrzeugAntworten - 1)]
+        ..shuffle(zufall);
 
       yield PartyFrage(
         art: PartyFrageArt.fahrzeug,
@@ -157,10 +155,8 @@ Iterable<PartyFrage> _welchesKennzeichen(
       for (final x in mitKennzeichen)
         if (x.name != f.name) x.kennzeichen!.trim(),
     ]..shuffle(zufall);
-    final antworten = [
-      richtig,
-      ...andere.take(kMaxFahrzeugAntworten - 1),
-    ]..shuffle(zufall);
+    final antworten = [richtig, ...andere.take(kMaxFahrzeugAntworten - 1)]
+      ..shuffle(zufall);
 
     yield PartyFrage(
       art: PartyFrageArt.fahrzeug,

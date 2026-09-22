@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show TextInput;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:fwapp/core/branding/fw_marke.dart';
 import 'package:fwapp/core/logging/app_logger.dart';
 import 'package:fwapp/core/sync/auth_utils.dart';
 import 'package:fwapp/core/sync/mfa_providers.dart';
@@ -628,16 +629,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.local_fire_department,
-                                size: 28, color: theme.colorScheme.primary),
+                            // Die Bildmarke, nicht irgendein Symbol — sie
+                            // kommt aus derselben Geometrie wie das
+                            // App-Icon (#175).
+                            FwMarke(
+                                groesse: 34,
+                                vordergrund: theme.colorScheme.primary,
+                                grund: theme.colorScheme.surface),
                             const SizedBox(width: 8),
                             Text('Feuerwehr-Lernapp',
                                 style: theme.textTheme.titleMedium),
                           ],
                         )
                       else ...[
-                        Icon(Icons.local_fire_department,
-                            size: 72, color: theme.colorScheme.primary),
+                        FwMarke(
+                            groesse: 92,
+                            vordergrund: theme.colorScheme.primary,
+                            grund: theme.colorScheme.surface),
                         const SizedBox(height: 8),
                         Text('Feuerwehr-Lernapp',
                             textAlign: TextAlign.center,

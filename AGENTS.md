@@ -340,6 +340,19 @@ Codegen-Guard bleibt unberührt.
     Veröffentlichen im Bestand der Wehr. `StandardCatalog.createEquipment`
     hat dafür den Parameter: aus einer Fahrzeug-Vorlage heraus ist dieselbe
     Zeile sehr wohl eigene Erfassung.
+- ⚠️ **Die Dublettenprüfung fragt nur zu Unveröffentlichtem** (`dubletten.dart`,
+  #67). Das ist kein Sparzwang, sondern das, was die Rückfrage überhaupt
+  erträglich macht: Nach einem erfolgreichen Veröffentlichen ist nichts mehr
+  `dirty`, also kommt sie zu denselben Paaren nie wieder — eine Entscheidung
+  „die sind verschieden" braucht deshalb **keinen Speicher**. Wer die Regel
+  auf Bestandsdaten ausweitet, handelt sich einen Dialog ein, der vor jedem
+  Veröffentlichen erscheint und nach dem dritten Mal weggeklickt wird.
+  Zwei weitere Fallen stecken im Zusammenführen und sind beide durch Tests
+  festgehalten: `learning_progress` hat `UNIQUE(equipment_id)` (Zählerstände
+  addieren, nicht umhängen), und alle Verweise auf `equipment_items` stehen
+  auf `cascade` — **erst umhängen, dann löschen**, sonst nimmt der aufgegebene
+  Eintrag die Geräte-Einheiten samt aufgeklebter Codes mit.
+
 - ⚠️ **Jeder zeilenweise Weg gehört in `core/sync/zeilen_sync.dart`, nicht
   an die Aufrufstelle.** „Den Bestand aktualisieren" stand dreimal
   ausgeschrieben — Start, „Jetzt aktualisieren", Abteilungswechsel — und die

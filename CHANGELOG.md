@@ -12,6 +12,34 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.59.0] – 2026-09-22
+
+### Neu
+
+- **Vor dem Veröffentlichen fragt die App, ob etwas zweimal dasselbe ist.**
+  Wenn zwei Gerätewarte gemeinsam erfassen, stehen danach beide Erfassungen
+  nebeneinander — so soll es sein. Haben aber beide dasselbe Strahlrohr
+  gemeint und nur verschieden geschrieben, stünde es nach dem
+  Veröffentlichen zweimal im Bestand der Wehr, und das fällt erst Wochen
+  später bei der Inventur auf.
+
+  Jetzt sieht die App vorher nach und fragt, in zwei Gruppen: zuerst, was im
+  **selben Geräteraum desselben Fahrzeugs** ähnlich heißt — das ist fast
+  immer ein Gerät, das zwei Leute erfasst haben. Danach, deutlich
+  zurückhaltender, **ähnliche Namen im ganzen Bestand**: Ein Gerätetyp gehört
+  der ganzen Wehr, und zwei Einträge dafür verschmutzen den Katalog
+  dauerhaft.
+
+  Du entscheidest je Paar, und bei „dasselbe" auch, welcher Name bleibt.
+  Beladung, Geräte-Einheiten und aufgeklebte Codes ziehen mit um; liegen
+  beide im selben Fach, werden die Stückzahlen addiert — jeder hatte seinen
+  Teil gezählt.
+
+  ⚠️ Voreingestellt ist **„verschieden"**. Wer den Dialog nur bestätigt,
+  verliert nichts: Zusammengeführt wird ausschließlich, was du dafür
+  auswählst. Gefragt wird außerdem nur zu Geräten, die auf diesem Gerät neu
+  entstanden sind — gewachsene Bestandsdaten bleiben unangetastet.
+
 ## [1.58.1] – 2026-09-22
 
 ### Geändert

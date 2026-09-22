@@ -23,6 +23,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:fwapp/core/logging/app_logger.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
+import 'package:fwapp/core/sync/zeilen_sync.dart';
+import 'package:fwapp/features/inventory/presentation/providers/tag_providers.dart';
+import 'package:fwapp/features/vehicle/presentation/providers/anhang_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Prefs-Schlüssel der gemerkten Auswahl (null/fehlend = eigene Abteilung).
@@ -154,6 +157,20 @@ class AbteilungSwitcher {
       // Die neue Sicht hat ihre eigene lokale Datei und damit ihr eigenes
       // Typ-Fenster — deshalb `force` (Stufe ②, Issue #99).
       await _ref.read(equipmentTypeSyncProvider)?.pull(force: true);
+      // ⚠️ Und die Tabellen NEBEN dem Snapshot. Ohne sie standen hier bis
+      // v1.53.0 die Fahrzeuge der Schwester-Abteilung ohne ihre Unterlagen
+      // und ohne einen einzigen Code — die Inventur scannte ins Leere, und
+      // nichts sagte einem, dass ein „Jetzt aktualisieren" gefehlt hat.
+      //
+      // Die Datenbank zeigt hier bereits auf die Datei der neuen Abteilung:
+      // `appDatabaseProvider` beobachtet die Auswahl, die eine Zeile weiter
+      // oben gesetzt wurde. Andersherum landeten die eigenen Codes in der
+      // fremden Abteilung.
+      await zeilenweiseSynchronisieren(
+        anhaenge: _ref.read(anhangSpeicherProvider),
+        tags: _ref.read(tagSyncProvider),
+        abteilung: _ref.read(aktiveAbteilungIdProvider),
+      );
     } catch (e) {
       appLog.w('Pull nach Abteilungswechsel fehlgeschlagen', error: e);
     }

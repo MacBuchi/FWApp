@@ -16,6 +16,7 @@ import 'package:fwapp/core/sync/membership_providers.dart';
 import 'package:fwapp/core/sync/mfa_providers.dart';
 import 'package:fwapp/core/sync/rollen.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
+import 'package:fwapp/core/sync/zeilen_sync.dart';
 import 'package:fwapp/core/sync/sync_service.dart';
 import 'package:fwapp/core/update/update_check.dart';
 import 'package:fwapp/core/widgets/abteilung_switcher.dart';
@@ -340,12 +341,13 @@ class _ConnectionSection extends ConsumerWidget {
       // (Stufe ②) — „Jetzt aktualisieren" soll alles holen, nicht nur den
       // Bestand der Abteilung.
       await ref.read(equipmentTypeSyncProvider)?.sync();
-      // Dasselbe gilt für die Unterlagen am Fahrzeug (Issue #182) und für
-      // die Codes an den Geräten (Issue #177).
-      await anhaengeSynchronisieren(ref.read(anhangSpeicherProvider),
-          ref.read(aktiveAbteilungIdProvider));
-      await tagsSynchronisieren(
-          ref.read(tagSyncProvider), ref.read(aktiveAbteilungIdProvider));
+      // Dasselbe gilt für alles, was neben dem Snapshot läuft — Unterlagen
+      // (#182) und Codes (#177), Liste in `zeilen_sync.dart`.
+      await zeilenweiseSynchronisieren(
+        anhaenge: ref.read(anhangSpeicherProvider),
+        tags: ref.read(tagSyncProvider),
+        abteilung: ref.read(aktiveAbteilungIdProvider),
+      );
       unawaited(ref.read(imagePrecacheProvider.notifier).run());
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(

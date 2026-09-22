@@ -185,19 +185,3 @@ final tagSyncProvider = Provider<TagSync>((ref) => TagSync(
       db: ref.watch(appDatabaseProvider),
       client: ref.watch(supabaseClientProvider),
     ));
-
-/// Gleicht die Codes der Abteilung ab — erst hoch, dann runter.
-///
-/// Läuft überall dort, wo auch der Bestand gezogen wird: Start, „Jetzt
-/// aktualisieren". Die Reihenfolge ist nicht beliebig, siehe Kopf von
-/// `tag_sync.dart`.
-///
-/// Nimmt Dienst und Abteilung statt eines `Ref`: Aufgerufen wird das sowohl
-/// aus einem Provider (`Ref`) als auch aus einem Widget (`WidgetRef`), und
-/// die beiden sind in Riverpod 3 keine gemeinsame Schnittstelle mehr —
-/// dieselbe Bauform wie `anhaengeSynchronisieren`.
-Future<void> tagsSynchronisieren(TagSync sync, String? abteilung) async {
-  if (abteilung == null) return;
-  await sync.schiebe(abteilung);
-  await sync.ziehe(abteilung);
-}

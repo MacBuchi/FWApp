@@ -3,10 +3,51 @@
 library;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/database/connection/connection.dart';
 import 'package:fwapp/core/sync/abteilung_providers.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
+import 'package:fwapp/features/inventory/data/tag_sync.dart';
+import 'package:fwapp/features/inventory/presentation/providers/tag_providers.dart';
+import 'package:fwapp/features/vehicle/data/anhang_speicher.dart';
+import 'package:fwapp/features/vehicle/presentation/providers/anhang_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../helpers/test_database.dart';
+
+/// Hält fest, WOFÜR gezogen wurde — ohne Server lässt sich das sonst nicht
+/// von „gar nicht aufgerufen" unterscheiden.
+class _TagSpion extends TagSync {
+  _TagSpion(AppDatabase db) : super(db: db);
+  final gezogen = <String>[];
+  final geschoben = <String>[];
+
+  @override
+  Future<int> ziehe(String abteilungId) async {
+    gezogen.add(abteilungId);
+    return 0;
+  }
+
+  @override
+  Future<int> schiebe(String abteilungId) async {
+    geschoben.add(abteilungId);
+    return 0;
+  }
+}
+
+class _SpeicherSpion extends AnhangSpeicher {
+  _SpeicherSpion(AppDatabase db) : super(db: db);
+  final gezogen = <String>[];
+
+  @override
+  Future<int> zieheAnhaenge(String abteilungId) async {
+    gezogen.add(abteilungId);
+    return 0;
+  }
+
+  @override
+  Future<int> nachreichen({String? abteilungId}) async => 0;
+}
 
 void main() {
   group('databaseFileName', () {
@@ -62,6 +103,54 @@ void main() {
   });
 
   group('AbteilungSwitcher', () {
+    test('zieht auch die Tabellen NEBEN dem Snapshot', () async {
+      // ⚠️ Der Fehler, den dieser Test festhält: Bis v1.53.0 zog der
+      // Wechsel nur den Snapshot und die Gerätetypen. Wer auf eine
+      // Schwester-Abteilung umschaltete, sah deren Fahrzeuge — aber keine
+      // Unterlagen und keinen einzigen Code. Die Inventur scannte ins
+      // Leere, und nichts sagte einem, dass ein „Jetzt aktualisieren"
+      // gefehlt hat.
+      SharedPreferences.setMockInitialValues({});
+      final db = createTestDatabase();
+      addTearDown(db.close);
+      final anhaenge = _SpeicherSpion(db);
+      final tags = _TagSpion(db);
+
+      final container = ProviderContainer(overrides: [
+        supabaseClientProvider.overrideWithValue(null),
+        anhangSpeicherProvider.overrideWithValue(anhaenge),
+        tagSyncProvider.overrideWithValue(tags),
+      ]);
+      addTearDown(container.dispose);
+
+      await container.read(abteilungSwitcherProvider).switchTo('B');
+
+      expect(anhaenge.gezogen, ['B'], reason: 'Unterlagen der neuen Sicht.');
+      expect(tags.gezogen, ['B'], reason: 'Codes der neuen Sicht.');
+      expect(tags.geschoben, ['B'],
+          reason: 'Erst schieben, dann ziehen — sonst überschreibt der Zug '
+              'einen gerade vergebenen Code.');
+    });
+
+    test('ohne Abteilung bleibt es beim Snapshot', () async {
+      // Zurück zur eigenen Abteilung, ohne Server: Es gibt keine ID, in
+      // deren Namen geschrieben werden könnte.
+      SharedPreferences.setMockInitialValues({});
+      final db = createTestDatabase();
+      addTearDown(db.close);
+      final tags = _TagSpion(db);
+
+      final container = ProviderContainer(overrides: [
+        supabaseClientProvider.overrideWithValue(null),
+        anhangSpeicherProvider.overrideWithValue(_SpeicherSpion(db)),
+        tagSyncProvider.overrideWithValue(tags),
+      ]);
+      addTearDown(container.dispose);
+
+      await container.read(abteilungSwitcherProvider).switchTo(null);
+      expect(tags.gezogen, isEmpty);
+    });
+
     test('merkt die Wahl und stellt den Provider um', () async {
       SharedPreferences.setMockInitialValues({});
       final container = ProviderContainer(overrides: [

@@ -295,6 +295,13 @@ pauschales Formatieren in Feature-PRs.
   der Primärschlüssel: Er ist das, was in der Wirklichkeit eindeutig ist.
   **Vor jeder neuen zeilenweisen Tabelle die Frage stellen: Kann das von
   zwei Geräten gleichzeitig entstehen?**
+- ⚠️ **Jeder zeilenweise Weg gehört in `core/sync/zeilen_sync.dart`, nicht
+  an die Aufrufstelle.** „Den Bestand aktualisieren" stand dreimal
+  ausgeschrieben — Start, „Jetzt aktualisieren", Abteilungswechsel — und die
+  dritte Kopie zog die Unterlagen und die Codes nicht. Folge: Wer auf eine
+  Schwester-Abteilung umschaltete, sah deren Fahrzeuge, aber keinen einzigen
+  Code, und die Inventur scannte ins Leere. Drei Kopien einer Liste sind
+  zwei zu viel; `abteilung_selection_test.dart` hält den Fall fest.
 - ⚠️ **Entfernen im zeilenweisen Sync ist ein Soft-Delete, nie ein
   `delete`** (Issues #174, #177). Ein Zug sieht nur, was da ist — eine hart
   gelöschte Zeile kommt schlicht nicht mehr, und das ist von „noch nie

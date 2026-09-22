@@ -26,22 +26,3 @@ final anhangSpeicherProvider = Provider<AnhangSpeicher>((ref) => AnhangSpeicher(
 final fahrzeugAnhaengeProvider =
     StreamProvider.family<List<VehicleAttachmentData>, int>((ref, vehicleId) =>
         ref.watch(attachmentDaoProvider).watchByVehicle(vehicleId));
-
-/// Holt die Anhang-Zeilen der Abteilung und reicht nach, was noch nicht
-/// hochgeladen ist.
-///
-/// Läuft überall dort, wo auch der Bestand gezogen wird — Start, „Jetzt
-/// aktualisieren", Abteilungswechsel. Bewusst NICHT mit dem Snapshot
-/// verwoben: Der ersetzt die Tabellen der Abteilung, und diese hier darf er
-/// nicht anfassen (siehe `kSyncedTables`).
-///
-/// Ohne Server oder ohne Abteilung ein No-op — die App läuft lokal weiter.
-/// Nimmt die beiden Werte statt eines `Ref`: Aufgerufen wird sie sowohl aus
-/// einem Provider (`Ref`) als auch aus einem Widget (`WidgetRef`), und die
-/// beiden sind in Riverpod 3 keine gemeinsame Schnittstelle mehr.
-Future<void> anhaengeSynchronisieren(
-    AnhangSpeicher speicher, String? abteilung) async {
-  if (abteilung == null) return;
-  await speicher.zieheAnhaenge(abteilung);
-  await speicher.nachreichen(abteilungId: abteilung);
-}

@@ -11,6 +11,7 @@
 library;
 
 import 'package:fwapp/features/compartment/presentation/fach_antwort.dart';
+import 'package:fwapp/features/inventory/data/tag_code.dart';
 
 /// Eine Stelle, an der ein Gerät liegt.
 class Fundort {
@@ -48,6 +49,14 @@ class GeraetTreffer {
   final List<String> funktionen;
   final List<Fundort> fundorte;
 
+  /// Was an den geführten Einheiten dieses Geräts klebt (Issue #176).
+  ///
+  /// Im Index und nicht in der Datenbank nachgeschlagen: Gefiltert wird bei
+  /// jedem Anschlag, und eine Abfrage je Buchstabe wäre auf einem alten
+  /// Diensthandy spürbar — die Begründung steht im Kopf von
+  /// `geraete_suche_providers.dart` und gilt für Codes genauso.
+  final List<Geraetecode> codes;
+
   const GeraetTreffer({
     required this.equipmentId,
     required this.name,
@@ -55,6 +64,7 @@ class GeraetTreffer {
     this.bildPfad,
     this.funktionen = const [],
     this.fundorte = const [],
+    this.codes = const [],
   });
 
   /// Wie viele Stück insgesamt im Fuhrpark liegen.
@@ -69,7 +79,27 @@ class GeraetTreffer {
         bildPfad: bildPfad,
         funktionen: funktionen,
         fundorte: neue,
+        codes: codes,
       );
+}
+
+/// Ein Code, der auf einer geführten Einheit dieses Geräts klebt.
+class Geraetecode {
+  /// Normalisiert, so wie er in der Datenbank steht.
+  final String code;
+
+  /// Kennung der Einheit („Flasche 3"), falls eine vergeben ist.
+  final String? kennung;
+
+  /// In welchem Fach DIESE Einheit liegt. `null` heißt: nicht zugeordnet
+  /// — dann gilt der Fundort des Geräts.
+  final int? compartmentId;
+
+  const Geraetecode({
+    required this.code,
+    this.kennung,
+    this.compartmentId,
+  });
 }
 
 /// Das Ergebnis einer Suche, in drei Töpfe getrennt.
@@ -87,10 +117,19 @@ class SucheErgebnis {
   /// Passt, ist aber in keinem Fahrzeug verlastet — steht nur im Katalog.
   final List<GeraetTreffer> nirgends;
 
+  /// Gesetzt, wenn die Eingabe ein CODE war und getroffen hat (Issue #176).
+  ///
+  /// Der Unterschied zur Namenssuche ist der Punkt: Ein Name ist eine Suche
+  /// mit mehreren möglichen Antworten, ein Code zeigt auf genau einen
+  /// Gegenstand. Steht das hier, darf der Schirm „das ist es" sagen statt
+  /// „das könnte es sein".
+  final Geraetecode? codeTreffer;
+
   const SucheErgebnis({
     this.treffer = const [],
     this.woanders = const [],
     this.nirgends = const [],
+    this.codeTreffer,
   });
 
   bool get istLeer =>
@@ -150,6 +189,16 @@ SucheErgebnis sucheGeraete({
   required String eingabe,
   int? vehicleId,
 }) {
+  // ⚠️ Der Code zuerst, und zwar EXAKT. Ein Name ist eine Suche mit
+  // mehreren möglichen Antworten, ein Code zeigt auf genau einen
+  // Gegenstand — wer einen Aufkleber abliest, will keine Vorschlagsliste.
+  //
+  // Als Teilzeichenkette wäre das falsch: „FW" träfe dann jeden vergebenen
+  // Code. Und dass ein getippter Gerätename zufällig ein Code ist, bleibt
+  // richtig behandelt — dann IST er einer.
+  final ueberCode = _codeSuche(bestand, eingabe, vehicleId);
+  if (ueberCode != null) return ueberCode;
+
   final begriffe = suchbegriffe(eingabe);
   if (begriffe.isEmpty) return SucheErgebnis.leer;
 
@@ -185,4 +234,52 @@ SucheErgebnis sucheGeraete({
     woanders: woanders,
     nirgends: nirgends,
   );
+}
+
+/// Sucht die Eingabe als Code. `null` heißt „war keiner (oder traf nicht)" —
+/// dann übernimmt die Namenssuche.
+SucheErgebnis? _codeSuche(
+    List<GeraetTreffer> bestand, String eingabe, int? vehicleId) {
+  final gesucht = normalisiereTagCode(eingabe);
+  if (gesucht == null) return null;
+
+  for (final geraet in bestand) {
+    for (final code in geraet.codes) {
+      if (code.code != gesucht) continue;
+
+      // Die Einheit ist die genauere Angabe: Dasselbe Gerät kann in zwei
+      // Fächern liegen, und der Aufkleber klebt auf EINEM Gegenstand.
+      // Dieselbe Regel wie beim Abhaken (`hakeCodeAb`).
+      final genau = code.compartmentId == null
+          ? geraet.fundorte
+          : geraet.fundorte
+              .where((f) => f.compartmentId == code.compartmentId)
+              .toList();
+      final passend = genau.isEmpty ? geraet.fundorte : genau;
+      final gefunden = geraet.mitFundorten(passend);
+
+      // Ohne Fundort: Der Gegenstand ist erfasst, aber nirgends verlastet.
+      // „Nichts gefunden" wäre hier die Lüge, die die Namenssuche schon
+      // einmal vermeidet.
+      if (passend.isEmpty) {
+        return SucheErgebnis(nirgends: [gefunden], codeTreffer: code);
+      }
+      if (vehicleId == null || passend.any((f) => f.vehicleId == vehicleId)) {
+        return SucheErgebnis(
+          treffer: [
+            vehicleId == null
+                ? gefunden
+                : gefunden.mitFundorten(passend
+                    .where((f) => f.vehicleId == vehicleId)
+                    .toList()),
+          ],
+          codeTreffer: code,
+        );
+      }
+      // Der Code gehört zu einem anderen Fahrzeug — genau die Auskunft, die
+      // jemand braucht, der ein fremdes Gerät in der Hand hält.
+      return SucheErgebnis(woanders: [gefunden], codeTreffer: code);
+    }
+  }
+  return null;
 }

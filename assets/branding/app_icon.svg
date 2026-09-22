@@ -1,26 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- FWApp app icon: white flame (Material Symbols "whatshot" silhouette,
-     Apache 2.0) on a fire-engine-red gradient. Full-bleed square; the
-     platforms mask their own corner radius. -->
+<!-- FWApp app icon: Feuerwehrhelm mit Prüf-Abzeichen auf Feuerrot (#C62828).
+     Vollflächig quadratisch; die Plattformen maskieren ihre eigenen Ecken.
+
+     ⚠️ Flach, ohne Verlauf und ohne Flamme (Issue #175). Die alte Fassung —
+     weiße Flamme auf rotem Verlauf — war von der Tinder-Marke kaum zu
+     unterscheiden.
+
+     ⚠️ Die Aussparungen (Stirnschild, Ring, Haken) sind in der
+     HINTERGRUNDFARBE gemalt, nicht ausgestanzt. Das ist Absicht und hat eine
+     Bedingung: #C62828 muss `adaptive_icon_background` in pubspec.yaml
+     entsprechen. Wer den Grund ändert, ändert ihn an beiden Stellen —
+     sonst stehen rote Reste in einem andersfarbigen Icon.
+
+     Der Faktor 0,94 ist Luft für die maskierbare PWA-Fassung: Die erzeugt
+     flutter_launcher_icons aus DIESER Datei, ohne eigenen Rand, und ein
+     runder Zuschnitt knabberte sonst an der Krempe. -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0.55" y2="1">
-      <stop offset="0" stop-color="#E5453A"/>
-      <stop offset="0.55" stop-color="#C62828"/>
-      <stop offset="1" stop-color="#8E1613"/>
-    </linearGradient>
-    <radialGradient id="glow" cx="0.5" cy="0.42" r="0.62">
-      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.16"/>
-      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
-    </radialGradient>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="14" stdDeviation="22" flood-color="#5E0B08" flood-opacity="0.45"/>
-    </filter>
-  </defs>
-  <rect width="1024" height="1024" fill="url(#bg)"/>
-  <rect width="1024" height="1024" fill="url(#glow)"/>
-  <g filter="url(#shadow)">
-    <path fill="#FFFFFF" transform="translate(128 112) scale(32)"
-      d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z"/>
+  <rect width="1024" height="1024" fill="#C62828"/>
+  <g transform="translate(512 512) scale(0.94) translate(-546 -609)">
+  <!-- Helm, Frontansicht: Kuppel, beidseitige Krempe, Stirnschild. Das
+       Stirnschild ist das Zeichen, an dem man den Feuerwehrhelm vom Bauhelm
+       unterscheidet. -->
+  <path fill="#FFFFFF" d="
+    M 152,704 C 140,652 176,616 268,604
+    C 260,400 360,280 512,280
+    C 664,280 764,400 756,604
+    C 848,616 884,652 872,704 Z"/>
+  <path fill="#C62828" d="
+    M 424,396 C 480,376 544,376 600,396
+    C 604,496 576,564 512,600
+    C 448,564 420,496 424,396 Z"/>
+  <!-- Abzeichen: geprüft. Es sitzt an der UNTERKANTE der Krempe, nicht an
+       ihrer Rundung — dort stieß die Krempe sonst als Sporn aus dem Ring. -->
+  <circle cx="820" cy="806" r="132" fill="#C62828"/>
+  <circle cx="820" cy="806" r="104" fill="#FFFFFF"/>
+  <path fill="#C62828" d="
+    M 768,792 L 806,830 L 874,750 L 892,768 L 806,858 L 750,802 Z"/>
   </g>
 </svg>

@@ -12,6 +12,21 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.56.0] – 2026-09-22
+
+### Geändert
+
+- **Neues App-Icon: Feuerwehrhelm mit Prüf-Abzeichen.** Das bisherige —
+  weiße Flamme auf rotem Verlauf — war von der Tinder-Marke kaum zu
+  unterscheiden, und es sagte nichts darüber, dass diese App zum Lernen und
+  Verwalten da ist.
+
+  Der Helm sagt, um wen es geht; der Haken sagt, worum: geprüft und gewusst.
+  Flach statt Verlauf, damit das Icon überall gleich aussieht — auch dort,
+  wo Android seinen eigenen Hintergrund malt.
+
+  Das Startbild trägt noch die alte Flamme; das kommt als eigener Schritt.
+
 ## [1.55.0] – 2026-09-22
 
 ### Neu

@@ -171,6 +171,45 @@ void main() {
       expect(check.status, InventoryChecks.statusOk);
     });
 
+    test('derselbe Aufkleber zweimal zählt nur einmal', () async {
+      // ⚠️ Der Fehler, der diesen Test erzwungen hat: Die Kamera liefert
+      // denselben Code, solange er im Bild ist. Vor #179 stieg die Stückzahl
+      // bei jedem Bild weiter — sieben Sekunden ruhig gehalten ergaben „3
+      // von 4", also ein Fach, das sich selbst als vollständig meldet.
+      await tagge('Feuerlöscher', 'FW-BBBBBBB');   // Soll 2
+      final sessionId = await service.startOrResume(vehicleId);
+
+      final erst = await service.hakeCodeAb(sessionId, 'FW-BBBBBBB');
+      expect((erst as Abgehakt).ist, 1);
+
+      final nochmal = await service.hakeCodeAb(sessionId, 'FW-BBBBBBB');
+      expect(nochmal, isA<SchonGezaehlt>(),
+          reason: 'Dieselbe Einheit liegt nicht zweimal da.');
+      expect((nochmal as SchonGezaehlt).ist, 1);
+
+      final check = (await db.inventoryDao.getChecks(sessionId))
+          .firstWhere((c) => c.equipmentName == 'Feuerlöscher');
+      expect(check.actualQuantity, 1);
+      expect(check.status, InventoryChecks.statusOpen,
+          reason: 'Ein Stück von zwei bleibt unvollständig, egal wie oft '
+              'die Kamera es liest.');
+    });
+
+    test('zwei verschiedene Einheiten zählen beide', () async {
+      // Die Gegenprobe zur Sperre oben: Sie darf nicht zu viel sperren.
+      await tagge('Feuerlöscher', 'FW-BBBBBBB');
+      await tagge('Feuerlöscher', 'FW-CCCCCCC');
+      final sessionId = await service.startOrResume(vehicleId);
+
+      await service.hakeCodeAb(sessionId, 'FW-BBBBBBB');
+      final zweit = await service.hakeCodeAb(sessionId, 'FW-CCCCCCC');
+      expect((zweit as Abgehakt).ist, 2);
+
+      final check = (await db.inventoryDao.getChecks(sessionId))
+          .firstWhere((c) => c.equipmentName == 'Feuerlöscher');
+      expect(check.status, InventoryChecks.statusOk);
+    });
+
     test('ein unbekannter Code hakt nichts ab', () async {
       final sessionId = await service.startOrResume(vehicleId);
       expect(await service.hakeCodeAb(sessionId, 'FW-ZZZZZZZ'),

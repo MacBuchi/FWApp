@@ -12,6 +12,37 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.50.0] – 2026-09-22
+
+### Neu
+
+- **Codes scannen statt eintippen.** In der Inventur liegt oben rechts jetzt
+  ein Scanner: Kamera auf den Aufkleber halten, und das Gerät ist abgehakt.
+  Der Sucher bleibt offen und meldet jeden Fund über dem Bild — ein Fach geht
+  damit in einem Zug durch. Denselben Weg gibt es beim Verknüpfen eines Codes
+  mit einem Gerät.
+
+  Die Tastatureingabe bleibt daneben stehen. Sie ist der Weg, wenn die Kamera
+  belegt ist, der Aufkleber zerkratzt oder das Gerät gar keine hat.
+
+- **Vergebene Codes zeigt die App als QR zum Aufkleben.** Nach dem Vergeben
+  steht er gleich groß auf dem Bildschirm, später genügt ein Tippen auf den
+  Code. Darunter steht er zusätzlich als Text — ein verkratzter Aufkleber
+  wäre sonst wertlos.
+
+### Behoben
+
+- **Ein Aufkleber zählt einmal, auch wenn die Kamera ihn hundertmal liest.**
+  Beim Scannen liefert die Kamera denselben Code, solange er im Bild ist.
+  Bisher stieg die Stückzahl dabei weiter — wer die Kamera ruhig hielt,
+  meldete ein Fach als vollständig, das es nicht war. Die App merkt sich
+  jetzt, welche Einheit schon gezählt wurde, und sagt es beim zweiten Mal.
+
+- Auf Android fehlte der App die Kamera-Berechtigung. Das Fotografieren von
+  Geräten lief trotzdem, weil dafür die Kamera-App des Systems geöffnet wird;
+  der neue Scanner greift direkt zu und hätte ohne sie ein schwarzes Bild
+  gezeigt.
+
 ## [1.49.0] – 2026-09-22
 
 ### Neu

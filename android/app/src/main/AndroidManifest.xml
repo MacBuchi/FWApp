@@ -6,6 +6,16 @@
     <!-- In-App-Update (ota_update): heruntergeladenes Release-APK an den
          Android-Installer übergeben dürfen. -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
+    <!-- Codes scannen (mobile_scanner, Issue #179). ⚠️ NICHT von
+         image_picker mitgebracht: Das ruft die Kamera-APP auf und braucht
+         deshalb keine eigene Berechtigung. mobile_scanner greift direkt auf
+         die Kamera zu — ohne diese Zeile bleibt das Bild auf dem Gerät
+         schwarz, während es im Browser einwandfrei läuft. -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <!-- `required="false"`: Ein Gerät ohne Kamera soll die App trotzdem
+         installieren können. Scannen ist ein Weg, nicht der einzige — der
+         Code lässt sich eintippen. -->
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
     <application
         android:label="FWApp"
         android:name="${applicationName}"

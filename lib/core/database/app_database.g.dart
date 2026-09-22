@@ -6246,6 +6246,18 @@ class $InventoryChecksTable extends InventoryChecks
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
   );
+  static const VerificationMeta _countedInstancesJsonMeta =
+      const VerificationMeta('countedInstancesJson');
+  @override
+  late final GeneratedColumn<String> countedInstancesJson =
+      GeneratedColumn<String>(
+        'counted_instances_json',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('[]'),
+      );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -6258,6 +6270,7 @@ class $InventoryChecksTable extends InventoryChecks
     actualQuantity,
     status,
     note,
+    countedInstancesJson,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -6352,6 +6365,15 @@ class $InventoryChecksTable extends InventoryChecks
         note.isAcceptableOrUnknown(data['note']!, _noteMeta),
       );
     }
+    if (data.containsKey('counted_instances_json')) {
+      context.handle(
+        _countedInstancesJsonMeta,
+        countedInstancesJson.isAcceptableOrUnknown(
+          data['counted_instances_json']!,
+          _countedInstancesJsonMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -6408,6 +6430,11 @@ class $InventoryChecksTable extends InventoryChecks
             DriftSqlType.string,
             data['${effectivePrefix}note'],
           )!,
+      countedInstancesJson:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}counted_instances_json'],
+          )!,
     );
   }
 
@@ -6429,6 +6456,21 @@ class InventoryCheckData extends DataClass
   final int? actualQuantity;
   final String status;
   final String note;
+
+  /// IDs der Einheiten, die für diese Zeile schon gezählt wurden, als
+  /// JSON-Liste (Issue #179).
+  ///
+  /// **Warum das mitgeschrieben wird und nicht nur eine Zahl.** Beim Scannen
+  /// liefert die Kamera denselben Code, solange er im Bild ist. Ein reiner
+  /// Zähler steigt dann weiter, und wer die Kamera ruhig hält, meldet ein
+  /// Fach als vollständig, das es nicht ist — live nachgestellt, bevor es
+  /// jemandem im Geräteraum passiert ist. Mit den Einheiten als MENGE ist
+  /// derselbe Aufkleber zweimal genau das: derselbe.
+  ///
+  /// Nur der Scan-/Code-Weg pflegt das Feld. Wer von Hand abhakt, setzt
+  /// weiterhin Status und Stückzahl direkt — dort gibt es keine Einheit,
+  /// auf die man sich beziehen könnte.
+  final String countedInstancesJson;
   const InventoryCheckData({
     required this.id,
     required this.sessionId,
@@ -6440,6 +6482,7 @@ class InventoryCheckData extends DataClass
     this.actualQuantity,
     required this.status,
     required this.note,
+    required this.countedInstancesJson,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -6460,6 +6503,7 @@ class InventoryCheckData extends DataClass
     }
     map['status'] = Variable<String>(status);
     map['note'] = Variable<String>(note);
+    map['counted_instances_json'] = Variable<String>(countedInstancesJson);
     return map;
   }
 
@@ -6484,6 +6528,7 @@ class InventoryCheckData extends DataClass
               : Value(actualQuantity),
       status: Value(status),
       note: Value(note),
+      countedInstancesJson: Value(countedInstancesJson),
     );
   }
 
@@ -6503,6 +6548,9 @@ class InventoryCheckData extends DataClass
       actualQuantity: serializer.fromJson<int?>(json['actualQuantity']),
       status: serializer.fromJson<String>(json['status']),
       note: serializer.fromJson<String>(json['note']),
+      countedInstancesJson: serializer.fromJson<String>(
+        json['countedInstancesJson'],
+      ),
     );
   }
   @override
@@ -6519,6 +6567,7 @@ class InventoryCheckData extends DataClass
       'actualQuantity': serializer.toJson<int?>(actualQuantity),
       'status': serializer.toJson<String>(status),
       'note': serializer.toJson<String>(note),
+      'countedInstancesJson': serializer.toJson<String>(countedInstancesJson),
     };
   }
 
@@ -6533,6 +6582,7 @@ class InventoryCheckData extends DataClass
     Value<int?> actualQuantity = const Value.absent(),
     String? status,
     String? note,
+    String? countedInstancesJson,
   }) => InventoryCheckData(
     id: id ?? this.id,
     sessionId: sessionId ?? this.sessionId,
@@ -6546,6 +6596,7 @@ class InventoryCheckData extends DataClass
         actualQuantity.present ? actualQuantity.value : this.actualQuantity,
     status: status ?? this.status,
     note: note ?? this.note,
+    countedInstancesJson: countedInstancesJson ?? this.countedInstancesJson,
   );
   InventoryCheckData copyWithCompanion(InventoryChecksCompanion data) {
     return InventoryCheckData(
@@ -6575,6 +6626,10 @@ class InventoryCheckData extends DataClass
               : this.actualQuantity,
       status: data.status.present ? data.status.value : this.status,
       note: data.note.present ? data.note.value : this.note,
+      countedInstancesJson:
+          data.countedInstancesJson.present
+              ? data.countedInstancesJson.value
+              : this.countedInstancesJson,
     );
   }
 
@@ -6590,7 +6645,8 @@ class InventoryCheckData extends DataClass
           ..write('targetQuantity: $targetQuantity, ')
           ..write('actualQuantity: $actualQuantity, ')
           ..write('status: $status, ')
-          ..write('note: $note')
+          ..write('note: $note, ')
+          ..write('countedInstancesJson: $countedInstancesJson')
           ..write(')'))
         .toString();
   }
@@ -6607,6 +6663,7 @@ class InventoryCheckData extends DataClass
     actualQuantity,
     status,
     note,
+    countedInstancesJson,
   );
   @override
   bool operator ==(Object other) =>
@@ -6621,7 +6678,8 @@ class InventoryCheckData extends DataClass
           other.targetQuantity == this.targetQuantity &&
           other.actualQuantity == this.actualQuantity &&
           other.status == this.status &&
-          other.note == this.note);
+          other.note == this.note &&
+          other.countedInstancesJson == this.countedInstancesJson);
 }
 
 class InventoryChecksCompanion extends UpdateCompanion<InventoryCheckData> {
@@ -6635,6 +6693,7 @@ class InventoryChecksCompanion extends UpdateCompanion<InventoryCheckData> {
   final Value<int?> actualQuantity;
   final Value<String> status;
   final Value<String> note;
+  final Value<String> countedInstancesJson;
   const InventoryChecksCompanion({
     this.id = const Value.absent(),
     this.sessionId = const Value.absent(),
@@ -6646,6 +6705,7 @@ class InventoryChecksCompanion extends UpdateCompanion<InventoryCheckData> {
     this.actualQuantity = const Value.absent(),
     this.status = const Value.absent(),
     this.note = const Value.absent(),
+    this.countedInstancesJson = const Value.absent(),
   });
   InventoryChecksCompanion.insert({
     this.id = const Value.absent(),
@@ -6658,6 +6718,7 @@ class InventoryChecksCompanion extends UpdateCompanion<InventoryCheckData> {
     this.actualQuantity = const Value.absent(),
     this.status = const Value.absent(),
     this.note = const Value.absent(),
+    this.countedInstancesJson = const Value.absent(),
   }) : sessionId = Value(sessionId),
        equipmentName = Value(equipmentName),
        compartmentLabel = Value(compartmentLabel);
@@ -6672,6 +6733,7 @@ class InventoryChecksCompanion extends UpdateCompanion<InventoryCheckData> {
     Expression<int>? actualQuantity,
     Expression<String>? status,
     Expression<String>? note,
+    Expression<String>? countedInstancesJson,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -6684,6 +6746,8 @@ class InventoryChecksCompanion extends UpdateCompanion<InventoryCheckData> {
       if (actualQuantity != null) 'actual_quantity': actualQuantity,
       if (status != null) 'status': status,
       if (note != null) 'note': note,
+      if (countedInstancesJson != null)
+        'counted_instances_json': countedInstancesJson,
     });
   }
 
@@ -6698,6 +6762,7 @@ class InventoryChecksCompanion extends UpdateCompanion<InventoryCheckData> {
     Value<int?>? actualQuantity,
     Value<String>? status,
     Value<String>? note,
+    Value<String>? countedInstancesJson,
   }) {
     return InventoryChecksCompanion(
       id: id ?? this.id,
@@ -6710,6 +6775,7 @@ class InventoryChecksCompanion extends UpdateCompanion<InventoryCheckData> {
       actualQuantity: actualQuantity ?? this.actualQuantity,
       status: status ?? this.status,
       note: note ?? this.note,
+      countedInstancesJson: countedInstancesJson ?? this.countedInstancesJson,
     );
   }
 
@@ -6746,6 +6812,11 @@ class InventoryChecksCompanion extends UpdateCompanion<InventoryCheckData> {
     if (note.present) {
       map['note'] = Variable<String>(note.value);
     }
+    if (countedInstancesJson.present) {
+      map['counted_instances_json'] = Variable<String>(
+        countedInstancesJson.value,
+      );
+    }
     return map;
   }
 
@@ -6761,7 +6832,8 @@ class InventoryChecksCompanion extends UpdateCompanion<InventoryCheckData> {
           ..write('targetQuantity: $targetQuantity, ')
           ..write('actualQuantity: $actualQuantity, ')
           ..write('status: $status, ')
-          ..write('note: $note')
+          ..write('note: $note, ')
+          ..write('countedInstancesJson: $countedInstancesJson')
           ..write(')'))
         .toString();
   }
@@ -15937,6 +16009,7 @@ typedef $$InventoryChecksTableCreateCompanionBuilder =
       Value<int?> actualQuantity,
       Value<String> status,
       Value<String> note,
+      Value<String> countedInstancesJson,
     });
 typedef $$InventoryChecksTableUpdateCompanionBuilder =
     InventoryChecksCompanion Function({
@@ -15950,6 +16023,7 @@ typedef $$InventoryChecksTableUpdateCompanionBuilder =
       Value<int?> actualQuantity,
       Value<String> status,
       Value<String> note,
+      Value<String> countedInstancesJson,
     });
 
 final class $$InventoryChecksTableReferences
@@ -16038,6 +16112,11 @@ class $$InventoryChecksTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get countedInstancesJson => $composableBuilder(
+    column: $table.countedInstancesJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
   $$InventorySessionsTableFilterComposer get sessionId {
     final $$InventorySessionsTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -16116,6 +16195,11 @@ class $$InventoryChecksTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get countedInstancesJson => $composableBuilder(
+    column: $table.countedInstancesJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$InventorySessionsTableOrderingComposer get sessionId {
     final $$InventorySessionsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -16187,6 +16271,11 @@ class $$InventoryChecksTableAnnotationComposer
 
   GeneratedColumn<String> get note =>
       $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<String> get countedInstancesJson => $composableBuilder(
+    column: $table.countedInstancesJson,
+    builder: (column) => column,
+  );
 
   $$InventorySessionsTableAnnotationComposer get sessionId {
     final $$InventorySessionsTableAnnotationComposer composer =
@@ -16260,6 +16349,7 @@ class $$InventoryChecksTableTableManager
                 Value<int?> actualQuantity = const Value.absent(),
                 Value<String> status = const Value.absent(),
                 Value<String> note = const Value.absent(),
+                Value<String> countedInstancesJson = const Value.absent(),
               }) => InventoryChecksCompanion(
                 id: id,
                 sessionId: sessionId,
@@ -16271,6 +16361,7 @@ class $$InventoryChecksTableTableManager
                 actualQuantity: actualQuantity,
                 status: status,
                 note: note,
+                countedInstancesJson: countedInstancesJson,
               ),
           createCompanionCallback:
               ({
@@ -16284,6 +16375,7 @@ class $$InventoryChecksTableTableManager
                 Value<int?> actualQuantity = const Value.absent(),
                 Value<String> status = const Value.absent(),
                 Value<String> note = const Value.absent(),
+                Value<String> countedInstancesJson = const Value.absent(),
               }) => InventoryChecksCompanion.insert(
                 id: id,
                 sessionId: sessionId,
@@ -16295,6 +16387,7 @@ class $$InventoryChecksTableTableManager
                 actualQuantity: actualQuantity,
                 status: status,
                 note: note,
+                countedInstancesJson: countedInstancesJson,
               ),
           withReferenceMapper:
               (p0) =>

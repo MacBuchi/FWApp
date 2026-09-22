@@ -10,6 +10,7 @@ import 'package:fwapp/core/widgets/abteilung_switcher.dart';
 import 'package:fwapp/features/compartment/domain/entities/compartment.dart';
 import 'package:fwapp/features/compartment/presentation/providers/compartment_providers.dart';
 import 'package:fwapp/features/inventory/presentation/providers/inventory_providers.dart';
+import 'package:fwapp/features/inventory/presentation/screens/code_scannen_screen.dart';
 import 'package:fwapp/features/inventory/presentation/widgets/status_darstellung.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';
 import 'package:fwapp/features/vehicle/presentation/widgets/vehicle_cutaway_view.dart';
@@ -73,6 +74,11 @@ class InventoryRunScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.qr_code_scanner),
+            tooltip: 'Codes scannen',
+            onPressed: () => _codeScannen(context, ref, sessionId),
+          ),
+          IconButton(
+            icon: const Icon(Icons.keyboard),
             tooltip: 'Code eingeben',
             onPressed: () => _codeEingeben(context, ref, sessionId),
           ),
@@ -97,6 +103,34 @@ class InventoryRunScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Scannt Codes und hakt ab, ohne zwischendurch zu schließen.
+///
+/// Der Bildschirm bleibt offen und meldet jeden Fund über dem Bild: Ein Fach
+/// hat fünfzehn Geräte, und für jedes die Kamera neu zu öffnen wäre der
+/// langsamere Weg als das Antippen, das damit ersetzt werden soll.
+Future<void> _codeScannen(
+    BuildContext context, WidgetRef ref, int sessionId) async {
+  final dienst = ref.read(inventoryServiceProvider);
+  await Navigator.of(context).push<String>(MaterialPageRoute(
+    builder: (_) => CodeScannenScreen(
+      titel: 'Geräte abhaken',
+      beiFund: (roh) async {
+        final ergebnis = await dienst.hakeCodeAb(sessionId, roh);
+        return switch (ergebnis) {
+          Abgehakt(:final geraet, :final fach, :final ist, :final soll) =>
+            '$geraet · $fach — $ist von $soll',
+          SchonGezaehlt(:final geraet, :final ist, :final soll) =>
+            '$geraet war schon gezählt — weiterhin $ist von $soll',
+          CodeUnbekannt() => 'Dieser Code klebt auf keinem erfassten Gerät.',
+          CodeNichtInDieserInventur(:final geraet) =>
+            '$geraet gehört nicht zu diesem Fahrzeug.',
+          CodeLeer() => 'Da stand kein Code.',
+        };
+      },
+    ),
+  ));
 }
 
 /// Fragt einen Code ab und hakt das Gerät ab, auf dem er klebt.
@@ -138,6 +172,10 @@ Future<void> _codeEingeben(
                           Abgehakt(:final geraet, :final fach, :final ist,
                                   :final soll) =>
                             '$geraet · $fach — $ist von $soll',
+                          SchonGezaehlt(:final geraet, :final ist,
+                                  :final soll) =>
+                            '$geraet war schon gezählt — weiterhin $ist '
+                                'von $soll',
                           CodeUnbekannt() =>
                             'Dieser Code klebt auf keinem erfassten Gerät.',
                           CodeNichtInDieserInventur(:final geraet) =>

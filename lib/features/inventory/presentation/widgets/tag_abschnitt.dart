@@ -14,10 +14,11 @@
 library;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/features/inventory/presentation/providers/tag_providers.dart';
+import 'package:fwapp/features/inventory/presentation/screens/code_scannen_screen.dart';
+import 'package:fwapp/features/inventory/presentation/widgets/code_anzeigen.dart';
 
 class TagAbschnitt extends ConsumerWidget {
   final int instanceId;
@@ -57,6 +58,11 @@ class TagAbschnitt extends ConsumerWidget {
                   onPressed: () => _vergeben(context, ref),
                 ),
                 TextButton.icon(
+                  icon: const Icon(Icons.qr_code_scanner),
+                  label: const Text('Code scannen'),
+                  onPressed: () => _scannen(context, ref),
+                ),
+                TextButton.icon(
                   icon: const Icon(Icons.keyboard),
                   label: const Text('Code eintragen'),
                   onPressed: () => _eintragen(context, ref),
@@ -73,16 +79,37 @@ class TagAbschnitt extends ConsumerWidget {
     final dienst = ref.read(tagDienstProvider);
     try {
       final code = await dienst.vergebeCode(instanceId);
-      messenger.showSnackBar(SnackBar(
-        content: Text('Code $code vergeben.'),
-        action: SnackBarAction(
-          label: 'Kopieren',
-          onPressed: () => Clipboard.setData(ClipboardData(text: code)),
-        ),
-      ));
+      if (!context.mounted) return;
+      // Direkt zeigen statt nur zu melden: Der Code wird vergeben, UM
+      // ausgedruckt zu werden — ihn erst suchen zu müssen wäre ein Umweg
+      // durch die eigene Oberfläche.
+      await zeigeCode(context, code);
     } catch (e) {
       messenger.showSnackBar(SnackBar(content: Text('Ging nicht: $e')));
     }
+  }
+
+  /// Scannt einen Code und verknüpft ihn — derselbe Weg wie die
+  /// Tastatureingabe, nur mit der Kamera als Quelle.
+  Future<void> _scannen(BuildContext context, WidgetRef ref) async {
+    final dienst = ref.read(tagDienstProvider);
+    await Navigator.of(context).push<String>(MaterialPageRoute(
+      builder: (_) => CodeScannenScreen(
+        titel: 'Code verknüpfen',
+        // Gibt eine Meldung zurück und bleibt offen, wenn der Code schon
+        // klebt: Dann greift man zum nächsten Aufkleber, statt den
+        // Bildschirm neu zu öffnen.
+        beiFund: (roh) async {
+          final ergebnis = await dienst.verknuepfe(instanceId, roh);
+          return switch (ergebnis) {
+            TagVerknuepft() => null,
+            TagLeer() => 'Da stand kein Code.',
+            TagSchonVergeben(:final code, :final geraet) =>
+              'Der Code $code klebt schon auf: $geraet.',
+          };
+        },
+      ),
+    ));
   }
 
   Future<void> _eintragen(BuildContext context, WidgetRef ref) async {
@@ -147,7 +174,10 @@ class _TagZeile extends ConsumerWidget {
         size: 20,
       ),
       title: Text(tag.code, style: const TextStyle(fontFamily: 'monospace')),
-      subtitle: Text(tag.selfIssued ? 'von der App vergeben' : 'übernommen'),
+      subtitle: Text(tag.selfIssued
+          ? 'von der App vergeben — antippen zum Aufkleben'
+          : 'übernommen'),
+      onTap: tag.selfIssued ? () => zeigeCode(context, tag.code) : null,
       trailing: bearbeitbar
           ? IconButton(
               icon: const Icon(Icons.link_off, size: 20),

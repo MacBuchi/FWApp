@@ -12,7 +12,6 @@ library;
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/database/app_database.dart';
@@ -40,6 +39,9 @@ class _FahrzeugUnterlagenState extends ConsumerState<FahrzeugUnterlagen> {
     final anhaengeAsync =
         ref.watch(fahrzeugAnhaengeProvider(widget.vehicleId));
     final darfBearbeiten = ref.watch(canEditProvider);
+    // Nicht `kIsWeb` direkt: Der Speicher entscheidet das, und nur so lässt
+    // sich der Browser-Zweig überhaupt prüfen (Issue #210).
+    final imBrowser = ref.watch(anhangSpeicherProvider).imBrowser;
     final anhaenge = anhaengeAsync.value ?? const <VehicleAttachmentData>[];
     final fehlenLokal =
         anhaenge.where((a) => !_liegtHier(a)).toList();
@@ -54,11 +56,21 @@ class _FahrzeugUnterlagenState extends ConsumerState<FahrzeugUnterlagen> {
             children: [
               Text('Unterlagen',
                   style: Theme.of(context).textTheme.titleMedium),
-              if (darfBearbeiten)
+              // Im Browser gibt es den Knopf nicht — er führte bisher in
+              // eine rohe `MissingPluginException` (Issue #210). Statt ihn
+              // wortlos verschwinden zu lassen, steht der Grund da: Sonst
+              // sucht der Gerätewart ihn und hält die App für kaputt.
+              if (darfBearbeiten && !imBrowser)
                 TextButton.icon(
                   onPressed: _laeuft ? null : _hinzufuegen,
                   icon: const Icon(Icons.attach_file, size: 16),
                   label: const Text('Anhängen'),
+                ),
+              if (darfBearbeiten && imBrowser)
+                Text(
+                  'Anhängen geht in der App',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant),
                 ),
             ],
           ),
@@ -67,10 +79,15 @@ class _FahrzeugUnterlagenState extends ConsumerState<FahrzeugUnterlagen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
             child: Text(
-              darfBearbeiten
-                  ? 'Noch nichts angehängt. Betriebsanleitung, Fahrzeugschein '
-                      'oder Prüfbescheinigung als PDF oder Foto.'
-                  : 'Für dieses Fahrzeug sind keine Unterlagen hinterlegt.',
+              !darfBearbeiten
+                  ? 'Für dieses Fahrzeug sind keine Unterlagen hinterlegt.'
+                  : imBrowser
+                      ? 'Noch nichts angehängt. Betriebsanleitung, '
+                          'Fahrzeugschein oder Prüfbescheinigung hängt man '
+                          'in der App an.'
+                      : 'Noch nichts angehängt. Betriebsanleitung, '
+                          'Fahrzeugschein oder Prüfbescheinigung als PDF '
+                          'oder Foto.',
               style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
@@ -78,7 +95,7 @@ class _FahrzeugUnterlagenState extends ConsumerState<FahrzeugUnterlagen> {
         ...anhaenge.map(_zeile),
         // Der Knopf steht nur da, wenn er etwas zu tun hat — und er ist der
         // Unterschied zwischen „angehängt" und „im Einsatz verfügbar".
-        if (fehlenLokal.isNotEmpty && !kIsWeb)
+        if (fehlenLokal.isNotEmpty && !imBrowser)
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
             child: OutlinedButton.icon(
@@ -97,7 +114,9 @@ class _FahrzeugUnterlagenState extends ConsumerState<FahrzeugUnterlagen> {
   /// Offline-Zusage eine Behauptung.
   bool _liegtHier(VehicleAttachmentData a) {
     final pfad = a.localPath;
-    if (pfad == null || kIsWeb) return false;
+    if (pfad == null || ref.read(anhangSpeicherProvider).imBrowser) {
+      return false;
+    }
     return File(pfad).existsSync();
   }
 
@@ -181,6 +200,15 @@ class _FahrzeugUnterlagenState extends ConsumerState<FahrzeugUnterlagen> {
   }
 
   Future<void> _oeffnen(VehicleAttachmentData a) async {
+    // ⚠️ Im Browser wäre die Auskunft unten falsch: Die Datei LIEGT auf dem
+    // Server, nur der Weg auf die Platte fehlt. „ließ sich nicht laden"
+    // schickte den Gerätewart auf die Suche nach einem Netzproblem, das es
+    // nicht gibt (Issue #210).
+    if (ref.read(anhangSpeicherProvider).imBrowser) {
+      _sagen('Öffnen geht in der App — dort liegt die Datei danach auch '
+          'ohne Netz vor.');
+      return;
+    }
     setState(() => _laeuft = true);
     final pfad = await ref.read(anhangSpeicherProvider).sicherstellenLokal(a);
     if (!mounted) return;

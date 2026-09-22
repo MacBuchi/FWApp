@@ -267,6 +267,17 @@ pauschales Formatieren in Feature-PRs.
   bei **jeder** Veröffentlichung mitlöschen. Deshalb: eigener zeilenweiser
   Weg (`anhang_speicher.dart`), und `vehicle_id` ist die LOKALE Drift-ID
   ohne Fremdschlüssel — dasselbe Muster wie `equipment_type_links`.
+- ⚠️ **Ein `kIsWeb`-Zweig, der nicht injizierbar ist, wird nie geprüft**
+  (Issue #210). `kIsWeb` ist eine Kompilierzeit-Konstante und im Dart-VM
+  immer `false` — jeder Test läuft also am Browser-Zweig vorbei. Genau dort
+  fehlte in `anhang_speicher.dart` eine einzige Abfrage, während vier
+  andere Stellen derselben Datei sie hatten: Im Browser landete die rohe
+  `MissingPluginException` wörtlich beim Nutzer. `AnhangSpeicher` nimmt den
+  Schalter deshalb als `imBrowser`-Parameter (Vorgabe `kIsWeb`), und die
+  Oberfläche liest ihn von dort statt `kIsWeb` selbst zu fragen. **Und der
+  Riegel gehört in die Datenschicht, nicht nur an den Knopf** — eine Prüfung
+  in der Oberfläche allein ist keine, der nächste Aufrufer öffnet denselben
+  Weg wieder.
 - ⚠️ **Die lokale Drift-ID taugt nur als Schlüssel, solange EIN Gerät
   schreibt** (Issue #177). `vehicle_attachments` kommt mit
   `(abteilung_id, id)` durch, weil Unterlagen praktisch immer von einem

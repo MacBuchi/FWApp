@@ -55,6 +55,50 @@ void main() {
     });
   });
 
+  group('im Browser (Issue #210)', () {
+    // ⚠️ Warum das ein eigener Speicher ist: `kIsWeb` ist eine
+    // Kompilierzeit-Konstante, im Dart-VM immer false. Ohne den injizierten
+    // Schalter wäre der Browser-Zweig der einzige, den nie jemand prüft —
+    // und genau dort lag der Fehler.
+    late AnhangSpeicher browser;
+
+    setUp(() {
+      browser = AnhangSpeicher(
+          db: db, ordner: () async => tempDir, imBrowser: true);
+    });
+
+    test('lehnt das Anhängen mit einem Satz ab, nicht mit einer Ausnahme '
+        'aus dem Maschinenraum', () async {
+      // Vorher lief das ungebremst in `getApplicationDocumentsDirectory`,
+      // und die rohe `MissingPluginException` stand wörtlich im SnackBar.
+      final vehicleId = await seedFahrzeug();
+      await expectLater(
+        browser.hinzufuegen(
+            vehicleId: vehicleId, dateiname: 'Anleitung.pdf', bytes: pdf),
+        throwsA(isA<AnhangAbgelehnt>().having(
+            (e) => e.grund, 'grund', AnhangSpeicher.kNurInDerApp)),
+      );
+    });
+
+    test('schreibt dabei weder Datei noch Zeile', () async {
+      // Ein halb angelegter Anhang wäre schlimmer als gar keiner: Die Liste
+      // zeigte ihn, und dahinter läge nichts.
+      final vehicleId = await seedFahrzeug();
+      try {
+        await browser.hinzufuegen(
+            vehicleId: vehicleId, dateiname: 'Anleitung.pdf', bytes: pdf);
+      } on AnhangAbgelehnt {
+        // erwartet
+      }
+      expect(await db.attachmentDao.getAll(), isEmpty);
+      expect(tempDir.listSync(), isEmpty);
+    });
+
+    test('reicht nichts nach — es gibt hier nichts auf der Platte', () async {
+      expect(await browser.nachreichen(), 0);
+    });
+  });
+
   group('hinzufügen', () {
     test('legt die Datei lokal ab und trägt sie ein — ohne jeden Server',
         () async {

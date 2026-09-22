@@ -12,6 +12,22 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.51.1] – 2026-09-22
+
+### Behoben
+
+- **Unterlagen anhängen im Browser meldete eine Fehlermeldung aus dem
+  Maschinenraum.** Wer im Browser eine Betriebsanleitung anhängen wollte,
+  bekam `MissingPluginException(…getApplicationDocumentsDirectory…)` zu
+  lesen, und angehängt war nichts. Der Grund: Im Browser gibt es keinen
+  Platz auf dem Gerät, auf den die App die Datei legen könnte — und genau
+  das ist hier die Zusage, nämlich lesbar zu sein, wenn kein Netz da ist.
+
+  Im Browser steht jetzt statt des Knopfes, wo es geht: in der App. Ebenso
+  beim Antippen einer Unterlage — vorher hieß es dort „ließ sich gerade
+  nicht laden", was auf ein Netzproblem hindeutete, das es nicht gab.
+  Android ist unverändert; dort funktioniert das Anhängen wie bisher.
+
 ## [1.51.0] – 2026-09-22
 
 ### Neu

@@ -25,6 +25,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/sync/abteilung_providers.dart';
 import 'package:fwapp/core/sync/membership_providers.dart';
 import 'package:fwapp/core/sync/rollen.dart';
+import 'package:fwapp/core/sync/verlust_warnung.dart';
 import 'package:fwapp/core/sync/temp_rechte_providers.dart';
 
 /// Anzeige der aktuellen Abteilung als AppBar-Action, mit Wechsel per Tipp.
@@ -138,16 +139,48 @@ Future<void> showAbteilungPicker(BuildContext context, WidgetRef ref) async {
   if (target.id == aktuell) return;
 
   final messenger = ScaffoldMessenger.of(context);
+  // ⚠️ Das Recht der ZIEL-Abteilung, nicht das der gerade angezeigten:
+  // Beim Weg zurück aus einer Schwester-Sicht ist man dort nur Leser, in
+  // der eigenen aber Gerätewart — „wer pflegen darf, kann veröffentlichen"
+  // wäre dann ein Rat an die falsche Person.
+  final darfPublizieren = schreibrolleInAbteilung(
+        abteilungId: target.id,
+        gesamtwehrId: target.gesamtwehrId,
+        mitgliedschaften: ref.read(meineMitgliedschaftenProvider).value,
+        kommandierteGesamtwehren:
+            ref.read(meineKommandoGesamtwehrenProvider).value,
+        temporaereRechte:
+            ref.read(meineTemporaerenRechteProvider).value?.keys.toSet(),
+      ) !=
+      null;
+
   // Eigene Abteilung = null: Sie behält die angestammte Datenbank-Datei.
-  await ref
-      .read(abteilungSwitcherProvider)
-      .switchTo(target.id == own ? null : target.id);
+  final gezogen = await ref.read(abteilungSwitcherProvider).switchTo(
+        target.id == own ? null : target.id,
+        // ⚠️ Der Zug ersetzt die Tabellen der NEUEN Sicht (#214). Das
+        // trifft vor allem den Weg ZURÜCK in die eigene Abteilung: Wer dort
+        // etwas angelegt, dann kurz zur Schwester geschaut hat, verlöre es
+        // beim Zurückkommen.
+        bestaetigen: (verlust) async {
+          if (!context.mounted) return false;
+          return darfVerlieren(context, verlust,
+              darfVeroeffentlichen: darfPublizieren, vorgang: 'Wechseln');
+        },
+      );
   messenger.showSnackBar(
     SnackBar(
+      duration:
+          gezogen ? const Duration(seconds: 4) : const Duration(seconds: 8),
       content: Text(
-        target.id == own
-            ? 'Zurück in deiner Abteilung.'
-            : '${target.name}: Der Bestand wird geladen …',
+        switch ((gezogen, target.id == own)) {
+          // Abgelehnt: gewechselt ist gewechselt, nur geladen wurde nichts.
+          // Das gehört gesagt — sonst wundert sich jemand, warum hier nichts
+          // Neues steht.
+          (false, _) => 'Gewechselt, aber nichts geladen — was hier noch '
+              'nicht veröffentlicht ist, bleibt stehen.',
+          (_, true) => 'Zurück in deiner Abteilung.',
+          _ => '${target.name}: Der Bestand wird geladen …',
+        },
       ),
     ),
   );

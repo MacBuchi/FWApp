@@ -22,6 +22,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // StateProvider lebt in Riverpod 3 im legacy-Namespace.
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:fwapp/core/logging/app_logger.dart';
+import 'package:fwapp/core/sync/snapshot_verlust.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/sync/zeilen_sync.dart';
 import 'package:fwapp/features/inventory/presentation/providers/tag_providers.dart';
@@ -141,7 +142,24 @@ class AbteilungSwitcher {
 
   /// Merken, Provider umstellen, Bestand der neuen Sicht ziehen.
   /// [id] = null wechselt zur eigenen Abteilung zurück.
-  Future<void> switchTo(String? id) async {
+  ///
+  /// [bestaetigen] wird gefragt, wenn der Zug in der Datei der NEUEN Sicht
+  /// lokale Zeilen löschen würde (Issue #214) — vor allem auf dem Weg
+  /// ZURÜCK in die eigene Abteilung: Wer dort etwas angelegt, dann kurz zur
+  /// Schwester geschaut hat und zurückkommt, verlöre es beim Zurückkommen.
+  ///
+  /// Sagt `false` zurück, wenn [bestaetigen] den Zug ABGELEHNT hat: Dann ist
+  /// gewechselt, aber nicht geladen, und der Aufrufer muss das sagen.
+  ///
+  /// ⚠️ Kein Server, kein Netz oder ein Fehler unterwegs sind **nicht**
+  /// dasselbe wie abgelehnt — dort bleibt es bei `true`, so wie die App es
+  /// vorher schon meldete. Ein erster Entwurf machte daraus ein `false`, und
+  /// im Lokalbetrieb stand danach „nichts geladen", obwohl es nie etwas zu
+  /// laden gab.
+  Future<bool> switchTo(
+    String? id, {
+    Future<bool> Function(SnapshotVerlust verlust)? bestaetigen,
+  }) async {
     final prefs = await SharedPreferences.getInstance();
     if (id == null) {
       await prefs.remove(kSelectedAbteilungPref);
@@ -152,8 +170,19 @@ class AbteilungSwitcher {
 
     // Erst-Pull der neuen Sicht; scheitert offline leise — die (ggf. leere)
     // lokale Datei der Abteilung ist dann der ehrliche Stand.
+    var abgelehnt = false;
     try {
-      await _ref.read(syncServiceProvider)?.pullIfNewer(force: true);
+      // Die Datenbank zeigt hier bereits auf die Datei der neuen Sicht:
+      // `appDatabaseProvider` beobachtet die Auswahl, die eine Zeile weiter
+      // oben gesetzt wurde. Gefragt wird also nach dem, was DORT liegt.
+      final dienst = _ref.read(syncServiceProvider);
+      if (dienst != null) {
+        final version =
+            await dienst.pullIfNewer(force: true, bestaetigen: bestaetigen);
+        // Mit `force` gibt es nur einen Grund, nichts zu liefern: Es wurde
+        // abgelehnt. Ohne Rückfrage kann das gar nicht eintreten.
+        abgelehnt = bestaetigen != null && version == null;
+      }
       // Die neue Sicht hat ihre eigene lokale Datei und damit ihr eigenes
       // Typ-Fenster — deshalb `force` (Stufe ②, Issue #99).
       await _ref.read(equipmentTypeSyncProvider)?.pull(force: true);
@@ -174,5 +203,6 @@ class AbteilungSwitcher {
     } catch (e) {
       appLog.w('Pull nach Abteilungswechsel fehlgeschlagen', error: e);
     }
+    return !abgelehnt;
   }
 }

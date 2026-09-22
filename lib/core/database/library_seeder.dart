@@ -11,6 +11,16 @@ import 'package:fwapp/core/logging/app_logger.dart';
 import 'package:fwapp/features/compartment/domain/fahrzeug_seiten.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
 
+/// ⚠️ Alles, was der Seed anlegt, gilt als **schon veröffentlicht** (#67).
+///
+/// Seit Schema 17 überlebt unveröffentlichte Arbeit den Zug (`dirty = 1`).
+/// Stünde die Lieferung der App so da, überlebte der Demo-HLF samt Katalog
+/// den ersten Zug nach dem Beitritt in eine Abteilung — und landete beim
+/// nächsten Veröffentlichen im Bestand der Wehr. Bisher hat der Zug den Seed
+/// schlicht gelöscht; dabei bleibt es. Der Grundstock gehört der App, nicht
+/// der Abteilung.
+const _ausDerLieferung = Value(false);
+
 class LibrarySeeder {
   final AppDatabase _db;
   LibrarySeeder(this._db);
@@ -141,6 +151,7 @@ class LibrarySeeder {
           VehiclesCompanion.insert(
             name: vehicleName,
             type: vehicleType,
+            dirty: _ausDerLieferung,
           ),
         );
       }
@@ -176,6 +187,7 @@ class LibrarySeeder {
               // und ohne Draufsicht.
               seite: Value(_seiteAus(compMap)),
               laengsposition: Value(_laengspositionAus(compMap)),
+              dirty: _ausDerLieferung,
             ),
           );
         }
@@ -258,6 +270,7 @@ class LibrarySeeder {
                 extraAttributesJson: Value(jsonEncode(extra)),
                 trainingQuestionsJson: Value(jsonEncode(trainingQuestions)),
                 typicalUseJson: Value(jsonEncode(typicalUse)),
+                dirty: _ausDerLieferung,
               ),
             );
           }
@@ -273,6 +286,7 @@ class LibrarySeeder {
                 compartmentId: compartmentId,
                 equipmentId: equipmentId,
                 quantity: Value(quantity),
+                dirty: _ausDerLieferung,
               ),
             );
           }
@@ -303,7 +317,7 @@ class LibrarySeeder {
         }
         continue;
       }
-      await catalog.createEquipment(_db, id);
+      await catalog.createEquipment(_db, id, dirty: false);
       created++;
     }
     if (created > 0) {

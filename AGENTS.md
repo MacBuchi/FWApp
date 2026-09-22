@@ -306,6 +306,28 @@ pauschales Formatieren in Feature-PRs.
   Was wirklich zählt, rechnet `snapshot_verlust.dart` aus: die lokalen
   Zeilen, deren ID der Server nicht kennt — genau die Menge, die
   `_applySnapshot` löscht.
+- ⚠️ **Die Spalte `dirty` je Zeile heißt „hier entstanden, noch nicht oben"
+  — und sie entscheidet, was ein Zug überlebt** (Schema 17, #67). Der Zug
+  löscht nur noch `dirty = 0`; alles andere bleibt stehen, damit zwei
+  Gerätewarte am selben Fahrzeug arbeiten können, ohne sich gegenseitig zu
+  überschreiben. Daraus folgen drei Pflichten, die im Code unsichtbar sind:
+  - **Jede neue Tabelle in `kSyncedTables` braucht die Spalte.** Ohne sie
+    scheitert `_applySnapshot` nicht etwa — es gibt sie gar nicht erst zu
+    schreiben, und der Compiler sagt nichts, weil die Löschbedingung pro
+    Tabelle ausgeschrieben ist.
+  - **Wer einen Fremdschlüssel hinzufügt, trägt ihn in `_verweiseAuf` nach.**
+    Bei einer ID-Kollision wird die lokale Zeile umnummeriert; ein
+    vergessener Verweis zeigt danach ins Leere. Die Karte ist die einzige
+    Stelle, die das weiß — auch für rein lokale Tabellen
+    (`vehicle_attachments`, `equipment_tags`, Inventur, Quiz).
+  - **Was die App selbst anlegt, ist `dirty = false`.** Der Seed
+    (`library_seeder.dart`, Konstante `_ausDerLieferung`) und alles, was ein
+    Zug schreibt, gehören der App bzw. der Wehr — nicht der Abteilung.
+    Stünde der Grundstock als unveröffentlicht da, überlebte der Demo-HLF
+    den ersten Zug nach dem Beitritt und landete beim nächsten
+    Veröffentlichen im Bestand der Wehr. `StandardCatalog.createEquipment`
+    hat dafür den Parameter: aus einer Fahrzeug-Vorlage heraus ist dieselbe
+    Zeile sehr wohl eigene Erfassung.
 - ⚠️ **Jeder zeilenweise Weg gehört in `core/sync/zeilen_sync.dart`, nicht
   an die Aufrufstelle.** „Den Bestand aktualisieren" stand dreimal
   ausgeschrieben — Start, „Jetzt aktualisieren", Abteilungswechsel — und die

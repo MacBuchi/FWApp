@@ -71,11 +71,12 @@ class SnapshotVerlust {
       };
 }
 
-/// Zählt, wie viele lokale Zeilen der Snapshot [data] nicht kennt.
+/// Zählt, wie viele lokale Zeilen der Zug WIRKLICH löschen würde.
 ///
 /// Dieselbe Bedingung wie in `_applySnapshot`: gelöscht wird, was nicht in
-/// der Nutzlast steht. Stünde hier eine andere, wäre die Warnung eine
-/// Behauptung über etwas anderes als das, was dann passiert.
+/// der Nutzlast steht UND schon einmal veröffentlicht war. Stünde hier eine
+/// andere, wäre die Warnung eine Behauptung über etwas anderes als das, was
+/// dann passiert.
 Future<SnapshotVerlust> berechneVerlust(
   AppDatabase db,
   Map<String, List<Map<String, dynamic>>> data,
@@ -85,10 +86,14 @@ Future<SnapshotVerlust> berechneVerlust(
         .map((r) => (r['id'] as num).toInt())
         .toList();
     final spalte = t.columnsByName['id']! as GeneratedColumn<int>;
+    // ⚠️ Nur Zeilen, die schon einmal oben waren. Seit #67 bleibt
+    // Unveröffentlichtes beim Zug stehen — es mitzuzählen hieße, vor einem
+    // Verlust zu warnen, den es nicht mehr gibt.
+    final veroeffentlicht = t.columnsByName['dirty']! as GeneratedColumn<bool>;
     final anzahl = countAll();
     final abfrage = db.selectOnly(t)
       ..addColumns([anzahl])
-      ..where(spalte.isNotIn(ids));
+      ..where(spalte.isNotIn(ids) & veroeffentlicht.equals(false));
     return await abfrage.map((r) => r.read(anzahl)!).getSingle();
   }
 

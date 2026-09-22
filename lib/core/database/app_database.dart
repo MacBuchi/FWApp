@@ -10,8 +10,31 @@ part 'app_database.g.dart';
 // TABLE DEFINITIONS
 // ─────────────────────────────────────────────────────────────
 
+/// Die Spalte `dirty` für jede Tabelle, die der Snapshot-Zug ersetzt:
+/// **hier entstanden und noch nicht veröffentlicht** (Schema 17, Issue #67).
+///
+/// **Wofür.** Ein Zug ersetzt die Tabellen der Abteilung. Bis v1.57.0 löschte
+/// er dabei JEDE lokale Zeile, die der Snapshot nicht kennt — auch die, die
+/// gerade erst entstand und nie oben war. Wer am Übungsabend zu zweit
+/// erfasst, verlor damit seine Arbeit: Der Zweite darf nicht veröffentlichen
+/// (Versionskonflikt) und muss ziehen, und das Ziehen kostete ihn alles.
+/// Mit dem Kennzeichen behält der Zug, was hier entstand — danach kann der
+/// Zweite beide Erfassungen zusammen veröffentlichen.
+///
+/// ⚠️ Vorbelegt mit `true`: Eine neu angelegte Zeile war noch nie oben. Der
+/// Zug setzt es für alles, was er bringt, auf `false`, ein erfolgreiches
+/// Veröffentlichen für alles Lokale. Die Migration setzt bestehende Zeilen
+/// auf `false` — was vor dem Update da war, galt bisher als veröffentlicht.
+///
+/// ⚠️ Ein Mixin und keine sieben Kopien: Eine Tabelle in `kSyncedTables`
+/// ohne die Spalte fällt nirgends auf, weil die Löschbedingung je Tabelle
+/// ausgeschrieben ist. `with SyncDirty` macht das Vergessen sichtbar.
+mixin SyncDirty on Table {
+  BoolColumn get dirty => boolean().withDefault(const Constant(true))();
+}
+
 @DataClassName('VehicleData')
-class Vehicles extends Table {
+class Vehicles extends Table with SyncDirty {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text()();
   TextColumn get type => text()();
@@ -24,7 +47,7 @@ class Vehicles extends Table {
 }
 
 @DataClassName('CompartmentData')
-class Compartments extends Table {
+class Compartments extends Table with SyncDirty {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get vehicleId =>
       integer().references(Vehicles, #id, onDelete: KeyAction.cascade)();
@@ -250,7 +273,7 @@ class Fragenhinweise extends Table {
 }
 
 @DataClassName('EquipmentItemData')
-class EquipmentItems extends Table {
+class EquipmentItems extends Table with SyncDirty {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text()();
   TextColumn get shortName => text().nullable()();
@@ -299,7 +322,7 @@ class EquipmentItems extends Table {
 }
 
 @DataClassName('AssignmentData')
-class EquipmentAssignments extends Table {
+class EquipmentAssignments extends Table with SyncDirty {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get compartmentId =>
       integer().references(Compartments, #id, onDelete: KeyAction.cascade)();
@@ -315,7 +338,7 @@ class EquipmentAssignments extends Table {
 /// Deliberately NOT tied to EquipmentAssignments: assignments are recreated
 /// on re-import, but inspection history must survive that.
 @DataClassName('EquipmentInstanceData')
-class EquipmentInstances extends Table {
+class EquipmentInstances extends Table with SyncDirty {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get equipmentId =>
       integer().references(EquipmentItems, #id, onDelete: KeyAction.cascade)();
@@ -408,7 +431,7 @@ class EquipmentTags extends Table {
 /// Ablaufdatum (kind='expiry'). dueAt is stored denormalized and updated when
 /// an inspection is logged, so due queries never compute dates.
 @DataClassName('InspectionScheduleData')
-class InspectionSchedules extends Table {
+class InspectionSchedules extends Table with SyncDirty {
   static const kindRecurring = 'recurring';
   static const kindExpiry = 'expiry';
 
@@ -426,7 +449,7 @@ class InspectionSchedules extends Table {
 }
 
 @DataClassName('InspectionLogData')
-class InspectionLog extends Table {
+class InspectionLog extends Table with SyncDirty {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get scheduleId => integer()
       .references(InspectionSchedules, #id, onDelete: KeyAction.cascade)();
@@ -1367,7 +1390,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 16;
+  int get schemaVersion => 17;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -1554,6 +1577,43 @@ class AppDatabase extends _$AppDatabase {
             if (from >= 14) {
               await m.addColumn(equipmentTags, equipmentTags.dirty);
               await m.addColumn(equipmentTags, equipmentTags.deletedAt);
+            }
+          }
+          if (from < 17) {
+            // Das Kennzeichen „war schon oben" (#67). Bestehende Zeilen
+            // gelten als veröffentlicht: Was vor dem Update da war, hat
+            // der Zug bisher gelöscht, wenn der Server es nicht kannte —
+            // daran ändert dieses Update nichts rückwirkend. Alles, was
+            // DANACH entsteht, trägt die Vorbelegung `true`.
+            await m.addColumn(vehicles, vehicles.dirty);
+            await m.addColumn(equipmentItems, equipmentItems.dirty);
+            await m.addColumn(compartments, compartments.dirty);
+            await m.addColumn(
+                equipmentAssignments, equipmentAssignments.dirty);
+            // ⚠️ Nur ab v2 — dieselbe Falle wie bei `equipmentTags` eine
+            // Stufe höher: `createTable` im Schritt 2 legt IMMER die
+            // heutige Definition an, inklusive dieser Spalte. Wer von v1
+            // kommt, hat sie damit schon, und ein zweites `addColumn`
+            // bricht mit „duplicate column name" ab — also erst auf einem
+            // Gerät, das sehr lange nicht aktualisiert hat.
+            if (from >= 2) {
+              await m.addColumn(equipmentInstances, equipmentInstances.dirty);
+              await m.addColumn(inspectionSchedules, inspectionSchedules.dirty);
+              await m.addColumn(inspectionLog, inspectionLog.dirty);
+            }
+            // Ausgeschrieben statt `kSyncedTables`: Die Liste steht in
+            // `core/sync`, und diese Datei ist die Schicht darunter — ein
+            // Import wäre ein Zyklus.
+            for (final name in [
+              'vehicles',
+              'equipment_items',
+              'compartments',
+              'equipment_assignments',
+              'equipment_instances',
+              'inspection_schedules',
+              'inspection_log',
+            ]) {
+              await customStatement('UPDATE $name SET dirty = 0');
             }
           }
         },

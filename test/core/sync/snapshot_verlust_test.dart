@@ -7,6 +7,12 @@
 /// Geprüft wird beides, und das zweite ist das wichtigere: dass gezählt
 /// wird, was wirklich verschwände, **und dass bei einem gewöhnlichen Zug
 /// nichts gezählt wird**. Eine Warnung, die immer kommt, warnt vor nichts.
+///
+/// ⚠️ **Seit #67 heißt „Verlust" etwas anderes.** Was hier entstand und nie
+/// veröffentlicht wurde, überlebt den Zug — gezählt wird nur noch, was schon
+/// einmal oben war und dort inzwischen fehlt. Also: was jemand anders
+/// gelöscht hat. Deshalb steht in fast jedem Fall unten ein
+/// `alsVeroeffentlicht()`.
 library;
 
 import 'package:drift/drift.dart' show Value;
@@ -42,6 +48,22 @@ void main() {
   Future<int> fahrzeug(String name) => db.vehicleDao
       .insertVehicle(VehiclesCompanion.insert(name: name, type: 'HLF'));
 
+  /// Setzt alles auf „war schon oben" — das tut sonst ein erfolgreiches
+  /// Veröffentlichen. Ohne das zählt seit #67 gar nichts mehr als Verlust.
+  Future<void> alsVeroeffentlicht() async {
+    for (final name in [
+      'vehicles',
+      'equipment_items',
+      'compartments',
+      'equipment_assignments',
+      'equipment_instances',
+      'inspection_schedules',
+      'inspection_log',
+    ]) {
+      await db.customStatement('UPDATE $name SET dirty = 0');
+    }
+  }
+
   Future<int> einheit(int geraetId, String kennung) =>
       db.inspectionDao.insertInstance(EquipmentInstancesCompanion.insert(
           equipmentId: geraetId, identifier: Value(kennung)));
@@ -56,8 +78,21 @@ void main() {
     expect(verlust.gesamt, 0);
   });
 
-  test('ein lokal angelegtes Fahrzeug wird gezählt', () async {
+  test('⚠️ was hier entstand und nie oben war, zählt NICHT als Verlust',
+      () async {
+    // Der Kern von #67: Der Zug behält es. Würde es hier gezählt, fragte die
+    // App bei jedem gemeinsamen Erfassen nach einem Verlust, den es nicht
+    // gibt — und der Zweite klickte die Warnung weg, die ihn einmal wirklich
+    // schützen soll.
+    await fahrzeug('MTW Probe');
+    final verlust = await berechneVerlust(db, snapshot());
+
+    expect(verlust.istNichts, isTrue);
+  });
+
+  test('ein Fahrzeug, das jemand anders gelöscht hat, wird gezählt', () async {
     await fahrzeug('HLF 20');
+    await alsVeroeffentlicht();
     final verlust = await berechneVerlust(db, snapshot());
 
     expect(verlust.istNichts, isFalse);
@@ -65,13 +100,16 @@ void main() {
     expect(verlust.beschreibung, '1 Fahrzeug');
   });
 
-  test('genau der Fall aus #214: die unveröffentlichte Einheit', () async {
-    // Gerät und Fahrzeug stehen auf dem Server, die Einheit nicht — sie
-    // wurde hier angelegt und nie veröffentlicht.
+  test('eine Einheit, die es oben nicht mehr gibt', () async {
+    // Gerät und Fahrzeug stehen auf dem Server, die Einheit nicht mehr —
+    // jemand anders hat sie entfernt. (Bis #67 war das auch der Fall einer
+    // hier angelegten, nie veröffentlichten Einheit; die überlebt den Zug
+    // inzwischen — siehe oben.)
     final v = await fahrzeug('HLF 20');
     final g = await db.equipmentDao
         .insertEquipment(EquipmentItemsCompanion.insert(name: 'Tauchpumpe'));
     await einheit(g, 'TP 2');
+    await alsVeroeffentlicht();
 
     final verlust = await berechneVerlust(
         db, snapshot(fahrzeuge: [v], geraete: [g]));
@@ -87,6 +125,7 @@ void main() {
         .insertEquipment(EquipmentItemsCompanion.insert(name: 'Tauchpumpe'));
     await einheit(g, 'TP 1');
     await einheit(g, 'TP 2');
+    await alsVeroeffentlicht();
 
     final verlust = await berechneVerlust(db, snapshot(geraete: [g]));
 
@@ -101,6 +140,7 @@ void main() {
     final g = await db.equipmentDao
         .insertEquipment(EquipmentItemsCompanion.insert(name: 'Tauchpumpe'));
     await einheit(g, 'TP 1');
+    await alsVeroeffentlicht();
 
     final verlust = await berechneVerlust(db, snapshot());
 
@@ -112,10 +152,12 @@ void main() {
     final g = await db.equipmentDao
         .insertEquipment(EquipmentItemsCompanion.insert(name: 'Tauchpumpe'));
     await einheit(g, 'TP 1');
+    await alsVeroeffentlicht();
     expect((await berechneVerlust(db, snapshot(geraete: [g]))).beschreibung,
         '1 Geräte-Einheit');
 
     await einheit(g, 'TP 2');
+    await alsVeroeffentlicht();
     expect((await berechneVerlust(db, snapshot(geraete: [g]))).beschreibung,
         '2 Geräte-Einheiten');
   });

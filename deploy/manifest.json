@@ -136,6 +136,10 @@
     {
       "name": "20260922190000_lerngruppen.sql",
       "sha256": "582fa7319a16a257c37f385e5ed7ff27098ec1c676285cff39c847174cac06cd"
+    },
+    {
+      "name": "20260922210000_lerngruppen_namen.sql",
+      "sha256": "27159b09b8a688b5fd55b88a29a1f2b76da4eecc8ab5a8ce9147079dab65ddb7"
     }
   ],
   "functions": {

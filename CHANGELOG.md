@@ -12,6 +12,24 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.57.0] – 2026-09-22
+
+### Geändert
+
+- **Neue Startanimation: das Fach geht auf, statt dass es brennt.** Die
+  bisherige zeigte Flamme, Löschen, Logo — also den Einsatz. Diese App ist
+  aber die Zeit davor: beladen, lernen, prüfen, damit im Einsatz alles da
+  ist. Jetzt fährt ein Rollladen hoch, das Fach steht offen, es bekommt
+  seinen Haken, und daraus wird das Zeichen der App.
+
+  Länge und Verhalten bleiben: 4,3 Sekunden nach Installation und Update,
+  sonst die Kurzform, Antippen bricht ab, und die App baut die ganze Zeit
+  darunter weiter.
+
+- **Der Anmeldebildschirm trägt jetzt dieselbe Marke wie das App-Icon.**
+  Dort stand noch die alte Flamme. Als Symbol für *Einsatz* und für die
+  Lern-Serie bleibt sie, wo sie hingehört — als Marke nicht mehr.
+
 ## [1.56.0] – 2026-09-22
 
 ### Geändert

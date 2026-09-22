@@ -22,6 +22,7 @@ import 'package:fwapp/features/knowledge/presentation/providers/wissen_providers
 import 'package:fwapp/core/router/app_router.dart';
 import 'package:fwapp/core/sync/abteilung_providers.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
+import 'package:fwapp/core/sync/zeilen_sync.dart';
 import 'package:fwapp/core/sync/image_precache.dart';
 import 'package:fwapp/core/theme/app_palette.dart';
 import 'package:fwapp/core/theme/app_theme.dart';
@@ -208,17 +209,14 @@ class _FWAppState extends ConsumerState<FWApp> {
         // zeilenweiser Weg neben dem Snapshot. Ohne Gesamtwehr ein No-op.
         await ref.read(equipmentTypeSyncProvider)?.sync();
         if (!mounted) return;
-        // Unterlagen am Fahrzeug (Issue #182) — ebenfalls zeilenweise, aus
-        // demselben Grund: Der Snapshot würde sie bei einem Alt-Client
-        // löschen.
-        await anhaengeSynchronisieren(ref.read(anhangSpeicherProvider),
-            ref.read(aktiveAbteilungIdProvider));
-        if (!mounted) return;
-        // Die Codes an den Geräten (Issue #177) — derselbe zeilenweise Weg,
-        // aus demselben Grund. NACH dem Snapshot, weil ein Code auf seine
-        // Geräte-Einheit zeigt und die von dort kommt.
-        await tagsSynchronisieren(
-            ref.read(tagSyncProvider), ref.read(aktiveAbteilungIdProvider));
+        // Alles, was NEBEN dem Snapshot läuft — Unterlagen (#182) und Codes
+        // (#177). Die Liste steht in `zeilen_sync.dart`, damit sie nicht an
+        // drei Stellen auseinanderläuft.
+        await zeilenweiseSynchronisieren(
+          anhaenge: ref.read(anhangSpeicherProvider),
+          tags: ref.read(tagSyncProvider),
+          abteilung: ref.read(aktiveAbteilungIdProvider),
+        );
         if (!mounted) return;
         // Die Wissensdatenbank gehört der Gesamtwehr und geht denselben
         // zeilenweisen Weg wie die Gerätetypen (Issue #174).

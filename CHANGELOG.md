@@ -12,6 +12,20 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.53.1] – 2026-09-22
+
+### Behoben
+
+- **Nach dem Wechsel auf eine Schwester-Abteilung fehlten deren Codes und
+  Unterlagen.** Die Fahrzeuge und Geräte kamen, die Codes nicht — wer dort
+  eine Inventur öffnete und scannte, bekam „klebt auf keinem erfassten
+  Gerät", und nichts sagte einem, dass ein „Jetzt aktualisieren" gefehlt
+  hätte. Dasselbe galt für die Unterlagen am Fahrzeug, und das schon seit
+  es sie gibt.
+
+  Der Wechsel holt jetzt alles mit, wie der Start und wie „Jetzt
+  aktualisieren".
+
 ## [1.53.0] – 2026-09-22
 
 ### Neu

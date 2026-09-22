@@ -862,6 +862,18 @@ class InspectionDao extends DatabaseAccessor<AppDatabase>
             ..orderBy([(t) => OrderingTerm.asc(t.identifier)]))
           .watch();
 
+  /// Alle geführten Einheiten auf einmal — für den Bestands-Export (#176).
+  ///
+  /// Wie [CompartmentDao.getAll]: Der Export braucht den ganzen Bestand, und
+  /// eine Abfrage je Gerät wären bei hundertzehn Geräten hundertzehn
+  /// Abfragen für eine Datei.
+  Future<List<EquipmentInstanceData>> getAllInstances() =>
+      select(equipmentInstances).get();
+
+  /// Alle Prüftermine auf einmal, aus demselben Grund.
+  Future<List<InspectionScheduleData>> getAllSchedules() =>
+      select(inspectionSchedules).get();
+
   Future<int> insertInstance(EquipmentInstancesCompanion i) =>
       into(equipmentInstances).insert(i);
 
@@ -1254,6 +1266,11 @@ class TagDao extends DatabaseAccessor<AppDatabase> with _$TagDaoMixin {
   /// Was noch nach oben muss — Neuzugänge **und** Grabsteine.
   Future<List<EquipmentTagData>> offeneTags() =>
       (select(equipmentTags)..where((t) => t.dirty.equals(true))).get();
+
+  /// Alle Code-Zeilen, die noch kleben — für den Bestands-Export (#176).
+  /// Grabsteine bleiben draußen: Sie stehen für einen abgezogenen Aufkleber.
+  Future<List<EquipmentTagData>> alleTags() =>
+      (select(equipmentTags)..where(_lebend)).get();
 
   /// Alle vergebenen Codes — für die Kollisionsprüfung beim Erzeugen.
   ///

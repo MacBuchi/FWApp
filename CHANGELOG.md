@@ -12,6 +12,21 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.54.2] – 2026-09-22
+
+### Behoben
+
+- **Auch der Abteilungswechsel fragt jetzt, bevor er etwas löscht.** Der
+  Wechsel lädt den Bestand der neuen Sicht — und ersetzte dabei, was dort
+  noch nicht veröffentlicht war. Das traf vor allem den Weg **zurück in die
+  eigene Abteilung**: Wer dort etwas angelegt, dann kurz zur
+  Schwester-Abteilung geschaut hatte, verlor es beim Zurückkommen.
+
+  Jetzt kommt dieselbe Frage wie beim Aktualisieren, und sie nennt die
+  Zahlen. Wer abbricht, bleibt in der neuen Sicht, und die App sagt es:
+  „Gewechselt, aber nichts geladen — was hier noch nicht veröffentlicht
+  ist, bleibt stehen."
+
 ## [1.54.1] – 2026-09-22
 
 ### Behoben

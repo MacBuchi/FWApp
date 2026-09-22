@@ -6,12 +6,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/database/connection/connection.dart';
 import 'package:fwapp/core/sync/abteilung_providers.dart';
+import 'package:fwapp/core/sync/snapshot_verlust.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
+import 'package:fwapp/core/sync/sync_service.dart';
 import 'package:fwapp/features/inventory/data/tag_sync.dart';
 import 'package:fwapp/features/inventory/presentation/providers/tag_providers.dart';
 import 'package:fwapp/features/vehicle/data/anhang_speicher.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/anhang_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show SupabaseClient;
 
 import '../../helpers/test_database.dart';
 
@@ -32,6 +35,25 @@ class _TagSpion extends TagSync {
   Future<int> schiebe(String abteilungId) async {
     geschoben.add(abteilungId);
     return 0;
+  }
+}
+
+/// Tut so, als stünde beim Zug etwas auf dem Spiel — ohne Netz und ohne
+/// Server lässt sich sonst nicht prüfen, ob der Haken überhaupt ankommt.
+class _SyncSpion extends SyncService {
+  _SyncSpion(AppDatabase db)
+      : super(db, SupabaseClient('http://127.0.0.1:1', 'anon'));
+  bool gefragt = false;
+
+  @override
+  Future<int?> pullIfNewer({
+    bool force = false,
+    Future<bool> Function(SnapshotVerlust verlust)? bestaetigen,
+  }) async {
+    if (bestaetigen == null) return 1;
+    gefragt = true;
+    final weiter = await bestaetigen(const SnapshotVerlust({'vehicles': 1}));
+    return weiter ? 1 : null;
   }
 }
 
@@ -149,6 +171,75 @@ void main() {
 
       await container.read(abteilungSwitcherProvider).switchTo(null);
       expect(tags.gezogen, isEmpty);
+    });
+
+    test('lehnt jemand den Verlust ab, wird gewechselt aber nicht gezogen',
+        () async {
+      // ⚠️ Der Weg ZURÜCK in die eigene Abteilung ist der teure Fall: Wer
+      // dort etwas angelegt, dann kurz zur Schwester geschaut hat, verlöre
+      // es beim Zurückkommen (#214).
+      SharedPreferences.setMockInitialValues({});
+      final db = createTestDatabase();
+      addTearDown(db.close);
+      final dienst = _SyncSpion(db);
+
+      final container = ProviderContainer(overrides: [
+        supabaseClientProvider.overrideWithValue(null),
+        syncServiceProvider.overrideWithValue(dienst),
+        anhangSpeicherProvider.overrideWithValue(_SpeicherSpion(db)),
+        tagSyncProvider.overrideWithValue(_TagSpion(db)),
+      ]);
+      addTearDown(container.dispose);
+
+      final gezogen = await container
+          .read(abteilungSwitcherProvider)
+          .switchTo('B', bestaetigen: (_) async => false);
+
+      expect(gezogen, isFalse);
+      expect(dienst.gefragt, isTrue,
+          reason: 'Der Haken muss bis zum Zug durchgereicht werden.');
+      expect(container.read(selectedAbteilungIdProvider), 'B',
+          reason: 'Gewechselt ist gewechselt — nur geladen wurde nichts.');
+    });
+
+    test('stimmt jemand zu, wird gezogen', () async {
+      SharedPreferences.setMockInitialValues({});
+      final db = createTestDatabase();
+      addTearDown(db.close);
+      final dienst = _SyncSpion(db);
+
+      final container = ProviderContainer(overrides: [
+        supabaseClientProvider.overrideWithValue(null),
+        syncServiceProvider.overrideWithValue(dienst),
+        anhangSpeicherProvider.overrideWithValue(_SpeicherSpion(db)),
+        tagSyncProvider.overrideWithValue(_TagSpion(db)),
+      ]);
+      addTearDown(container.dispose);
+
+      final gezogen = await container
+          .read(abteilungSwitcherProvider)
+          .switchTo('B', bestaetigen: (_) async => true);
+
+      expect(gezogen, isTrue);
+    });
+
+    test('ohne Server ist nichts abgelehnt', () async {
+      // ⚠️ „Kein Sync-Dienst" ist nicht „der Nutzer hat nein gesagt". Ein
+      // erster Entwurf machte daraus ein `false`, und im Lokalbetrieb stand
+      // danach „nichts geladen", obwohl es nie etwas zu laden gab. Gefunden
+      // hat das `abteilung_switcher_test.dart`, nicht ich.
+      SharedPreferences.setMockInitialValues({});
+      final container = ProviderContainer(overrides: [
+        supabaseClientProvider.overrideWithValue(null),
+      ]);
+      addTearDown(container.dispose);
+
+      expect(
+        await container
+            .read(abteilungSwitcherProvider)
+            .switchTo('B', bestaetigen: (_) async => false),
+        isTrue,
+      );
     });
 
     test('merkt die Wahl und stellt den Provider um', () async {

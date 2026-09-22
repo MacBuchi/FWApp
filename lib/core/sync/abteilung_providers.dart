@@ -10,6 +10,9 @@
 /// - [myAbteilungIdProvider]: Heimat-Abteilung laut Server-Profil.
 /// - [abteilungenProvider]: Alles, was RLS lesen lässt — die eigene plus die
 ///   Schwestern derselben Gesamtwehr (Entscheidung A, lesend).
+/// - [aktiveAbteilungIdProvider]: Die beiden ersten zusammengefasst zu der
+///   Frage, die jeder zeilenweise Sync stellt — in wessen Bestand schreibe
+///   ich gerade?
 ///
 /// Manuelle Provider wie der Rest von core/sync (Supabase-Typen vertragen
 /// keinen riverpod-Codegen, siehe sync_providers.dart).
@@ -29,6 +32,20 @@ const kSelectedAbteilungPref = 'selected_abteilung';
 /// Startwert setzt main.dart aus den SharedPreferences; Umschalten läuft
 /// über [switchAbteilung], damit Persistenz und Pull nicht vergessen werden.
 final selectedAbteilungIdProvider = StateProvider<String?>((ref) => null);
+
+/// Die Abteilung, in die gerade geschrieben und aus der gerade gelesen wird.
+///
+/// Erst die gewählte (Quer-Sicht auf Schwester-Abteilungen), sonst die
+/// eigene — dieselbe Reihenfolge wie überall sonst in der App.
+///
+/// Stand ursprünglich als `anhangAbteilungProvider` bei den Unterlagen. Mit
+/// den Geräte-Codes (#177) hat er den zweiten Aufrufer bekommen, und
+/// dieselbe Frage zweimal zu beantworten ist genau die Stelle, an der die
+/// beiden Antworten später auseinanderlaufen (AGENTS.md, „Zweitverwendung =
+/// Extraktion").
+final aktiveAbteilungIdProvider = Provider<String?>((ref) =>
+    ref.watch(selectedAbteilungIdProvider) ??
+    ref.watch(myAbteilungIdProvider).value);
 
 /// Heimat-Abteilung des angemeldeten Nutzers (aus dem eigenen Profil).
 /// `null`: nicht angemeldet, Lokalmodus oder Server ohne Mandanten-Schema.

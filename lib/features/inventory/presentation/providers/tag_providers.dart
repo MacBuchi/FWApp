@@ -2,18 +2,22 @@
 /// nachschlagen (Issues #177/#179).
 ///
 /// Schichtung: wie beim Inventurassistenten bewusst ohne data/domain-Schicht,
-/// direkter DAO-Zugriff (siehe CONTRIBUTING.md „Schichtung je Feature"). Die
-/// Tags hängen an der lokalen Datenbank; der Sync kommt in einem eigenen
-/// Schritt, weil eine neue Tabelle im Snapshot einen Alt-Client dazu bringen
-/// würde, sie bei seiner nächsten Veröffentlichung zu leeren
-/// (`sync_service.dart`, Kopfkommentar).
+/// direkter DAO-Zugriff (siehe CONTRIBUTING.md „Schichtung je Feature").
+///
+/// Geschrieben wird immer NUR lokal — auch beim Entfernen. Was davon auf den
+/// Server gehört, holt sich `tag_sync.dart` beim nächsten Abgleich anhand von
+/// [EquipmentTags.dirty]. Das ist die Zusage für den Geräteraum: Dort ist
+/// selten Netz, und ein Aufkleber, der erst mit Verbindung vergeben werden
+/// kann, wäre im Einsatzfall wertlos.
 library;
 
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/database/database_providers.dart';
+import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/features/inventory/data/tag_code.dart';
+import 'package:fwapp/features/inventory/data/tag_sync.dart';
 
 /// Was beim Verknüpfen herauskam.
 sealed class TagErgebnis {
@@ -74,26 +78,66 @@ class TagDienst {
     final code = normalisiereTagCode(roh);
     if (code == null) return const TagLeer();
 
-    final vorhanden = await db.tagDao.findByCode(code);
-    if (vorhanden != null) {
+    final art = Value(istEigenerCode(code)
+        ? EquipmentTags.kindQr
+        : EquipmentTags.kindBarcode);
+
+    // Auch Grabsteine: Die Spalte ist `unique`, und ein entfernter Code, der
+    // noch auf sein Hochladen wartet, belegt sie weiter.
+    final vorhanden = await db.tagDao.findByCodeAuchEntfernt(code);
+    if (vorhanden != null && vorhanden.deletedAt == null) {
       // Auch wenn er an DERSELBEN Einheit hängt: Ein zweiter Eintrag wäre
       // sinnlos, und „klebt schon auf X" ist die ehrlichere Auskunft als
       // ein stilles Nichts.
       final treffer = await schlageNach(code);
       return TagSchonVergeben(code, treffer?.geraetename ?? 'einem Gerät');
     }
+    if (vorhanden != null) {
+      // Derselbe Aufkleber wird neu verklebt, bevor das Entfernen oben
+      // ankam — im Geräteraum der Normalfall, nicht die Ausnahme. Den
+      // Grabstein wiederbeleben statt einzufügen: Ein zweiter Eintrag bräche
+      // an `unique` ab, und ein dazwischen laufender Abgleich schöbe sonst
+      // erst die Löschung und dann den Neuzugang.
+      await db.tagDao.aendere(
+        vorhanden.id,
+        EquipmentTagsCompanion(
+          instanceId: Value(instanceId),
+          kind: art,
+          deletedAt: const Value(null),
+          dirty: const Value(true),
+        ),
+      );
+      return TagVerknuepft(code);
+    }
 
     await db.tagDao.insertTag(EquipmentTagsCompanion.insert(
       instanceId: instanceId,
       code: code,
-      kind: Value(istEigenerCode(code)
-          ? EquipmentTags.kindQr
-          : EquipmentTags.kindBarcode),
+      kind: art,
     ));
     return TagVerknuepft(code);
   }
 
-  Future<void> entferne(int tagId) => db.tagDao.deleteTag(tagId);
+  /// Nimmt den Code von der Einheit.
+  ///
+  /// **Zwei Wege, je nachdem ob der Code den Server je erreicht hat.** Ein
+  /// Code, der noch `dirty` ist, war nie oben — der fällt hier weg und
+  /// hinterlässt nichts. Ein bereits geschobener wird zum Grabstein: Ohne
+  /// ihn käme er beim nächsten Zug von einem anderen Gerät zurück, weil ein
+  /// Zug eine harte Löschung nicht sehen kann (`tag_sync.dart`).
+  Future<void> entferne(EquipmentTagData tag) async {
+    if (tag.dirty) {
+      await db.tagDao.deleteTag(tag.id);
+      return;
+    }
+    await db.tagDao.aendere(
+      tag.id,
+      EquipmentTagsCompanion(
+        deletedAt: Value(DateTime.now()),
+        dirty: const Value(true),
+      ),
+    );
+  }
 
   /// Schlägt einen gelesenen Code nach — normalisiert dabei selbst, damit
   /// jeder Aufrufer (Tastatur, Scanner) denselben Weg nimmt.
@@ -115,3 +159,24 @@ class TagDienst {
 
 final tagDienstProvider =
     Provider<TagDienst>((ref) => TagDienst(ref.watch(appDatabaseProvider)));
+
+final tagSyncProvider = Provider<TagSync>((ref) => TagSync(
+      db: ref.watch(appDatabaseProvider),
+      client: ref.watch(supabaseClientProvider),
+    ));
+
+/// Gleicht die Codes der Abteilung ab — erst hoch, dann runter.
+///
+/// Läuft überall dort, wo auch der Bestand gezogen wird: Start, „Jetzt
+/// aktualisieren". Die Reihenfolge ist nicht beliebig, siehe Kopf von
+/// `tag_sync.dart`.
+///
+/// Nimmt Dienst und Abteilung statt eines `Ref`: Aufgerufen wird das sowohl
+/// aus einem Provider (`Ref`) als auch aus einem Widget (`WidgetRef`), und
+/// die beiden sind in Riverpod 3 keine gemeinsame Schnittstelle mehr —
+/// dieselbe Bauform wie `anhaengeSynchronisieren`.
+Future<void> tagsSynchronisieren(TagSync sync, String? abteilung) async {
+  if (abteilung == null) return;
+  await sync.schiebe(abteilung);
+  await sync.ziehe(abteilung);
+}

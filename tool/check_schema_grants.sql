@@ -24,17 +24,20 @@
 \pset pager off
 
 -- ── Die Ausnahmeliste ───────────────────────────────────────────────────────
--- Drei Tabellen beschreibt der Client direkt, an keiner RPC vorbei. Sie stehen
+-- Vier Tabellen beschreibt der Client direkt, an keiner RPC vorbei. Sie stehen
 -- hier mit ihren erlaubten Befehlen NAMENTLICH, und sie werden in BEIDE
 -- Richtungen geprüft: Ein überzähliges Recht ist ein Fehler, ein fehlendes
 -- erlaubtes ebenso.
 --
--- Die zweite Richtung ist hier die wichtigere. Kein Integrationstest deckt
--- diese drei Schreibpfade ab (#198, Punkt 5) — ein zu weit gefasster `revoke`
+-- Die zweite Richtung ist hier die wichtigere. Drei dieser Schreibpfade deckt
+-- kein Integrationstest ab (#198, Punkt 5) — ein zu weit gefasster `revoke`
 -- fiele also nicht in CI auf, sondern erst auf der VM: Der Gerätewart könnte
 -- kein Fahrzeugfoto mehr anhängen, keine Frage mehr einreichen, und das
 -- App-Feedback käme nicht mehr an. Diese Liste ist der Rückfallschutz an
--- Stelle der fehlenden Tests.
+-- Stelle der fehlenden Tests. `equipment_tags` ist die Ausnahme: Dort prüft
+-- `test/integration/tag_sync_e2e_test.dart` den Weg gegen den echten Stack —
+-- die Zeilen stehen trotzdem hier, weil die Liste sonst nur die Hälfte des
+-- Rechtestands beschriebe.
 --
 -- `anon` steht bewusst in keiner Zeile: Keine der Policies dieses Schemas
 -- nennt die Rolle, sie braucht weder Schreib- noch Leserecht.
@@ -60,7 +63,12 @@ insert into erlaubte_schreibrechte values
   ('vehicle_attachments', 'authenticated', 'UPDATE',
    'anhang_speicher.dart – einen Anhang ersetzen'),
   ('vehicle_attachments', 'authenticated', 'DELETE',
-   'anhang_speicher.dart – einen Anhang entfernen');
+   'anhang_speicher.dart – einen Anhang entfernen'),
+  ('equipment_tags',       'authenticated', 'INSERT',
+   'tag_sync.dart – einen Code hochladen (#177)'),
+  ('equipment_tags',       'authenticated', 'UPDATE',
+   'tag_sync.dart – einen Code aendern ODER entfernen; das Entfernen ist ein '
+   'Soft-Delete, deshalb steht hier bewusst KEIN DELETE (#177)');
 
 -- ── 1. Bestandsaufnahme ─────────────────────────────────────────────────────
 -- Läuft auch bei Erfolg und landet im CI-Log. Wer beim nächsten CLI-Sprung
@@ -78,7 +86,7 @@ select g.table_name as tabelle, g.grantee as rolle,
                             'REFERENCES', 'TRIGGER')
  group by g.table_name, g.grantee
  order by g.table_name, g.grantee;
-\echo '(Erwartet: genau die sieben Zeilen der Ausnahmeliste, als drei Gruppen.)'
+\echo '(Erwartet: genau die neun Zeilen der Ausnahmeliste, als vier Gruppen.)'
 
 \echo ''
 \echo '── Eigentuemer und RLS-Zustand aller Tabellen ──'

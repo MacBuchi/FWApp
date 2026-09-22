@@ -16,6 +16,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/database/app_database.dart';
+import 'package:fwapp/core/sync/abteilung_providers.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
 import 'package:fwapp/features/vehicle/data/anhang_speicher.dart';
@@ -168,7 +169,7 @@ class _FahrzeugUnterlagenState extends ConsumerState<FahrzeugUnterlagen> {
             vehicleId: widget.vehicleId,
             dateiname: datei.name,
             bytes: bytes,
-            abteilungId: ref.read(anhangAbteilungProvider),
+            abteilungId: ref.read(aktiveAbteilungIdProvider),
           );
     } on AnhangAbgelehnt catch (e) {
       _sagen(e.grund);
@@ -234,7 +235,7 @@ class _FahrzeugUnterlagenState extends ConsumerState<FahrzeugUnterlagen> {
     if (ok != true || !mounted) return;
     setState(() => _laeuft = true);
     await ref.read(anhangSpeicherProvider).entfernen(a,
-        abteilungId: ref.read(anhangAbteilungProvider));
+        abteilungId: ref.read(aktiveAbteilungIdProvider));
     if (mounted) setState(() => _laeuft = false);
   }
 

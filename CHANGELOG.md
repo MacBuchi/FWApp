@@ -12,6 +12,31 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.51.0] – 2026-09-22
+
+### Neu
+
+- **Die Codes gelten jetzt für die ganze Abteilung.** Bisher kannte sie nur
+  das Gerät, auf dem sie vergeben wurden: Der Gerätewart klebte die
+  Aufkleber, und bei der nächsten Inventur stand jemand anderes mit seinem
+  Handy davor und scannte ins Leere. Codes gehen jetzt beim Aktualisieren
+  hoch und kommen bei allen anderen an — einzeln, nicht über den
+  Gesamtbestand.
+
+  Vergeben, Verknüpfen und Entfernen laufen weiter **ohne Netz**. Im
+  Geräteraum ist selten welches, und ein Aufkleber, der erst mit Verbindung
+  entstehen kann, wäre dort wertlos. Was noch nicht oben angekommen ist,
+  steht unter dem Code: „noch nicht übertragen".
+
+  Ein entfernter Code bleibt entfernt, auch wenn ein anderes Gerät ihn noch
+  kennt — sonst käme der abgezogene Aufkleber beim nächsten Abgleich zurück.
+
+### Hinweis für den Server
+
+- Diese Version bringt die Migration `20260922080000_geraete_codes.sql` mit.
+  Bis sie eingespielt ist, läuft die App unverändert weiter; die Codes
+  bleiben dann auf dem Gerät, auf dem sie vergeben wurden.
+
 ## [1.50.0] – 2026-09-22
 
 ### Neu

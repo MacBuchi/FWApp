@@ -9562,6 +9562,30 @@ class $EquipmentTagsTable extends EquipmentTags
     requiredDuringInsert: false,
     defaultValue: currentDateAndTime,
   );
+  static const VerificationMeta _dirtyMeta = const VerificationMeta('dirty');
+  @override
+  late final GeneratedColumn<bool> dirty = GeneratedColumn<bool>(
+    'dirty',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("dirty" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -9570,6 +9594,8 @@ class $EquipmentTagsTable extends EquipmentTags
     kind,
     selfIssued,
     createdAt,
+    dirty,
+    deletedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -9620,6 +9646,18 @@ class $EquipmentTagsTable extends EquipmentTags
         createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
       );
     }
+    if (data.containsKey('dirty')) {
+      context.handle(
+        _dirtyMeta,
+        dirty.isAcceptableOrUnknown(data['dirty']!, _dirtyMeta),
+      );
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
     return context;
   }
 
@@ -9659,6 +9697,15 @@ class $EquipmentTagsTable extends EquipmentTags
             DriftSqlType.dateTime,
             data['${effectivePrefix}created_at'],
           )!,
+      dirty:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}dirty'],
+          )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
     );
   }
 
@@ -9683,6 +9730,34 @@ class EquipmentTagData extends DataClass
   /// kam. Nur für die Anzeige — der Ablauf ist derselbe.
   final bool selfIssued;
   final DateTime createdAt;
+
+  /// Wartet dieser Code noch aufs Hochladen? (Issue #177)
+  ///
+  /// ⚠️ **Vorbelegt mit `true`, anders als bei `Wissensfragen`.** Dort ist
+  /// ein neuer Datensatz manchmal nur ein lokaler Entwurf; hier gibt es das
+  /// nicht — jeder Code, der hier entsteht, gehört auf den Server. Die
+  /// Vorbelegung ist damit die sichere Richtung: Wer sie beim Einfügen
+  /// vergisst, lädt einmal zu viel hoch. Andersherum bliebe der Code für
+  /// immer auf diesem Gerät, und das fiele erst auf, wenn jemand anders
+  /// davorsteht und ins Leere scannt.
+  ///
+  /// Genau deshalb wirkt sie auch in der Migration richtig: Codes aus
+  /// v1.49/v1.50 sind noch nie hochgeladen worden und werden es damit beim
+  /// ersten Abgleich.
+  final bool dirty;
+
+  /// Entfernt — aber noch nicht auf dem Server (Issue #177).
+  ///
+  /// **Warum die Zeile stehen bleibt.** Ein hart gelöschter Code wäre nach
+  /// dem nächsten Zug wieder da: Der Server weiß nichts von der Löschung und
+  /// liefert ihn erneut. Die Zeile bleibt deshalb als Grabstein liegen, bis
+  /// das Entfernen oben ankam, und fällt erst danach weg.
+  ///
+  /// ⚠️ Jede Abfrage, die Codes ZEIGT oder nachschlägt, muss sie
+  /// aussortieren — ein Grabstein darf nicht scannbar sein. Nur
+  /// [TagDao.alleCodes] nimmt ihn bewusst mit: Solange er auf dem Server
+  /// steht, ist der Code vergeben und darf nicht neu gewürfelt werden.
+  final DateTime? deletedAt;
   const EquipmentTagData({
     required this.id,
     required this.instanceId,
@@ -9690,6 +9765,8 @@ class EquipmentTagData extends DataClass
     required this.kind,
     required this.selfIssued,
     required this.createdAt,
+    required this.dirty,
+    this.deletedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -9700,6 +9777,10 @@ class EquipmentTagData extends DataClass
     map['kind'] = Variable<String>(kind);
     map['self_issued'] = Variable<bool>(selfIssued);
     map['created_at'] = Variable<DateTime>(createdAt);
+    map['dirty'] = Variable<bool>(dirty);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
     return map;
   }
 
@@ -9711,6 +9792,11 @@ class EquipmentTagData extends DataClass
       kind: Value(kind),
       selfIssued: Value(selfIssued),
       createdAt: Value(createdAt),
+      dirty: Value(dirty),
+      deletedAt:
+          deletedAt == null && nullToAbsent
+              ? const Value.absent()
+              : Value(deletedAt),
     );
   }
 
@@ -9726,6 +9812,8 @@ class EquipmentTagData extends DataClass
       kind: serializer.fromJson<String>(json['kind']),
       selfIssued: serializer.fromJson<bool>(json['selfIssued']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      dirty: serializer.fromJson<bool>(json['dirty']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
     );
   }
   @override
@@ -9738,6 +9826,8 @@ class EquipmentTagData extends DataClass
       'kind': serializer.toJson<String>(kind),
       'selfIssued': serializer.toJson<bool>(selfIssued),
       'createdAt': serializer.toJson<DateTime>(createdAt),
+      'dirty': serializer.toJson<bool>(dirty),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
     };
   }
 
@@ -9748,6 +9838,8 @@ class EquipmentTagData extends DataClass
     String? kind,
     bool? selfIssued,
     DateTime? createdAt,
+    bool? dirty,
+    Value<DateTime?> deletedAt = const Value.absent(),
   }) => EquipmentTagData(
     id: id ?? this.id,
     instanceId: instanceId ?? this.instanceId,
@@ -9755,6 +9847,8 @@ class EquipmentTagData extends DataClass
     kind: kind ?? this.kind,
     selfIssued: selfIssued ?? this.selfIssued,
     createdAt: createdAt ?? this.createdAt,
+    dirty: dirty ?? this.dirty,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
   );
   EquipmentTagData copyWithCompanion(EquipmentTagsCompanion data) {
     return EquipmentTagData(
@@ -9766,6 +9860,8 @@ class EquipmentTagData extends DataClass
       selfIssued:
           data.selfIssued.present ? data.selfIssued.value : this.selfIssued,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      dirty: data.dirty.present ? data.dirty.value : this.dirty,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
     );
   }
 
@@ -9777,14 +9873,24 @@ class EquipmentTagData extends DataClass
           ..write('code: $code, ')
           ..write('kind: $kind, ')
           ..write('selfIssued: $selfIssued, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('dirty: $dirty, ')
+          ..write('deletedAt: $deletedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, instanceId, code, kind, selfIssued, createdAt);
+  int get hashCode => Object.hash(
+    id,
+    instanceId,
+    code,
+    kind,
+    selfIssued,
+    createdAt,
+    dirty,
+    deletedAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -9794,7 +9900,9 @@ class EquipmentTagData extends DataClass
           other.code == this.code &&
           other.kind == this.kind &&
           other.selfIssued == this.selfIssued &&
-          other.createdAt == this.createdAt);
+          other.createdAt == this.createdAt &&
+          other.dirty == this.dirty &&
+          other.deletedAt == this.deletedAt);
 }
 
 class EquipmentTagsCompanion extends UpdateCompanion<EquipmentTagData> {
@@ -9804,6 +9912,8 @@ class EquipmentTagsCompanion extends UpdateCompanion<EquipmentTagData> {
   final Value<String> kind;
   final Value<bool> selfIssued;
   final Value<DateTime> createdAt;
+  final Value<bool> dirty;
+  final Value<DateTime?> deletedAt;
   const EquipmentTagsCompanion({
     this.id = const Value.absent(),
     this.instanceId = const Value.absent(),
@@ -9811,6 +9921,8 @@ class EquipmentTagsCompanion extends UpdateCompanion<EquipmentTagData> {
     this.kind = const Value.absent(),
     this.selfIssued = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.dirty = const Value.absent(),
+    this.deletedAt = const Value.absent(),
   });
   EquipmentTagsCompanion.insert({
     this.id = const Value.absent(),
@@ -9819,6 +9931,8 @@ class EquipmentTagsCompanion extends UpdateCompanion<EquipmentTagData> {
     this.kind = const Value.absent(),
     this.selfIssued = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.dirty = const Value.absent(),
+    this.deletedAt = const Value.absent(),
   }) : instanceId = Value(instanceId),
        code = Value(code);
   static Insertable<EquipmentTagData> custom({
@@ -9828,6 +9942,8 @@ class EquipmentTagsCompanion extends UpdateCompanion<EquipmentTagData> {
     Expression<String>? kind,
     Expression<bool>? selfIssued,
     Expression<DateTime>? createdAt,
+    Expression<bool>? dirty,
+    Expression<DateTime>? deletedAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -9836,6 +9952,8 @@ class EquipmentTagsCompanion extends UpdateCompanion<EquipmentTagData> {
       if (kind != null) 'kind': kind,
       if (selfIssued != null) 'self_issued': selfIssued,
       if (createdAt != null) 'created_at': createdAt,
+      if (dirty != null) 'dirty': dirty,
+      if (deletedAt != null) 'deleted_at': deletedAt,
     });
   }
 
@@ -9846,6 +9964,8 @@ class EquipmentTagsCompanion extends UpdateCompanion<EquipmentTagData> {
     Value<String>? kind,
     Value<bool>? selfIssued,
     Value<DateTime>? createdAt,
+    Value<bool>? dirty,
+    Value<DateTime?>? deletedAt,
   }) {
     return EquipmentTagsCompanion(
       id: id ?? this.id,
@@ -9854,6 +9974,8 @@ class EquipmentTagsCompanion extends UpdateCompanion<EquipmentTagData> {
       kind: kind ?? this.kind,
       selfIssued: selfIssued ?? this.selfIssued,
       createdAt: createdAt ?? this.createdAt,
+      dirty: dirty ?? this.dirty,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 
@@ -9878,6 +10000,12 @@ class EquipmentTagsCompanion extends UpdateCompanion<EquipmentTagData> {
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
+    if (dirty.present) {
+      map['dirty'] = Variable<bool>(dirty.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
     return map;
   }
 
@@ -9889,7 +10017,9 @@ class EquipmentTagsCompanion extends UpdateCompanion<EquipmentTagData> {
           ..write('code: $code, ')
           ..write('kind: $kind, ')
           ..write('selfIssued: $selfIssued, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('dirty: $dirty, ')
+          ..write('deletedAt: $deletedAt')
           ..write(')'))
         .toString();
   }
@@ -17900,6 +18030,8 @@ typedef $$EquipmentTagsTableCreateCompanionBuilder =
       Value<String> kind,
       Value<bool> selfIssued,
       Value<DateTime> createdAt,
+      Value<bool> dirty,
+      Value<DateTime?> deletedAt,
     });
 typedef $$EquipmentTagsTableUpdateCompanionBuilder =
     EquipmentTagsCompanion Function({
@@ -17909,6 +18041,8 @@ typedef $$EquipmentTagsTableUpdateCompanionBuilder =
       Value<String> kind,
       Value<bool> selfIssued,
       Value<DateTime> createdAt,
+      Value<bool> dirty,
+      Value<DateTime?> deletedAt,
     });
 
 final class $$EquipmentTagsTableReferences
@@ -17973,6 +18107,16 @@ class $$EquipmentTagsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<bool> get dirty => $composableBuilder(
+    column: $table.dirty,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
   $$EquipmentInstancesTableFilterComposer get instanceId {
     final $$EquipmentInstancesTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -18031,6 +18175,16 @@ class $$EquipmentTagsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get dirty => $composableBuilder(
+    column: $table.dirty,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$EquipmentInstancesTableOrderingComposer get instanceId {
     final $$EquipmentInstancesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -18080,6 +18234,12 @@ class $$EquipmentTagsTableAnnotationComposer
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<bool> get dirty =>
+      $composableBuilder(column: $table.dirty, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
 
   $$EquipmentInstancesTableAnnotationComposer get instanceId {
     final $$EquipmentInstancesTableAnnotationComposer composer =
@@ -18144,6 +18304,8 @@ class $$EquipmentTagsTableTableManager
                 Value<String> kind = const Value.absent(),
                 Value<bool> selfIssued = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
+                Value<bool> dirty = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
               }) => EquipmentTagsCompanion(
                 id: id,
                 instanceId: instanceId,
@@ -18151,6 +18313,8 @@ class $$EquipmentTagsTableTableManager
                 kind: kind,
                 selfIssued: selfIssued,
                 createdAt: createdAt,
+                dirty: dirty,
+                deletedAt: deletedAt,
               ),
           createCompanionCallback:
               ({
@@ -18160,6 +18324,8 @@ class $$EquipmentTagsTableTableManager
                 Value<String> kind = const Value.absent(),
                 Value<bool> selfIssued = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
+                Value<bool> dirty = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
               }) => EquipmentTagsCompanion.insert(
                 id: id,
                 instanceId: instanceId,
@@ -18167,6 +18333,8 @@ class $$EquipmentTagsTableTableManager
                 kind: kind,
                 selfIssued: selfIssued,
                 createdAt: createdAt,
+                dirty: dirty,
+                deletedAt: deletedAt,
               ),
           withReferenceMapper:
               (p0) =>

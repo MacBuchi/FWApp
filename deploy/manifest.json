@@ -128,6 +128,10 @@
     {
       "name": "20260911090000_wissen_geraetebezug.sql",
       "sha256": "5fb7220f0cda656d2299b9858534d095a8fdf9319cd62a7eae4da995ff089060"
+    },
+    {
+      "name": "20260922080000_geraete_codes.sql",
+      "sha256": "992952e750108e33654144cd0594c8e7eda4a0aeeb14b3aa5ea52ae132cc1bdf"
     }
   ],
   "functions": {

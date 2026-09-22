@@ -174,16 +174,22 @@ class _TagZeile extends ConsumerWidget {
         size: 20,
       ),
       title: Text(tag.code, style: const TextStyle(fontFamily: 'monospace')),
-      subtitle: Text(tag.selfIssued
-          ? 'von der App vergeben — antippen zum Aufkleben'
-          : 'übernommen'),
+      subtitle: Text([
+        tag.selfIssued
+            ? 'von der App vergeben — antippen zum Aufkleben'
+            : 'übernommen',
+        // Sichtbar machen, was sonst still danebengeht: Ein Code, der die
+        // anderen Geräte noch nicht erreicht hat, wird bei der nächsten
+        // Inventur von niemandem sonst erkannt. Der Hinweis verschwindet von
+        // selbst, sobald der Abgleich gelaufen ist.
+        if (tag.dirty) 'noch nicht übertragen',
+      ].join(' · ')),
       onTap: tag.selfIssued ? () => zeigeCode(context, tag.code) : null,
       trailing: bearbeitbar
           ? IconButton(
               icon: const Icon(Icons.link_off, size: 20),
               tooltip: 'Code entfernen',
-              onPressed: () =>
-                  ref.read(tagDienstProvider).entferne(tag.id),
+              onPressed: () => ref.read(tagDienstProvider).entferne(tag),
             )
           : null,
     );

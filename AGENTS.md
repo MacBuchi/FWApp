@@ -267,6 +267,25 @@ pauschales Formatieren in Feature-PRs.
   bei **jeder** Veröffentlichung mitlöschen. Deshalb: eigener zeilenweiser
   Weg (`anhang_speicher.dart`), und `vehicle_id` ist die LOKALE Drift-ID
   ohne Fremdschlüssel — dasselbe Muster wie `equipment_type_links`.
+- ⚠️ **Die lokale Drift-ID taugt nur als Schlüssel, solange EIN Gerät
+  schreibt** (Issue #177). `vehicle_attachments` kommt mit
+  `(abteilung_id, id)` durch, weil Unterlagen praktisch immer von einem
+  Gerät stammen. Bei `equipment_tags` ist das falsch: Zwei Gerätewarte, die
+  am selben Nachmittag in zwei Geräteräumen Codes vergeben, bekommen von
+  ihrer jeweiligen Datenbank **dieselben laufenden Nummern** — beim
+  Hochladen überschriebe der zweite den ersten, und ein fertig aufgeklebter
+  Aufkleber zeigte danach auf ein anderes Gerät. Deshalb ist dort der CODE
+  der Primärschlüssel: Er ist das, was in der Wirklichkeit eindeutig ist.
+  **Vor jeder neuen zeilenweisen Tabelle die Frage stellen: Kann das von
+  zwei Geräten gleichzeitig entstehen?**
+- ⚠️ **Entfernen im zeilenweisen Sync ist ein Soft-Delete, nie ein
+  `delete`** (Issues #174, #177). Ein Zug sieht nur, was da ist — eine hart
+  gelöschte Zeile kommt schlicht nicht mehr, und das ist von „noch nie
+  gesehen" nicht zu unterscheiden. Ohne Grabstein schiebt das nächste Gerät
+  seine Kopie beim nächsten Abgleich wieder hoch, und das Gelöschte ist
+  zurück. `equipment_tags` hat deshalb bewusst **weder Delete-Policy noch
+  Delete-Grant**; `tag_sync.dart` räumt den lokalen Grabstein erst weg,
+  wenn der Server von ihm weiß.
 - ⚠️ **Eine Wissensfrage hat eine MENGE richtiger Antworten, keinen Index**
   (Issue #174). Grund in einer Zahl: Im Fragenkatalog des Innenministeriums
   BW zum Leistungsabzeichen haben von 210 Lösungen nur 79 genau eine

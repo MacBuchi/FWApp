@@ -278,6 +278,12 @@ pauschales Formatieren in Feature-PRs.
   Riegel gehört in die Datenschicht, nicht nur an den Knopf** — eine Prüfung
   in der Oberfläche allein ist keine, der nächste Aufrufer öffnet denselben
   Weg wieder.
+  Verschärft bei `nfc_manager` (#176): Dort wirft schon der **Zugriff auf
+  `NfcManager.instance`** einen `UnsupportedError`, nicht erst ein Aufruf
+  daran. Im Web-Build risse das die Seite auf, sobald NFC irgendwo berührt
+  wird. Deshalb geht jeder Weg zuerst durch `NfcDienst.unterstuetzt`
+  (`!kIsWeb && defaultTargetPlatform == android`), und die Knöpfe stehen nur
+  dort, wo der true ist.
 - ⚠️ **Die lokale Drift-ID taugt nur als Schlüssel, solange EIN Gerät
   schreibt** (Issue #177). `vehicle_attachments` kommt mit
   `(abteilung_id, id)` durch, weil Unterlagen praktisch immer von einem

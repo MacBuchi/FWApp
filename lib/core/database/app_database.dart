@@ -63,7 +63,7 @@ class Compartments extends Table {
 /// in `kSyncedTables`. `publish_snapshot` ersetzt die Zeilen der Abteilung;
 /// ein Alt-Client, der von der Tabelle nichts weiß, würde damit alle
 /// Unterlagen löschen. Sie geht denselben zeilenweisen Weg wie die
-/// Gerätetypen (`vehicle_attachment_sync.dart`).
+/// Gerätetypen — die Stelle ist `anhang_speicher.dart`.
 ///
 /// [localPath] ist die Offline-Zusage: Die Datei liegt zusätzlich auf diesem
 /// Gerät. Ohne sie wäre die Betriebsanleitung ausgerechnet im Einsatz
@@ -343,6 +343,11 @@ class EquipmentInstances extends Table {
 /// Seriennummer), nicht eindeutig und nur eines pro Einheit. Ein Gegenstand
 /// kann aber mehrere Codes tragen — der aufgedruckte Hersteller-Barcode und
 /// später ein NFC-Tag (#176) am selben Pressluftatmer.
+///
+/// ⚠️ **Auch diese Tabelle liegt NICHT im Snapshot** und steht nicht in
+/// `kSyncedTables`: Ein Alt-Client löschte sonst bei seiner nächsten
+/// Veröffentlichung alle Codes der Abteilung. Der zeilenweise Weg steht in
+/// `tag_sync.dart`; [dirty] und [deletedAt] gehören dazu.
 @DataClassName('EquipmentTagData')
 class EquipmentTags extends Table {
   static const kindQr = 'qr';
@@ -369,6 +374,34 @@ class EquipmentTags extends Table {
   BoolColumn get selfIssued => boolean().withDefault(const Constant(false))();
 
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+
+  /// Wartet dieser Code noch aufs Hochladen? (Issue #177)
+  ///
+  /// ⚠️ **Vorbelegt mit `true`, anders als bei `Wissensfragen`.** Dort ist
+  /// ein neuer Datensatz manchmal nur ein lokaler Entwurf; hier gibt es das
+  /// nicht — jeder Code, der hier entsteht, gehört auf den Server. Die
+  /// Vorbelegung ist damit die sichere Richtung: Wer sie beim Einfügen
+  /// vergisst, lädt einmal zu viel hoch. Andersherum bliebe der Code für
+  /// immer auf diesem Gerät, und das fiele erst auf, wenn jemand anders
+  /// davorsteht und ins Leere scannt.
+  ///
+  /// Genau deshalb wirkt sie auch in der Migration richtig: Codes aus
+  /// v1.49/v1.50 sind noch nie hochgeladen worden und werden es damit beim
+  /// ersten Abgleich.
+  BoolColumn get dirty => boolean().withDefault(const Constant(true))();
+
+  /// Entfernt — aber noch nicht auf dem Server (Issue #177).
+  ///
+  /// **Warum die Zeile stehen bleibt.** Ein hart gelöschter Code wäre nach
+  /// dem nächsten Zug wieder da: Der Server weiß nichts von der Löschung und
+  /// liefert ihn erneut. Die Zeile bleibt deshalb als Grabstein liegen, bis
+  /// das Entfernen oben ankam, und fällt erst danach weg.
+  ///
+  /// ⚠️ Jede Abfrage, die Codes ZEIGT oder nachschlägt, muss sie
+  /// aussortieren — ein Grabstein darf nicht scannbar sein. Nur
+  /// [TagDao.alleCodes] nimmt ihn bewusst mit: Solange er auf dem Server
+  /// steht, ist der Code vergeben und darf nicht neu gewürfelt werden.
+  DateTimeColumn get deletedAt => dateTime().nullable()();
 }
 
 /// A recurring Prüfung (kind='recurring', intervalMonths set) or a one-shot
@@ -1179,26 +1212,54 @@ class TagDao extends DatabaseAccessor<AppDatabase> with _$TagDaoMixin {
 
   Stream<List<EquipmentTagData>> watchByInstance(int instanceId) =>
       (select(equipmentTags)
-            ..where((t) => t.instanceId.equals(instanceId))
+            ..where((t) => t.instanceId.equals(instanceId) & _lebend(t))
             ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
           .watch();
 
   Future<List<EquipmentTagData>> getByInstance(int instanceId) =>
-      (select(equipmentTags)..where((t) => t.instanceId.equals(instanceId)))
+      (select(equipmentTags)
+            ..where((t) => t.instanceId.equals(instanceId) & _lebend(t)))
           .get();
 
+  /// Was noch klebt — ein Grabstein zählt nicht dazu
+  /// ([EquipmentTags.deletedAt]).
+  static Expression<bool> _lebend(EquipmentTags t) => t.deletedAt.isNull();
+
   /// Schlägt einen gelesenen Code nach. Erwartet ihn **normalisiert**.
+  ///
+  /// Entfernte Codes bleiben außen vor: Wer den Aufkleber abgezogen hat,
+  /// soll beim Scannen nicht mehr auf das Gerät geführt werden, nur weil
+  /// der Grabstein noch auf sein Hochladen wartet.
   Future<EquipmentTagData?> findByCode(String code) =>
+      (select(equipmentTags)..where((t) => t.code.equals(code) & _lebend(t)))
+          .getSingleOrNull();
+
+  /// Derselbe Griff, aber **mit** Grabsteinen — für den Abgleich und für das
+  /// Wiederverknüpfen desselben Codes, siehe `tag_sync.dart`.
+  Future<EquipmentTagData?> findByCodeAuchEntfernt(String code) =>
       (select(equipmentTags)..where((t) => t.code.equals(code)))
           .getSingleOrNull();
 
   Future<int> insertTag(EquipmentTagsCompanion t) =>
       into(equipmentTags).insert(t);
 
+  Future<void> aendere(int id, EquipmentTagsCompanion aenderung) async {
+    await (update(equipmentTags)..where((t) => t.id.equals(id)))
+        .write(aenderung);
+  }
+
   Future<int> deleteTag(int id) =>
       (delete(equipmentTags)..where((t) => t.id.equals(id))).go();
 
+  /// Was noch nach oben muss — Neuzugänge **und** Grabsteine.
+  Future<List<EquipmentTagData>> offeneTags() =>
+      (select(equipmentTags)..where((t) => t.dirty.equals(true))).get();
+
   /// Alle vergebenen Codes — für die Kollisionsprüfung beim Erzeugen.
+  ///
+  /// ⚠️ **Mit Grabsteinen.** Solange ein entfernter Code auf dem Server
+  /// steht, ist er vergeben; ihn neu zu würfeln hieße, beim Hochladen den
+  /// fremden Eintrag zu überschreiben.
   Future<Set<String>> alleCodes() async =>
       (await select(equipmentTags).get()).map((t) => t.code).toSet();
 
@@ -1289,7 +1350,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 15;
+  int get schemaVersion => 16;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -1463,6 +1524,19 @@ class AppDatabase extends _$AppDatabase {
             if (from >= 4) {
               await m.addColumn(
                   inventoryChecks, inventoryChecks.countedInstancesJson);
+            }
+          }
+          if (from < 16) {
+            // Der Sync-Zustand der Codes (#177). Bestehende Codes gelten als
+            // ungeschoben — das ist richtig: Vor dieser Version gab es
+            // keinen Weg nach oben, also steht keiner von ihnen dort.
+            //
+            // ⚠️ Nur ab v14, dieselbe Falle wie eine Zeile höher:
+            // `createTable(equipmentTags)` im Schritt 14 legt IMMER die
+            // heutige Definition an, inklusive dieser beiden Spalten.
+            if (from >= 14) {
+              await m.addColumn(equipmentTags, equipmentTags.dirty);
+              await m.addColumn(equipmentTags, equipmentTags.deletedAt);
             }
           }
         },

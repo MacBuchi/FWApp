@@ -14,14 +14,14 @@ void main() {
     verifier = SchemaVerifier(GeneratedHelper());
   });
 
-  test('migrates from v1 to v15 without schema errors', () async {
+  test('migrates from v1 to v16 without schema errors', () async {
     final connection = await verifier.startAt(1);
     final db = AppDatabase(connection);
-    await verifier.migrateAndValidate(db, 15);
+    await verifier.migrateAndValidate(db, 16);
     await db.close();
   });
 
-  test('v1 data survives the migration to v15', () async {
+  test('v1 data survives the migration to v16', () async {
     final schema = await verifier.schemaAt(1);
 
     schema.rawDatabase
@@ -40,7 +40,7 @@ void main() {
           "VALUES (1, 1, 1, 2, 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 15);
+    await verifier.migrateAndValidate(db, 16);
 
     final vehicle = await db.vehicleDao.getById(1);
     expect(vehicle?.name, 'AB-G');
@@ -63,7 +63,7 @@ void main() {
       () async {
     final connection = await verifier.startAt(2);
     final db = AppDatabase(connection);
-    await verifier.migrateAndValidate(db, 15);
+    await verifier.migrateAndValidate(db, 16);
 
     final equipmentId = await db.equipmentDao
         .insertEquipment(EquipmentItemsCompanion.insert(name: 'Spineboard'));
@@ -81,7 +81,7 @@ void main() {
   test('new v2 tables are usable after migration', () async {
     final connection = await verifier.startAt(1);
     final db = AppDatabase(connection);
-    await verifier.migrateAndValidate(db, 15);
+    await verifier.migrateAndValidate(db, 16);
 
     final vehicleId = await db.vehicleDao.insertVehicle(
         VehiclesCompanion.insert(name: 'LF 10', type: 'LF'));
@@ -132,7 +132,7 @@ void main() {
         "'{}', '[]', '[]', 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 15);
+    await verifier.migrateAndValidate(db, 16);
 
     final geraet = await db.equipmentDao.getById(1);
     expect(geraet?.name, 'Feuerwehraxt');
@@ -165,7 +165,7 @@ void main() {
           "VALUES (1, 1, 'G1', 0, 2, 1, 3, 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 15);
+    await verifier.migrateAndValidate(db, 16);
 
     final fach = await db.compartmentDao.getById(1);
     expect(fach?.label, 'G1');
@@ -193,7 +193,7 @@ void main() {
           "VALUES (1, 1, 'G1', 0, 1, 'fahrerseite', 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 15);
+    await verifier.migrateAndValidate(db, 16);
 
     final fach = await db.compartmentDao.getById(1);
     expect(fach?.label, 'G1');
@@ -219,7 +219,7 @@ void main() {
           "VALUES (1, 1, 'G1', 0, 1, 'fahrerseite', 'vorne', 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 15);
+    await verifier.migrateAndValidate(db, 16);
 
     final fach = await db.compartmentDao.getById(1);
     expect(fach?.label, 'G1');
@@ -246,7 +246,7 @@ void main() {
         "VALUES (1, 'HLF 20', 'HLF 20', 0, 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 15);
+    await verifier.migrateAndValidate(db, 16);
 
     expect(await db.wissenDao.getAll(), isEmpty);
     await db.wissenDao.insertFrage(WissensfragenCompanion.insert(
@@ -280,7 +280,7 @@ void main() {
       ;
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 15);
+    await verifier.migrateAndValidate(db, 16);
 
     final fragen = await db.wissenDao.getAll();
     expect(fragen, hasLength(2));
@@ -312,7 +312,7 @@ void main() {
         "'freigegeben', 'bund', 0, 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 15);
+    await verifier.migrateAndValidate(db, 16);
 
     final frage = (await db.wissenDao.getAll()).single;
     expect(frage.frage, 'Wofür steht die Ziffer 3?');
@@ -337,7 +337,7 @@ void main() {
         "'bund', 'Gefahrzettel und Kennzeichnung', 0, 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 15);
+    await verifier.migrateAndValidate(db, 16);
 
     final frage = (await db.wissenDao.getAll()).single;
     expect(frage.frage, 'Was zeigt der Gefahrzettel?');
@@ -368,7 +368,7 @@ void main() {
           "VALUES (1, 1, 'Feuerlöscher', 'G1', 2, 1, 'open', '')");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 15);
+    await verifier.migrateAndValidate(db, 16);
 
     final check = (await db.inventoryDao.getChecks(1)).single;
     expect(check.actualQuantity, 1,
@@ -395,7 +395,7 @@ void main() {
           "VALUES (1, 1, 'Flasche 3', '', 1, 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 15);
+    await verifier.migrateAndValidate(db, 16);
 
     expect(await db.tagDao.getByInstance(1), isEmpty,
         reason: 'Vor v14 klebte kein Code auf irgendetwas.');
@@ -427,13 +427,48 @@ void main() {
         "'bund', 0, 0)");
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 15);
+    await verifier.migrateAndValidate(db, 16);
 
     final frage = (await db.wissenDao.getAll()).single;
     expect(frage.frage, 'Welchen Nenndurchmesser hat B?');
     expect(frage.geraet, isNull,
         reason: 'Bestandsfragen haengen an keinem Geraet.');
     expect((await db.wissenDao.getSpielbare()).length, 1);
+
+    await db.close();
+  });
+
+  test('v15→v16: bestehende Codes gelten als ungeschoben', () async {
+    // ⚠️ Der Punkt dieses Tests ist der Vorgabewert. Ein Code aus v1.49/v1.50
+    // war nie auf dem Server — es gab keinen Weg dorthin. Käme er als
+    // `dirty = 0` aus der Migration, bliebe er für immer auf diesem Gerät,
+    // und das fiele erst auf, wenn bei der nächsten Inventur jemand anders
+    // davorsteht und ins Leere scannt. Ein stiller Fehler, genau die Sorte,
+    // die kein Bildschirm zeigt.
+    final schema = await verifier.schemaAt(15);
+    schema.rawDatabase
+      ..execute("INSERT INTO equipment_items (id, name, "
+          "equipment_functions_json, deployment_scenarios_json, description, "
+          "is_custom, extra_attributes_json, updated_at) "
+          "VALUES (1, 'Pressluftatmer', '[]', '[]', '', 0, '{}', 0)")
+      ..execute("INSERT INTO equipment_instances (id, equipment_id, "
+          "identifier, notes, is_active, updated_at) "
+          "VALUES (1, 1, 'Flasche 3', '', 1, 0)")
+      ..execute("INSERT INTO equipment_tags (id, instance_id, code, kind, "
+          "self_issued, created_at) "
+          "VALUES (1, 1, 'FW-7K2M9Q', 'qr', 1, 0)");
+
+    final db = AppDatabase(schema.newConnection());
+    await verifier.migrateAndValidate(db, 16);
+
+    final tag = await db.tagDao.findByCode('FW-7K2M9Q');
+    expect(tag, isNotNull);
+    expect(tag!.instanceId, 1, reason: 'Der Aufkleber klebt weiter dort.');
+    expect(tag.dirty, isTrue,
+        reason: 'Vor v16 gab es keinen Weg nach oben — also steht er dort '
+            'nicht und muss beim ersten Abgleich hoch.');
+    expect(tag.deletedAt, isNull);
+    expect((await db.tagDao.offeneTags()).map((t) => t.code), ['FW-7K2M9Q']);
 
     await db.close();
   });

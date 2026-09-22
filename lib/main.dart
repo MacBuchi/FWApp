@@ -8,6 +8,7 @@ import 'dart:ui' show PlatformDispatcher;
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fwapp/features/inventory/presentation/providers/tag_providers.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/anhang_providers.dart';
 import 'package:fwapp/core/app_version.dart';
 import 'package:fwapp/core/crash/crash_store.dart';
@@ -211,7 +212,13 @@ class _FWAppState extends ConsumerState<FWApp> {
         // demselben Grund: Der Snapshot würde sie bei einem Alt-Client
         // löschen.
         await anhaengeSynchronisieren(ref.read(anhangSpeicherProvider),
-            ref.read(anhangAbteilungProvider));
+            ref.read(aktiveAbteilungIdProvider));
+        if (!mounted) return;
+        // Die Codes an den Geräten (Issue #177) — derselbe zeilenweise Weg,
+        // aus demselben Grund. NACH dem Snapshot, weil ein Code auf seine
+        // Geräte-Einheit zeigt und die von dort kommt.
+        await tagsSynchronisieren(
+            ref.read(tagSyncProvider), ref.read(aktiveAbteilungIdProvider));
         if (!mounted) return;
         // Die Wissensdatenbank gehört der Gesamtwehr und geht denselben
         // zeilenweisen Weg wie die Gerätetypen (Issue #174).

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:fwapp/features/inventory/presentation/providers/tag_providers.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/anhang_providers.dart';
 import 'package:fwapp/core/sync/abteilung_providers.dart';
 import 'package:fwapp/core/sync/auth_utils.dart';
@@ -339,9 +340,12 @@ class _ConnectionSection extends ConsumerWidget {
       // (Stufe ②) — „Jetzt aktualisieren" soll alles holen, nicht nur den
       // Bestand der Abteilung.
       await ref.read(equipmentTypeSyncProvider)?.sync();
-      // Dasselbe gilt für die Unterlagen am Fahrzeug (Issue #182).
+      // Dasselbe gilt für die Unterlagen am Fahrzeug (Issue #182) und für
+      // die Codes an den Geräten (Issue #177).
       await anhaengeSynchronisieren(ref.read(anhangSpeicherProvider),
-          ref.read(anhangAbteilungProvider));
+          ref.read(aktiveAbteilungIdProvider));
+      await tagsSynchronisieren(
+          ref.read(tagSyncProvider), ref.read(aktiveAbteilungIdProvider));
       unawaited(ref.read(imagePrecacheProvider.notifier).run());
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(

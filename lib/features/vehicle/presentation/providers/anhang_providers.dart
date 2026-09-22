@@ -11,7 +11,6 @@ library;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/database/database_providers.dart';
-import 'package:fwapp/core/sync/abteilung_providers.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/features/vehicle/data/anhang_speicher.dart';
 
@@ -27,14 +26,6 @@ final anhangSpeicherProvider = Provider<AnhangSpeicher>((ref) => AnhangSpeicher(
 final fahrzeugAnhaengeProvider =
     StreamProvider.family<List<VehicleAttachmentData>, int>((ref, vehicleId) =>
         ref.watch(attachmentDaoProvider).watchByVehicle(vehicleId));
-
-/// Die Abteilung, in deren Ordner die Dateien landen.
-///
-/// Erst die gewählte (Quer-Sicht auf Schwester-Abteilungen), sonst die
-/// eigene — dieselbe Reihenfolge wie überall sonst in der App.
-final anhangAbteilungProvider = Provider<String?>((ref) =>
-    ref.watch(selectedAbteilungIdProvider) ??
-    ref.watch(myAbteilungIdProvider).value);
 
 /// Holt die Anhang-Zeilen der Abteilung und reicht nach, was noch nicht
 /// hochgeladen ist.

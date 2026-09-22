@@ -18,13 +18,20 @@ import 'package:supabase_flutter/supabase_flutter.dart' hide TableUpdate;
 
 /// Drift tables mirrored to Supabase (SQL names, parent→child order).
 ///
-/// ⚠️ **`vehicle_attachments` steht hier bewusst NICHT** (Issue #182).
-/// `publish_snapshot` löscht die Zeilen der Abteilung und fügt die Nutzlast
-/// neu ein. Ein Alt-Client, der die Tabelle nicht kennt, schickt den
-/// Schlüssel gar nicht mit — und löschte damit bei seiner nächsten
-/// Veröffentlichung sämtliche hochgeladenen Unterlagen der Abteilung. Sie
-/// geht deshalb den zeilenweisen Weg (`vehicle_attachment_sync.dart`), wie
-/// die Gerätetypen.
+/// ⚠️ **`vehicle_attachments` und `equipment_tags` stehen hier bewusst
+/// NICHT** (Issues #182 und #177). `publish_snapshot` löscht die Zeilen der
+/// Abteilung und fügt die Nutzlast neu ein. Ein Alt-Client, der eine dieser
+/// Tabellen nicht kennt, schickt ihren Schlüssel gar nicht mit — und löschte
+/// damit bei seiner nächsten Veröffentlichung sämtliche hochgeladenen
+/// Unterlagen bzw. sämtliche Geräte-Codes der Abteilung. Die Aufkleber
+/// klebten danach weiter auf den Geräten und zeigten auf nichts.
+///
+/// Beide gehen deshalb den zeilenweisen Weg wie die Gerätetypen:
+/// `anhang_speicher.dart` (`zieheAnhaenge`/`nachreichen`) und
+/// `tag_sync.dart` (`schiebe`/`ziehe`).
+///
+/// Wer eine dieser Tabellen später doch in den Snapshot nimmt, muss zuerst
+/// diesen Punkt lösen — nicht danach.
 const kSyncedTables = [
   'vehicles',
   'equipment_items',

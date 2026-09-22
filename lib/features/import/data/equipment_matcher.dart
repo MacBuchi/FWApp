@@ -128,56 +128,21 @@ class EquipmentMatcher {
   /// Hier bleibt nur der vertraute Name stehen.
   static String normalize(String s) => normalizeEquipmentName(s);
 
-  static Set<String> _tokens(String s) =>
-      normalize(s).split(' ').where((t) => t.length > 1).toSet();
+  static Set<String> _tokens(String s) => namensTokens(s);
 
-  /// Combines token overlap (Sørensen–Dice over token sets) with a
-  /// normalized Levenshtein ratio; the higher of the two wins.
+  /// ⚠️ Rechnet NICHT selbst — die Regel liegt in `core/utils`, weil die
+  /// Dublettenprüfung vor dem Veröffentlichen dieselbe Frage stellt
+  /// (Issue #67). Eine zweite Kopie hier liefe unweigerlich auseinander.
   static double _similarity(
     String normalized,
     Set<String> tokens,
     _IndexedEquipment entry,
-  ) {
-    double dice = 0;
-    if (tokens.isNotEmpty && entry.tokens.isNotEmpty) {
-      final common = tokens.intersection(entry.tokens).length;
-      dice = 2 * common / (tokens.length + entry.tokens.length);
-    }
-    // Levenshtein is O(n*m); skip it for very unequal lengths where the
-    // ratio cannot reach the suggestion threshold anyway.
-    final a = normalized;
-    final b = entry.normalized;
-    final maxLen = a.length > b.length ? a.length : b.length;
-    final minLen = a.length < b.length ? a.length : b.length;
-    double lev = 0;
-    if (maxLen > 0 && minLen / maxLen >= suggestionThreshold) {
-      lev = 1 - _levenshtein(a, b) / maxLen;
-    }
-    return dice > lev ? dice : lev;
-  }
-
-  static int _levenshtein(String a, String b) {
-    if (a == b) return 0;
-    if (a.isEmpty) return b.length;
-    if (b.isEmpty) return a.length;
-    var previous = List<int>.generate(b.length + 1, (i) => i);
-    var current = List<int>.filled(b.length + 1, 0);
-    for (var i = 0; i < a.length; i++) {
-      current[0] = i + 1;
-      for (var j = 0; j < b.length; j++) {
-        final cost = a.codeUnitAt(i) == b.codeUnitAt(j) ? 0 : 1;
-        current[j + 1] = [
-          current[j] + 1,
-          previous[j + 1] + 1,
-          previous[j] + cost,
-        ].reduce((x, y) => x < y ? x : y);
-      }
-      final swap = previous;
-      previous = current;
-      current = swap;
-    }
-    return previous[b.length];
-  }
+  ) => aehnlichkeitVorbereitet(
+    normalized,
+    tokens,
+    entry.normalized,
+    entry.tokens,
+  );
 }
 
 class _IndexedEquipment {

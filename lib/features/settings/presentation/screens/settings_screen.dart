@@ -16,6 +16,8 @@ import 'package:fwapp/core/sync/image_precache.dart';
 import 'package:fwapp/core/sync/membership_providers.dart';
 import 'package:fwapp/core/sync/mfa_providers.dart';
 import 'package:fwapp/core/sync/rollen.dart';
+import 'package:fwapp/core/database/database_providers.dart';
+import 'package:fwapp/core/sync/dubletten_dialog.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/sync/verlust_warnung.dart';
 import 'package:fwapp/core/sync/zeilen_sync.dart';
@@ -433,6 +435,11 @@ class _ConnectionSection extends ConsumerWidget {
           ),
     );
     if (ok != true || !context.mounted) return;
+    // ⚠️ Nach der Zusage, vor dem Hochladen: Was hier zusammengeführt wird,
+    // soll in DIESER Veröffentlichung oben ankommen — sonst stünde das
+    // Gerät doppelt im Bestand der Wehr, bis jemand erneut veröffentlicht.
+    if (!await klaereDubletten(context, ref.read(appDatabaseProvider))) return;
+    if (!context.mounted) return;
     try {
       final version = await ref.read(syncServiceProvider)?.publish();
       if (context.mounted) {

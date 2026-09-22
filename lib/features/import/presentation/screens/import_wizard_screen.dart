@@ -6,6 +6,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:fwapp/core/database/database_providers.dart';
+import 'package:fwapp/core/sync/dubletten_dialog.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/sync/sync_service.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_item.dart';
@@ -854,6 +856,15 @@ class _ResultView extends ConsumerWidget {
             icon: const Icon(Icons.cloud_upload),
             label: const Text('Jetzt veröffentlichen'),
             onPressed: () async {
+              // Gerade erst importiert — hier entstehen Dubletten am
+              // ehesten, weil der Assistent frei getippte Namen anlegt.
+              if (!await klaereDubletten(
+                context,
+                ref.read(appDatabaseProvider),
+              )) {
+                return;
+              }
+              if (!context.mounted) return;
               try {
                 final version = await syncService.publish();
                 if (context.mounted) {

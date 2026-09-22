@@ -86,11 +86,28 @@ class AnhangSpeicher {
   /// Dokumentenordner zu beschreiben.
   final Future<Directory> Function() ordner;
 
+  /// Läuft das hier im Browser? (Issue #210)
+  ///
+  /// Injizierbar aus einem Grund: `kIsWeb` ist eine
+  /// Kompilierzeit-Konstante. Ein Test im Dart-VM kann sie nicht setzen —
+  /// der Web-Zweig wäre damit genau der, den nie jemand prüft. Genau dort
+  /// saß der Fehler.
+  final bool imBrowser;
+
   AnhangSpeicher({
     required this.db,
     this.client,
     Future<Directory> Function()? ordner,
-  }) : ordner = ordner ?? getApplicationDocumentsDirectory;
+    bool? imBrowser,
+  })  : ordner = ordner ?? getApplicationDocumentsDirectory,
+        imBrowser = imBrowser ?? kIsWeb;
+
+  /// Warum das Anhängen im Browser nicht geht, in einem Satz für den
+  /// Gerätewart.
+  static const kNurInDerApp =
+      'Unterlagen anhängen geht nur in der App. Der Browser kann die Datei '
+      'nicht auf dem Gerät ablegen, und genau das ist hier die Zusage: '
+      'lesbar, wenn kein Netz da ist.';
 
   /// Nimmt eine Datei an: prüfen, lokal ablegen, Zeile schreiben, hochladen.
   ///
@@ -105,6 +122,14 @@ class AnhangSpeicher {
     String? mimeType,
     String? abteilungId,
   }) async {
+    // ⚠️ Der Riegel steht HIER und nicht nur am Knopf (Issue #210). Vorher
+    // lief `_schreibeLokal` im Browser ungebremst in
+    // `getApplicationDocumentsDirectory` — `path_provider` hat dort keine
+    // Umsetzung, und die rohe `MissingPluginException` landete wörtlich im
+    // SnackBar. Ein zweiter Aufrufer würde denselben Weg wieder öffnen;
+    // eine Prüfung in der Oberfläche allein ist deshalb keine.
+    if (imBrowser) throw const AnhangAbgelehnt(kNurInDerApp);
+
     final typ = (mimeType == null || mimeType.isEmpty)
         ? mimeAusName(dateiname)
         : mimeType;
@@ -141,12 +166,12 @@ class AnhangSpeicher {
   /// auch ohne Netz.
   Future<String?> sicherstellenLokal(VehicleAttachmentData anhang) async {
     final vorhanden = anhang.localPath;
-    if (vorhanden != null && !kIsWeb && File(vorhanden).existsSync()) {
+    if (vorhanden != null && !imBrowser && File(vorhanden).existsSync()) {
       return vorhanden;
     }
     final marker = anhang.storagePath;
     final c = client;
-    if (marker == null || c == null || kIsWeb) return null;
+    if (marker == null || c == null || imBrowser) return null;
 
     final objekt = objektImBucket(marker, kVehicleAttachmentsBucket);
     if (objekt == null) return null;
@@ -170,7 +195,7 @@ class AnhangSpeicher {
   Future<void> entfernen(VehicleAttachmentData anhang,
       {String? abteilungId}) async {
     final lokal = anhang.localPath;
-    if (lokal != null && !kIsWeb) {
+    if (lokal != null && !imBrowser) {
       try {
         final datei = File(lokal);
         if (datei.existsSync()) await datei.delete();
@@ -206,7 +231,7 @@ class AnhangSpeicher {
   /// Reicht nach, was noch keinen Platz auf dem Server hat. Läuft nach dem
   /// Sync — ein Anhang, der offline entstanden ist, gehört danach dazu.
   Future<int> nachreichen({String? abteilungId}) async {
-    if (client == null || kIsWeb) return 0;
+    if (client == null || imBrowser) return 0;
     var gereicht = 0;
     for (final a in await db.attachmentDao.getAll()) {
       if (a.storagePath != null) continue;
@@ -329,6 +354,10 @@ class AnhangSpeicher {
   /// bekommen, sonst zeigt ein Betrachter aus dem Zwischenspeicher weiter
   /// die alte.
   Future<String> _schreibeLokal(String dateiname, Uint8List bytes) async {
+    // Jeder Weg hierher ist vorher durch `imBrowser` gegangen. Steht das
+    // trotzdem einmal offen, soll es laut auffallen statt als
+    // `MissingPluginException` beim Nutzer zu landen.
+    assert(!imBrowser, '_schreibeLokal gibt es im Browser nicht (#210).');
     final dir = await ordner();
     final ziel = p.join(
       dir.path,

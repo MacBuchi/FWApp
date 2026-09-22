@@ -43,7 +43,12 @@ void main() {
     if (tempDir.existsSync()) await tempDir.delete(recursive: true);
   });
 
-  Future<void> pumpe(WidgetTester tester, {bool darfBearbeiten = true}) async {
+  Future<void> pumpe(WidgetTester tester,
+      {bool darfBearbeiten = true, bool imBrowser = false}) async {
+    if (imBrowser) {
+      speicher = AnhangSpeicher(
+          db: db, ordner: () async => tempDir, imBrowser: true);
+    }
     tester.view.physicalSize = const Size(1000, 2000);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -202,5 +207,46 @@ void main() {
     expect(await db.attachmentDao.getByVehicle(fahrzeug), hasLength(1));
 
     await endTestApp(tester);
+  });
+
+  group('im Browser (Issue #210)', () {
+    testWidgets('statt des Knopfes steht da, warum er fehlt', (tester) async {
+      // Ihn wortlos verschwinden zu lassen wäre die schlechtere Hälfte der
+      // Lösung: Der Gerätewart sucht ihn und hält die App für kaputt.
+      await pumpe(tester, imBrowser: true);
+
+      expect(find.text('Anhängen'), findsNothing);
+      expect(find.text('Anhängen geht in der App'), findsOneWidget);
+      expect(find.textContaining('hängt man in der App an'), findsOneWidget);
+
+      await endTestApp(tester);
+    });
+
+    testWidgets('eine Zeile vom Server sagt beim Antippen die Wahrheit',
+        (tester) async {
+      // ⚠️ „ließ sich gerade nicht laden" wäre hier falsch: Die Datei LIEGT
+      // auf dem Server. Die Auskunft schickte den Gerätewart auf die Suche
+      // nach einem Netzproblem, das es nicht gibt.
+      await nurAufDemServer('Betriebsanleitung.pdf');
+      await pumpe(tester, imBrowser: true);
+
+      await tester.tap(find.text('Betriebsanleitung.pdf'));
+      await tester.pump();
+
+      expect(find.textContaining('Öffnen geht in der App'), findsOneWidget);
+      expect(find.textContaining('nicht laden'), findsNothing);
+
+      await endTestApp(tester);
+    });
+
+    testWidgets('den Sammel-Download gibt es hier nicht', (tester) async {
+      await nurAufDemServer('Betriebsanleitung.pdf');
+      await pumpe(tester, imBrowser: true);
+
+      expect(find.textContaining('für den Einsatz herunterladen'),
+          findsNothing);
+
+      await endTestApp(tester);
+    });
   });
 }

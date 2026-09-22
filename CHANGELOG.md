@@ -12,6 +12,27 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.54.0] – 2026-09-22
+
+### Neu
+
+- **Code scannen und die Suche sagt, wo das Gerät hingehört.** In der
+  Gerätesuche liegt oben rechts jetzt ein Scanner. Der Fall dahinter kennt
+  jeder: Ein Strahlrohr liegt im falschen Fach, und niemand weiß auf Anhieb,
+  in welches es gehört. Kamera drauf — und da steht Fahrzeug, Fach und
+  Seite.
+
+  Der Code lässt sich genauso eintippen, in jeder Schreibweise; ein
+  Handscanner tippt ohnehin ins selbe Feld. Wo NFC da ist, geht es auch
+  damit.
+
+  Ein Code zeigt dabei auf **genau einen** Gegenstand, nicht auf eine
+  Auswahl: Liegen Strahlrohre in zwei Fächern, nennt die App das Fach der
+  Einheit, auf der der Aufkleber klebt — nicht beide.
+
+  Und wer am falschen Fahrzeug steht, bekommt trotzdem die Antwort: „nicht
+  hier, aber im HLF 20, Fach G1".
+
 ## [1.53.1] – 2026-09-22
 
 ### Behoben

@@ -31,12 +31,14 @@ GeraetTreffer geraet(
   String name, {
   String? kurzname,
   List<Fundort> fundorte = const [],
+  List<Geraetecode> codes = const [],
 }) =>
     GeraetTreffer(
       equipmentId: id,
       name: name,
       kurzname: kurzname,
       fundorte: fundorte,
+      codes: codes,
     );
 
 void main() {
@@ -157,6 +159,105 @@ void main() {
       // „Ölkanne" sortiert unter O, nicht hinter Z — dieselbe Faltung wie
       // beim Suchen. Ohne sie stünden alle Umlaut-Geräte am Listenende.
       expect(namen, ['Axt', 'Ölkanne', 'Zange']);
+    });
+  });
+
+  group('Code nachschlagen (#176)', () {
+    // Der Fall aus dem Gerätehaus: Jemand findet ein Strahlrohr im falschen
+    // Fach, hält die Kamera drauf — und will wissen, wo es hingehört.
+    final strahlrohr = geraet(
+      1,
+      'Strahlrohr C',
+      fundorte: [
+        fundort(compartmentId: 10, fach: 'G1'),
+        fundort(compartmentId: 20, fach: 'G2'),
+      ],
+      codes: [
+        const Geraetecode(
+            code: 'FW-7K2M9Q', kennung: 'SR 2', compartmentId: 20),
+      ],
+    );
+    final spreizer = geraet(2, 'Spreizer', fundorte: [fundort(fach: 'G3')]);
+    final bestand = [strahlrohr, spreizer];
+
+    test('ein Code führt auf genau ein Gerät', () {
+      final e = sucheGeraete(bestand: bestand, eingabe: 'FW-7K2M9Q');
+      expect(e.treffer, hasLength(1));
+      expect(e.treffer.single.name, 'Strahlrohr C');
+      expect(e.codeTreffer?.kennung, 'SR 2');
+    });
+
+    test('die Einheit entscheidet über das Fach, nicht das Gerät', () {
+      // ⚠️ Der Punkt: Strahlrohre liegen in G1 UND G2. Der Aufkleber klebt
+      // auf EINEM Gegenstand, und der liegt in G2. „G1 oder G2" wäre keine
+      // Antwort für jemanden, der es zurücklegen will.
+      final e = sucheGeraete(bestand: bestand, eingabe: 'FW-7K2M9Q');
+      expect(e.treffer.single.fundorte, hasLength(1));
+      expect(e.treffer.single.fundorte.single.fach.label, 'G2');
+    });
+
+    test('Schreibweise und Leerraum sind egal — wie beim Scannen', () {
+      // Ein Handscanner hängt gern ein Zeilenende an.
+      for (final eingabe in ['fw-7k2m9q', '  FW-7K2M9Q\n', 'FW- 7K2 M9Q']) {
+        expect(sucheGeraete(bestand: bestand, eingabe: eingabe).codeTreffer,
+            isNotNull,
+            reason: 'Eingabe: $eingabe');
+      }
+    });
+
+    test('ein Teilstück ist KEIN Code-Treffer', () {
+      // ⚠️ Sonst träfe „FW" jeden vergebenen Code, und die Namenssuche wäre
+      // unbrauchbar, sobald Codes im Bestand sind.
+      final e = sucheGeraete(bestand: bestand, eingabe: 'FW');
+      expect(e.codeTreffer, isNull);
+    });
+
+    test('was kein Code ist, sucht weiter nach Namen', () {
+      final e = sucheGeraete(bestand: bestand, eingabe: 'spreizer');
+      expect(e.codeTreffer, isNull);
+      expect(e.treffer.single.name, 'Spreizer');
+    });
+
+    test('ein unbekannter Code fällt auf die Namenssuche zurück', () {
+      // Und die findet nichts — „kein Gerät gefunden" ist hier die richtige
+      // Antwort, nicht ein leerer Code-Treffer.
+      final e = sucheGeraete(bestand: bestand, eingabe: 'FW-ZZZZZZZ');
+      expect(e.codeTreffer, isNull);
+      expect(e.istLeer, isTrue);
+    });
+
+    test('am falschen Fahrzeug sagt die Suche, wo es hingehört', () {
+      // Jemand steht am MTW und hat ein Teil aus dem HLF in der Hand.
+      final e =
+          sucheGeraete(bestand: bestand, eingabe: 'FW-7K2M9Q', vehicleId: 99);
+      expect(e.treffer, isEmpty);
+      expect(e.woanders.single.name, 'Strahlrohr C');
+      expect(e.codeTreffer, isNotNull);
+    });
+
+    test('ein Code auf einem nirgends verlasteten Gerät sagt genau das', () {
+      final reserve = geraet(3, 'Pressluftatmer', codes: [
+        const Geraetecode(code: 'FW-AAAAAAA', kennung: 'Reserve 1'),
+      ]);
+      final e = sucheGeraete(bestand: [reserve], eingabe: 'FW-AAAAAAA');
+      expect(e.nirgends.single.name, 'Pressluftatmer');
+      expect(e.codeTreffer?.kennung, 'Reserve 1');
+    });
+
+    test('eine Einheit ohne Fach erbt die Fundorte des Geräts', () {
+      // Kommt vor: Code vergeben, Einheit noch keinem Fach zugeordnet.
+      // Dann ist „liegt in G1 und G2" die beste Auskunft, die es gibt.
+      final ohneFach = geraet(
+        4,
+        'Strahlrohr C',
+        fundorte: [
+          fundort(compartmentId: 10, fach: 'G1'),
+          fundort(compartmentId: 20, fach: 'G2'),
+        ],
+        codes: [const Geraetecode(code: 'FW-BBBBBBB')],
+      );
+      final e = sucheGeraete(bestand: [ohneFach], eingabe: 'FW-BBBBBBB');
+      expect(e.treffer.single.fundorte, hasLength(2));
     });
   });
 }

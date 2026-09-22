@@ -6,8 +6,9 @@
 /// Ein Fuhrpark hat Hunderte Zuweisungen, keine Hunderttausende — der ganze
 /// Bestand passt bequem in den Speicher.
 ///
-/// Vier Abfragen, nicht N: Fahrzeuge, Fächer, Zuweisungen und Geräte kommen
-/// jeweils vollständig, statt Fach für Fach nachgeladen zu werden.
+/// Sechs Abfragen, nicht N: Fahrzeuge, Fächer, Zuweisungen, Geräte, Einheiten
+/// und Codes kommen jeweils vollständig, statt Fach für Fach nachgeladen zu
+/// werden.
 library;
 
 import 'package:fwapp/core/database/database_providers.dart';
@@ -35,6 +36,23 @@ Future<List<GeraetTreffer>> durchsuchbarerBestand(Ref ref) async {
     for (final c in await db.compartmentDao.getAll()) c.id: c,
   };
   final zuweisungen = await db.assignmentDao.getAll();
+
+  // Codes je Gerät, über die geführten Einheiten (Issue #176). Zwei
+  // Abfragen für den ganzen Fuhrpark — eine je Gerät wären bei
+  // hundertzehn Geräten hundertzehn.
+  final einheiten = {
+    for (final e in await db.inspectionDao.getAllInstances()) e.id: e,
+  };
+  final codes = <int, List<Geraetecode>>{};
+  for (final t in await db.tagDao.alleTags()) {
+    final einheit = einheiten[t.instanceId];
+    if (einheit == null) continue;
+    codes.putIfAbsent(einheit.equipmentId, () => []).add(Geraetecode(
+          code: t.code,
+          kennung: einheit.identifier,
+          compartmentId: einheit.compartmentId,
+        ));
+  }
 
   // Fundorte je Gerät sammeln. Ein Gerät kann in mehreren Fahrzeugen und
   // sogar in mehreren Fächern desselben Fahrzeugs liegen — beides ist im
@@ -70,6 +88,7 @@ Future<List<GeraetTreffer>> durchsuchbarerBestand(Ref ref) async {
         bildPfad: eq.imagePath,
         funktionen: jsonToStringList(eq.equipmentFunctionsJson),
         fundorte: fundorte[eq.id] ?? const [],
+        codes: codes[eq.id] ?? const [],
       ),
   ];
 }

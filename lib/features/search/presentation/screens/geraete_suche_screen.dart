@@ -14,6 +14,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/features/compartment/presentation/fach_antwort.dart';
 import 'package:fwapp/features/equipment/presentation/widgets/equipment_avatar.dart';
+import 'package:fwapp/features/inventory/data/nfc_dienst.dart';
+import 'package:fwapp/features/inventory/data/tag_code.dart';
+import 'package:fwapp/features/inventory/presentation/screens/code_scannen_screen.dart';
+import 'package:fwapp/features/inventory/presentation/screens/nfc_lesen_screen.dart';
 import 'package:fwapp/features/search/domain/geraete_suche.dart';
 import 'package:fwapp/features/search/presentation/providers/geraete_suche_providers.dart';
 import 'package:fwapp/features/vehicle/domain/entities/vehicle.dart';
@@ -47,7 +51,26 @@ class _GeraeteSucheScreenState extends ConsumerState<GeraeteSucheScreen> {
     final fahrzeuge = ref.watch(vehicleListStreamProvider).value ?? const [];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Gerätesuche')),
+      appBar: AppBar(
+        title: const Text('Gerätesuche'),
+        actions: [
+          // Der Fall, für den das hier steht: Jemand findet ein Gerät im
+          // falschen Fach und will wissen, wo es hingehört. Der Code ist
+          // die schnellste Antwort darauf — schneller als der Name, den
+          // niemand amtlich auswendig kann.
+          IconButton(
+            icon: const Icon(Icons.qr_code_scanner),
+            tooltip: 'Code scannen',
+            onPressed: _scannen,
+          ),
+          if (NfcDienst.unterstuetzt)
+            IconButton(
+              icon: const Icon(Icons.nfc),
+              tooltip: 'NFC-Tag lesen',
+              onPressed: _nfcLesen,
+            ),
+        ],
+      ),
       body: Column(
         children: [
           Padding(
@@ -91,6 +114,39 @@ class _GeraeteSucheScreenState extends ConsumerState<GeraeteSucheScreen> {
     );
   }
 
+  /// Übernimmt einen gelesenen Code in das Suchfeld.
+  ///
+  /// Bewusst ins FELD und nicht direkt ins Ergebnis: So steht da, wonach
+  /// gesucht wurde, und es lässt sich von Hand nachbessern, wenn der
+  /// Aufkleber verkratzt war.
+  void _uebernimm(String? code) {
+    if (code == null || !mounted) return;
+    _controller.text = code;
+    setState(() => _eingabe = code);
+  }
+
+  Future<void> _scannen() async {
+    final code = await Navigator.of(context).push<String>(MaterialPageRoute(
+      // Ohne `beiFund` schließt der Bildschirm nach dem ersten Fund und
+      // gibt ihn zurück — hier wird EIN Gegenstand gesucht, nicht ein Fach
+      // abgearbeitet.
+      builder: (_) => const CodeScannenScreen(titel: 'Code nachschlagen'),
+    ));
+    _uebernimm(code);
+  }
+
+  Future<void> _nfcLesen() async {
+    final code = await Navigator.of(context).push<String>(MaterialPageRoute(
+      builder: (_) => NfcLesenScreen(
+        titel: 'Tag nachschlagen',
+        anleitung: 'Das Handy an das Tag halten.',
+        // `null` heißt: schließen und den Fund zurückgeben.
+        beiFund: (_) async => null,
+      ),
+    ));
+    _uebernimm(code);
+  }
+
   Widget _fahrzeugWahl(List<Vehicle> fahrzeuge) {
     // ⚠️ Nur eine Auswahl anzeigen, die es in der Liste auch GIBT.
     // `DropdownButton` bricht mit einer Zusicherung ab, wenn sein Wert zu
@@ -130,20 +186,30 @@ class _GeraeteSucheScreenState extends ConsumerState<GeraeteSucheScreen> {
       return _hinweis(
         Icons.search,
         _fahrzeugId == null
-            ? 'Tippe einen Gerätenamen ein — die Suche sagt dir, in welchem '
-                'Fahrzeug und in welchem Fach es liegt.'
-            : 'Tippe einen Gerätenamen ein. Liegt er nicht in diesem '
-                'Fahrzeug, sagt die Suche, wo sonst.',
+            ? 'Tippe einen Gerätenamen ein oder scanne den Code auf dem '
+                'Gerät — die Suche sagt dir, in welchem Fahrzeug und in '
+                'welchem Fach es liegt.'
+            : 'Tippe einen Gerätenamen ein oder scanne den Code. Liegt er '
+                'nicht in diesem Fahrzeug, sagt die Suche, wo sonst.',
       );
     }
     if (ergebnis.istLeer) {
-      return _hinweis(Icons.search_off,
-          'Kein Gerät gefunden, das auf „${_eingabe.trim()}“ passt.');
+      // Ein gescannter Code, der nirgends klebt, ist etwas anderes als ein
+      // Name, der nicht passt — „kein Gerät gefunden, das auf FW-7K2M9Q
+      // passt" klänge, als hätte man sich vertippt.
+      return _hinweis(
+        Icons.search_off,
+        istEigenerCode(normalisiereTagCode(_eingabe) ?? '')
+            ? 'Auf diesen Code ist kein Gerät eingetragen. Er kann an einem '
+                'Gerät vergeben werden, das noch keinen hat.'
+            : 'Kein Gerät gefunden, das auf „${_eingabe.trim()}“ passt.',
+      );
     }
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 24),
       children: [
+        if (ergebnis.codeTreffer != null) _codeZeile(ergebnis.codeTreffer!),
         ...ergebnis.treffer.map(_karte),
         if (ergebnis.woanders.isNotEmpty) ...[
           // Der eigentliche Nutzen am Fahrzeug: „nicht hier, aber im LF 20,
@@ -156,6 +222,38 @@ class _GeraeteSucheScreenState extends ConsumerState<GeraeteSucheScreen> {
           ...ergebnis.nirgends.map(_karte),
         ],
       ],
+    );
+  }
+
+  /// Sagt, dass hier ein CODE getroffen hat — und welche Einheit.
+  ///
+  /// Der Unterschied zur Namenssuche gehört sichtbar gemacht: Eine
+  /// Namenssuche liefert Kandidaten, ein Code zeigt auf genau einen
+  /// Gegenstand. Ohne diese Zeile sähe beides gleich aus.
+  Widget _codeZeile(Geraetecode code) {
+    final theme = Theme.of(context);
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      color: theme.colorScheme.secondaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            Icon(Icons.qr_code_2,
+                size: 20, color: theme.colorScheme.onSecondaryContainer),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                code.kennung == null
+                    ? 'Code ${code.code}'
+                    : 'Code ${code.code} · ${code.kennung}',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSecondaryContainer),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

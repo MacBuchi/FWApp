@@ -243,6 +243,85 @@ void main() {
     });
   });
 
+  group('Abhaken per NFC-Tag (#176)', () {
+    /// Wie oben, aber der Code kommt vom Tag statt vom Aufkleber.
+    Future<void> tagge(String name, String code) async {
+      final eq = (await db.equipmentDao.getAll())
+          .firstWhere((e) => e.name == name);
+      final instanz = await db.into(db.equipmentInstances).insert(
+          EquipmentInstancesCompanion.insert(
+              equipmentId: Value(eq.id).value,
+              compartmentId: Value(compartmentId)));
+      await db.tagDao.insertTag(EquipmentTagsCompanion.insert(
+          instanceId: instanz,
+          code: code,
+          kind: const Value(EquipmentTags.kindNfc)));
+    }
+
+    test('der zweite Kandidat zählt, wenn der erste ins Leere zeigt',
+        () async {
+      // ⚠️ Der Fall, um den es geht: Das Tag trug schon eine fremde
+      // Aufschrift, die App hat es deshalb über seine SERIENNUMMER
+      // verknüpft. Wer nur den Text probiert, meldet „klebt auf keinem
+      // erfassten Gerät" — obwohl es klebt.
+      await tagge('Spineboard', 'NFC-041ABCDEF0');
+      final sessionId = await service.startOrResume(vehicleId);
+
+      final ergebnis = await service.hakeKandidatenAb(
+          sessionId, ['Inventar 2019 Halle B', 'NFC-041ABCDEF0']);
+
+      expect(ergebnis, isA<Abgehakt>());
+      expect((ergebnis as Abgehakt).geraet, 'Spineboard');
+    });
+
+    test('der erste Treffer gewinnt', () async {
+      // Ein Tag, das beschrieben UND über seine Seriennummer bekannt ist.
+      // Der Text steht vorn, weil wir ihn selbst daraufgeschrieben haben.
+      await tagge('Spineboard', 'FW-7K2M9Q');
+      await tagge('Feuerlöscher', 'NFC-041ABCDEF0');
+      final sessionId = await service.startOrResume(vehicleId);
+
+      final ergebnis = await service
+          .hakeKandidatenAb(sessionId, ['FW-7K2M9Q', 'NFC-041ABCDEF0']);
+
+      expect((ergebnis as Abgehakt).geraet, 'Spineboard');
+    });
+
+    test('kennt der Bestand keinen der beiden, bleibt es dabei', () async {
+      final sessionId = await service.startOrResume(vehicleId);
+      expect(
+        await service
+            .hakeKandidatenAb(sessionId, ['Irgendwas', 'NFC-00000000']),
+        isA<CodeUnbekannt>(),
+      );
+    });
+
+    test('ein Tag ohne alles ist kein Fund', () async {
+      // Kommt vor: ein leeres Tag, dessen Seriennummer das Gerät nicht
+      // herausgibt. Daraus darf kein Absturz und keine falsche Meldung
+      // werden.
+      final sessionId = await service.startOrResume(vehicleId);
+      expect(await service.hakeKandidatenAb(sessionId, []), isA<CodeLeer>());
+    });
+
+    test('derselbe Aufkleber zweimal zählt einmal — auch über NFC', () async {
+      // Dieselbe Zusicherung wie beim Scannen, auf dem neuen Weg: Android
+      // meldet ein liegendes Tag wieder und wieder.
+      await tagge('Feuerlöscher', 'NFC-041ABCDEF0');
+      final sessionId = await service.startOrResume(vehicleId);
+
+      final erst =
+          await service.hakeKandidatenAb(sessionId, ['NFC-041ABCDEF0']);
+      final nochmal =
+          await service.hakeKandidatenAb(sessionId, ['NFC-041ABCDEF0']);
+
+      expect(erst, isA<Abgehakt>());
+      expect(nochmal, isA<SchonGezaehlt>());
+      expect((nochmal as SchonGezaehlt).ist, 1,
+          reason: 'Der Bestand darf vom Liegenbleiben nicht wachsen.');
+    });
+  });
+
   test('finish schließt die Session (kein Resume mehr)', () async {
     final sessionId = await service.startOrResume(vehicleId);
     await service.finish(sessionId, doneBy: 'Marcus');

@@ -16,7 +16,9 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/database/app_database.dart';
+import 'package:fwapp/features/inventory/data/nfc_dienst.dart';
 import 'package:fwapp/features/inventory/presentation/providers/tag_providers.dart';
+import 'package:fwapp/features/inventory/presentation/screens/nfc_lesen_screen.dart';
 import 'package:fwapp/features/inventory/presentation/screens/code_scannen_screen.dart';
 import 'package:fwapp/features/inventory/presentation/widgets/code_anzeigen.dart';
 
@@ -67,6 +69,14 @@ class TagAbschnitt extends ConsumerWidget {
                   label: const Text('Code eintragen'),
                   onPressed: () => _eintragen(context, ref),
                 ),
+                // Nur wo es NFC gibt (#176) — sonst wäre es ein Knopf, der
+                // eine Erklärung öffnet statt etwas zu tun.
+                if (NfcDienst.unterstuetzt)
+                  TextButton.icon(
+                    icon: const Icon(Icons.nfc),
+                    label: const Text('NFC-Tag'),
+                    onPressed: () => _nfcTag(context, ref),
+                  ),
               ],
             ),
         ],
@@ -104,6 +114,75 @@ class TagAbschnitt extends ConsumerWidget {
           return switch (ergebnis) {
             TagVerknuepft() => null,
             TagLeer() => 'Da stand kein Code.',
+            TagSchonVergeben(:final code, :final geraet) =>
+              'Der Code $code klebt schon auf: $geraet.',
+          };
+        },
+      ),
+    ));
+  }
+
+  /// Verknüpft ein NFC-Tag mit der Einheit (#176).
+  ///
+  /// **Erst schreiben, dann verknüpfen, und beides kann danebengehen.** Die
+  /// App versucht, ihren eigenen Code auf das Tag zu schreiben — das ist der
+  /// saubere Fall: Der Code steht dann auf dem Gegenstand und lässt sich
+  /// auch mit einem fremden Lesegerät nachvollziehen.
+  ///
+  /// Geht das nicht — billige Aufkleber und Prüfplaketten sind oft
+  /// schreibgeschützt oder schon beschrieben —, **ist das kein Fehlschlag**:
+  /// Dann übernimmt die App die Seriennummer des Tags. Die ist
+  /// unveränderlich und eindeutig, und mehr braucht ein Code nicht. Das Tag
+  /// bleibt also brauchbar, statt abgelehnt zu werden.
+  Future<void> _nfcTag(BuildContext context, WidgetRef ref) async {
+    const nfc = NfcDienst();
+    final dienst = ref.read(tagDienstProvider);
+
+    await Navigator.of(context).push<String>(MaterialPageRoute(
+      builder: (_) => NfcLesenScreen(
+        titel: 'NFC-Tag verknüpfen',
+        anleitung: 'Das Handy an das Tag halten. Die App beschreibt es, '
+            'wenn es das zulässt — sonst genügt seine Seriennummer.',
+        beiFund: (fund) async {
+          // Schon verknüpft? Dann nichts überschreiben, sondern sagen, wo
+          // es klebt. Ein zweites Mal zu schreiben verlöre die bestehende
+          // Zuordnung des Tags.
+          for (final vorhanden in fund.kandidaten) {
+            final treffer = await dienst.schlageNach(vorhanden);
+            if (treffer != null) {
+              return 'Dieses Tag klebt schon auf: ${treffer.geraetename}.';
+            }
+          }
+
+          final code = await dienst.naechsterFreierCode();
+          final lage = await nfc.schreibe(fund.tag, code);
+          final (String zuVerknuepfen, bool selbst, String vorspann) =
+              switch (lage) {
+            NfcSchreibLage.geschrieben => (code, true, 'Tag beschrieben'),
+            NfcSchreibLage.schreibgeschuetzt || NfcSchreibLage.zuKlein => (
+                fund.seriennummer ?? '',
+                false,
+                'Tag ist schreibgeschützt — Seriennummer übernommen',
+              ),
+            NfcSchreibLage.misslungen => ('', false, ''),
+          };
+          if (lage == NfcSchreibLage.misslungen) {
+            return 'Das Tag war zu früh weg. Noch einmal anhalten.';
+          }
+          if (zuVerknuepfen.isEmpty) {
+            return 'Dieses Tag lässt sich weder beschreiben noch an seiner '
+                'Seriennummer erkennen.';
+          }
+
+          final ergebnis = await dienst.verknuepfe(
+            instanceId,
+            zuVerknuepfen,
+            artDesTags: EquipmentTags.kindNfc,
+            selbstVergeben: selbst,
+          );
+          return switch (ergebnis) {
+            TagVerknuepft(:final code) => '$vorspann: $code',
+            TagLeer() => 'Auf dem Tag stand nichts Verwertbares.',
             TagSchonVergeben(:final code, :final geraet) =>
               'Der Code $code klebt schon auf: $geraet.',
           };

@@ -16,6 +16,17 @@
          installieren können. Scannen ist ein Weg, nicht der einzige — der
          Code lässt sich eintippen. -->
     <uses-feature android:name="android.hardware.camera" android:required="false"/>
+    <!-- NFC-Tags lesen und beschreiben (nfc_manager, Issue #176). Anders als
+         bei der Kamera gibt es hier KEINE Laufzeitabfrage: Android vergibt
+         die NFC-Berechtigung bei der Installation, und ohne diese Zeile
+         wirft schon das Starten der Sitzung. -->
+    <uses-permission android:name="android.permission.NFC"/>
+    <!-- `required="false"`, aus demselben Grund wie oben bei der Kamera: Die
+         meisten Geräte haben NFC, aber ein Handy ohne soll die App trotzdem
+         installieren können — die Codes lassen sich scannen oder eintippen.
+         Mit `required="true"` verschwände die App im Play Store für jedes
+         Gerät ohne Antenne. -->
+    <uses-feature android:name="android.hardware.nfc" android:required="false"/>
     <application
         android:label="FWApp"
         android:name="${applicationName}"

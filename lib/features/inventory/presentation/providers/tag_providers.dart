@@ -62,6 +62,14 @@ class TagDienst {
   final AppDatabase db;
   TagDienst(this.db);
 
+  /// Ein freier Code, noch ohne Zeile in der Datenbank.
+  ///
+  /// Für den NFC-Weg (#176): Dort muss der Code **erst auf das Tag**, und
+  /// erst wenn das geklappt hat, gehört er an die Einheit. Andersherum
+  /// entstünde bei jedem schreibgeschützten Tag eine Karteileiche.
+  Future<String> naechsterFreierCode() async =>
+      erzeugeTagCode(await db.tagDao.alleCodes());
+
   /// Vergibt einen eigenen Code und hängt ihn an [instanceId].
   Future<String> vergebeCode(int instanceId) async {
     final code = erzeugeTagCode(await db.tagDao.alleCodes());
@@ -74,13 +82,24 @@ class TagDienst {
   }
 
   /// Übernimmt einen vorhandenen Code für [instanceId].
-  Future<TagErgebnis> verknuepfe(int instanceId, String roh) async {
+  ///
+  /// [artDesTags] überschreibt die Herkunft, die sonst am Code abgelesen
+  /// wird — der NFC-Weg weiß sie besser als der Code selbst (#176).
+  /// [selbstVergeben] sagt, ob die App den Code gewürfelt hat; davon hängt
+  /// nur die Anzeige ab.
+  Future<TagErgebnis> verknuepfe(
+    int instanceId,
+    String roh, {
+    String? artDesTags,
+    bool selbstVergeben = false,
+  }) async {
     final code = normalisiereTagCode(roh);
     if (code == null) return const TagLeer();
 
-    final art = Value(istEigenerCode(code)
-        ? EquipmentTags.kindQr
-        : EquipmentTags.kindBarcode);
+    final art = Value(artDesTags ??
+        (istEigenerCode(code)
+            ? EquipmentTags.kindQr
+            : EquipmentTags.kindBarcode));
 
     // Auch Grabsteine: Die Spalte ist `unique`, und ein entfernter Code, der
     // noch auf sein Hochladen wartet, belegt sie weiter.
@@ -103,6 +122,7 @@ class TagDienst {
         EquipmentTagsCompanion(
           instanceId: Value(instanceId),
           kind: art,
+          selfIssued: Value(selbstVergeben),
           deletedAt: const Value(null),
           dirty: const Value(true),
         ),
@@ -114,6 +134,7 @@ class TagDienst {
       instanceId: instanceId,
       code: code,
       kind: art,
+      selfIssued: Value(selbstVergeben),
     ));
     return TagVerknuepft(code);
   }

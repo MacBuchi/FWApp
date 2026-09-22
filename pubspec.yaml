@@ -2,7 +2,7 @@ name: fwapp
 description: Feuerwehr-Lernapp – Fahrzeuge, Geräte, Beladepläne und Trainings-Spielmodi.
 publish_to: 'none'
 
-version: 1.51.1+80
+version: 1.52.0+81
 
 environment:
   sdk: ^3.7.0
@@ -95,6 +95,8 @@ dependencies:
   # WhatsApp, Signal oder SMS, statt abgetippt zu werden.
   share_plus: ^13.3.0
   csv: ^8.0.0
+  nfc_manager: ^4.2.1
+  ndef_record: ^1.5.0
 dev_dependencies:
   # Nur für den TOTP-E2E-Test: Er erzeugt die Sechsstelligen selbst
   # (HMAC-SHA1 nach RFC 6238), um die Zwei-Faktor-Anmeldung gegen den

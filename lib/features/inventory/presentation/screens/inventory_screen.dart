@@ -10,7 +10,9 @@ import 'package:fwapp/core/widgets/abteilung_switcher.dart';
 import 'package:fwapp/features/compartment/domain/entities/compartment.dart';
 import 'package:fwapp/features/compartment/presentation/providers/compartment_providers.dart';
 import 'package:fwapp/features/inventory/presentation/providers/inventory_providers.dart';
+import 'package:fwapp/features/inventory/data/nfc_dienst.dart';
 import 'package:fwapp/features/inventory/presentation/screens/code_scannen_screen.dart';
+import 'package:fwapp/features/inventory/presentation/screens/nfc_lesen_screen.dart';
 import 'package:fwapp/features/inventory/presentation/widgets/status_darstellung.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';
 import 'package:fwapp/features/vehicle/presentation/widgets/vehicle_cutaway_view.dart';
@@ -77,6 +79,15 @@ class InventoryRunScreen extends ConsumerWidget {
             tooltip: 'Codes scannen',
             onPressed: () => _codeScannen(context, ref, sessionId),
           ),
+          // Nur wo es NFC überhaupt gibt (#176). Ein Knopf, der im
+          // Browser eine Erklärung statt einer Funktion öffnet, ist ein
+          // Versprechen, das die Leiste nicht halten kann.
+          if (NfcDienst.unterstuetzt)
+            IconButton(
+              icon: const Icon(Icons.nfc),
+              tooltip: 'Tags lesen',
+              onPressed: () => _tagsLesen(context, ref, sessionId),
+            ),
           IconButton(
             icon: const Icon(Icons.keyboard),
             tooltip: 'Code eingeben',
@@ -116,19 +127,30 @@ Future<void> _codeScannen(
   await Navigator.of(context).push<String>(MaterialPageRoute(
     builder: (_) => CodeScannenScreen(
       titel: 'Geräte abhaken',
-      beiFund: (roh) async {
-        final ergebnis = await dienst.hakeCodeAb(sessionId, roh);
-        return switch (ergebnis) {
-          Abgehakt(:final geraet, :final fach, :final ist, :final soll) =>
-            '$geraet · $fach — $ist von $soll',
-          SchonGezaehlt(:final geraet, :final ist, :final soll) =>
-            '$geraet war schon gezählt — weiterhin $ist von $soll',
-          CodeUnbekannt() => 'Dieser Code klebt auf keinem erfassten Gerät.',
-          CodeNichtInDieserInventur(:final geraet) =>
-            '$geraet gehört nicht zu diesem Fahrzeug.',
-          CodeLeer() => 'Da stand kein Code.',
-        };
-      },
+      beiFund: (roh) async =>
+          abhakMeldung(await dienst.hakeCodeAb(sessionId, roh)),
+    ),
+  ));
+}
+
+/// Liest NFC-Tags und hakt ab, ohne zwischendurch zu schließen (#176).
+///
+/// Derselbe Zuschnitt wie beim Scannen — nur dass das Handy das Tag berührt,
+/// statt es anzupeilen. Das war der Punkt des Wunsches: im Geräteraum am
+/// Gerät entlang, ohne Licht und ohne Zielen.
+///
+/// [hakeKandidatenAb] statt `hakeCodeAb`, weil ein Tag zwei Schlüssel tragen
+/// kann — die Begründung steht dort.
+Future<void> _tagsLesen(
+    BuildContext context, WidgetRef ref, int sessionId) async {
+  final dienst = ref.read(inventoryServiceProvider);
+  await Navigator.of(context).push<String>(MaterialPageRoute(
+    builder: (_) => NfcLesenScreen(
+      titel: 'Geräte abhaken',
+      anleitung: 'Das Handy nacheinander an die Tags halten. Jeder Fund '
+          'steht hier unten.',
+      beiFund: (fund) async =>
+          abhakMeldung(await dienst.hakeKandidatenAb(sessionId, fund.kandidaten)),
     ),
   ));
 }
@@ -168,20 +190,7 @@ Future<void> _codeEingeben(
                     final ergebnis =
                         await dienst.hakeCodeAb(sessionId, wert);
                     controller.clear();
-                    setState(() => letzteMeldung = switch (ergebnis) {
-                          Abgehakt(:final geraet, :final fach, :final ist,
-                                  :final soll) =>
-                            '$geraet · $fach — $ist von $soll',
-                          SchonGezaehlt(:final geraet, :final ist,
-                                  :final soll) =>
-                            '$geraet war schon gezählt — weiterhin $ist '
-                                'von $soll',
-                          CodeUnbekannt() =>
-                            'Dieser Code klebt auf keinem erfassten Gerät.',
-                          CodeNichtInDieserInventur(:final geraet) =>
-                            '$geraet gehört nicht zu diesem Fahrzeug.',
-                          CodeLeer() => 'Da stand kein Code.',
-                        });
+                    setState(() => letzteMeldung = abhakMeldung(ergebnis));
                   },
                 ),
                 if (letzteMeldung != null) ...[

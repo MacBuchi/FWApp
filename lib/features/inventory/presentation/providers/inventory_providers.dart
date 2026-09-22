@@ -148,6 +148,24 @@ class CodeLeer extends AbhakErgebnis {
   const CodeLeer();
 }
 
+/// Was nach einem abgehakten Code über dem Bild steht.
+///
+/// Steht hier und nicht dreimal in den Bildschirmen: Kamera, Tastatur und
+/// NFC (#176) liefern denselben Code auf drei Wegen, und die Meldung darf
+/// nicht davon abhängen, welchen jemand genommen hat. Vor der dritten
+/// Fassung war es zweimal derselbe `switch` — AGENTS.md, „Zweitverwendung =
+/// Extraktion".
+String abhakMeldung(AbhakErgebnis ergebnis) => switch (ergebnis) {
+      Abgehakt(:final geraet, :final fach, :final ist, :final soll) =>
+        '$geraet · $fach — $ist von $soll',
+      SchonGezaehlt(:final geraet, :final ist, :final soll) =>
+        '$geraet war schon gezählt — weiterhin $ist von $soll',
+      CodeUnbekannt() => 'Dieser Code klebt auf keinem erfassten Gerät.',
+      CodeNichtInDieserInventur(:final geraet) =>
+        '$geraet gehört nicht zu diesem Fahrzeug.',
+      CodeLeer() => 'Da stand kein Code.',
+    };
+
 class InventoryService {
   final AppDatabase db;
   InventoryService(this.db);
@@ -202,6 +220,32 @@ class InventoryService {
   /// Das Zählen läuft über die EINHEIT, nicht über die Zeile: Zweimal
   /// denselben Aufkleber zu scannen erhöht nichts, weil dieselbe Einheit
   /// nicht zweimal daliegt.
+  /// Hakt ab, was von einem NFC-Tag kam (Issue #176).
+  ///
+  /// **Warum mehrere Kandidaten.** Ein Tag trägt bis zu zwei Schlüssel: den
+  /// Text, den wir daraufgeschrieben haben, und seine unveränderliche
+  /// Seriennummer. Welcher davon verknüpft ist, hängt daran, ob sich das Tag
+  /// beschreiben ließ — schreibgeschützte Aufkleber und Prüfplaketten hängen
+  /// an der Seriennummer, die übrigen am Text.
+  ///
+  /// Nur den ersten zu probieren wäre der stille Fehler: Ein Tag, das schon
+  /// eine fremde Aufschrift trägt und über seine Seriennummer verknüpft ist,
+  /// meldete dann „klebt auf keinem erfassten Gerät" — obwohl es klebt.
+  ///
+  /// Der erste Kandidat, der irgendwo hinzeigt, gewinnt. Zeigt keiner
+  /// hin, kommt die Antwort zum ersten zurück, damit die Meldung nicht von
+  /// der Reihenfolge abhängt.
+  Future<AbhakErgebnis> hakeKandidatenAb(
+      int sessionId, List<String> kandidaten) async {
+    AbhakErgebnis? erste;
+    for (final kandidat in kandidaten) {
+      final ergebnis = await hakeCodeAb(sessionId, kandidat);
+      if (ergebnis is! CodeUnbekannt && ergebnis is! CodeLeer) return ergebnis;
+      erste ??= ergebnis;
+    }
+    return erste ?? const CodeLeer();
+  }
+
   Future<AbhakErgebnis> hakeCodeAb(int sessionId, String roh) async {
     final code = normalisiereTagCode(roh);
     if (code == null) return const CodeLeer();

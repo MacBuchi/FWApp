@@ -12,6 +12,32 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.52.0] – 2026-09-22
+
+### Neu
+
+- **NFC-Tags: berühren statt anpeilen.** Ein QR-Aufkleber will angepeilt
+  werden — Kamera drauf, Abstand, Licht. Ein NFC-Tag genügt es zu berühren.
+  Im Geräteraum, halb im Dunkeln, mit Handschuhen ist das der schnellere Weg,
+  und darum ging es bei diesem Wunsch: mit dem Handy am Fach entlang, statt
+  fünfzehnmal zu zielen.
+
+  In der Inventur liegt dafür ein eigener Knopf in der Leiste. Der Bildschirm
+  bleibt offen und meldet jeden Fund, genau wie beim Scannen.
+
+- **Ein Tag verknüpfen geht in einem Zug.** Die App schreibt ihren Code auf
+  das Tag, wenn es das zulässt. Ist es schreibgeschützt — billige Aufkleber
+  und Prüfplaketten oft sind es —, übernimmt sie stattdessen seine
+  Seriennummer. Das Tag ist damit trotzdem brauchbar, statt abgelehnt zu
+  werden.
+
+  Ein Tag, das schon auf einem Gerät klebt, wird nicht überschrieben: Die App
+  sagt, wo es sitzt.
+
+- **Geräte ohne NFC merken nichts davon.** Die Knöpfe stehen nur dort, wo es
+  NFC wirklich gibt. Im Browser und auf Geräten ohne Antenne bleibt alles
+  beim Alten — Kamera und Tastatur.
+
 ## [1.51.1] – 2026-09-22
 
 ### Behoben

@@ -13,18 +13,13 @@
 /// hält die Datei maschinenlesbar, was für das Archivieren und den Import in
 /// fremde Systeme (#176) die Voraussetzung ist.
 ///
-/// **Warum ein BOM davor steht** (`addBom`). Ohne BOM zeigt Excel unter
-/// Windows aus „Beschädigt" ein „BeschÃ¤digt". Der eigene Importer stört
-/// sich nicht daran, er entfernt das BOM beim Einlesen
-/// (`ImportParser._decodeText`).
+/// Wie die Datei technisch aussieht (Trenner, BOM, Datumsform), steht seit
+/// dem Bestands-Export in `core/export/csv_datei.dart` — beide müssen
+/// dieselbe Datei erzeugen.
 library;
 
-import 'package:csv/csv.dart';
 import 'package:fwapp/core/database/app_database.dart';
-
-/// Semikolon: deutsche Tabellenkalkulationen trennen so, und der eigene
-/// Importer erkennt es ohnehin selbst.
-const _trenner = ';';
+import 'package:fwapp/core/export/csv_datei.dart';
 
 /// Kopfzeile des Exports. Eigene Konstante, weil der Test sie prüft.
 const kInventurCsvKopf = [
@@ -59,7 +54,7 @@ String inventurCsv({
   required DateTime zeitpunkt,
   required List<InventoryCheckData> checks,
 }) {
-  final datum = _datum(zeitpunkt);
+  final datum = csvDatum(zeitpunkt);
   final zeilen = <List<String>>[
     kInventurCsvKopf,
     for (final c in checks)
@@ -77,10 +72,7 @@ String inventurCsv({
       ],
   ];
 
-  // Das Paket kümmert sich um Anführungszeichen, eingebettete Semikolons und
-  // Zeilenumbrüche in Notizen — von Hand ist genau das die Fehlerquelle.
-  const konverter = CsvEncoder(fieldDelimiter: _trenner, addBom: true);
-  return konverter.convert(zeilen);
+  return alsCsvDatei(zeilen);
 }
 
 /// Dateiname für den Anhang: sprechend und ohne Zeichen, die ein Mailer oder
@@ -89,18 +81,6 @@ String inventurDateiname({
   required String fahrzeug,
   required DateTime zeitpunkt,
 }) {
-  final rumpf = fahrzeug
-      .toLowerCase()
-      .replaceAll(RegExp(r'[^a-z0-9]+'), '-')
-      .replaceAll(RegExp(r'^-+|-+$'), '');
-  return 'inventur-${rumpf.isEmpty ? 'fahrzeug' : rumpf}-'
-      '${_datum(zeitpunkt, trenner: '-', jahrZuerst: true)}.csv';
-}
-
-String _datum(DateTime d, {String trenner = '.', bool jahrZuerst = false}) {
-  final tag = d.day.toString().padLeft(2, '0');
-  final monat = d.month.toString().padLeft(2, '0');
-  return jahrZuerst
-      ? '${d.year}$trenner$monat$trenner$tag'
-      : '$tag$trenner$monat$trenner${d.year}';
+  final rumpf = dateinameRumpf(fahrzeug, wennLeer: 'fahrzeug');
+  return 'inventur-$rumpf-${dateinameDatum(zeitpunkt)}.csv';
 }

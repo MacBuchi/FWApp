@@ -12,6 +12,30 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.53.0] – 2026-09-22
+
+### Neu
+
+- **Der ganze Bestand als Datei — zum Archivieren und für andere
+  Programme.** Unter *Mehr → Bestand exportieren* entsteht eine CSV-Datei mit
+  allem, was die Wehr hat: Fahrzeug, Kennzeichen, Fach, Gerät, Stückzahl,
+  geführte Einheiten samt Codes und Prüfterminen.
+
+  Eine Zeile ist ein Gegenstand, so wie die App ihn kennt: Wo Einheiten
+  einzeln geführt werden, steht jede für sich; der Rest der Stückzahl kommt
+  als eine Sammelzeile dazu. **Die Summe der Anzahl bleibt dabei die
+  Stückzahl** — sonst hätte ein anderes Programm nach dem Einlesen weniger
+  Geräte als die Wehr.
+
+  Was an keinem Fahrzeug hängt — Reserve, in Reparatur, noch nicht
+  zugeordnet —, steht am Ende unter „Lager". Ein Verzeichnis, das das
+  wegließe, wäre beim Archivieren falsch.
+
+  Die Datei ist bewusst **herstellerneutral**: eine breite, sauber benannte
+  Tabelle, die jedes Inventarprogramm einlesen kann. Sag Bescheid, welches
+  System eure Wehr oder der Kreis einsetzt — dessen Format ist danach eine
+  Zuordnung von Spalten, kein Neubau.
+
 ## [1.52.0] – 2026-09-22
 
 ### Neu

@@ -4,9 +4,38 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:fwapp/core/database/database_providers.dart';
+import 'package:fwapp/core/export/csv_datei.dart';
+import 'package:fwapp/core/sharing/teilen.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
+import 'package:fwapp/features/inventory/data/bestand_export.dart';
+import 'package:fwapp/features/inventory/presentation/providers/bestand_export_providers.dart';
 import 'package:fwapp/core/widgets/abteilung_switcher.dart';
 import 'package:fwapp/features/home/presentation/widgets/home_banners.dart';
+
+/// Baut den Bestands-Export und gibt ihn ans Teilen-Blatt weiter (#176).
+///
+/// Kein eigener Bildschirm: Es gibt nichts einzustellen. Ein Assistent für
+/// eine Datei, die immer gleich aussieht, wäre ein Klick mehr ohne eine
+/// Entscheidung dahinter.
+Future<void> _bestandTeilen(BuildContext context, WidgetRef ref) async {
+  final messenger = ScaffoldMessenger.of(context);
+  final jetzt = DateTime.now();
+  try {
+    final csv = await bestandAlsCsv(ref.read(appDatabaseProvider));
+    if (!context.mounted) return;
+    await teile(
+      context,
+      csv,
+      dateiname: bestandDateiname(zeitpunkt: jetzt),
+      betreff: 'Gerätebestand ${csvDatum(jetzt)}',
+      sacheImRueckfall: 'der Bestand',
+    );
+  } catch (e) {
+    messenger.showSnackBar(
+        SnackBar(content: Text('Export fehlgeschlagen: $e')));
+  }
+}
 
 class MoreScreen extends ConsumerWidget {
   const MoreScreen({super.key});
@@ -111,6 +140,15 @@ class MoreScreen extends ConsumerWidget {
                     subtitle: const Text('Fahrzeug fach für fach prüfen'),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => context.push('/inventory'),
+                  ),
+                  const Divider(indent: 16, endIndent: 16),
+                  // Neben dem Import, weil es sein Gegenstück ist (#176).
+                  ListTile(
+                    leading: const Icon(Icons.download),
+                    title: const Text('Bestand exportieren'),
+                    subtitle: const Text(
+                        'CSV zum Archivieren oder für andere Programme'),
+                    onTap: () => _bestandTeilen(context, ref),
                   ),
                   if (showUserManagement) ...[
                     const Divider(indent: 16, endIndent: 16),

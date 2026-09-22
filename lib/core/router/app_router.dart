@@ -21,6 +21,8 @@ import 'package:fwapp/features/home/presentation/screens/home_screen.dart';
 import 'package:fwapp/features/home/presentation/screens/more_screen.dart';
 import 'package:fwapp/features/vehicle/presentation/screens/vehicle_list_screen.dart';
 import 'package:fwapp/features/knowledge/presentation/screens/wissensdatenbank_screen.dart';
+import 'package:fwapp/features/lerngruppe/presentation/screens/lerngruppe_detail_screen.dart';
+import 'package:fwapp/features/lerngruppe/presentation/screens/lerngruppen_screen.dart';
 import 'package:fwapp/features/search/presentation/screens/geraete_suche_screen.dart';
 import 'package:fwapp/features/vehicle/presentation/screens/vehicle_detail_screen.dart';
 import 'package:fwapp/features/vehicle/presentation/screens/vehicle_form_screen.dart';
@@ -272,6 +274,19 @@ final _routes = [
         builder: (_, _) => const WissensdatenbankScreen(),
       ),
       GoRoute(
+        path: '/lerngruppen',
+        builder: (_, _) => const LerngruppenScreen(),
+        routes: [
+          GoRoute(
+            path: ':id',
+            builder:
+                (_, state) => LerngruppeDetailScreen(
+                  gruppeId: state.pathParameters['id']!,
+                ),
+          ),
+        ],
+      ),
+      GoRoute(
         path: '/geraetesuche',
         builder: (_, state) {
           final roh = state.uri.queryParameters['fahrzeug'];
@@ -457,7 +472,10 @@ class _AppShell extends StatelessWidget {
     if (path == '/') return 0;
     // Die Wissensdatenbank ist der Stoff hinter dem Lernen — der Reiter
     // bleibt deshalb auf „Lernen" stehen (Issue #174).
-    if (path.startsWith('/game') || path.startsWith('/wissensdatenbank')) {
+    // Ebenso die Lerngruppen (Issue #136), erreichbar nur aus dem Raster.
+    if (path.startsWith('/game') ||
+        path.startsWith('/wissensdatenbank') ||
+        path.startsWith('/lerngruppen')) {
       return 1;
     }
     if (path.startsWith('/vehicles')) return 2;

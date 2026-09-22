@@ -80,6 +80,16 @@ class GameMenuScreen extends StatelessWidget {
             color: Colors.amber.shade800,
             onTap: () => context.push('/game/party'),
           ),
+          // Immer sichtbar, auch ohne Anmeldung oder Gesamtwehr — was fehlt,
+          // erklärt der Bildschirm (Issue #136). Eine Kachel, die je nach
+          // Konto kommt und geht, findet niemand wieder.
+          _GameCard(
+            icon: Icons.diversity_3,
+            title: 'Lerngruppen',
+            subtitle: 'Ein paar Wochen gemeinsam lernen',
+            color: Colors.cyan.shade800,
+            onTap: () => context.push('/lerngruppen'),
+          ),
         ],
       ),
     );

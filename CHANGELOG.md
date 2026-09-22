@@ -12,6 +12,27 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.60.0] – 2026-09-23
+
+### Neu
+
+- **Lerngruppen.** Unter **Lernen → Lerngruppen** kannst du dich mit ein paar
+  Leuten aus deiner Gesamtwehr für eine Weile zusammentun — vier bis zwölf
+  Wochen, voreingestellt acht. Wer die Gruppe gründet, bekommt einen
+  **sechsstelligen Code**. Den gibst du weiter (vorlesen, in den Gruppenchat
+  schicken), und wer ihn unter „Mit Code beitreten" eintippt, ist dabei.
+
+  In der Gruppe siehst du, wer mitmacht und wie lange sie noch läuft.
+  Beendete Gruppen bleiben gedämpft in der Liste stehen, damit du siehst, wer
+  dabei war; verlassen kannst du eine Gruppe jederzeit.
+
+  Das ist der erste Teil. **Wochenaufgabe und Rangliste kommen mit einem der
+  nächsten Updates** — und dann gilt, was schon feststeht: Zum Server geht
+  nur eine Punktzahl je Lernmodus, nie, welche Frage du falsch hattest.
+
+  Lerngruppen brauchen eine Anmeldung und eine Gesamtwehr. Alles andere in
+  der App funktioniert weiterhin auch ohne Netz.
+
 ## [1.59.0] – 2026-09-22
 
 ### Neu

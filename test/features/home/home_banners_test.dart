@@ -16,24 +16,10 @@ import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/update/update_check.dart';
 import 'package:fwapp/features/feedback/data/feedback_repository.dart';
 import 'package:fwapp/features/home/presentation/widgets/home_banners.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../helpers/fake_session.dart';
 import '../../helpers/test_database.dart';
 import '../../helpers/widget_harness.dart';
-
-/// Minimal-Session, damit der Feedback-Banner "angemeldet" sieht.
-Session fakeSession() => Session(
-  accessToken: 'test-token',
-  tokenType: 'bearer',
-  user: const User(
-    id: '00000000-0000-0000-0000-000000000001',
-    appMetadata: {},
-    userMetadata: {},
-    aud: 'authenticated',
-    email: 'tester@fw.local',
-    createdAt: '2026-01-01T00:00:00Z',
-  ),
-);
 
 const _update = UpdateInfo(
   latestVersion: '9.9.9',

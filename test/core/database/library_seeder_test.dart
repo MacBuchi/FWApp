@@ -306,4 +306,30 @@ void main() {
       expect((await faecherVon(echtes))['Dach']?.seite, isNull);
     });
   });
+
+  test('⚠️ der Seed gilt NICHT als eigene Erfassung', () async {
+    // Seit #67 überlebt unveröffentlichte Arbeit den Zug. Stünden Katalog
+    // und Demo-HLF so da, überlebten sie den ersten Zug nach dem Beitritt in
+    // eine Abteilung — und landeten beim nächsten Veröffentlichen im Bestand
+    // der Wehr: hundertzehn Geräte und ein Fahrzeug, die dort niemand
+    // eingetragen hat.
+    await seeder.seedIfNeeded();
+
+    const grund = 'Der Grundstock gehört der App, nicht der Abteilung.';
+    final geraete = await db.equipmentDao.getAll();
+    expect(geraete, isNotEmpty);
+    expect(geraete.where((e) => e.dirty), isEmpty, reason: grund);
+
+    final fahrzeuge = await db.vehicleDao.getAll();
+    expect(fahrzeuge, isNotEmpty);
+    expect(fahrzeuge.where((v) => v.dirty), isEmpty, reason: grund);
+
+    final faecher = await db.compartmentDao.getByVehicle(fahrzeuge.first.id);
+    expect(faecher, isNotEmpty);
+    expect(faecher.where((f) => f.dirty), isEmpty, reason: grund);
+
+    final zuordnungen = await db.assignmentDao.getByVehicle(fahrzeuge.first.id);
+    expect(zuordnungen, isNotEmpty);
+    expect(zuordnungen.where((z) => z.dirty), isEmpty, reason: grund);
+  });
 }

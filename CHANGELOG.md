@@ -12,6 +12,32 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.58.0] – 2026-09-22
+
+### Geändert
+
+- **Zusammen erfassen, ohne sich gegenseitig zu löschen.** Wenn zwei
+  Gerätewarte am selben Fahrzeug arbeiten — einer am Geräteraum G1, der
+  andere am Heck — hat der Zweite seine Arbeit bisher verloren: Wer als
+  Zweiter veröffentlichen wollte, bekam einen Versionskonflikt, und wer
+  vorher zog, dessen eigene Einträge waren weg. Ein Ausweg aus dieser
+  Sackgasse fehlte (Issue #67).
+
+  Jetzt merkt sich die App pro Zeile, was hier entstanden und noch nicht
+  veröffentlicht ist. Ein Zug bringt den Stand der Wehr, **ohne** diese
+  Zeilen anzufassen — danach steht beides nebeneinander da und kann
+  gemeinsam veröffentlicht werden. Vergeben zwei Geräte zufällig dieselbe
+  laufende Nummer, bekommt die eigene, noch nicht veröffentlichte Zeile eine
+  freie — mitsamt allem, was daran hängt (Prüftermine, Geräte-Codes).
+
+  Was jemand anders gelöscht hat, verschwindet weiterhin; die Rückfrage vor
+  dem Zug (seit 1.55.0) fragt jetzt nur noch dann, wenn wirklich etwas
+  wegfällt, statt bei jedem Zug.
+
+  ⚠️ Der mitgelieferte Grundstock — Standard-Katalog und Demo-HLF — gilt
+  ausdrücklich **nicht** als eigene Erfassung und wird vom ersten Zug nach
+  dem Beitritt ersetzt wie bisher. Er gehört der App, nicht der Abteilung.
+
 ## [1.57.0] – 2026-09-22
 
 ### Geändert

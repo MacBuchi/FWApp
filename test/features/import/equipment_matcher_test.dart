@@ -21,6 +21,7 @@ EquipmentItemData _item(int id, String name,
       libraryEquipmentId: libraryId,
       updatedAt: DateTime(2026),
       typeDirty: false,
+      dirty: false,
     );
 
 void main() {

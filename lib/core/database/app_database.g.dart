@@ -274,6 +274,19 @@ class $VehiclesTable extends Vehicles
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $VehiclesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _dirtyMeta = const VerificationMeta('dirty');
+  @override
+  late final GeneratedColumn<bool> dirty = GeneratedColumn<bool>(
+    'dirty',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("dirty" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
@@ -353,6 +366,7 @@ class $VehiclesTable extends Vehicles
   );
   @override
   List<GeneratedColumn> get $columns => [
+    dirty,
     id,
     name,
     type,
@@ -373,6 +387,12 @@ class $VehiclesTable extends Vehicles
   }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('dirty')) {
+      context.handle(
+        _dirtyMeta,
+        dirty.isAcceptableOrUnknown(data['dirty']!, _dirtyMeta),
+      );
+    }
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
@@ -428,6 +448,11 @@ class $VehiclesTable extends Vehicles
   VehicleData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return VehicleData(
+      dirty:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}dirty'],
+          )!,
       id:
           attachedDatabase.typeMapping.read(
             DriftSqlType.int,
@@ -471,6 +496,7 @@ class $VehiclesTable extends Vehicles
 }
 
 class VehicleData extends DataClass implements Insertable<VehicleData> {
+  final bool dirty;
   final int id;
   final String name;
   final String type;
@@ -479,6 +505,7 @@ class VehicleData extends DataClass implements Insertable<VehicleData> {
   final DateTime createdAt;
   final DateTime updatedAt;
   const VehicleData({
+    required this.dirty,
     required this.id,
     required this.name,
     required this.type,
@@ -490,6 +517,7 @@ class VehicleData extends DataClass implements Insertable<VehicleData> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    map['dirty'] = Variable<bool>(dirty);
     map['id'] = Variable<int>(id);
     map['name'] = Variable<String>(name);
     map['type'] = Variable<String>(type);
@@ -506,6 +534,7 @@ class VehicleData extends DataClass implements Insertable<VehicleData> {
 
   VehiclesCompanion toCompanion(bool nullToAbsent) {
     return VehiclesCompanion(
+      dirty: Value(dirty),
       id: Value(id),
       name: Value(name),
       type: Value(type),
@@ -528,6 +557,7 @@ class VehicleData extends DataClass implements Insertable<VehicleData> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return VehicleData(
+      dirty: serializer.fromJson<bool>(json['dirty']),
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       type: serializer.fromJson<String>(json['type']),
@@ -541,6 +571,7 @@ class VehicleData extends DataClass implements Insertable<VehicleData> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'dirty': serializer.toJson<bool>(dirty),
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
       'type': serializer.toJson<String>(type),
@@ -552,6 +583,7 @@ class VehicleData extends DataClass implements Insertable<VehicleData> {
   }
 
   VehicleData copyWith({
+    bool? dirty,
     int? id,
     String? name,
     String? type,
@@ -560,6 +592,7 @@ class VehicleData extends DataClass implements Insertable<VehicleData> {
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => VehicleData(
+    dirty: dirty ?? this.dirty,
     id: id ?? this.id,
     name: name ?? this.name,
     type: type ?? this.type,
@@ -570,6 +603,7 @@ class VehicleData extends DataClass implements Insertable<VehicleData> {
   );
   VehicleData copyWithCompanion(VehiclesCompanion data) {
     return VehicleData(
+      dirty: data.dirty.present ? data.dirty.value : this.dirty,
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
       type: data.type.present ? data.type.value : this.type,
@@ -586,6 +620,7 @@ class VehicleData extends DataClass implements Insertable<VehicleData> {
   @override
   String toString() {
     return (StringBuffer('VehicleData(')
+          ..write('dirty: $dirty, ')
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('type: $type, ')
@@ -599,6 +634,7 @@ class VehicleData extends DataClass implements Insertable<VehicleData> {
 
   @override
   int get hashCode => Object.hash(
+    dirty,
     id,
     name,
     type,
@@ -611,6 +647,7 @@ class VehicleData extends DataClass implements Insertable<VehicleData> {
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is VehicleData &&
+          other.dirty == this.dirty &&
           other.id == this.id &&
           other.name == this.name &&
           other.type == this.type &&
@@ -621,6 +658,7 @@ class VehicleData extends DataClass implements Insertable<VehicleData> {
 }
 
 class VehiclesCompanion extends UpdateCompanion<VehicleData> {
+  final Value<bool> dirty;
   final Value<int> id;
   final Value<String> name;
   final Value<String> type;
@@ -629,6 +667,7 @@ class VehiclesCompanion extends UpdateCompanion<VehicleData> {
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   const VehiclesCompanion({
+    this.dirty = const Value.absent(),
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.type = const Value.absent(),
@@ -638,6 +677,7 @@ class VehiclesCompanion extends UpdateCompanion<VehicleData> {
     this.updatedAt = const Value.absent(),
   });
   VehiclesCompanion.insert({
+    this.dirty = const Value.absent(),
     this.id = const Value.absent(),
     required String name,
     required String type,
@@ -648,6 +688,7 @@ class VehiclesCompanion extends UpdateCompanion<VehicleData> {
   }) : name = Value(name),
        type = Value(type);
   static Insertable<VehicleData> custom({
+    Expression<bool>? dirty,
     Expression<int>? id,
     Expression<String>? name,
     Expression<String>? type,
@@ -657,6 +698,7 @@ class VehiclesCompanion extends UpdateCompanion<VehicleData> {
     Expression<DateTime>? updatedAt,
   }) {
     return RawValuesInsertable({
+      if (dirty != null) 'dirty': dirty,
       if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (type != null) 'type': type,
@@ -668,6 +710,7 @@ class VehiclesCompanion extends UpdateCompanion<VehicleData> {
   }
 
   VehiclesCompanion copyWith({
+    Value<bool>? dirty,
     Value<int>? id,
     Value<String>? name,
     Value<String>? type,
@@ -677,6 +720,7 @@ class VehiclesCompanion extends UpdateCompanion<VehicleData> {
     Value<DateTime>? updatedAt,
   }) {
     return VehiclesCompanion(
+      dirty: dirty ?? this.dirty,
       id: id ?? this.id,
       name: name ?? this.name,
       type: type ?? this.type,
@@ -690,6 +734,9 @@ class VehiclesCompanion extends UpdateCompanion<VehicleData> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (dirty.present) {
+      map['dirty'] = Variable<bool>(dirty.value);
+    }
     if (id.present) {
       map['id'] = Variable<int>(id.value);
     }
@@ -717,6 +764,7 @@ class VehiclesCompanion extends UpdateCompanion<VehicleData> {
   @override
   String toString() {
     return (StringBuffer('VehiclesCompanion(')
+          ..write('dirty: $dirty, ')
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('type: $type, ')
@@ -735,6 +783,19 @@ class $CompartmentsTable extends Compartments
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $CompartmentsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _dirtyMeta = const VerificationMeta('dirty');
+  @override
+  late final GeneratedColumn<bool> dirty = GeneratedColumn<bool>(
+    'dirty',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("dirty" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
@@ -862,6 +923,7 @@ class $CompartmentsTable extends Compartments
   );
   @override
   List<GeneratedColumn> get $columns => [
+    dirty,
     id,
     vehicleId,
     label,
@@ -886,6 +948,12 @@ class $CompartmentsTable extends Compartments
   }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('dirty')) {
+      context.handle(
+        _dirtyMeta,
+        dirty.isAcceptableOrUnknown(data['dirty']!, _dirtyMeta),
+      );
+    }
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
@@ -968,6 +1036,11 @@ class $CompartmentsTable extends Compartments
   CompartmentData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return CompartmentData(
+      dirty:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}dirty'],
+          )!,
       id:
           attachedDatabase.typeMapping.read(
             DriftSqlType.int,
@@ -1028,6 +1101,7 @@ class $CompartmentsTable extends Compartments
 }
 
 class CompartmentData extends DataClass implements Insertable<CompartmentData> {
+  final bool dirty;
   final int id;
   final int vehicleId;
   final String label;
@@ -1055,6 +1129,7 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
   final String? imagePath;
   final DateTime updatedAt;
   const CompartmentData({
+    required this.dirty,
     required this.id,
     required this.vehicleId,
     required this.label,
@@ -1070,6 +1145,7 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    map['dirty'] = Variable<bool>(dirty);
     map['id'] = Variable<int>(id);
     map['vehicle_id'] = Variable<int>(vehicleId);
     map['label'] = Variable<String>(label);
@@ -1096,6 +1172,7 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
 
   CompartmentsCompanion toCompanion(bool nullToAbsent) {
     return CompartmentsCompanion(
+      dirty: Value(dirty),
       id: Value(id),
       vehicleId: Value(vehicleId),
       label: Value(label),
@@ -1129,6 +1206,7 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return CompartmentData(
+      dirty: serializer.fromJson<bool>(json['dirty']),
       id: serializer.fromJson<int>(json['id']),
       vehicleId: serializer.fromJson<int>(json['vehicleId']),
       label: serializer.fromJson<String>(json['label']),
@@ -1146,6 +1224,7 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'dirty': serializer.toJson<bool>(dirty),
       'id': serializer.toJson<int>(id),
       'vehicleId': serializer.toJson<int>(vehicleId),
       'label': serializer.toJson<String>(label),
@@ -1161,6 +1240,7 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
   }
 
   CompartmentData copyWith({
+    bool? dirty,
     int? id,
     int? vehicleId,
     String? label,
@@ -1173,6 +1253,7 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
     Value<String?> imagePath = const Value.absent(),
     DateTime? updatedAt,
   }) => CompartmentData(
+    dirty: dirty ?? this.dirty,
     id: id ?? this.id,
     vehicleId: vehicleId ?? this.vehicleId,
     label: label ?? this.label,
@@ -1188,6 +1269,7 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
   );
   CompartmentData copyWithCompanion(CompartmentsCompanion data) {
     return CompartmentData(
+      dirty: data.dirty.present ? data.dirty.value : this.dirty,
       id: data.id.present ? data.id.value : this.id,
       vehicleId: data.vehicleId.present ? data.vehicleId.value : this.vehicleId,
       label: data.label.present ? data.label.value : this.label,
@@ -1209,6 +1291,7 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
   @override
   String toString() {
     return (StringBuffer('CompartmentData(')
+          ..write('dirty: $dirty, ')
           ..write('id: $id, ')
           ..write('vehicleId: $vehicleId, ')
           ..write('label: $label, ')
@@ -1226,6 +1309,7 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
 
   @override
   int get hashCode => Object.hash(
+    dirty,
     id,
     vehicleId,
     label,
@@ -1242,6 +1326,7 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is CompartmentData &&
+          other.dirty == this.dirty &&
           other.id == this.id &&
           other.vehicleId == this.vehicleId &&
           other.label == this.label &&
@@ -1256,6 +1341,7 @@ class CompartmentData extends DataClass implements Insertable<CompartmentData> {
 }
 
 class CompartmentsCompanion extends UpdateCompanion<CompartmentData> {
+  final Value<bool> dirty;
   final Value<int> id;
   final Value<int> vehicleId;
   final Value<String> label;
@@ -1268,6 +1354,7 @@ class CompartmentsCompanion extends UpdateCompanion<CompartmentData> {
   final Value<String?> imagePath;
   final Value<DateTime> updatedAt;
   const CompartmentsCompanion({
+    this.dirty = const Value.absent(),
     this.id = const Value.absent(),
     this.vehicleId = const Value.absent(),
     this.label = const Value.absent(),
@@ -1281,6 +1368,7 @@ class CompartmentsCompanion extends UpdateCompanion<CompartmentData> {
     this.updatedAt = const Value.absent(),
   });
   CompartmentsCompanion.insert({
+    this.dirty = const Value.absent(),
     this.id = const Value.absent(),
     required int vehicleId,
     required String label,
@@ -1295,6 +1383,7 @@ class CompartmentsCompanion extends UpdateCompanion<CompartmentData> {
   }) : vehicleId = Value(vehicleId),
        label = Value(label);
   static Insertable<CompartmentData> custom({
+    Expression<bool>? dirty,
     Expression<int>? id,
     Expression<int>? vehicleId,
     Expression<String>? label,
@@ -1308,6 +1397,7 @@ class CompartmentsCompanion extends UpdateCompanion<CompartmentData> {
     Expression<DateTime>? updatedAt,
   }) {
     return RawValuesInsertable({
+      if (dirty != null) 'dirty': dirty,
       if (id != null) 'id': id,
       if (vehicleId != null) 'vehicle_id': vehicleId,
       if (label != null) 'label': label,
@@ -1323,6 +1413,7 @@ class CompartmentsCompanion extends UpdateCompanion<CompartmentData> {
   }
 
   CompartmentsCompanion copyWith({
+    Value<bool>? dirty,
     Value<int>? id,
     Value<int>? vehicleId,
     Value<String>? label,
@@ -1336,6 +1427,7 @@ class CompartmentsCompanion extends UpdateCompanion<CompartmentData> {
     Value<DateTime>? updatedAt,
   }) {
     return CompartmentsCompanion(
+      dirty: dirty ?? this.dirty,
       id: id ?? this.id,
       vehicleId: vehicleId ?? this.vehicleId,
       label: label ?? this.label,
@@ -1353,6 +1445,9 @@ class CompartmentsCompanion extends UpdateCompanion<CompartmentData> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (dirty.present) {
+      map['dirty'] = Variable<bool>(dirty.value);
+    }
     if (id.present) {
       map['id'] = Variable<int>(id.value);
     }
@@ -1392,6 +1487,7 @@ class CompartmentsCompanion extends UpdateCompanion<CompartmentData> {
   @override
   String toString() {
     return (StringBuffer('CompartmentsCompanion(')
+          ..write('dirty: $dirty, ')
           ..write('id: $id, ')
           ..write('vehicleId: $vehicleId, ')
           ..write('label: $label, ')
@@ -1414,6 +1510,19 @@ class $EquipmentItemsTable extends EquipmentItems
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $EquipmentItemsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _dirtyMeta = const VerificationMeta('dirty');
+  @override
+  late final GeneratedColumn<bool> dirty = GeneratedColumn<bool>(
+    'dirty',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("dirty" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
@@ -1618,6 +1727,7 @@ class $EquipmentItemsTable extends EquipmentItems
   );
   @override
   List<GeneratedColumn> get $columns => [
+    dirty,
     id,
     name,
     shortName,
@@ -1648,6 +1758,12 @@ class $EquipmentItemsTable extends EquipmentItems
   }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('dirty')) {
+      context.handle(
+        _dirtyMeta,
+        dirty.isAcceptableOrUnknown(data['dirty']!, _dirtyMeta),
+      );
+    }
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
@@ -1788,6 +1904,11 @@ class $EquipmentItemsTable extends EquipmentItems
   EquipmentItemData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return EquipmentItemData(
+      dirty:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}dirty'],
+          )!,
       id:
           attachedDatabase.typeMapping.read(
             DriftSqlType.int,
@@ -1878,6 +1999,7 @@ class $EquipmentItemsTable extends EquipmentItems
 
 class EquipmentItemData extends DataClass
     implements Insertable<EquipmentItemData> {
+  final bool dirty;
   final int id;
   final String name;
   final String? shortName;
@@ -1916,6 +2038,7 @@ class EquipmentItemData extends DataClass
   /// Der Snapshot wird als Ganzes veröffentlicht, ein Typ Zeile für Zeile.
   final bool typeDirty;
   const EquipmentItemData({
+    required this.dirty,
     required this.id,
     required this.name,
     this.shortName,
@@ -1937,6 +2060,7 @@ class EquipmentItemData extends DataClass
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    map['dirty'] = Variable<bool>(dirty);
     map['id'] = Variable<int>(id);
     map['name'] = Variable<String>(name);
     if (!nullToAbsent || shortName != null) {
@@ -1973,6 +2097,7 @@ class EquipmentItemData extends DataClass
 
   EquipmentItemsCompanion toCompanion(bool nullToAbsent) {
     return EquipmentItemsCompanion(
+      dirty: Value(dirty),
       id: Value(id),
       name: Value(name),
       shortName:
@@ -2017,6 +2142,7 @@ class EquipmentItemData extends DataClass
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return EquipmentItemData(
+      dirty: serializer.fromJson<bool>(json['dirty']),
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       shortName: serializer.fromJson<String?>(json['shortName']),
@@ -2052,6 +2178,7 @@ class EquipmentItemData extends DataClass
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'dirty': serializer.toJson<bool>(dirty),
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
       'shortName': serializer.toJson<String?>(shortName),
@@ -2077,6 +2204,7 @@ class EquipmentItemData extends DataClass
   }
 
   EquipmentItemData copyWith({
+    bool? dirty,
     int? id,
     String? name,
     Value<String?> shortName = const Value.absent(),
@@ -2095,6 +2223,7 @@ class EquipmentItemData extends DataClass
     Value<String?> remoteTypeUpdatedAt = const Value.absent(),
     bool? typeDirty,
   }) => EquipmentItemData(
+    dirty: dirty ?? this.dirty,
     id: id ?? this.id,
     name: name ?? this.name,
     shortName: shortName.present ? shortName.value : this.shortName,
@@ -2123,6 +2252,7 @@ class EquipmentItemData extends DataClass
   );
   EquipmentItemData copyWithCompanion(EquipmentItemsCompanion data) {
     return EquipmentItemData(
+      dirty: data.dirty.present ? data.dirty.value : this.dirty,
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
       shortName: data.shortName.present ? data.shortName.value : this.shortName,
@@ -2172,6 +2302,7 @@ class EquipmentItemData extends DataClass
   @override
   String toString() {
     return (StringBuffer('EquipmentItemData(')
+          ..write('dirty: $dirty, ')
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('shortName: $shortName, ')
@@ -2195,6 +2326,7 @@ class EquipmentItemData extends DataClass
 
   @override
   int get hashCode => Object.hash(
+    dirty,
     id,
     name,
     shortName,
@@ -2217,6 +2349,7 @@ class EquipmentItemData extends DataClass
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is EquipmentItemData &&
+          other.dirty == this.dirty &&
           other.id == this.id &&
           other.name == this.name &&
           other.shortName == this.shortName &&
@@ -2237,6 +2370,7 @@ class EquipmentItemData extends DataClass
 }
 
 class EquipmentItemsCompanion extends UpdateCompanion<EquipmentItemData> {
+  final Value<bool> dirty;
   final Value<int> id;
   final Value<String> name;
   final Value<String?> shortName;
@@ -2255,6 +2389,7 @@ class EquipmentItemsCompanion extends UpdateCompanion<EquipmentItemData> {
   final Value<String?> remoteTypeUpdatedAt;
   final Value<bool> typeDirty;
   const EquipmentItemsCompanion({
+    this.dirty = const Value.absent(),
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.shortName = const Value.absent(),
@@ -2274,6 +2409,7 @@ class EquipmentItemsCompanion extends UpdateCompanion<EquipmentItemData> {
     this.typeDirty = const Value.absent(),
   });
   EquipmentItemsCompanion.insert({
+    this.dirty = const Value.absent(),
     this.id = const Value.absent(),
     required String name,
     this.shortName = const Value.absent(),
@@ -2293,6 +2429,7 @@ class EquipmentItemsCompanion extends UpdateCompanion<EquipmentItemData> {
     this.typeDirty = const Value.absent(),
   }) : name = Value(name);
   static Insertable<EquipmentItemData> custom({
+    Expression<bool>? dirty,
     Expression<int>? id,
     Expression<String>? name,
     Expression<String>? shortName,
@@ -2312,6 +2449,7 @@ class EquipmentItemsCompanion extends UpdateCompanion<EquipmentItemData> {
     Expression<bool>? typeDirty,
   }) {
     return RawValuesInsertable({
+      if (dirty != null) 'dirty': dirty,
       if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (shortName != null) 'short_name': shortName,
@@ -2339,6 +2477,7 @@ class EquipmentItemsCompanion extends UpdateCompanion<EquipmentItemData> {
   }
 
   EquipmentItemsCompanion copyWith({
+    Value<bool>? dirty,
     Value<int>? id,
     Value<String>? name,
     Value<String?>? shortName,
@@ -2358,6 +2497,7 @@ class EquipmentItemsCompanion extends UpdateCompanion<EquipmentItemData> {
     Value<bool>? typeDirty,
   }) {
     return EquipmentItemsCompanion(
+      dirty: dirty ?? this.dirty,
       id: id ?? this.id,
       name: name ?? this.name,
       shortName: shortName ?? this.shortName,
@@ -2384,6 +2524,9 @@ class EquipmentItemsCompanion extends UpdateCompanion<EquipmentItemData> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (dirty.present) {
+      map['dirty'] = Variable<bool>(dirty.value);
+    }
     if (id.present) {
       map['id'] = Variable<int>(id.value);
     }
@@ -2451,6 +2594,7 @@ class EquipmentItemsCompanion extends UpdateCompanion<EquipmentItemData> {
   @override
   String toString() {
     return (StringBuffer('EquipmentItemsCompanion(')
+          ..write('dirty: $dirty, ')
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('shortName: $shortName, ')
@@ -2479,6 +2623,19 @@ class $EquipmentAssignmentsTable extends EquipmentAssignments
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $EquipmentAssignmentsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _dirtyMeta = const VerificationMeta('dirty');
+  @override
+  late final GeneratedColumn<bool> dirty = GeneratedColumn<bool>(
+    'dirty',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("dirty" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
@@ -2546,6 +2703,7 @@ class $EquipmentAssignmentsTable extends EquipmentAssignments
   );
   @override
   List<GeneratedColumn> get $columns => [
+    dirty,
     id,
     compartmentId,
     equipmentId,
@@ -2564,6 +2722,12 @@ class $EquipmentAssignmentsTable extends EquipmentAssignments
   }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('dirty')) {
+      context.handle(
+        _dirtyMeta,
+        dirty.isAcceptableOrUnknown(data['dirty']!, _dirtyMeta),
+      );
+    }
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
@@ -2610,6 +2774,11 @@ class $EquipmentAssignmentsTable extends EquipmentAssignments
   AssignmentData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return AssignmentData(
+      dirty:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}dirty'],
+          )!,
       id:
           attachedDatabase.typeMapping.read(
             DriftSqlType.int,
@@ -2645,12 +2814,14 @@ class $EquipmentAssignmentsTable extends EquipmentAssignments
 }
 
 class AssignmentData extends DataClass implements Insertable<AssignmentData> {
+  final bool dirty;
   final int id;
   final int compartmentId;
   final int equipmentId;
   final int quantity;
   final DateTime updatedAt;
   const AssignmentData({
+    required this.dirty,
     required this.id,
     required this.compartmentId,
     required this.equipmentId,
@@ -2660,6 +2831,7 @@ class AssignmentData extends DataClass implements Insertable<AssignmentData> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    map['dirty'] = Variable<bool>(dirty);
     map['id'] = Variable<int>(id);
     map['compartment_id'] = Variable<int>(compartmentId);
     map['equipment_id'] = Variable<int>(equipmentId);
@@ -2670,6 +2842,7 @@ class AssignmentData extends DataClass implements Insertable<AssignmentData> {
 
   EquipmentAssignmentsCompanion toCompanion(bool nullToAbsent) {
     return EquipmentAssignmentsCompanion(
+      dirty: Value(dirty),
       id: Value(id),
       compartmentId: Value(compartmentId),
       equipmentId: Value(equipmentId),
@@ -2684,6 +2857,7 @@ class AssignmentData extends DataClass implements Insertable<AssignmentData> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return AssignmentData(
+      dirty: serializer.fromJson<bool>(json['dirty']),
       id: serializer.fromJson<int>(json['id']),
       compartmentId: serializer.fromJson<int>(json['compartmentId']),
       equipmentId: serializer.fromJson<int>(json['equipmentId']),
@@ -2695,6 +2869,7 @@ class AssignmentData extends DataClass implements Insertable<AssignmentData> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'dirty': serializer.toJson<bool>(dirty),
       'id': serializer.toJson<int>(id),
       'compartmentId': serializer.toJson<int>(compartmentId),
       'equipmentId': serializer.toJson<int>(equipmentId),
@@ -2704,12 +2879,14 @@ class AssignmentData extends DataClass implements Insertable<AssignmentData> {
   }
 
   AssignmentData copyWith({
+    bool? dirty,
     int? id,
     int? compartmentId,
     int? equipmentId,
     int? quantity,
     DateTime? updatedAt,
   }) => AssignmentData(
+    dirty: dirty ?? this.dirty,
     id: id ?? this.id,
     compartmentId: compartmentId ?? this.compartmentId,
     equipmentId: equipmentId ?? this.equipmentId,
@@ -2718,6 +2895,7 @@ class AssignmentData extends DataClass implements Insertable<AssignmentData> {
   );
   AssignmentData copyWithCompanion(EquipmentAssignmentsCompanion data) {
     return AssignmentData(
+      dirty: data.dirty.present ? data.dirty.value : this.dirty,
       id: data.id.present ? data.id.value : this.id,
       compartmentId:
           data.compartmentId.present
@@ -2733,6 +2911,7 @@ class AssignmentData extends DataClass implements Insertable<AssignmentData> {
   @override
   String toString() {
     return (StringBuffer('AssignmentData(')
+          ..write('dirty: $dirty, ')
           ..write('id: $id, ')
           ..write('compartmentId: $compartmentId, ')
           ..write('equipmentId: $equipmentId, ')
@@ -2744,11 +2923,12 @@ class AssignmentData extends DataClass implements Insertable<AssignmentData> {
 
   @override
   int get hashCode =>
-      Object.hash(id, compartmentId, equipmentId, quantity, updatedAt);
+      Object.hash(dirty, id, compartmentId, equipmentId, quantity, updatedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is AssignmentData &&
+          other.dirty == this.dirty &&
           other.id == this.id &&
           other.compartmentId == this.compartmentId &&
           other.equipmentId == this.equipmentId &&
@@ -2757,12 +2937,14 @@ class AssignmentData extends DataClass implements Insertable<AssignmentData> {
 }
 
 class EquipmentAssignmentsCompanion extends UpdateCompanion<AssignmentData> {
+  final Value<bool> dirty;
   final Value<int> id;
   final Value<int> compartmentId;
   final Value<int> equipmentId;
   final Value<int> quantity;
   final Value<DateTime> updatedAt;
   const EquipmentAssignmentsCompanion({
+    this.dirty = const Value.absent(),
     this.id = const Value.absent(),
     this.compartmentId = const Value.absent(),
     this.equipmentId = const Value.absent(),
@@ -2770,6 +2952,7 @@ class EquipmentAssignmentsCompanion extends UpdateCompanion<AssignmentData> {
     this.updatedAt = const Value.absent(),
   });
   EquipmentAssignmentsCompanion.insert({
+    this.dirty = const Value.absent(),
     this.id = const Value.absent(),
     required int compartmentId,
     required int equipmentId,
@@ -2778,6 +2961,7 @@ class EquipmentAssignmentsCompanion extends UpdateCompanion<AssignmentData> {
   }) : compartmentId = Value(compartmentId),
        equipmentId = Value(equipmentId);
   static Insertable<AssignmentData> custom({
+    Expression<bool>? dirty,
     Expression<int>? id,
     Expression<int>? compartmentId,
     Expression<int>? equipmentId,
@@ -2785,6 +2969,7 @@ class EquipmentAssignmentsCompanion extends UpdateCompanion<AssignmentData> {
     Expression<DateTime>? updatedAt,
   }) {
     return RawValuesInsertable({
+      if (dirty != null) 'dirty': dirty,
       if (id != null) 'id': id,
       if (compartmentId != null) 'compartment_id': compartmentId,
       if (equipmentId != null) 'equipment_id': equipmentId,
@@ -2794,6 +2979,7 @@ class EquipmentAssignmentsCompanion extends UpdateCompanion<AssignmentData> {
   }
 
   EquipmentAssignmentsCompanion copyWith({
+    Value<bool>? dirty,
     Value<int>? id,
     Value<int>? compartmentId,
     Value<int>? equipmentId,
@@ -2801,6 +2987,7 @@ class EquipmentAssignmentsCompanion extends UpdateCompanion<AssignmentData> {
     Value<DateTime>? updatedAt,
   }) {
     return EquipmentAssignmentsCompanion(
+      dirty: dirty ?? this.dirty,
       id: id ?? this.id,
       compartmentId: compartmentId ?? this.compartmentId,
       equipmentId: equipmentId ?? this.equipmentId,
@@ -2812,6 +2999,9 @@ class EquipmentAssignmentsCompanion extends UpdateCompanion<AssignmentData> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (dirty.present) {
+      map['dirty'] = Variable<bool>(dirty.value);
+    }
     if (id.present) {
       map['id'] = Variable<int>(id.value);
     }
@@ -2833,6 +3023,7 @@ class EquipmentAssignmentsCompanion extends UpdateCompanion<AssignmentData> {
   @override
   String toString() {
     return (StringBuffer('EquipmentAssignmentsCompanion(')
+          ..write('dirty: $dirty, ')
           ..write('id: $id, ')
           ..write('compartmentId: $compartmentId, ')
           ..write('equipmentId: $equipmentId, ')
@@ -3253,6 +3444,19 @@ class $EquipmentInstancesTable extends EquipmentInstances
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $EquipmentInstancesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _dirtyMeta = const VerificationMeta('dirty');
+  @override
+  late final GeneratedColumn<bool> dirty = GeneratedColumn<bool>(
+    'dirty',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("dirty" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
@@ -3358,6 +3562,7 @@ class $EquipmentInstancesTable extends EquipmentInstances
   );
   @override
   List<GeneratedColumn> get $columns => [
+    dirty,
     id,
     equipmentId,
     vehicleId,
@@ -3379,6 +3584,12 @@ class $EquipmentInstancesTable extends EquipmentInstances
   }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('dirty')) {
+      context.handle(
+        _dirtyMeta,
+        dirty.isAcceptableOrUnknown(data['dirty']!, _dirtyMeta),
+      );
+    }
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
@@ -3441,6 +3652,11 @@ class $EquipmentInstancesTable extends EquipmentInstances
   EquipmentInstanceData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return EquipmentInstanceData(
+      dirty:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}dirty'],
+          )!,
       id:
           attachedDatabase.typeMapping.read(
             DriftSqlType.int,
@@ -3489,6 +3705,7 @@ class $EquipmentInstancesTable extends EquipmentInstances
 
 class EquipmentInstanceData extends DataClass
     implements Insertable<EquipmentInstanceData> {
+  final bool dirty;
   final int id;
   final int equipmentId;
   final int? vehicleId;
@@ -3498,6 +3715,7 @@ class EquipmentInstanceData extends DataClass
   final bool isActive;
   final DateTime updatedAt;
   const EquipmentInstanceData({
+    required this.dirty,
     required this.id,
     required this.equipmentId,
     this.vehicleId,
@@ -3510,6 +3728,7 @@ class EquipmentInstanceData extends DataClass
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    map['dirty'] = Variable<bool>(dirty);
     map['id'] = Variable<int>(id);
     map['equipment_id'] = Variable<int>(equipmentId);
     if (!nullToAbsent || vehicleId != null) {
@@ -3529,6 +3748,7 @@ class EquipmentInstanceData extends DataClass
 
   EquipmentInstancesCompanion toCompanion(bool nullToAbsent) {
     return EquipmentInstancesCompanion(
+      dirty: Value(dirty),
       id: Value(id),
       equipmentId: Value(equipmentId),
       vehicleId:
@@ -3555,6 +3775,7 @@ class EquipmentInstanceData extends DataClass
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return EquipmentInstanceData(
+      dirty: serializer.fromJson<bool>(json['dirty']),
       id: serializer.fromJson<int>(json['id']),
       equipmentId: serializer.fromJson<int>(json['equipmentId']),
       vehicleId: serializer.fromJson<int?>(json['vehicleId']),
@@ -3569,6 +3790,7 @@ class EquipmentInstanceData extends DataClass
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'dirty': serializer.toJson<bool>(dirty),
       'id': serializer.toJson<int>(id),
       'equipmentId': serializer.toJson<int>(equipmentId),
       'vehicleId': serializer.toJson<int?>(vehicleId),
@@ -3581,6 +3803,7 @@ class EquipmentInstanceData extends DataClass
   }
 
   EquipmentInstanceData copyWith({
+    bool? dirty,
     int? id,
     int? equipmentId,
     Value<int?> vehicleId = const Value.absent(),
@@ -3590,6 +3813,7 @@ class EquipmentInstanceData extends DataClass
     bool? isActive,
     DateTime? updatedAt,
   }) => EquipmentInstanceData(
+    dirty: dirty ?? this.dirty,
     id: id ?? this.id,
     equipmentId: equipmentId ?? this.equipmentId,
     vehicleId: vehicleId.present ? vehicleId.value : this.vehicleId,
@@ -3602,6 +3826,7 @@ class EquipmentInstanceData extends DataClass
   );
   EquipmentInstanceData copyWithCompanion(EquipmentInstancesCompanion data) {
     return EquipmentInstanceData(
+      dirty: data.dirty.present ? data.dirty.value : this.dirty,
       id: data.id.present ? data.id.value : this.id,
       equipmentId:
           data.equipmentId.present ? data.equipmentId.value : this.equipmentId,
@@ -3621,6 +3846,7 @@ class EquipmentInstanceData extends DataClass
   @override
   String toString() {
     return (StringBuffer('EquipmentInstanceData(')
+          ..write('dirty: $dirty, ')
           ..write('id: $id, ')
           ..write('equipmentId: $equipmentId, ')
           ..write('vehicleId: $vehicleId, ')
@@ -3635,6 +3861,7 @@ class EquipmentInstanceData extends DataClass
 
   @override
   int get hashCode => Object.hash(
+    dirty,
     id,
     equipmentId,
     vehicleId,
@@ -3648,6 +3875,7 @@ class EquipmentInstanceData extends DataClass
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is EquipmentInstanceData &&
+          other.dirty == this.dirty &&
           other.id == this.id &&
           other.equipmentId == this.equipmentId &&
           other.vehicleId == this.vehicleId &&
@@ -3660,6 +3888,7 @@ class EquipmentInstanceData extends DataClass
 
 class EquipmentInstancesCompanion
     extends UpdateCompanion<EquipmentInstanceData> {
+  final Value<bool> dirty;
   final Value<int> id;
   final Value<int> equipmentId;
   final Value<int?> vehicleId;
@@ -3669,6 +3898,7 @@ class EquipmentInstancesCompanion
   final Value<bool> isActive;
   final Value<DateTime> updatedAt;
   const EquipmentInstancesCompanion({
+    this.dirty = const Value.absent(),
     this.id = const Value.absent(),
     this.equipmentId = const Value.absent(),
     this.vehicleId = const Value.absent(),
@@ -3679,6 +3909,7 @@ class EquipmentInstancesCompanion
     this.updatedAt = const Value.absent(),
   });
   EquipmentInstancesCompanion.insert({
+    this.dirty = const Value.absent(),
     this.id = const Value.absent(),
     required int equipmentId,
     this.vehicleId = const Value.absent(),
@@ -3689,6 +3920,7 @@ class EquipmentInstancesCompanion
     this.updatedAt = const Value.absent(),
   }) : equipmentId = Value(equipmentId);
   static Insertable<EquipmentInstanceData> custom({
+    Expression<bool>? dirty,
     Expression<int>? id,
     Expression<int>? equipmentId,
     Expression<int>? vehicleId,
@@ -3699,6 +3931,7 @@ class EquipmentInstancesCompanion
     Expression<DateTime>? updatedAt,
   }) {
     return RawValuesInsertable({
+      if (dirty != null) 'dirty': dirty,
       if (id != null) 'id': id,
       if (equipmentId != null) 'equipment_id': equipmentId,
       if (vehicleId != null) 'vehicle_id': vehicleId,
@@ -3711,6 +3944,7 @@ class EquipmentInstancesCompanion
   }
 
   EquipmentInstancesCompanion copyWith({
+    Value<bool>? dirty,
     Value<int>? id,
     Value<int>? equipmentId,
     Value<int?>? vehicleId,
@@ -3721,6 +3955,7 @@ class EquipmentInstancesCompanion
     Value<DateTime>? updatedAt,
   }) {
     return EquipmentInstancesCompanion(
+      dirty: dirty ?? this.dirty,
       id: id ?? this.id,
       equipmentId: equipmentId ?? this.equipmentId,
       vehicleId: vehicleId ?? this.vehicleId,
@@ -3735,6 +3970,9 @@ class EquipmentInstancesCompanion
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (dirty.present) {
+      map['dirty'] = Variable<bool>(dirty.value);
+    }
     if (id.present) {
       map['id'] = Variable<int>(id.value);
     }
@@ -3765,6 +4003,7 @@ class EquipmentInstancesCompanion
   @override
   String toString() {
     return (StringBuffer('EquipmentInstancesCompanion(')
+          ..write('dirty: $dirty, ')
           ..write('id: $id, ')
           ..write('equipmentId: $equipmentId, ')
           ..write('vehicleId: $vehicleId, ')
@@ -3784,6 +4023,19 @@ class $InspectionSchedulesTable extends InspectionSchedules
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $InspectionSchedulesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _dirtyMeta = const VerificationMeta('dirty');
+  @override
+  late final GeneratedColumn<bool> dirty = GeneratedColumn<bool>(
+    'dirty',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("dirty" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
@@ -3884,6 +4136,7 @@ class $InspectionSchedulesTable extends InspectionSchedules
   );
   @override
   List<GeneratedColumn> get $columns => [
+    dirty,
     id,
     instanceId,
     kind,
@@ -3906,6 +4159,12 @@ class $InspectionSchedulesTable extends InspectionSchedules
   }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('dirty')) {
+      context.handle(
+        _dirtyMeta,
+        dirty.isAcceptableOrUnknown(data['dirty']!, _dirtyMeta),
+      );
+    }
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
@@ -3980,6 +4239,11 @@ class $InspectionSchedulesTable extends InspectionSchedules
   InspectionScheduleData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return InspectionScheduleData(
+      dirty:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}dirty'],
+          )!,
       id:
           attachedDatabase.typeMapping.read(
             DriftSqlType.int,
@@ -4034,6 +4298,7 @@ class $InspectionSchedulesTable extends InspectionSchedules
 
 class InspectionScheduleData extends DataClass
     implements Insertable<InspectionScheduleData> {
+  final bool dirty;
   final int id;
   final int instanceId;
   final String kind;
@@ -4044,6 +4309,7 @@ class InspectionScheduleData extends DataClass
   final String notes;
   final DateTime updatedAt;
   const InspectionScheduleData({
+    required this.dirty,
     required this.id,
     required this.instanceId,
     required this.kind,
@@ -4057,6 +4323,7 @@ class InspectionScheduleData extends DataClass
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    map['dirty'] = Variable<bool>(dirty);
     map['id'] = Variable<int>(id);
     map['instance_id'] = Variable<int>(instanceId);
     map['kind'] = Variable<String>(kind);
@@ -4075,6 +4342,7 @@ class InspectionScheduleData extends DataClass
 
   InspectionSchedulesCompanion toCompanion(bool nullToAbsent) {
     return InspectionSchedulesCompanion(
+      dirty: Value(dirty),
       id: Value(id),
       instanceId: Value(instanceId),
       kind: Value(kind),
@@ -4099,6 +4367,7 @@ class InspectionScheduleData extends DataClass
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return InspectionScheduleData(
+      dirty: serializer.fromJson<bool>(json['dirty']),
       id: serializer.fromJson<int>(json['id']),
       instanceId: serializer.fromJson<int>(json['instanceId']),
       kind: serializer.fromJson<String>(json['kind']),
@@ -4114,6 +4383,7 @@ class InspectionScheduleData extends DataClass
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'dirty': serializer.toJson<bool>(dirty),
       'id': serializer.toJson<int>(id),
       'instanceId': serializer.toJson<int>(instanceId),
       'kind': serializer.toJson<String>(kind),
@@ -4127,6 +4397,7 @@ class InspectionScheduleData extends DataClass
   }
 
   InspectionScheduleData copyWith({
+    bool? dirty,
     int? id,
     int? instanceId,
     String? kind,
@@ -4137,6 +4408,7 @@ class InspectionScheduleData extends DataClass
     String? notes,
     DateTime? updatedAt,
   }) => InspectionScheduleData(
+    dirty: dirty ?? this.dirty,
     id: id ?? this.id,
     instanceId: instanceId ?? this.instanceId,
     kind: kind ?? this.kind,
@@ -4150,6 +4422,7 @@ class InspectionScheduleData extends DataClass
   );
   InspectionScheduleData copyWithCompanion(InspectionSchedulesCompanion data) {
     return InspectionScheduleData(
+      dirty: data.dirty.present ? data.dirty.value : this.dirty,
       id: data.id.present ? data.id.value : this.id,
       instanceId:
           data.instanceId.present ? data.instanceId.value : this.instanceId,
@@ -4170,6 +4443,7 @@ class InspectionScheduleData extends DataClass
   @override
   String toString() {
     return (StringBuffer('InspectionScheduleData(')
+          ..write('dirty: $dirty, ')
           ..write('id: $id, ')
           ..write('instanceId: $instanceId, ')
           ..write('kind: $kind, ')
@@ -4185,6 +4459,7 @@ class InspectionScheduleData extends DataClass
 
   @override
   int get hashCode => Object.hash(
+    dirty,
     id,
     instanceId,
     kind,
@@ -4199,6 +4474,7 @@ class InspectionScheduleData extends DataClass
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is InspectionScheduleData &&
+          other.dirty == this.dirty &&
           other.id == this.id &&
           other.instanceId == this.instanceId &&
           other.kind == this.kind &&
@@ -4212,6 +4488,7 @@ class InspectionScheduleData extends DataClass
 
 class InspectionSchedulesCompanion
     extends UpdateCompanion<InspectionScheduleData> {
+  final Value<bool> dirty;
   final Value<int> id;
   final Value<int> instanceId;
   final Value<String> kind;
@@ -4222,6 +4499,7 @@ class InspectionSchedulesCompanion
   final Value<String> notes;
   final Value<DateTime> updatedAt;
   const InspectionSchedulesCompanion({
+    this.dirty = const Value.absent(),
     this.id = const Value.absent(),
     this.instanceId = const Value.absent(),
     this.kind = const Value.absent(),
@@ -4233,6 +4511,7 @@ class InspectionSchedulesCompanion
     this.updatedAt = const Value.absent(),
   });
   InspectionSchedulesCompanion.insert({
+    this.dirty = const Value.absent(),
     this.id = const Value.absent(),
     required int instanceId,
     required String kind,
@@ -4247,6 +4526,7 @@ class InspectionSchedulesCompanion
        title = Value(title),
        dueAt = Value(dueAt);
   static Insertable<InspectionScheduleData> custom({
+    Expression<bool>? dirty,
     Expression<int>? id,
     Expression<int>? instanceId,
     Expression<String>? kind,
@@ -4258,6 +4538,7 @@ class InspectionSchedulesCompanion
     Expression<DateTime>? updatedAt,
   }) {
     return RawValuesInsertable({
+      if (dirty != null) 'dirty': dirty,
       if (id != null) 'id': id,
       if (instanceId != null) 'instance_id': instanceId,
       if (kind != null) 'kind': kind,
@@ -4271,6 +4552,7 @@ class InspectionSchedulesCompanion
   }
 
   InspectionSchedulesCompanion copyWith({
+    Value<bool>? dirty,
     Value<int>? id,
     Value<int>? instanceId,
     Value<String>? kind,
@@ -4282,6 +4564,7 @@ class InspectionSchedulesCompanion
     Value<DateTime>? updatedAt,
   }) {
     return InspectionSchedulesCompanion(
+      dirty: dirty ?? this.dirty,
       id: id ?? this.id,
       instanceId: instanceId ?? this.instanceId,
       kind: kind ?? this.kind,
@@ -4297,6 +4580,9 @@ class InspectionSchedulesCompanion
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (dirty.present) {
+      map['dirty'] = Variable<bool>(dirty.value);
+    }
     if (id.present) {
       map['id'] = Variable<int>(id.value);
     }
@@ -4330,6 +4616,7 @@ class InspectionSchedulesCompanion
   @override
   String toString() {
     return (StringBuffer('InspectionSchedulesCompanion(')
+          ..write('dirty: $dirty, ')
           ..write('id: $id, ')
           ..write('instanceId: $instanceId, ')
           ..write('kind: $kind, ')
@@ -4350,6 +4637,19 @@ class $InspectionLogTable extends InspectionLog
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $InspectionLogTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _dirtyMeta = const VerificationMeta('dirty');
+  @override
+  late final GeneratedColumn<bool> dirty = GeneratedColumn<bool>(
+    'dirty',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("dirty" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
@@ -4407,7 +4707,14 @@ class $InspectionLogTable extends InspectionLog
     defaultValue: const Constant(''),
   );
   @override
-  List<GeneratedColumn> get $columns => [id, scheduleId, doneAt, doneBy, note];
+  List<GeneratedColumn> get $columns => [
+    dirty,
+    id,
+    scheduleId,
+    doneAt,
+    doneBy,
+    note,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -4420,6 +4727,12 @@ class $InspectionLogTable extends InspectionLog
   }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('dirty')) {
+      context.handle(
+        _dirtyMeta,
+        dirty.isAcceptableOrUnknown(data['dirty']!, _dirtyMeta),
+      );
+    }
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
@@ -4460,6 +4773,11 @@ class $InspectionLogTable extends InspectionLog
   InspectionLogData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return InspectionLogData(
+      dirty:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}dirty'],
+          )!,
       id:
           attachedDatabase.typeMapping.read(
             DriftSqlType.int,
@@ -4496,12 +4814,14 @@ class $InspectionLogTable extends InspectionLog
 
 class InspectionLogData extends DataClass
     implements Insertable<InspectionLogData> {
+  final bool dirty;
   final int id;
   final int scheduleId;
   final DateTime doneAt;
   final String doneBy;
   final String note;
   const InspectionLogData({
+    required this.dirty,
     required this.id,
     required this.scheduleId,
     required this.doneAt,
@@ -4511,6 +4831,7 @@ class InspectionLogData extends DataClass
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    map['dirty'] = Variable<bool>(dirty);
     map['id'] = Variable<int>(id);
     map['schedule_id'] = Variable<int>(scheduleId);
     map['done_at'] = Variable<DateTime>(doneAt);
@@ -4521,6 +4842,7 @@ class InspectionLogData extends DataClass
 
   InspectionLogCompanion toCompanion(bool nullToAbsent) {
     return InspectionLogCompanion(
+      dirty: Value(dirty),
       id: Value(id),
       scheduleId: Value(scheduleId),
       doneAt: Value(doneAt),
@@ -4535,6 +4857,7 @@ class InspectionLogData extends DataClass
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return InspectionLogData(
+      dirty: serializer.fromJson<bool>(json['dirty']),
       id: serializer.fromJson<int>(json['id']),
       scheduleId: serializer.fromJson<int>(json['scheduleId']),
       doneAt: serializer.fromJson<DateTime>(json['doneAt']),
@@ -4546,6 +4869,7 @@ class InspectionLogData extends DataClass
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'dirty': serializer.toJson<bool>(dirty),
       'id': serializer.toJson<int>(id),
       'scheduleId': serializer.toJson<int>(scheduleId),
       'doneAt': serializer.toJson<DateTime>(doneAt),
@@ -4555,12 +4879,14 @@ class InspectionLogData extends DataClass
   }
 
   InspectionLogData copyWith({
+    bool? dirty,
     int? id,
     int? scheduleId,
     DateTime? doneAt,
     String? doneBy,
     String? note,
   }) => InspectionLogData(
+    dirty: dirty ?? this.dirty,
     id: id ?? this.id,
     scheduleId: scheduleId ?? this.scheduleId,
     doneAt: doneAt ?? this.doneAt,
@@ -4569,6 +4895,7 @@ class InspectionLogData extends DataClass
   );
   InspectionLogData copyWithCompanion(InspectionLogCompanion data) {
     return InspectionLogData(
+      dirty: data.dirty.present ? data.dirty.value : this.dirty,
       id: data.id.present ? data.id.value : this.id,
       scheduleId:
           data.scheduleId.present ? data.scheduleId.value : this.scheduleId,
@@ -4581,6 +4908,7 @@ class InspectionLogData extends DataClass
   @override
   String toString() {
     return (StringBuffer('InspectionLogData(')
+          ..write('dirty: $dirty, ')
           ..write('id: $id, ')
           ..write('scheduleId: $scheduleId, ')
           ..write('doneAt: $doneAt, ')
@@ -4591,11 +4919,12 @@ class InspectionLogData extends DataClass
   }
 
   @override
-  int get hashCode => Object.hash(id, scheduleId, doneAt, doneBy, note);
+  int get hashCode => Object.hash(dirty, id, scheduleId, doneAt, doneBy, note);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is InspectionLogData &&
+          other.dirty == this.dirty &&
           other.id == this.id &&
           other.scheduleId == this.scheduleId &&
           other.doneAt == this.doneAt &&
@@ -4604,12 +4933,14 @@ class InspectionLogData extends DataClass
 }
 
 class InspectionLogCompanion extends UpdateCompanion<InspectionLogData> {
+  final Value<bool> dirty;
   final Value<int> id;
   final Value<int> scheduleId;
   final Value<DateTime> doneAt;
   final Value<String> doneBy;
   final Value<String> note;
   const InspectionLogCompanion({
+    this.dirty = const Value.absent(),
     this.id = const Value.absent(),
     this.scheduleId = const Value.absent(),
     this.doneAt = const Value.absent(),
@@ -4617,6 +4948,7 @@ class InspectionLogCompanion extends UpdateCompanion<InspectionLogData> {
     this.note = const Value.absent(),
   });
   InspectionLogCompanion.insert({
+    this.dirty = const Value.absent(),
     this.id = const Value.absent(),
     required int scheduleId,
     required DateTime doneAt,
@@ -4625,6 +4957,7 @@ class InspectionLogCompanion extends UpdateCompanion<InspectionLogData> {
   }) : scheduleId = Value(scheduleId),
        doneAt = Value(doneAt);
   static Insertable<InspectionLogData> custom({
+    Expression<bool>? dirty,
     Expression<int>? id,
     Expression<int>? scheduleId,
     Expression<DateTime>? doneAt,
@@ -4632,6 +4965,7 @@ class InspectionLogCompanion extends UpdateCompanion<InspectionLogData> {
     Expression<String>? note,
   }) {
     return RawValuesInsertable({
+      if (dirty != null) 'dirty': dirty,
       if (id != null) 'id': id,
       if (scheduleId != null) 'schedule_id': scheduleId,
       if (doneAt != null) 'done_at': doneAt,
@@ -4641,6 +4975,7 @@ class InspectionLogCompanion extends UpdateCompanion<InspectionLogData> {
   }
 
   InspectionLogCompanion copyWith({
+    Value<bool>? dirty,
     Value<int>? id,
     Value<int>? scheduleId,
     Value<DateTime>? doneAt,
@@ -4648,6 +4983,7 @@ class InspectionLogCompanion extends UpdateCompanion<InspectionLogData> {
     Value<String>? note,
   }) {
     return InspectionLogCompanion(
+      dirty: dirty ?? this.dirty,
       id: id ?? this.id,
       scheduleId: scheduleId ?? this.scheduleId,
       doneAt: doneAt ?? this.doneAt,
@@ -4659,6 +4995,9 @@ class InspectionLogCompanion extends UpdateCompanion<InspectionLogData> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (dirty.present) {
+      map['dirty'] = Variable<bool>(dirty.value);
+    }
     if (id.present) {
       map['id'] = Variable<int>(id.value);
     }
@@ -4680,6 +5019,7 @@ class InspectionLogCompanion extends UpdateCompanion<InspectionLogData> {
   @override
   String toString() {
     return (StringBuffer('InspectionLogCompanion(')
+          ..write('dirty: $dirty, ')
           ..write('id: $id, ')
           ..write('scheduleId: $scheduleId, ')
           ..write('doneAt: $doneAt, ')
@@ -10205,6 +10545,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
 
 typedef $$VehiclesTableCreateCompanionBuilder =
     VehiclesCompanion Function({
+      Value<bool> dirty,
       Value<int> id,
       required String name,
       required String type,
@@ -10215,6 +10556,7 @@ typedef $$VehiclesTableCreateCompanionBuilder =
     });
 typedef $$VehiclesTableUpdateCompanionBuilder =
     VehiclesCompanion Function({
+      Value<bool> dirty,
       Value<int> id,
       Value<String> name,
       Value<String> type,
@@ -10346,6 +10688,11 @@ class $$VehiclesTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnFilters<bool> get dirty => $composableBuilder(
+    column: $table.dirty,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnFilters(column),
@@ -10516,6 +10863,11 @@ class $$VehiclesTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnOrderings<bool> get dirty => $composableBuilder(
+    column: $table.dirty,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
@@ -10561,6 +10913,9 @@ class $$VehiclesTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  GeneratedColumn<bool> get dirty =>
+      $composableBuilder(column: $table.dirty, builder: (column) => column);
+
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
@@ -10747,6 +11102,7 @@ class $$VehiclesTableTableManager
               () => $$VehiclesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
+                Value<bool> dirty = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<String> type = const Value.absent(),
@@ -10755,6 +11111,7 @@ class $$VehiclesTableTableManager
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => VehiclesCompanion(
+                dirty: dirty,
                 id: id,
                 name: name,
                 type: type,
@@ -10765,6 +11122,7 @@ class $$VehiclesTableTableManager
               ),
           createCompanionCallback:
               ({
+                Value<bool> dirty = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 required String name,
                 required String type,
@@ -10773,6 +11131,7 @@ class $$VehiclesTableTableManager
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => VehiclesCompanion.insert(
+                dirty: dirty,
                 id: id,
                 name: name,
                 type: type,
@@ -10950,6 +11309,7 @@ typedef $$VehiclesTableProcessedTableManager =
     >;
 typedef $$CompartmentsTableCreateCompanionBuilder =
     CompartmentsCompanion Function({
+      Value<bool> dirty,
       Value<int> id,
       required int vehicleId,
       required String label,
@@ -10964,6 +11324,7 @@ typedef $$CompartmentsTableCreateCompanionBuilder =
     });
 typedef $$CompartmentsTableUpdateCompanionBuilder =
     CompartmentsCompanion Function({
+      Value<bool> dirty,
       Value<int> id,
       Value<int> vehicleId,
       Value<String> label,
@@ -11054,6 +11415,11 @@ class $$CompartmentsTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnFilters<bool> get dirty => $composableBuilder(
+    column: $table.dirty,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnFilters(column),
@@ -11187,6 +11553,11 @@ class $$CompartmentsTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnOrderings<bool> get dirty => $composableBuilder(
+    column: $table.dirty,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
@@ -11270,6 +11641,9 @@ class $$CompartmentsTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  GeneratedColumn<bool> get dirty =>
+      $composableBuilder(column: $table.dirty, builder: (column) => column);
+
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
@@ -11413,6 +11787,7 @@ class $$CompartmentsTableTableManager
                   $$CompartmentsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
+                Value<bool> dirty = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 Value<int> vehicleId = const Value.absent(),
                 Value<String> label = const Value.absent(),
@@ -11425,6 +11800,7 @@ class $$CompartmentsTableTableManager
                 Value<String?> imagePath = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => CompartmentsCompanion(
+                dirty: dirty,
                 id: id,
                 vehicleId: vehicleId,
                 label: label,
@@ -11439,6 +11815,7 @@ class $$CompartmentsTableTableManager
               ),
           createCompanionCallback:
               ({
+                Value<bool> dirty = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 required int vehicleId,
                 required String label,
@@ -11451,6 +11828,7 @@ class $$CompartmentsTableTableManager
                 Value<String?> imagePath = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => CompartmentsCompanion.insert(
+                dirty: dirty,
                 id: id,
                 vehicleId: vehicleId,
                 label: label,
@@ -11592,6 +11970,7 @@ typedef $$CompartmentsTableProcessedTableManager =
     >;
 typedef $$EquipmentItemsTableCreateCompanionBuilder =
     EquipmentItemsCompanion Function({
+      Value<bool> dirty,
       Value<int> id,
       required String name,
       Value<String?> shortName,
@@ -11612,6 +11991,7 @@ typedef $$EquipmentItemsTableCreateCompanionBuilder =
     });
 typedef $$EquipmentItemsTableUpdateCompanionBuilder =
     EquipmentItemsCompanion Function({
+      Value<bool> dirty,
       Value<int> id,
       Value<String> name,
       Value<String?> shortName,
@@ -11734,6 +12114,11 @@ class $$EquipmentItemsTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnFilters<bool> get dirty => $composableBuilder(
+    column: $table.dirty,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnFilters(column),
@@ -11929,6 +12314,11 @@ class $$EquipmentItemsTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnOrderings<bool> get dirty => $composableBuilder(
+    column: $table.dirty,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
@@ -12024,6 +12414,9 @@ class $$EquipmentItemsTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  GeneratedColumn<bool> get dirty =>
+      $composableBuilder(column: $table.dirty, builder: (column) => column);
+
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
@@ -12237,6 +12630,7 @@ class $$EquipmentItemsTableTableManager
               ),
           updateCompanionCallback:
               ({
+                Value<bool> dirty = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<String?> shortName = const Value.absent(),
@@ -12255,6 +12649,7 @@ class $$EquipmentItemsTableTableManager
                 Value<String?> remoteTypeUpdatedAt = const Value.absent(),
                 Value<bool> typeDirty = const Value.absent(),
               }) => EquipmentItemsCompanion(
+                dirty: dirty,
                 id: id,
                 name: name,
                 shortName: shortName,
@@ -12275,6 +12670,7 @@ class $$EquipmentItemsTableTableManager
               ),
           createCompanionCallback:
               ({
+                Value<bool> dirty = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 required String name,
                 Value<String?> shortName = const Value.absent(),
@@ -12293,6 +12689,7 @@ class $$EquipmentItemsTableTableManager
                 Value<String?> remoteTypeUpdatedAt = const Value.absent(),
                 Value<bool> typeDirty = const Value.absent(),
               }) => EquipmentItemsCompanion.insert(
+                dirty: dirty,
                 id: id,
                 name: name,
                 shortName: shortName,
@@ -12457,6 +12854,7 @@ typedef $$EquipmentItemsTableProcessedTableManager =
     >;
 typedef $$EquipmentAssignmentsTableCreateCompanionBuilder =
     EquipmentAssignmentsCompanion Function({
+      Value<bool> dirty,
       Value<int> id,
       required int compartmentId,
       required int equipmentId,
@@ -12465,6 +12863,7 @@ typedef $$EquipmentAssignmentsTableCreateCompanionBuilder =
     });
 typedef $$EquipmentAssignmentsTableUpdateCompanionBuilder =
     EquipmentAssignmentsCompanion Function({
+      Value<bool> dirty,
       Value<int> id,
       Value<int> compartmentId,
       Value<int> equipmentId,
@@ -12531,6 +12930,11 @@ class $$EquipmentAssignmentsTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnFilters<bool> get dirty => $composableBuilder(
+    column: $table.dirty,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnFilters(column),
@@ -12602,6 +13006,11 @@ class $$EquipmentAssignmentsTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnOrderings<bool> get dirty => $composableBuilder(
+    column: $table.dirty,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
@@ -12673,6 +13082,9 @@ class $$EquipmentAssignmentsTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  GeneratedColumn<bool> get dirty =>
+      $composableBuilder(column: $table.dirty, builder: (column) => column);
+
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
@@ -12768,12 +13180,14 @@ class $$EquipmentAssignmentsTableTableManager
               ),
           updateCompanionCallback:
               ({
+                Value<bool> dirty = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 Value<int> compartmentId = const Value.absent(),
                 Value<int> equipmentId = const Value.absent(),
                 Value<int> quantity = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => EquipmentAssignmentsCompanion(
+                dirty: dirty,
                 id: id,
                 compartmentId: compartmentId,
                 equipmentId: equipmentId,
@@ -12782,12 +13196,14 @@ class $$EquipmentAssignmentsTableTableManager
               ),
           createCompanionCallback:
               ({
+                Value<bool> dirty = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 required int compartmentId,
                 required int equipmentId,
                 Value<int> quantity = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => EquipmentAssignmentsCompanion.insert(
+                dirty: dirty,
                 id: id,
                 compartmentId: compartmentId,
                 equipmentId: equipmentId,
@@ -13220,6 +13636,7 @@ typedef $$QuizResultsTableProcessedTableManager =
     >;
 typedef $$EquipmentInstancesTableCreateCompanionBuilder =
     EquipmentInstancesCompanion Function({
+      Value<bool> dirty,
       Value<int> id,
       required int equipmentId,
       Value<int?> vehicleId,
@@ -13231,6 +13648,7 @@ typedef $$EquipmentInstancesTableCreateCompanionBuilder =
     });
 typedef $$EquipmentInstancesTableUpdateCompanionBuilder =
     EquipmentInstancesCompanion Function({
+      Value<bool> dirty,
       Value<int> id,
       Value<int> equipmentId,
       Value<int?> vehicleId,
@@ -13359,6 +13777,11 @@ class $$EquipmentInstancesTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnFilters<bool> get dirty => $composableBuilder(
+    column: $table.dirty,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnFilters(column),
@@ -13513,6 +13936,11 @@ class $$EquipmentInstancesTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnOrderings<bool> get dirty => $composableBuilder(
+    column: $table.dirty,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
@@ -13617,6 +14045,9 @@ class $$EquipmentInstancesTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  GeneratedColumn<bool> get dirty =>
+      $composableBuilder(column: $table.dirty, builder: (column) => column);
+
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
@@ -13800,6 +14231,7 @@ class $$EquipmentInstancesTableTableManager
               ),
           updateCompanionCallback:
               ({
+                Value<bool> dirty = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 Value<int> equipmentId = const Value.absent(),
                 Value<int?> vehicleId = const Value.absent(),
@@ -13809,6 +14241,7 @@ class $$EquipmentInstancesTableTableManager
                 Value<bool> isActive = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => EquipmentInstancesCompanion(
+                dirty: dirty,
                 id: id,
                 equipmentId: equipmentId,
                 vehicleId: vehicleId,
@@ -13820,6 +14253,7 @@ class $$EquipmentInstancesTableTableManager
               ),
           createCompanionCallback:
               ({
+                Value<bool> dirty = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 required int equipmentId,
                 Value<int?> vehicleId = const Value.absent(),
@@ -13829,6 +14263,7 @@ class $$EquipmentInstancesTableTableManager
                 Value<bool> isActive = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => EquipmentInstancesCompanion.insert(
+                dirty: dirty,
                 id: id,
                 equipmentId: equipmentId,
                 vehicleId: vehicleId,
@@ -14000,6 +14435,7 @@ typedef $$EquipmentInstancesTableProcessedTableManager =
     >;
 typedef $$InspectionSchedulesTableCreateCompanionBuilder =
     InspectionSchedulesCompanion Function({
+      Value<bool> dirty,
       Value<int> id,
       required int instanceId,
       required String kind,
@@ -14012,6 +14448,7 @@ typedef $$InspectionSchedulesTableCreateCompanionBuilder =
     });
 typedef $$InspectionSchedulesTableUpdateCompanionBuilder =
     InspectionSchedulesCompanion Function({
+      Value<bool> dirty,
       Value<int> id,
       Value<int> instanceId,
       Value<String> kind,
@@ -14083,6 +14520,11 @@ class $$InspectionSchedulesTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnFilters<bool> get dirty => $composableBuilder(
+    column: $table.dirty,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnFilters(column),
@@ -14181,6 +14623,11 @@ class $$InspectionSchedulesTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnOrderings<bool> get dirty => $composableBuilder(
+    column: $table.dirty,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
@@ -14254,6 +14701,9 @@ class $$InspectionSchedulesTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  GeneratedColumn<bool> get dirty =>
+      $composableBuilder(column: $table.dirty, builder: (column) => column);
+
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
@@ -14371,6 +14821,7 @@ class $$InspectionSchedulesTableTableManager
               ),
           updateCompanionCallback:
               ({
+                Value<bool> dirty = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 Value<int> instanceId = const Value.absent(),
                 Value<String> kind = const Value.absent(),
@@ -14381,6 +14832,7 @@ class $$InspectionSchedulesTableTableManager
                 Value<String> notes = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => InspectionSchedulesCompanion(
+                dirty: dirty,
                 id: id,
                 instanceId: instanceId,
                 kind: kind,
@@ -14393,6 +14845,7 @@ class $$InspectionSchedulesTableTableManager
               ),
           createCompanionCallback:
               ({
+                Value<bool> dirty = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 required int instanceId,
                 required String kind,
@@ -14403,6 +14856,7 @@ class $$InspectionSchedulesTableTableManager
                 Value<String> notes = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => InspectionSchedulesCompanion.insert(
+                dirty: dirty,
                 id: id,
                 instanceId: instanceId,
                 kind: kind,
@@ -14516,6 +14970,7 @@ typedef $$InspectionSchedulesTableProcessedTableManager =
     >;
 typedef $$InspectionLogTableCreateCompanionBuilder =
     InspectionLogCompanion Function({
+      Value<bool> dirty,
       Value<int> id,
       required int scheduleId,
       required DateTime doneAt,
@@ -14524,6 +14979,7 @@ typedef $$InspectionLogTableCreateCompanionBuilder =
     });
 typedef $$InspectionLogTableUpdateCompanionBuilder =
     InspectionLogCompanion Function({
+      Value<bool> dirty,
       Value<int> id,
       Value<int> scheduleId,
       Value<DateTime> doneAt,
@@ -14568,6 +15024,11 @@ class $$InspectionLogTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnFilters<bool> get dirty => $composableBuilder(
+    column: $table.dirty,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnFilters(column),
@@ -14621,6 +15082,11 @@ class $$InspectionLogTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnOrderings<bool> get dirty => $composableBuilder(
+    column: $table.dirty,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
@@ -14675,6 +15141,9 @@ class $$InspectionLogTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  GeneratedColumn<bool> get dirty =>
+      $composableBuilder(column: $table.dirty, builder: (column) => column);
+
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
@@ -14744,12 +15213,14 @@ class $$InspectionLogTableTableManager
               ),
           updateCompanionCallback:
               ({
+                Value<bool> dirty = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 Value<int> scheduleId = const Value.absent(),
                 Value<DateTime> doneAt = const Value.absent(),
                 Value<String> doneBy = const Value.absent(),
                 Value<String> note = const Value.absent(),
               }) => InspectionLogCompanion(
+                dirty: dirty,
                 id: id,
                 scheduleId: scheduleId,
                 doneAt: doneAt,
@@ -14758,12 +15229,14 @@ class $$InspectionLogTableTableManager
               ),
           createCompanionCallback:
               ({
+                Value<bool> dirty = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 required int scheduleId,
                 required DateTime doneAt,
                 Value<String> doneBy = const Value.absent(),
                 Value<String> note = const Value.absent(),
               }) => InspectionLogCompanion.insert(
+                dirty: dirty,
                 id: id,
                 scheduleId: scheduleId,
                 doneAt: doneAt,

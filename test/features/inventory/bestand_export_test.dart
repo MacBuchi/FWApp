@@ -22,6 +22,7 @@ void main() {
         licensePlate: kennzeichen,
         createdAt: jetzt,
         updatedAt: jetzt,
+        dirty: false,
       );
 
   CompartmentData fach(int id, int fahrzeugId, String label,
@@ -33,6 +34,7 @@ void main() {
         position: position,
         gridColSpan: 1,
         updatedAt: jetzt,
+        dirty: false,
       );
 
   AssignmentData zuordnung(int id, int fachId, int geraetId, int anzahl) =>
@@ -42,6 +44,7 @@ void main() {
         equipmentId: geraetId,
         quantity: anzahl,
         updatedAt: jetzt,
+        dirty: false,
       );
 
   EquipmentItemData geraet(int id, String name, {String? kurz}) =>
@@ -58,6 +61,7 @@ void main() {
         trainingQuestionsJson: '[]',
         typicalUseJson: '[]',
         updatedAt: jetzt,
+        dirty: false,
       );
 
   EquipmentInstanceData einheit(int id, int geraetId,
@@ -70,6 +74,7 @@ void main() {
         notes: notiz,
         isActive: true,
         updatedAt: jetzt,
+        dirty: false,
       );
 
   EquipmentTagData code(int id, int einheitId, String wert) => EquipmentTagData(
@@ -92,6 +97,7 @@ void main() {
         dueAt: faellig,
         notes: '',
         updatedAt: jetzt,
+        dirty: false,
       );
 
   String csv({

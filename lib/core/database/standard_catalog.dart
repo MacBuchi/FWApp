@@ -152,7 +152,11 @@ class StandardCatalog {
   /// Jeder Eintrag startet mit seinem Piktogramm aus der Bildbibliothek
   /// (erkennbar am Asset-Pfad, siehe isPictogramPath); echte Fotos ersetzen
   /// es später über den Kamera-Workflow.
-  Future<int?> createEquipment(AppDatabase db, String libraryId) async {
+  /// [dirty] sagt, wem die Zeile gehört: Wer ein Fahrzeug aus einer Vorlage
+  /// baut, erfasst etwas Eigenes und will es veröffentlichen. Der Seed legt
+  /// dagegen nur die Lieferung der App aus und ruft mit `dirty: false`.
+  Future<int?> createEquipment(AppDatabase db, String libraryId,
+      {bool dirty = true}) async {
     final item = _byId[libraryId];
     if (item == null) return null;
     return db.equipmentDao.insertEquipment(EquipmentItemsCompanion.insert(
@@ -168,6 +172,7 @@ class StandardCatalog {
           ((item['typical_use'] as List?)?.cast<String>()) ?? [])),
       trainingQuestionsJson: Value(jsonEncode(
           ((item['training_questions'] as List?)?.cast<String>()) ?? [])),
+      dirty: Value(dirty),
     ));
   }
 }

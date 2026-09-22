@@ -4,8 +4,10 @@
 /// publish_snapshot RPC (optimistic version check, no conflict resolution).
 library;
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:fwapp/core/app_version.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/logging/app_logger.dart';
@@ -204,7 +206,9 @@ class SyncService {
 
     // ⚠️ Vor dem Anwenden fragen, wenn etwas verloren ginge. Bis v1.54.0
     // verschwand eine angelegte, aber nie veröffentlichte Geräte-Einheit
-    // hier stillschweigend (#214).
+    // hier stillschweigend (#214). Seit #67 bleibt Unveröffentlichtes
+    // ohnehin stehen — gefragt wird nur noch, wenn wirklich etwas wegfällt,
+    // also wenn jemand anders gelöscht hat.
     if (bestaetigen != null) {
       final verlust = await berechneVerlust(db, data);
       if (!verlust.istNichts && !await bestaetigen(verlust)) {
@@ -212,6 +216,11 @@ class SyncService {
         return null;
       }
     }
+
+    // ⚠️ MUSS vor der Transaktion laufen: Die Umnummerierung schaltet die
+    // Fremdschlüssel kurz ab, und `PRAGMA foreign_keys` wirkt in SQLite
+    // innerhalb einer Transaktion nicht.
+    await _weicheKollisionenAus(data);
 
     _suppressDirty = true;
     try {
@@ -227,44 +236,168 @@ class SyncService {
     return remoteVersion;
   }
 
+  /// Wendet einen Snapshot an, ohne ihn zu holen.
+  ///
+  /// Nur für Tests: Das Zusammenführen zu zweit (#67) hängt an dieser
+  /// Rechnung, nicht am Netz — und ohne diesen Einstieg wäre es nur gegen
+  /// einen laufenden Server prüfbar.
+  @visibleForTesting
+  Future<void> wendeSnapshotAn(
+      Map<String, List<Map<String, dynamic>>> data) async {
+    await _weicheKollisionenAus(data);
+    await db.transaction(() => _applySnapshot(data));
+  }
+
+  /// Verweise auf eine synchronisierte Tabelle — für die Umnummerierung.
+  ///
+  /// ⚠️ Vollständig, auch die rein lokalen Tabellen: Wer eine Geräte-Einheit
+  /// umnummeriert und ihre Codes vergisst, zerreißt genau das, was der
+  /// Gerätewart aufgeklebt hat. Ein neuer Fremdschlüssel gehört hierher —
+  /// der Compiler merkt das Fehlen nicht.
+  static const _verweiseAuf = <String, List<(String, String)>>{
+    'vehicles': [
+      ('compartments', 'vehicle_id'),
+      ('vehicle_attachments', 'vehicle_id'),
+      ('equipment_instances', 'vehicle_id'),
+      ('inventory_sessions', 'vehicle_id'),
+      ('quiz_results', 'vehicle_id'),
+    ],
+    'equipment_items': [
+      ('equipment_assignments', 'equipment_id'),
+      ('equipment_instances', 'equipment_id'),
+      ('user_aliases', 'equipment_id'),
+      ('learning_progress', 'equipment_id'),
+    ],
+    'compartments': [
+      ('equipment_assignments', 'compartment_id'),
+      ('equipment_instances', 'compartment_id'),
+    ],
+    'equipment_instances': [
+      ('equipment_tags', 'instance_id'),
+      ('inspection_schedules', 'instance_id'),
+    ],
+    'inspection_schedules': [('inspection_log', 'schedule_id')],
+    'equipment_assignments': [],
+    'inspection_log': [],
+  };
+
+  /// Weicht lokalen Zeilen aus, deren ID der Snapshot schon vergeben hat
+  /// (Issue #67).
+  ///
+  /// **Warum das nötig ist — und zwar im Normalfall.** Zwei Geräte starten
+  /// vom selben gezogenen Stand, sagen wir mit Fahrzeug-ID 7. Legt jeder
+  /// eines an, vergibt die lokale Datenbank bei beiden die 8. Ohne
+  /// Ausweichen ersetzte der Zug das Fahrzeug des einen durch das des
+  /// anderen — zwei verschiedene Dinge würden stillschweigend zu einem.
+  ///
+  /// Umnummeriert wird nur, was **dirty** ist: Eine Zeile, die schon oben
+  /// war, MUSS ihre ID behalten — sie ist dort der Schlüssel.
+  ///
+  /// ⚠️ **Die Fremdschlüssel werden kurz abgeschaltet.** Eine ID zu ändern
+  /// bricht sonst jeden Verweis im selben Augenblick; die Alternative wäre
+  /// Kopieren, Umbiegen, Löschen — dreimal so viel Code für dasselbe
+  /// Ergebnis. Die Änderungen laufen dabei in einer Transaktion, also ganz
+  /// oder gar nicht.
+  Future<void> _weicheKollisionenAus(
+      Map<String, List<Map<String, dynamic>>> data) async {
+    final umzug = <String, List<(int, int)>>{};
+
+    // Erst rechnen, dann anfassen: Ohne Kollision wird die PRAGMA gar nicht
+    // erst angerührt.
+    for (final tabelle in kSyncedTables) {
+      final eingehend = (data[tabelle] ?? const [])
+          .map((r) => (r['id'] as num).toInt())
+          .toList();
+      if (eingehend.isEmpty) continue;
+      final liste = eingehend.join(',');
+      final kollidierend = await db
+          .customSelect('SELECT id FROM $tabelle '
+              'WHERE dirty = 1 AND id IN ($liste) ORDER BY id')
+          .map((r) => r.read<int>('id'))
+          .get();
+      if (kollidierend.isEmpty) continue;
+
+      // Über BEIDE Stände hinaus: Die nächste freie Nummer muss auch an
+      // den eingehenden Zeilen vorbei, sonst kollidiert das Ausweichen mit
+      // dem, wovor es ausweicht.
+      final hoechsteLokal = await db
+          .customSelect('SELECT COALESCE(MAX(id), 0) AS m FROM $tabelle')
+          .map((r) => r.read<int>('m'))
+          .getSingle();
+      var naechste = math.max(hoechsteLokal, eingehend.reduce(math.max)) + 1;
+      umzug[tabelle] = [for (final alt in kollidierend) (alt, naechste++)];
+    }
+    if (umzug.isEmpty) return;
+
+    await db.customStatement('PRAGMA foreign_keys = OFF');
+    try {
+      await db.transaction(() async {
+        for (final eintrag in umzug.entries) {
+          for (final (alt, neu) in eintrag.value) {
+            await db.customStatement(
+                'UPDATE ${eintrag.key} SET id = ? WHERE id = ?', [neu, alt]);
+            for (final (kind, spalte) in _verweiseAuf[eintrag.key]!) {
+              await db.customStatement(
+                  'UPDATE $kind SET $spalte = ? WHERE $spalte = ?',
+                  [neu, alt]);
+            }
+          }
+        }
+      });
+    } finally {
+      await db.customStatement('PRAGMA foreign_keys = ON');
+    }
+    final anzahl = umzug.values.fold<int>(0, (n, l) => n + l.length);
+    appLog.i('$anzahl lokale Zeilen sind einer fremden ID ausgewichen.');
+  }
+
   /// Upserts incoming rows and deletes local rows that are no longer in the
   /// snapshot. Upserting (instead of wipe+insert) keeps row identities stable
   /// so local-only references (QuizResults.vehicleId) survive the pull.
   Future<void> _applySnapshot(Map<String, List<Map<String, dynamic>>> data) async {
     // Delete stale rows children-first.
+    //
+    // ⚠️ Gelöscht wird nur, was schon einmal oben WAR (#67). Eine Zeile,
+    // die hier entstand und nie veröffentlicht wurde, bleibt stehen — sonst
+    // verliert der Zweite am Übungsabend seine Erfassung, und zwar genau
+    // dann, wenn er sie retten will.
     for (final table in kSyncedTables.reversed) {
       final ids = data[table]!.map((r) => (r['id'] as num).toInt()).toList();
       switch (table) {
         case 'inspection_log':
           await (db.delete(db.inspectionLog)
-                ..where((t) => t.id.isNotIn(ids)))
+                ..where((t) => t.id.isNotIn(ids) & t.dirty.equals(false)))
               .go();
         case 'inspection_schedules':
           await (db.delete(db.inspectionSchedules)
-                ..where((t) => t.id.isNotIn(ids)))
+                ..where((t) => t.id.isNotIn(ids) & t.dirty.equals(false)))
               .go();
         case 'equipment_instances':
           await (db.delete(db.equipmentInstances)
-                ..where((t) => t.id.isNotIn(ids)))
+                ..where((t) => t.id.isNotIn(ids) & t.dirty.equals(false)))
               .go();
         case 'equipment_assignments':
           await (db.delete(db.equipmentAssignments)
-                ..where((t) => t.id.isNotIn(ids)))
+                ..where((t) => t.id.isNotIn(ids) & t.dirty.equals(false)))
               .go();
         case 'compartments':
           await (db.delete(db.compartments)
-                ..where((t) => t.id.isNotIn(ids)))
+                ..where((t) => t.id.isNotIn(ids) & t.dirty.equals(false)))
               .go();
         case 'equipment_items':
           await (db.delete(db.equipmentItems)
-                ..where((t) => t.id.isNotIn(ids)))
+                ..where((t) => t.id.isNotIn(ids) & t.dirty.equals(false)))
               .go();
         case 'vehicles':
-          await (db.delete(db.vehicles)..where((t) => t.id.isNotIn(ids))).go();
+          await (db.delete(db.vehicles)..where((t) => t.id.isNotIn(ids) & t.dirty.equals(false))).go();
       }
     }
 
     // Upsert incoming rows parents-first.
+    //
+    // Alles, was der Zug bringt, steht oben — also `dirty: false`. Auch
+    // eine lokale Zeile, die der Snapshot kennt und hier überschrieben
+    // wird: Ihr Inhalt kommt jetzt vom Server.
     for (final r in data['vehicles']!) {
       await db.into(db.vehicles).insertOnConflictUpdate(VehiclesCompanion(
             id: Value(_int(r['id'])),
@@ -274,6 +407,7 @@ class SyncService {
             imagePath: Value(r['image_path'] as String?),
             createdAt: Value(_dt(r['created_at'])),
             updatedAt: Value(_dt(r['updated_at'])),
+            dirty: const Value(false),
           ));
     }
     for (final r in data['equipment_items']!) {
@@ -297,6 +431,7 @@ class SyncService {
                 Value(r['training_questions_json'] as String),
             typicalUseJson: Value(r['typical_use_json'] as String),
             updatedAt: Value(_dt(r['updated_at'])),
+            dirty: const Value(false),
           ));
     }
     for (final r in data['compartments']!) {
@@ -317,6 +452,7 @@ class SyncService {
             laengsposition: Value(r['laengsposition'] as String?),
             imagePath: Value(r['image_path'] as String?),
             updatedAt: Value(_dt(r['updated_at'])),
+            dirty: const Value(false),
           ));
     }
     for (final r in data['equipment_assignments']!) {
@@ -328,6 +464,7 @@ class SyncService {
             equipmentId: Value(_int(r['equipment_id'])),
             quantity: Value(_int(r['quantity'])),
             updatedAt: Value(_dt(r['updated_at'])),
+            dirty: const Value(false),
           ));
     }
     for (final r in data['equipment_instances']!) {
@@ -342,6 +479,7 @@ class SyncService {
             notes: Value(r['notes'] as String),
             isActive: Value(r['is_active'] as bool),
             updatedAt: Value(_dt(r['updated_at'])),
+            dirty: const Value(false),
           ));
     }
     for (final r in data['inspection_schedules']!) {
@@ -357,6 +495,7 @@ class SyncService {
             dueAt: Value(_dt(r['due_at'])),
             notes: Value(r['notes'] as String),
             updatedAt: Value(_dt(r['updated_at'])),
+            dirty: const Value(false),
           ));
     }
     for (final r in data['inspection_log']!) {
@@ -368,6 +507,7 @@ class SyncService {
             doneAt: Value(_dt(r['done_at'])),
             doneBy: Value(r['done_by'] as String),
             note: Value(r['note'] as String),
+            dirty: const Value(false),
           ));
     }
   }
@@ -411,6 +551,13 @@ class SyncService {
     final newVersion = (result as num).toInt();
     _suppressDirty = true;
     try {
+      // Nach einem erfolgreichen Veröffentlichen steht ALLES Lokale oben —
+      // die Nutzlast war der ganze Bestand. Ohne diese Zeile bliebe die
+      // eigene Erfassung für immer „noch nie oben" und überlebte jeden Zug,
+      // auch den, der sie längst enthält (#67).
+      for (final name in kSyncedTables) {
+        await db.customStatement('UPDATE $name SET dirty = 0');
+      }
       await _setMeta(version: newVersion, dirty: false);
     } finally {
       _suppressDirty = false;

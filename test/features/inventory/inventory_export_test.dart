@@ -18,6 +18,7 @@ InventoryCheckData _check({
   int? ist,
   String status = InventoryChecks.statusOk,
   String note = '',
+  String gezaehlt = '[]',
 }) =>
     InventoryCheckData(
       id: 1,
@@ -28,8 +29,7 @@ InventoryCheckData _check({
       actualQuantity: ist,
       status: status,
       note: note,
-      // Für den Export ohne Belang — er liest Soll, Ist und Zustand.
-      countedInstancesJson: '[]',
+      countedInstancesJson: gezaehlt,
     );
 
 /// Liest die erzeugte Datei so, wie eine Tabellenkalkulation sie läse.
@@ -177,6 +177,106 @@ void main() {
         inventurDateiname(fahrzeug: '—/—', zeitpunkt: zeitpunkt),
         'inventur-fahrzeug-2026-09-21.csv',
       );
+    });
+  });
+
+  group('Nicht gefunden (#178)', () {
+    const flasche3 =
+        InventurEinheit(id: 3, kennung: 'Flasche 3', codes: ['FW-7K2M9Q']);
+    const flasche4 = InventurEinheit(id: 4, kennung: 'Flasche 4');
+
+    /// Die Spalte „Nicht gefunden" der einzigen Datenzeile.
+    String spalte(InventoryCheckData check,
+            {List<InventurEinheit> einheiten = const []}) =>
+        _zurueckgelesen(inventurCsv(
+          fahrzeug: 'HLF 20',
+          zeitpunkt: zeitpunkt,
+          checks: [check],
+          einheiten: {check.id: einheiten},
+        ))[1][kInventurCsvKopf.indexOf('Nicht gefunden')] as String;
+
+    test('benennt die Einheit, die beim Scannen fehlte', () {
+      // Der Punkt der Spalte: „2 von 3" schickt jemanden das Fach noch
+      // einmal durchzählen. „Flasche 3 (FW-7K2M9Q)" schickt ihn suchen.
+      final check = _check(
+          fach: 'G5', geraet: 'Pressluftatmer',
+          soll: 2, ist: 1, gezaehlt: '[4]');
+      expect(spalte(check, einheiten: [flasche3, flasche4]),
+          'Flasche 3 (FW-7K2M9Q)');
+    });
+
+    test('mehrere fehlende stehen nacheinander', () {
+      final check = _check(
+          fach: 'G5', geraet: 'Pressluftatmer',
+          soll: 2, ist: 0, gezaehlt: '[]');
+      expect(spalte(check, einheiten: [flasche3, flasche4]),
+          'Flasche 3 (FW-7K2M9Q), Flasche 4');
+    });
+
+    test('ohne Kennung steht der Code, sonst die Nummer', () {
+      const nurCode = InventurEinheit(id: 9, codes: ['4006381333931']);
+      const nackt = InventurEinheit(id: 10);
+      final check = _check(fach: 'G1', geraet: 'Strahlrohr', ist: 0);
+      expect(spalte(check, einheiten: [nurCode, nackt]),
+          '4006381333931, Einheit 10');
+    });
+
+    test('ist alles gefunden, bleibt die Spalte leer', () {
+      final check = _check(
+          fach: 'G5', geraet: 'Pressluftatmer',
+          soll: 2, ist: 2, gezaehlt: '[3,4]');
+      expect(spalte(check, einheiten: [flasche3, flasche4]), '');
+    });
+
+    test('⚠️ von Hand gesetzte Stückzahl sagt NICHTS über „welche"', () {
+      // Der teuerste Fall: `setStatus` schreibt nur die Zahl, nicht die
+      // Menge. Würde hier ausgewertet, stünden beide Flaschen als nicht
+      // gefunden da — und jemand liefe los, um etwas zu suchen, das im
+      // Fach liegt.
+      final check = _check(
+          fach: 'G5', geraet: 'Pressluftatmer',
+          soll: 2, ist: 1, gezaehlt: '[]');
+      expect(spalte(check, einheiten: [flasche3, flasche4]), '');
+    });
+
+    test('ein nachträglich hochgesetztes Ist zählt auch nicht', () {
+      // Erst eine Flasche gescannt, dann von Hand auf 2 gestellt: Die Menge
+      // passt nicht mehr zur Zahl, also ist „welche" nicht bekannt.
+      final check = _check(
+          fach: 'G5', geraet: 'Pressluftatmer',
+          soll: 2, ist: 2, gezaehlt: '[3]');
+      expect(spalte(check, einheiten: [flasche3, flasche4]), '');
+    });
+
+    test('nicht nachgezählt heißt nicht „alles weg"', () {
+      final check = _check(fach: 'G5', geraet: 'Pressluftatmer', soll: 2);
+      expect(spalte(check, einheiten: [flasche3, flasche4]), '');
+    });
+
+    test('ohne geführte Einheiten bleibt die Spalte leer', () {
+      // Zehn Schlauchbinder führt niemand einzeln — da gibt es nichts zu
+      // benennen.
+      final check = _check(fach: 'G1', geraet: 'Schlauchbinder',
+          soll: 10, ist: 8);
+      expect(spalte(check), '');
+    });
+
+    test('eine kaputte Zählmenge kostet den Bericht nicht', () {
+      final check = _check(
+          fach: 'G5', geraet: 'Pressluftatmer',
+          soll: 2, ist: 1, gezaehlt: 'kein json');
+      expect(spalte(check, einheiten: [flasche3, flasche4]), '');
+    });
+
+    test('ohne Einheiten-Angabe ist der Bericht der alte', () {
+      // Aufrufer, die nichts mitgeben, bekommen genau die Datei wie vorher
+      // — nur mit einer leeren Spalte mehr.
+      final csv = inventurCsv(
+        fahrzeug: 'HLF 20',
+        zeitpunkt: zeitpunkt,
+        checks: [_check(fach: 'G1', geraet: 'Strahlrohr', ist: 0)],
+      );
+      expect(_zurueckgelesen(csv)[1].last, '');
     });
   });
 }

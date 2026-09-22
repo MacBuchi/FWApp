@@ -128,6 +128,10 @@ class InventoryReportScreen extends ConsumerWidget {
     final checks =
         ref.read(inventoryChecksProvider(sessionId)).value ?? const [];
     final kopf = await ref.read(inventurBerichtKopfProvider(sessionId).future);
+    // Die geführten Einheiten, damit im Bericht steht, WONACH zu suchen ist
+    // — nicht nur „2 von 4" (#178).
+    final einheiten =
+        await ref.read(inventurEinheitenProvider(sessionId).future);
     if (!context.mounted) return;
     await teile(
       context,
@@ -135,6 +139,7 @@ class InventoryReportScreen extends ConsumerWidget {
         fahrzeug: kopf.fahrzeug,
         zeitpunkt: kopf.zeitpunkt,
         checks: checks,
+        einheiten: einheiten,
       ),
       dateiname: inventurDateiname(
         fahrzeug: kopf.fahrzeug,

@@ -10,6 +10,7 @@ import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/database/database_providers.dart';
+import 'package:fwapp/features/inventory/data/inventory_export.dart';
 import 'package:fwapp/core/logging/app_logger.dart';
 import 'package:fwapp/features/inventory/data/tag_code.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';
@@ -88,6 +89,41 @@ class InventurBerichtKopf {
 
   const InventurBerichtKopf({required this.fahrzeug, required this.zeitpunkt});
 }
+
+/// Die geführten Einheiten je Prüfzeile, für den Bericht (Issue #178).
+///
+/// Nur die Einheiten, die im Fach DIESER Zeile liegen: Dasselbe Gerät kann
+/// in zwei Fächern stehen, und dann gehört jede Einheit in genau eine
+/// Zeile — dieselbe Regel wie beim Abhaken.
+///
+/// Drei Abfragen für den ganzen Bericht, nicht eine je Zeile: Ein
+/// Fahrzeugbericht hat gut hundert Zeilen.
+final inventurEinheitenProvider =
+    FutureProvider.family<Map<int, List<InventurEinheit>>, int>(
+        (ref, sessionId) async {
+  final db = ref.watch(appDatabaseProvider);
+  final checks = await db.inventoryDao.getChecks(sessionId);
+  final alleEinheiten = await db.inspectionDao.getAllInstances();
+
+  final codes = <int, List<String>>{};
+  for (final t in await db.tagDao.alleTags()) {
+    (codes[t.instanceId] ??= []).add(t.code);
+  }
+
+  return {
+    for (final c in checks)
+      c.id: [
+        for (final e in alleEinheiten)
+          if (e.equipmentId == c.equipmentId &&
+              e.compartmentId == c.compartmentId)
+            InventurEinheit(
+              id: e.id,
+              kennung: e.identifier,
+              codes: codes[e.id] ?? const [],
+            ),
+      ],
+  };
+});
 
 final inventurBerichtKopfProvider =
     FutureProvider.family<InventurBerichtKopf, int>((ref, sessionId) async {

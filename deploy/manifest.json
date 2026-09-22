@@ -132,6 +132,10 @@
     {
       "name": "20260922080000_geraete_codes.sql",
       "sha256": "992952e750108e33654144cd0594c8e7eda4a0aeeb14b3aa5ea52ae132cc1bdf"
+    },
+    {
+      "name": "20260922190000_lerngruppen.sql",
+      "sha256": "582fa7319a16a257c37f385e5ed7ff27098ec1c676285cff39c847174cac06cd"
     }
   ],
   "functions": {

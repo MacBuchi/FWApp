@@ -9,6 +9,7 @@ import 'package:drift/drift.dart';
 import 'package:fwapp/core/app_version.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/logging/app_logger.dart';
+import 'package:fwapp/core/sync/snapshot_verlust.dart';
 // `hide TableUpdate`: supabase_flutter 2.17 exportiert über den
 // storage_client einen eigenen `TableUpdate` (Iceberg-Tabellen), der mit
 // drifts gleichnamigem Typ kollidiert — gemeint ist hier IMMER drifts, es
@@ -168,7 +169,16 @@ class SyncService {
 
   /// Fetches the central snapshot if its version is newer than the local one
   /// (always when [force]). Returns the new version, or null if unchanged.
-  Future<int?> pullIfNewer({bool force = false}) async {
+  ///
+  /// [bestaetigen] wird gefragt, BEVOR der Snapshot angewandt wird — aber
+  /// nur, wenn dabei wirklich lokale Zeilen verschwänden (Issue #214).
+  /// Antwortet es mit `false`, passiert nichts und der Rückgabewert ist
+  /// `null`. Ohne Rückfrage bleibt es beim alten Verhalten; Aufrufer ohne
+  /// Oberfläche — der Zug beim Start — haben niemanden zu fragen.
+  Future<int?> pullIfNewer({
+    bool force = false,
+    Future<bool> Function(SnapshotVerlust verlust)? bestaetigen,
+  }) async {
     final meta = await getMeta();
     final abteilung = await _effectiveAbteilung();
     // Versionszähler: je Abteilung (neu) oder dataset_meta (Legacy-Server).
@@ -190,6 +200,17 @@ class SyncService {
       var query = client.from(table).select();
       if (abteilung != null) query = query.eq('abteilung_id', abteilung);
       data[table] = List<Map<String, dynamic>>.from(await query);
+    }
+
+    // ⚠️ Vor dem Anwenden fragen, wenn etwas verloren ginge. Bis v1.54.0
+    // verschwand eine angelegte, aber nie veröffentlichte Geräte-Einheit
+    // hier stillschweigend (#214).
+    if (bestaetigen != null) {
+      final verlust = await berechneVerlust(db, data);
+      if (!verlust.istNichts && !await bestaetigen(verlust)) {
+        appLog.i('Zug abgebrochen: ${verlust.gesamt} lokale Zeilen behalten.');
+        return null;
+      }
     }
 
     _suppressDirty = true;

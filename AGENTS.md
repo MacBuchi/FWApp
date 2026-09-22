@@ -295,6 +295,17 @@ pauschales Formatieren in Feature-PRs.
   der Primärschlüssel: Er ist das, was in der Wirklichkeit eindeutig ist.
   **Vor jeder neuen zeilenweisen Tabelle die Frage stellen: Kann das von
   zwei Geräten gleichzeitig entstehen?**
+- ⚠️ **`SyncMeta.localDirty` taugt NICHT als Gradmesser für „hier ginge
+  etwas verloren"** (#214). Das Kennzeichen wird gesetzt, sobald irgendwer
+  in eine synchronisierte Tabelle schreibt — **auch die App selbst**: der
+  Katalog-Seeder beim ersten Start und der Gerätetypen-Sync (Stufe ②) bei
+  JEDEM Start, der in `equipment_items` schreibt. Am laufenden Stack
+  nachgemessen: „Unveröffentlichte Änderungen vorhanden" steht nach jedem
+  Start da, ohne dass jemand etwas geändert hat. Eine Warnung darauf käme
+  immer und würde nach dem dritten Mal weggeklickt.
+  Was wirklich zählt, rechnet `snapshot_verlust.dart` aus: die lokalen
+  Zeilen, deren ID der Server nicht kennt — genau die Menge, die
+  `_applySnapshot` löscht.
 - ⚠️ **Jeder zeilenweise Weg gehört in `core/sync/zeilen_sync.dart`, nicht
   an die Aufrufstelle.** „Den Bestand aktualisieren" stand dreimal
   ausgeschrieben — Start, „Jetzt aktualisieren", Abteilungswechsel — und die

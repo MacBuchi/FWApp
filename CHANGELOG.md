@@ -12,6 +12,23 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.54.1] – 2026-09-22
+
+### Behoben
+
+- **„Jetzt aktualisieren" löschte unveröffentlichte Arbeit ohne zu fragen.**
+  Wer ein Fahrzeug, ein Fach oder eine Geräte-Einheit angelegt und noch
+  nicht veröffentlicht hatte, verlor es beim nächsten Aktualisieren — ohne
+  Hinweis, ohne Nachfrage.
+
+  Jetzt fragt die App vorher, und sie sagt, worum es geht: „Auf dem Server
+  fehlt, was hier angelegt wurde: 1 Fahrzeug." Abbrechen behält alles;
+  veröffentlichen und danach aktualisieren ebenso.
+
+  **Gefragt wird nur, wenn wirklich etwas verschwände.** Beim gewöhnlichen
+  Aktualisieren kommt nichts dazwischen — eine Rückfrage, die immer kommt,
+  liest nach dem dritten Mal niemand mehr.
+
 ## [1.54.0] – 2026-09-22
 
 ### Neu

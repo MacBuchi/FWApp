@@ -16,6 +16,7 @@ import 'package:fwapp/core/sync/membership_providers.dart';
 import 'package:fwapp/core/sync/mfa_providers.dart';
 import 'package:fwapp/core/sync/rollen.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
+import 'package:fwapp/core/sync/verlust_warnung.dart';
 import 'package:fwapp/core/sync/zeilen_sync.dart';
 import 'package:fwapp/core/sync/sync_service.dart';
 import 'package:fwapp/core/update/update_check.dart';
@@ -335,8 +336,19 @@ class _ConnectionSection extends ConsumerWidget {
 
   Future<void> _pull(BuildContext context, WidgetRef ref) async {
     try {
-      final version =
-          await ref.read(syncServiceProvider)?.pullIfNewer(force: true);
+      // ⚠️ Mit Rückfrage (#214): Der Zug ersetzt die Tabellen der
+      // Abteilung, und was hier angelegt und nie veröffentlicht wurde,
+      // kennt der Server nicht. Gefragt wird nur, wenn wirklich etwas
+      // verschwände — nicht bei jedem Tipp.
+      final darfPublizieren = ref.read(canEditProvider);
+      final version = await ref.read(syncServiceProvider)?.pullIfNewer(
+            force: true,
+            bestaetigen: (verlust) async {
+              if (!context.mounted) return false;
+              return darfVerlieren(context, verlust,
+                  darfVeroeffentlichen: darfPublizieren);
+            },
+          );
       // Die Gerätetypen der Gesamtwehr kommen auf ihrem eigenen Weg mit
       // (Stufe ②) — „Jetzt aktualisieren" soll alles holen, nicht nur den
       // Bestand der Abteilung.

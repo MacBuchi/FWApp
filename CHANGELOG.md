@@ -12,6 +12,21 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.55.0] – 2026-09-22
+
+### Neu
+
+- **Der Inventurbericht sagt jetzt, WONACH zu suchen ist.** Bisher stand da
+  „2 von 4" — und der Gerätewart zählte das Fach noch einmal durch, um
+  herauszufinden, welche zwei fehlen. Die neue Spalte „Nicht gefunden"
+  benennt sie: „Flasche 3 (FW-7K2M9Q), Flasche 7".
+
+  **Sie bleibt leer, wo die App es nicht weiß.** Welche Einheit gezählt
+  wurde, weiß sie nur beim Abhaken per Code. Wer die Stückzahl von Hand
+  setzt, sagt ihr nur, WIE VIELE da waren — dann steht dort nichts, statt
+  zu raten. Eine Liste, die jemanden nach Dingen suchen lässt, die im Fach
+  liegen, wäre schlimmer als keine.
+
 ## [1.54.2] – 2026-09-22
 
 ### Behoben

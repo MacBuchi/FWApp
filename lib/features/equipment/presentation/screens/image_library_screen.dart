@@ -2,6 +2,7 @@
 /// Symbolbilder. Als Browser („Mehr“-Tab) oder als Bildwähler
 /// (selectMode: Tippen liefert den Asset-Pfad an den Aufrufer zurück).
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/features/equipment/presentation/providers/image_library_providers.dart';
@@ -20,13 +21,16 @@ Future<ImageLibraryEntry?> pickLibraryEntry(
   BuildContext context, {
   String? titel,
   String? vorbelegteSuche,
-}) =>
-    Navigator.of(context).push<ImageLibraryEntry>(MaterialPageRoute(
-        builder: (_) => ImageLibraryScreen(
-              selectMode: true,
-              titel: titel,
-              vorbelegteSuche: vorbelegteSuche,
-            )));
+}) => Navigator.of(context).push<ImageLibraryEntry>(
+  MaterialPageRoute(
+    builder:
+        (_) => ImageLibraryScreen(
+          selectMode: true,
+          titel: titel,
+          vorbelegteSuche: vorbelegteSuche,
+        ),
+  ),
+);
 
 class ImageLibraryScreen extends ConsumerStatefulWidget {
   final bool selectMode;
@@ -46,8 +50,7 @@ class ImageLibraryScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<ImageLibraryScreen> createState() =>
-      _ImageLibraryScreenState();
+  ConsumerState<ImageLibraryScreen> createState() => _ImageLibraryScreenState();
 }
 
 class _ImageLibraryScreenState extends ConsumerState<ImageLibraryScreen> {
@@ -71,8 +74,10 @@ class _ImageLibraryScreenState extends ConsumerState<ImageLibraryScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.titel ??
-            (widget.selectMode ? 'Bild auswählen' : 'Bildbibliothek')),
+        title: Text(
+          widget.titel ??
+              (widget.selectMode ? 'Bild auswählen' : 'Bildbibliothek'),
+        ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(64),
           child: Padding(
@@ -84,13 +89,13 @@ class _ImageLibraryScreenState extends ConsumerState<ImageLibraryScreen> {
               decoration: InputDecoration(
                 hintText: 'Suchen … (z. B. „Schlauch“, „TS“, „Pylone“)',
                 prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchController.text.isEmpty
-                    ? null
-                    : IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () =>
-                            setState(_searchController.clear),
-                      ),
+                suffixIcon:
+                    _searchController.text.isEmpty
+                        ? null
+                        : IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () => setState(_searchController.clear),
+                        ),
                 filled: true,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(28),
@@ -104,16 +109,17 @@ class _ImageLibraryScreenState extends ConsumerState<ImageLibraryScreen> {
       ),
       body: libraryAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) =>
-            Center(child: Text('Bibliothek nicht ladbar: $e')),
+        error: (e, _) => Center(child: Text('Bibliothek nicht ladbar: $e')),
         data: (entries) {
-          final results =
-              searchImageLibrary(entries, _searchController.text);
+          final results = searchImageLibrary(entries, _searchController.text);
           if (results.isEmpty) {
             return const Center(
-                child: Text('Kein Symbolbild gefunden –\n'
-                    'andere Schreibweise probieren?',
-                    textAlign: TextAlign.center));
+              child: Text(
+                'Kein Symbolbild gefunden –\n'
+                'andere Schreibweise probieren?',
+                textAlign: TextAlign.center,
+              ),
+            );
           }
           return GridView.builder(
             padding: const EdgeInsets.all(12),
@@ -128,16 +134,20 @@ class _ImageLibraryScreenState extends ConsumerState<ImageLibraryScreen> {
               final entry = results[i];
               return InkWell(
                 borderRadius: BorderRadius.circular(14),
-                onTap: () => widget.selectMode
-                    ? Navigator.of(context).pop(entry)
-                    : _showDetail(context, entry),
+                onTap:
+                    () =>
+                        widget.selectMode
+                            ? Navigator.of(context).pop(entry)
+                            : _showDetail(context, entry),
                 child: Column(
                   children: [
                     Expanded(
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(14),
-                        child: Image.asset(entry.assetPath,
-                            fit: BoxFit.contain),
+                        child: Image.asset(
+                          entry.assetPath,
+                          fit: BoxFit.contain,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -161,27 +171,28 @@ class _ImageLibraryScreenState extends ConsumerState<ImageLibraryScreen> {
   void _showDetail(BuildContext context, ImageLibraryEntry entry) {
     showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(entry.name),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Image.asset(entry.assetPath, width: 160, height: 160),
-            const SizedBox(height: 12),
-            const Text(
-              'Symbolbild aus der Bildbibliothek. Echte Fotos entstehen '
-              'über „Foto aufnehmen“ am Gerät und ersetzen das Symbolbild.',
-              style: TextStyle(fontSize: 13),
+      builder:
+          (context) => AlertDialog(
+            title: Text(entry.name),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset(entry.assetPath, width: 160, height: 160),
+                const SizedBox(height: 12),
+                const Text(
+                  'Symbolbild aus der Bildbibliothek. Echte Fotos entstehen '
+                  'über „Foto aufnehmen“ am Gerät und ersetzen das Symbolbild.',
+                  style: TextStyle(fontSize: 13),
+                ),
+              ],
             ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Schließen'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Schließen'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 }

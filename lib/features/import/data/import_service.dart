@@ -2,6 +2,7 @@
 /// database in one transaction (upserts vehicles, compartments, equipment,
 /// assignments; learns user aliases).
 library;
+
 import 'package:drift/drift.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/features/import/data/equipment_matcher.dart';
@@ -27,7 +28,8 @@ class ImportService {
     await db.transaction(() async {
       // Caches, filled once — the old importer re-read whole tables per row.
       final vehicleIds = <String, int>{
-        for (final v in await db.vehicleDao.getAll()) v.name.toLowerCase(): v.id
+        for (final v in await db.vehicleDao.getAll())
+          v.name.toLowerCase(): v.id,
       };
       // compartment cache: '<vehicleId>|<label lower>' -> id
       final compartmentIds = <String, int>{};
@@ -38,8 +40,8 @@ class ImportService {
 
       for (final row in rows) {
         final key = EquipmentMatcher.normalize(row.equipmentName);
-        final decision = decisions[key] ??
-            const RowDecision(action: RowAction.createCustom);
+        final decision =
+            decisions[key] ?? const RowDecision(action: RowAction.createCustom);
         if (decision.action == RowAction.skip) {
           skipped++;
           continue;
@@ -51,7 +53,9 @@ class ImportService {
           case RowAction.useEquipment:
             equipmentId = decision.equipmentId!;
             if (decision.rememberAlias && !learnedAliases.contains(key)) {
-              await db.into(db.userAliases).insert(
+              await db
+                  .into(db.userAliases)
+                  .insert(
                     UserAliasesCompanion.insert(
                       alias: row.equipmentName.trim(),
                       equipmentId: equipmentId,
@@ -83,8 +87,12 @@ class ImportService {
         final vehicleKey = row.vehicleName.toLowerCase();
         var vehicleId = vehicleIds[vehicleKey];
         if (vehicleId == null) {
-          vehicleId = await db.vehicleDao.insertVehicle(VehiclesCompanion
-              .insert(name: row.vehicleName, type: row.vehicleName));
+          vehicleId = await db.vehicleDao.insertVehicle(
+            VehiclesCompanion.insert(
+              name: row.vehicleName,
+              type: row.vehicleName,
+            ),
+          );
           vehicleIds[vehicleKey] = vehicleId;
           vehiclesCreated++;
         }
@@ -114,8 +122,9 @@ class ImportService {
         }
 
         // Assignment (update quantity when the pair already exists)
-        final assignments =
-            await db.assignmentDao.getByCompartment(compartmentId);
+        final assignments = await db.assignmentDao.getByCompartment(
+          compartmentId,
+        );
         final existing =
             assignments.where((a) => a.equipmentId == equipmentId).firstOrNull;
         if (existing == null) {
@@ -128,11 +137,12 @@ class ImportService {
           );
         } else {
           await (db.update(db.equipmentAssignments)
-                ..where((t) => t.id.equals(existing.id)))
-              .write(EquipmentAssignmentsCompanion(
-            quantity: Value(row.quantity),
-            updatedAt: Value(DateTime.now()),
-          ));
+            ..where((t) => t.id.equals(existing.id))).write(
+            EquipmentAssignmentsCompanion(
+              quantity: Value(row.quantity),
+              updatedAt: Value(DateTime.now()),
+            ),
+          );
         }
         assignmentsWritten++;
       }

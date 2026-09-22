@@ -2,6 +2,7 @@
 /// baut (Issue #114): richtige URL, stabiler Cache-Schlüssel und vor allem die
 /// Kopfzeilen, ohne die der private Bucket nichts herausgibt.
 library;
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,7 +13,8 @@ const _marker = 'supabase://equipment-images/eq_7_1700.jpg';
 void main() {
   setUp(() {
     supabaseStorageBaseUrl = 'https://fwapp-api.example';
-    supabaseStorageHeaders = () => {
+    supabaseStorageHeaders =
+        () => {
           'apikey': 'anon-schluessel',
           'Authorization': 'Bearer sitzungs-token',
         };
@@ -24,9 +26,11 @@ void main() {
   });
 
   Future<CachedNetworkImage> baue(WidgetTester tester, String pfad) async {
-    await tester.pumpWidget(MaterialApp(
-      home: Scaffold(body: resolveImage(path: pfad, width: 100, height: 100)),
-    ));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(body: resolveImage(path: pfad, width: 100, height: 100)),
+      ),
+    );
     return tester.widget<CachedNetworkImage>(find.byType(CachedNetworkImage));
   }
 
@@ -39,8 +43,9 @@ void main() {
     );
   });
 
-  testWidgets('der Cache-Schlüssel bleibt der Marker, nicht die URL',
-      (tester) async {
+  testWidgets('der Cache-Schlüssel bleibt der Marker, nicht die URL', (
+    tester,
+  ) async {
     // Sonst verfiele der Vorrat bei jedem Serverumzug — und der Precache
     // legt seine Einträge unter genau diesem Schlüssel ab.
     final bild = await baue(tester, _marker);
@@ -60,20 +65,26 @@ void main() {
     expect(bild.httpHeaders!['Authorization'], 'Bearer sitzungs-token');
   });
 
-  testWidgets('ohne angemeldete Sitzung bleibt wenigstens der Schlüssel',
-      (tester) async {
+  testWidgets('ohne angemeldete Sitzung bleibt wenigstens der Schlüssel', (
+    tester,
+  ) async {
     supabaseStorageHeaders = () => {'apikey': 'anon-schluessel'};
     final bild = await baue(tester, _marker);
     expect(bild.httpHeaders!.containsKey('Authorization'), isFalse);
     expect(bild.httpHeaders!['apikey'], 'anon-schluessel');
   });
 
-  testWidgets('ohne konfigurierten Server wird gar nicht erst geladen',
-      (tester) async {
+  testWidgets('ohne konfigurierten Server wird gar nicht erst geladen', (
+    tester,
+  ) async {
     supabaseStorageBaseUrl = null;
-    await tester.pumpWidget(MaterialApp(
-      home: Scaffold(body: resolveImage(path: _marker, width: 100, height: 100)),
-    ));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: resolveImage(path: _marker, width: 100, height: 100),
+        ),
+      ),
+    );
     expect(find.byType(CachedNetworkImage), findsNothing);
   });
 }

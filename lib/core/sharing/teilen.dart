@@ -35,19 +35,25 @@ Future<bool> teile(
 }) async {
   final messenger = ScaffoldMessenger.of(context);
   try {
-    await SharePlus.instance.share(ShareParams(
-      text: text,
-      subject: betreff,
-      fileNameOverrides: dateiname == null ? null : [dateiname],
-      mailToFallbackEnabled: false,
-    ));
+    await SharePlus.instance.share(
+      ShareParams(
+        text: text,
+        subject: betreff,
+        fileNameOverrides: dateiname == null ? null : [dateiname],
+        mailToFallbackEnabled: false,
+      ),
+    );
     return true;
   } catch (_) {
     await Clipboard.setData(ClipboardData(text: text));
-    messenger.showSnackBar(SnackBar(
-      content: Text('Teilen geht hier nicht — $sacheImRueckfall liegt in '
-          'der Zwischenablage.'),
-    ));
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          'Teilen geht hier nicht — $sacheImRueckfall liegt in '
+          'der Zwischenablage.',
+        ),
+      ),
+    );
     return false;
   }
 }

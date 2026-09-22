@@ -7,6 +7,7 @@
 /// serverseitig nochmal — wer welche Rolle wo vergeben darf, entscheidet
 /// dort `darfVerwalten`.
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -48,34 +49,39 @@ class UserManagementScreen extends ConsumerWidget {
       ),
       body: usersAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Nutzerliste konnte nicht geladen werden:\n$e',
-                    textAlign: TextAlign.center),
-                const SizedBox(height: 12),
-                FilledButton(
-                  onPressed: () => ref.invalidate(managedUsersProvider),
-                  child: const Text('Erneut versuchen'),
+        error:
+            (e, _) => Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Nutzerliste konnte nicht geladen werden:\n$e',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    FilledButton(
+                      onPressed: () => ref.invalidate(managedUsersProvider),
+                      child: const Text('Erneut versuchen'),
+                    ),
+                  ],
                 ),
+              ),
+            ),
+        data:
+            (users) => ListView(
+              padding: const EdgeInsets.only(bottom: 88),
+              children: [
+                const _EinladungenAbschnitt(),
+                const Divider(height: 24),
+                for (var i = 0; i < users.length; i++) ...[
+                  if (i > 0)
+                    const Divider(height: 1, indent: 16, endIndent: 16),
+                  _UserTile(user: users[i]),
+                ],
               ],
             ),
-          ),
-        ),
-        data: (users) => ListView(
-          padding: const EdgeInsets.only(bottom: 88),
-          children: [
-            const _EinladungenAbschnitt(),
-            const Divider(height: 24),
-            for (var i = 0; i < users.length; i++) ...[
-              if (i > 0) const Divider(height: 1, indent: 16, endIndent: 16),
-              _UserTile(user: users[i]),
-            ],
-          ],
-        ),
       ),
     );
   }
@@ -101,8 +107,7 @@ Future<void> _zugangszettelAnlegen(
   Einladung? statt,
 }) async {
   final usernameCtrl = TextEditingController(text: nameVorschlag ?? '');
-  final passwordCtrl =
-      TextEditingController(text: generateInitialPassword());
+  final passwordCtrl = TextEditingController(text: generateInitialPassword());
   var role = rolleVorschlag ?? 'member';
   String? error;
   // Ohne Auswahl legt der Server das Konto in die Abteilung des
@@ -115,113 +120,143 @@ Future<void> _zugangszettelAnlegen(
 
   final ok = await showDialog<bool>(
     context: context,
-    builder: (ctx) => StatefulBuilder(
-      builder: (ctx, setState) => AlertDialog(
-        title: Text(statt == null ? 'Nutzer anlegen' : 'Zugangszettel statt Mail'),
-        // Scrollbar: verhindert Button-Überlappung auf kleinen Screens
-        // mit offener Tastatur (Feldtest Pixel XL).
-        content: SingleChildScrollView(
-            child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (statt != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Text(
-                  'An ${statt.email} kommt keine Mail an. Dieses Konto '
-                  'bekommt stattdessen einen Zettel — die Einladung wird '
-                  'dabei zurückgezogen.\n\n'
-                  'Ein Zettel-Konto kann sein Passwort später NICHT selbst '
-                  'zurücksetzen; dafür braucht es eine erreichbare Adresse.',
-                  style: const TextStyle(fontSize: 12),
+    builder:
+        (ctx) => StatefulBuilder(
+          builder:
+              (ctx, setState) => AlertDialog(
+                title: Text(
+                  statt == null ? 'Nutzer anlegen' : 'Zugangszettel statt Mail',
                 ),
-              ),
-            TextField(
-              controller: usernameCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Nutzername',
-                helperText: 'z. B. max.m – steht auf dem Zugangszettel',
-              ),
-              autocorrect: false,
-              autofocus: true,
-            ),
-            const SizedBox(height: 8),
-            DropdownButtonFormField<String>(
-              initialValue: role,
-              decoration: const InputDecoration(labelText: 'Rolle'),
-              // Anzeigenamen aus dem Nutzerkonzept; ein frisches
-              // Zettel-Konto ohne echte Mail ist ein Truppmann.
-              items: const [
-                DropdownMenuItem(
-                    value: 'member', child: Text('Truppmann (liest)')),
-                DropdownMenuItem(
-                    value: 'geraetewart',
-                    child: Text('Gerätewart (bearbeitet)')),
-                DropdownMenuItem(
-                    value: 'admin',
-                    child: Text('Abteilungskommandant (verwaltet)')),
-              ],
-              onChanged: (v) => setState(() => role = v ?? 'member'),
-            ),
-            if (abteilungen.length > 1) ...[
-              const SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                initialValue: abteilung,
-                decoration: const InputDecoration(labelText: 'Abteilung'),
-                items: [
-                  for (final a in abteilungen)
-                    DropdownMenuItem(value: a.id, child: Text(a.name)),
+                // Scrollbar: verhindert Button-Überlappung auf kleinen Screens
+                // mit offener Tastatur (Feldtest Pixel XL).
+                content: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (statt != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Text(
+                            'An ${statt.email} kommt keine Mail an. Dieses Konto '
+                            'bekommt stattdessen einen Zettel — die Einladung wird '
+                            'dabei zurückgezogen.\n\n'
+                            'Ein Zettel-Konto kann sein Passwort später NICHT selbst '
+                            'zurücksetzen; dafür braucht es eine erreichbare Adresse.',
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ),
+                      TextField(
+                        controller: usernameCtrl,
+                        decoration: const InputDecoration(
+                          labelText: 'Nutzername',
+                          helperText:
+                              'z. B. max.m – steht auf dem Zugangszettel',
+                        ),
+                        autocorrect: false,
+                        autofocus: true,
+                      ),
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<String>(
+                        initialValue: role,
+                        decoration: const InputDecoration(labelText: 'Rolle'),
+                        // Anzeigenamen aus dem Nutzerkonzept; ein frisches
+                        // Zettel-Konto ohne echte Mail ist ein Truppmann.
+                        items: const [
+                          DropdownMenuItem(
+                            value: 'member',
+                            child: Text('Truppmann (liest)'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'geraetewart',
+                            child: Text('Gerätewart (bearbeitet)'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'admin',
+                            child: Text('Abteilungskommandant (verwaltet)'),
+                          ),
+                        ],
+                        onChanged: (v) => setState(() => role = v ?? 'member'),
+                      ),
+                      if (abteilungen.length > 1) ...[
+                        const SizedBox(height: 8),
+                        DropdownButtonFormField<String>(
+                          initialValue: abteilung,
+                          decoration: const InputDecoration(
+                            labelText: 'Abteilung',
+                          ),
+                          items: [
+                            for (final a in abteilungen)
+                              DropdownMenuItem(
+                                value: a.id,
+                                child: Text(a.name),
+                              ),
+                          ],
+                          onChanged:
+                              (v) => setState(() => abteilung = v ?? abteilung),
+                        ),
+                      ],
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: passwordCtrl,
+                        decoration: InputDecoration(
+                          labelText: 'Initialpasswort',
+                          helperText: 'Muss beim ersten Login geändert werden',
+                          suffixIcon: IconButton(
+                            icon: const Icon(Icons.casino),
+                            tooltip: 'Neu würfeln',
+                            onPressed:
+                                () => setState(
+                                  () =>
+                                      passwordCtrl.text =
+                                          generateInitialPassword(),
+                                ),
+                          ),
+                        ),
+                        autocorrect: false,
+                      ),
+                      if (error != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(
+                            error!,
+                            style: const TextStyle(
+                              color: Colors.red,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx, false),
+                    child: const Text('Abbrechen'),
+                  ),
+                  FilledButton(
+                    onPressed: () {
+                      final name = usernameCtrl.text.trim().toLowerCase();
+                      if (!isValidUsername(name)) {
+                        setState(
+                          () =>
+                              error =
+                                  'Ungültiger Nutzername (3–32 Zeichen: a-z, 0-9, . _ -)',
+                        );
+                        return;
+                      }
+                      if (passwordCtrl.text.length < 8) {
+                        setState(
+                          () => error = 'Passwort braucht mindestens 8 Zeichen',
+                        );
+                        return;
+                      }
+                      Navigator.pop(ctx, true);
+                    },
+                    child: const Text('Anlegen'),
+                  ),
                 ],
-                onChanged: (v) => setState(() => abteilung = v ?? abteilung),
               ),
-            ],
-            const SizedBox(height: 8),
-            TextField(
-              controller: passwordCtrl,
-              decoration: InputDecoration(
-                labelText: 'Initialpasswort',
-                helperText: 'Muss beim ersten Login geändert werden',
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.casino),
-                  tooltip: 'Neu würfeln',
-                  onPressed: () => setState(
-                      () => passwordCtrl.text = generateInitialPassword()),
-                ),
-              ),
-              autocorrect: false,
-            ),
-            if (error != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Text(error!,
-                    style: const TextStyle(color: Colors.red, fontSize: 12)),
-              ),
-          ],
-        )),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Abbrechen')),
-          FilledButton(
-            onPressed: () {
-              final name = usernameCtrl.text.trim().toLowerCase();
-              if (!isValidUsername(name)) {
-                setState(() => error =
-                    'Ungültiger Nutzername (3–32 Zeichen: a-z, 0-9, . _ -)');
-                return;
-              }
-              if (passwordCtrl.text.length < 8) {
-                setState(
-                    () => error = 'Passwort braucht mindestens 8 Zeichen');
-                return;
-              }
-              Navigator.pop(ctx, true);
-            },
-            child: const Text('Anlegen'),
-          ),
-        ],
-      ),
-    ),
+        ),
   );
   if (ok != true || !context.mounted) return;
 
@@ -256,49 +291,65 @@ Future<void> _zugangszettelAnlegen(
 /// Zeigt die Zugangsdaten GENAU EINMAL an (fürs Übertragen auf den
 /// Zugangszettel) — das Passwort ist danach nirgends mehr ablesbar.
 Future<void> _showCredentials(
-    BuildContext context, String username, String password) {
+  BuildContext context,
+  String username,
+  String password,
+) {
   return showDialog<void>(
     context: context,
-    builder: (ctx) => AlertDialog(
-      title: const Text('Zugangsdaten notieren'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Fürs Ausfüllen des Zugangszettels — diese Anzeige kommt '
-            'nur einmal:',
-            style: TextStyle(fontSize: 13),
+    builder:
+        (ctx) => AlertDialog(
+          title: const Text('Zugangsdaten notieren'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Fürs Ausfüllen des Zugangszettels — diese Anzeige kommt '
+                'nur einmal:',
+                style: TextStyle(fontSize: 13),
+              ),
+              const SizedBox(height: 12),
+              SelectableText(
+                'Nutzername: $username\nPasswort: $password',
+                style: const TextStyle(
+                  fontFamily: 'monospace',
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
-          SelectableText('Nutzername: $username\nPasswort: $password',
-              style: const TextStyle(
-                  fontFamily: 'monospace', fontWeight: FontWeight.bold)),
-        ],
-      ),
-      actions: [
-        TextButton.icon(
-          icon: const Icon(Icons.copy),
-          label: const Text('Kopieren'),
-          onPressed: () => Clipboard.setData(ClipboardData(
-              text: 'Nutzername: $username\nPasswort: $password')),
+          actions: [
+            TextButton.icon(
+              icon: const Icon(Icons.copy),
+              label: const Text('Kopieren'),
+              onPressed:
+                  () => Clipboard.setData(
+                    ClipboardData(
+                      text: 'Nutzername: $username\nPasswort: $password',
+                    ),
+                  ),
+            ),
+            // Teilen statt Abtippen (Issue #165). Dass die Zugangsdaten durch
+            // einen Chat wandern dürfen, hängt an EINER Eigenschaft: Das
+            // Initialpasswort ist ein Einmal-Schlüssel — der Router erzwingt
+            // beim ersten Anmelden einen eigenen und lässt sich nicht umgehen.
+            // Fiele der Pflichtwechsel, wäre dieser Knopf ein Datenleck.
+            TextButton.icon(
+              icon: const Icon(Icons.share),
+              label: const Text('Teilen'),
+              onPressed:
+                  () => teile(
+                    ctx,
+                    zugangsNachricht(nutzername: username, passwort: password),
+                  ),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Notiert'),
+            ),
+          ],
         ),
-        // Teilen statt Abtippen (Issue #165). Dass die Zugangsdaten durch
-        // einen Chat wandern dürfen, hängt an EINER Eigenschaft: Das
-        // Initialpasswort ist ein Einmal-Schlüssel — der Router erzwingt
-        // beim ersten Anmelden einen eigenen und lässt sich nicht umgehen.
-        // Fiele der Pflichtwechsel, wäre dieser Knopf ein Datenleck.
-        TextButton.icon(
-          icon: const Icon(Icons.share),
-          label: const Text('Teilen'),
-          onPressed: () => teile(
-              ctx, zugangsNachricht(nutzername: username, passwort: password)),
-        ),
-        FilledButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Notiert')),
-      ],
-    ),
   );
 }
 
@@ -328,8 +379,10 @@ class _EinladungenAbschnitt extends ConsumerWidget {
           child: Row(
             children: [
               Expanded(
-                child: Text('Einladungen',
-                    style: Theme.of(context).textTheme.titleMedium),
+                child: Text(
+                  'Einladungen',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
               ),
               // Für alle, die noch gar nichts wollen: ein Blick in die
               // erfundene Wehr, beliebig oft teilbar, ohne echtes Wehrdatum
@@ -389,9 +442,10 @@ class _EinladungenAbschnitt extends ConsumerWidget {
     final kommandiert =
         ref.read(meineKommandoGesamtwehrenProvider).value ?? const <String>{};
     final eigene = ref.read(myAbteilungIdProvider).value;
-    var abteilung = abteilungen.any((a) => a.id == eigene)
-        ? eigene
-        : (abteilungen.isNotEmpty ? abteilungen.first.id : null);
+    var abteilung =
+        abteilungen.any((a) => a.id == eigene)
+            ? eigene
+            : (abteilungen.isNotEmpty ? abteilungen.first.id : null);
 
     // Der Feuerwehrkommandant ist eine Gesamtwehr-Stellung — die Frage ergibt
     // nur Sinn, wenn die gewählte Abteilung an einer Gesamtwehr hängt UND der
@@ -399,8 +453,7 @@ class _EinladungenAbschnitt extends ConsumerWidget {
     bool darfKommandantErnennen(String? abteilungId) {
       for (final a in abteilungen) {
         if (a.id == abteilungId) {
-          return a.gesamtwehrId != null &&
-              kommandiert.contains(a.gesamtwehrId);
+          return a.gesamtwehrId != null && kommandiert.contains(a.gesamtwehrId);
         }
       }
       return false;
@@ -409,113 +462,143 @@ class _EinladungenAbschnitt extends ConsumerWidget {
     final ok = await showDialog<bool>(
       context: context,
       useRootNavigator: true, // siehe oben
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setState) => AlertDialog(
-          title: const Text('Per E-Mail einladen'),
-          content: SingleChildScrollView(
-              child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: mailCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'E-Mail-Adresse',
-                  helperText: 'Dorthin geht der Code — muss erreichbar sein',
-                ),
-                keyboardType: TextInputType.emailAddress,
-                autocorrect: false,
-                autofocus: true,
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: nameCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Anzeigename',
-                  helperText: 'Wie die Person in der Wehr gerufen wird',
-                ),
-              ),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                initialValue: role,
-                decoration: const InputDecoration(labelText: 'Rolle'),
-                items: const [
-                  DropdownMenuItem(
-                      value: 'member', child: Text('Truppführer (liest)')),
-                  DropdownMenuItem(
-                      value: 'geraetewart',
-                      child: Text('Gerätewart (bearbeitet)')),
-                  DropdownMenuItem(
-                      value: 'admin',
-                      child: Text('Abteilungskommandant (verwaltet)')),
-                ],
-                onChanged: (v) => setState(() => role = v ?? 'geraetewart'),
-              ),
-              if (abteilungen.length > 1) ...[
-                const SizedBox(height: 8),
-                DropdownButtonFormField<String>(
-                  initialValue: abteilung,
-                  decoration: const InputDecoration(labelText: 'Abteilung'),
-                  items: [
-                    for (final a in abteilungen)
-                      DropdownMenuItem(value: a.id, child: Text(a.name)),
-                  ],
-                  onChanged: (v) => setState(() {
-                    abteilung = v ?? abteilung;
-                    if (!darfKommandantErnennen(abteilung)) {
-                      alsKommandant = false;
-                    }
-                  }),
-                ),
-              ],
-              if (darfKommandantErnennen(abteilung))
-                CheckboxListTile(
-                  value: alsKommandant,
-                  onChanged: (v) => setState(() => alsKommandant = v ?? false),
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text('Auch Feuerwehrkommandant'),
-                  subtitle: const Text(
-                    'Zwei Kommandanten je Gesamtwehr sind der Schutz davor, '
-                    'dass sich die Wehr aussperrt.',
-                    style: TextStyle(fontSize: 12),
+      builder:
+          (ctx) => StatefulBuilder(
+            builder:
+                (ctx, setState) => AlertDialog(
+                  title: const Text('Per E-Mail einladen'),
+                  content: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextField(
+                          controller: mailCtrl,
+                          decoration: const InputDecoration(
+                            labelText: 'E-Mail-Adresse',
+                            helperText:
+                                'Dorthin geht der Code — muss erreichbar sein',
+                          ),
+                          keyboardType: TextInputType.emailAddress,
+                          autocorrect: false,
+                          autofocus: true,
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: nameCtrl,
+                          decoration: const InputDecoration(
+                            labelText: 'Anzeigename',
+                            helperText:
+                                'Wie die Person in der Wehr gerufen wird',
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        DropdownButtonFormField<String>(
+                          initialValue: role,
+                          decoration: const InputDecoration(labelText: 'Rolle'),
+                          items: const [
+                            DropdownMenuItem(
+                              value: 'member',
+                              child: Text('Truppführer (liest)'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'geraetewart',
+                              child: Text('Gerätewart (bearbeitet)'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'admin',
+                              child: Text('Abteilungskommandant (verwaltet)'),
+                            ),
+                          ],
+                          onChanged:
+                              (v) => setState(() => role = v ?? 'geraetewart'),
+                        ),
+                        if (abteilungen.length > 1) ...[
+                          const SizedBox(height: 8),
+                          DropdownButtonFormField<String>(
+                            initialValue: abteilung,
+                            decoration: const InputDecoration(
+                              labelText: 'Abteilung',
+                            ),
+                            items: [
+                              for (final a in abteilungen)
+                                DropdownMenuItem(
+                                  value: a.id,
+                                  child: Text(a.name),
+                                ),
+                            ],
+                            onChanged:
+                                (v) => setState(() {
+                                  abteilung = v ?? abteilung;
+                                  if (!darfKommandantErnennen(abteilung)) {
+                                    alsKommandant = false;
+                                  }
+                                }),
+                          ),
+                        ],
+                        if (darfKommandantErnennen(abteilung))
+                          CheckboxListTile(
+                            value: alsKommandant,
+                            onChanged:
+                                (v) =>
+                                    setState(() => alsKommandant = v ?? false),
+                            contentPadding: EdgeInsets.zero,
+                            title: const Text('Auch Feuerwehrkommandant'),
+                            subtitle: const Text(
+                              'Zwei Kommandanten je Gesamtwehr sind der Schutz davor, '
+                              'dass sich die Wehr aussperrt.',
+                              style: TextStyle(fontSize: 12),
+                            ),
+                          ),
+                        if (error != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Text(
+                              error!,
+                              style: const TextStyle(
+                                color: Colors.red,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, false),
+                      child: const Text('Abbrechen'),
+                    ),
+                    FilledButton(
+                      onPressed: () {
+                        final mail = mailCtrl.text.trim().toLowerCase();
+                        if (!mail.contains('@') || !mail.contains('.')) {
+                          setState(
+                            () =>
+                                error =
+                                    'Bitte eine vollständige E-Mail-Adresse angeben.',
+                          );
+                          return;
+                        }
+                        if (!hatEchteMail(mail)) {
+                          setState(
+                            () =>
+                                error =
+                                    '@$kAccountDomain ist die interne Zettel-Form — dorthin '
+                                    'kann keine Mail zugestellt werden.',
+                          );
+                          return;
+                        }
+                        if (abteilung == null) {
+                          setState(() => error = 'Keine Abteilung wählbar.');
+                          return;
+                        }
+                        Navigator.pop(ctx, true);
+                      },
+                      child: const Text('Einladen'),
+                    ),
+                  ],
                 ),
-              if (error != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text(error!,
-                      style: const TextStyle(color: Colors.red, fontSize: 12)),
-                ),
-            ],
-          )),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('Abbrechen')),
-            FilledButton(
-              onPressed: () {
-                final mail = mailCtrl.text.trim().toLowerCase();
-                if (!mail.contains('@') || !mail.contains('.')) {
-                  setState(() => error =
-                      'Bitte eine vollständige E-Mail-Adresse angeben.');
-                  return;
-                }
-                if (!hatEchteMail(mail)) {
-                  setState(() => error =
-                      '@$kAccountDomain ist die interne Zettel-Form — dorthin '
-                      'kann keine Mail zugestellt werden.');
-                  return;
-                }
-                if (abteilung == null) {
-                  setState(() => error = 'Keine Abteilung wählbar.');
-                  return;
-                }
-                Navigator.pop(ctx, true);
-              },
-              child: const Text('Einladen'),
-            ),
-          ],
-        ),
-      ),
+          ),
     );
     if (ok != true || !context.mounted) return;
 
@@ -531,10 +614,14 @@ class _EinladungenAbschnitt extends ConsumerWidget {
       });
       ref.invalidate(offeneEinladungenProvider);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Einladung an $mail verschickt. Der Code gilt '
-              'mindestens eine Stunde.'),
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Einladung an $mail verschickt. Der Code gilt '
+              'mindestens eine Stunde.',
+            ),
+          ),
+        );
       }
     });
   }
@@ -570,14 +657,11 @@ class _EinladungsZeile extends ConsumerWidget {
     // geschehen.
     final zeit = zustellung.zeit;
     return ListTile(
-      leading: Icon(
-        switch (zustellung.zustand) {
-          Zustellzustand.gescheitert => Icons.report_gmailerrorred,
-          Zustellzustand.zugestellt => Icons.mark_email_read_outlined,
-          _ => Icons.hourglass_empty,
-        },
-        color: gescheitert ? scheme.error : null,
-      ),
+      leading: Icon(switch (zustellung.zustand) {
+        Zustellzustand.gescheitert => Icons.report_gmailerrorred,
+        Zustellzustand.zugestellt => Icons.mark_email_read_outlined,
+        _ => Icons.hourglass_empty,
+      }, color: gescheitert ? scheme.error : null),
       title: Text(e.anzeigename?.isNotEmpty == true ? e.anzeigename! : e.email),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -602,23 +686,36 @@ class _EinladungsZeile extends ConsumerWidget {
       isThreeLine: true,
       trailing: PopupMenuButton<String>(
         onSelected: (wahl) => _einladungAktion(context, ref, e, wahl),
-        itemBuilder: (_) => const [
-          PopupMenuItem(value: 'invite_resend', child: Text('Erneut senden')),
-          // Steht bei JEDER Einladung, nicht nur bei den gescheiterten:
-          // Ohne Brevo-Schlüssel weiss der Server gar nicht, welche das
-          // sind — und dann wäre der Ausweg genau dort weg, wo er am
-          // nötigsten ist.
-          PopupMenuItem(
-              value: 'zettel', child: Text('Zugangszettel stattdessen')),
-          PopupMenuItem(value: 'invite_revoke', child: Text('Zurückziehen')),
-        ],
+        itemBuilder:
+            (_) => const [
+              PopupMenuItem(
+                value: 'invite_resend',
+                child: Text('Erneut senden'),
+              ),
+              // Steht bei JEDER Einladung, nicht nur bei den gescheiterten:
+              // Ohne Brevo-Schlüssel weiss der Server gar nicht, welche das
+              // sind — und dann wäre der Ausweg genau dort weg, wo er am
+              // nötigsten ist.
+              PopupMenuItem(
+                value: 'zettel',
+                child: Text('Zugangszettel stattdessen'),
+              ),
+              PopupMenuItem(
+                value: 'invite_revoke',
+                child: Text('Zurückziehen'),
+              ),
+            ],
       ),
     );
   }
 }
 
 Future<void> _einladungAktion(
-    BuildContext context, WidgetRef ref, Einladung e, String aktion) async {
+  BuildContext context,
+  WidgetRef ref,
+  Einladung e,
+  String aktion,
+) async {
   if (aktion == 'zettel') {
     return _zugangszettelAnlegen(
       context,
@@ -636,19 +733,24 @@ Future<void> _einladungAktion(
       // der Dialog UNTER der NavigationBar, und ein Tipp knapp daneben
       // bräche ihn ab und wechselte den Tab (AGENTS.md, #79/#96).
       useRootNavigator: true,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Einladung zurückziehen?'),
-        content: Text('${e.email} kann den Code dann nicht mehr einlösen. '
-            'Die Adresse ist danach wieder frei für eine neue Einladung.'),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Abbrechen')),
-          FilledButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Zurückziehen')),
-        ],
-      ),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Einladung zurückziehen?'),
+            content: Text(
+              '${e.email} kann den Code dann nicht mehr einlösen. '
+              'Die Adresse ist danach wieder frei für eine neue Einladung.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Abbrechen'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Zurückziehen'),
+              ),
+            ],
+          ),
     );
     if (ok != true || !context.mounted) return;
   }
@@ -659,11 +761,15 @@ Future<void> _einladungAktion(
     });
     ref.invalidate(offeneEinladungenProvider);
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(aktion == 'invite_resend'
-            ? 'Neue Einladung an ${e.email} verschickt.'
-            : 'Einladung zurückgezogen.'),
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            aktion == 'invite_resend'
+                ? 'Neue Einladung an ${e.email} verschickt.'
+                : 'Einladung zurückgezogen.',
+          ),
+        ),
+      );
     }
   });
 }
@@ -748,13 +854,14 @@ class _UserTile extends ConsumerWidget {
       meineKommandos,
       abteilungen,
     );
-    final laufendesRecht = tempZiel == null
-        ? null
-        : ref
-            .watch(temporaereRechteDerAbteilungProvider(tempZiel))
-            .value
-            ?.where((r) => r.userId == user.id && r.laeuft)
-            .firstOrNull;
+    final laufendesRecht =
+        tempZiel == null
+            ? null
+            : ref
+                .watch(temporaereRechteDerAbteilungProvider(tempZiel))
+                .value
+                ?.where((r) => r.userId == user.id && r.laeuft)
+                .firstOrNull;
 
     // Eine Zeile je Wirkungskreis: „Gerätewart (Grombach)" — der
     // Abteilungsname entfällt, solange es nur eine Abteilung gibt.
@@ -800,66 +907,91 @@ class _UserTile extends ConsumerWidget {
     return ListTile(
       leading: _KontoAvatar(
         user: user,
-        rollenIcon: user.banned
-            ? Icons.block
-            : istKommandant
+        rollenIcon:
+            user.banned
+                ? Icons.block
+                : istKommandant
                 ? Icons.local_fire_department
                 : switch (user.role) {
-                    'admin' => Icons.admin_panel_settings,
-                    'geraetewart' => Icons.build_circle,
-                    _ => Icons.person,
-                  },
+                  'admin' => Icons.admin_panel_settings,
+                  'geraetewart' => Icons.build_circle,
+                  _ => Icons.person,
+                },
       ),
-      title: Text(user.anzeige,
-          style: user.banned
-              ? const TextStyle(decoration: TextDecoration.lineThrough)
-              : null),
+      title: Text(
+        user.anzeige,
+        style:
+            user.banned
+                ? const TextStyle(decoration: TextDecoration.lineThrough)
+                : null,
+      ),
       subtitle: Text(details.join(' · ')),
       trailing: PopupMenuButton<String>(
         onSelected: (action) => _onAction(context, ref, action, abteilungen),
-        itemBuilder: (_) => [
-          const PopupMenuItem(
-              value: 'reset', child: Text('Passwort zurücksetzen')),
-          // Mitgliedschafts-Server: Rollen je Abteilung in einem Dialog.
-          // Alt-Server: die beiden früheren Einzel-Dialoge.
-          if (user.hatMitgliedschaften)
-            const PopupMenuItem(
-                value: 'mitgliedschaften', child: Text('Rollen & Abteilungen'))
-          else ...[
-            const PopupMenuItem(value: 'role', child: Text('Rolle ändern')),
-            if (abteilungen.length > 1)
+        itemBuilder:
+            (_) => [
               const PopupMenuItem(
-                  value: 'abteilung', child: Text('Abteilung ändern')),
-          ],
-          if (kommandantZiel != null)
-            PopupMenuItem(
-                value: 'kommandant',
-                child: Text(user.kommandantGesamtwehren.contains(kommandantZiel)
-                    ? 'Als Feuerwehrkommandant entlassen'
-                    : 'Zum Feuerwehrkommandanten ernennen')),
-          PopupMenuItem(
-              value: 'email',
-              child: Text(echteMail
-                  ? 'E-Mail-Adresse ändern'
-                  : 'E-Mail-Adresse hinterlegen')),
-          // Nur sinnvoll mit echter Adresse: GoTrue verschickt ausschließlich
-          // an die Adresse des Kontos, @fw.local kann niemand empfangen.
-          if (echteMail)
-            const PopupMenuItem(
-                value: 'zugangsmail', child: Text('Passwort-Mail senden')),
-          if (tempZiel != null)
-            PopupMenuItem(
-                value: 'uebung',
-                child: Text(laufendesRecht != null
-                    ? 'Übungsrechte beenden'
-                    : 'Übungsrechte erteilen')),
-          const PopupMenuItem(
-              value: 'mfa', child: Text('Zwei-Faktor zurücksetzen')),
-          PopupMenuItem(
-              value: user.banned ? 'enable' : 'disable',
-              child: Text(user.banned ? 'Entsperren' : 'Sperren')),
-          const PopupMenuItem(value: 'delete', child: Text('Löschen')),
-        ],
+                value: 'reset',
+                child: Text('Passwort zurücksetzen'),
+              ),
+              // Mitgliedschafts-Server: Rollen je Abteilung in einem Dialog.
+              // Alt-Server: die beiden früheren Einzel-Dialoge.
+              if (user.hatMitgliedschaften)
+                const PopupMenuItem(
+                  value: 'mitgliedschaften',
+                  child: Text('Rollen & Abteilungen'),
+                )
+              else ...[
+                const PopupMenuItem(value: 'role', child: Text('Rolle ändern')),
+                if (abteilungen.length > 1)
+                  const PopupMenuItem(
+                    value: 'abteilung',
+                    child: Text('Abteilung ändern'),
+                  ),
+              ],
+              if (kommandantZiel != null)
+                PopupMenuItem(
+                  value: 'kommandant',
+                  child: Text(
+                    user.kommandantGesamtwehren.contains(kommandantZiel)
+                        ? 'Als Feuerwehrkommandant entlassen'
+                        : 'Zum Feuerwehrkommandanten ernennen',
+                  ),
+                ),
+              PopupMenuItem(
+                value: 'email',
+                child: Text(
+                  echteMail
+                      ? 'E-Mail-Adresse ändern'
+                      : 'E-Mail-Adresse hinterlegen',
+                ),
+              ),
+              // Nur sinnvoll mit echter Adresse: GoTrue verschickt ausschließlich
+              // an die Adresse des Kontos, @fw.local kann niemand empfangen.
+              if (echteMail)
+                const PopupMenuItem(
+                  value: 'zugangsmail',
+                  child: Text('Passwort-Mail senden'),
+                ),
+              if (tempZiel != null)
+                PopupMenuItem(
+                  value: 'uebung',
+                  child: Text(
+                    laufendesRecht != null
+                        ? 'Übungsrechte beenden'
+                        : 'Übungsrechte erteilen',
+                  ),
+                ),
+              const PopupMenuItem(
+                value: 'mfa',
+                child: Text('Zwei-Faktor zurücksetzen'),
+              ),
+              PopupMenuItem(
+                value: user.banned ? 'enable' : 'disable',
+                child: Text(user.banned ? 'Entsperren' : 'Sperren'),
+              ),
+              const PopupMenuItem(value: 'delete', child: Text('Löschen')),
+            ],
       ),
     );
   }
@@ -868,13 +1000,17 @@ class _UserTile extends ConsumerWidget {
   /// aus den Abteilungen des Kontos (plus bestehender Kommandos),
   /// geschnitten mit den eigenen Kommandos — eindeutig oder gar nicht.
   String? _kommandantZiel(
-      Set<String> meineKommandos, List<AbteilungInfo> abteilungen) {
-    final ziele = <String>{
-      for (final abteilungId in user.memberships.keys)
-        for (final a in abteilungen)
-          if (a.id == abteilungId && a.gesamtwehrId != null) a.gesamtwehrId!,
-      ...user.kommandantGesamtwehren,
-    }.where(meineKommandos.contains).toSet();
+    Set<String> meineKommandos,
+    List<AbteilungInfo> abteilungen,
+  ) {
+    final ziele =
+        <String>{
+          for (final abteilungId in user.memberships.keys)
+            for (final a in abteilungen)
+              if (a.id == abteilungId && a.gesamtwehrId != null)
+                a.gesamtwehrId!,
+          ...user.kommandantGesamtwehren,
+        }.where(meineKommandos.contains).toSet();
     return ziele.length == 1 ? ziele.first : null;
   }
 
@@ -891,8 +1027,7 @@ class _UserTile extends ConsumerWidget {
     final ziele = <String>{};
     for (final e in user.memberships.entries) {
       if (e.value == 'admin' || e.value == 'geraetewart') continue;
-      final abteilung =
-          abteilungen.where((a) => a.id == e.key).firstOrNull;
+      final abteilung = abteilungen.where((a) => a.id == e.key).firstOrNull;
       if (darfTemporaeresRechtErteilen(
         abteilungId: e.key,
         gesamtwehrId: abteilung?.gesamtwehrId,
@@ -905,20 +1040,30 @@ class _UserTile extends ConsumerWidget {
     return ziele.length == 1 ? ziele.first : null;
   }
 
-  Future<void> _uebungsrechte(BuildContext context, WidgetRef ref,
-      String abteilungId, TemporaeresRecht? laufend) async {
+  Future<void> _uebungsrechte(
+    BuildContext context,
+    WidgetRef ref,
+    String abteilungId,
+    TemporaeresRecht? laufend,
+  ) async {
     final dienst = ref.read(tempRechteServiceProvider);
     if (dienst == null) return;
 
     if (laufend != null) {
       final ok = await _confirm(
-          context,
-          'Übungsrechte beenden?',
-          '„${user.username}“ kann danach sofort nicht mehr bearbeiten. '
-              'Das Protokoll bleibt erhalten.');
+        context,
+        'Übungsrechte beenden?',
+        '„${user.username}“ kann danach sofort nicht mehr bearbeiten. '
+            'Das Protokoll bleibt erhalten.',
+      );
       if (!ok || !context.mounted) return;
-      await _run(context, ref, () => dienst.zieheZurueck(laufend.id, abteilungId),
-          erfolg: 'Übungsrechte beendet.', fehlerText: tempRechtFehlerText);
+      await _run(
+        context,
+        ref,
+        () => dienst.zieheZurueck(laufend.id, abteilungId),
+        erfolg: 'Übungsrechte beendet.',
+        fehlerText: tempRechtFehlerText,
+      );
       return;
     }
 
@@ -930,63 +1075,77 @@ class _UserTile extends ConsumerWidget {
       builder: (_) => _UebungsrechteDialog(name: user.username),
     );
     if (bis == null || !context.mounted) return;
-    await _run(context, ref, () => dienst.erteile(user.id, abteilungId, bis),
-        erfolg: 'Übungsrechte bis ${_fmtUhr(bis)} erteilt.',
-        fehlerText: tempRechtFehlerText);
+    await _run(
+      context,
+      ref,
+      () => dienst.erteile(user.id, abteilungId, bis),
+      erfolg: 'Übungsrechte bis ${_fmtUhr(bis)} erteilt.',
+      fehlerText: tempRechtFehlerText,
+    );
   }
 
-  Future<void> _onAction(BuildContext context, WidgetRef ref, String action,
-      List<AbteilungInfo> abteilungen) async {
+  Future<void> _onAction(
+    BuildContext context,
+    WidgetRef ref,
+    String action,
+    List<AbteilungInfo> abteilungen,
+  ) async {
     switch (action) {
       case 'uebung':
         final meine = ref.read(meineMitgliedschaftenProvider).value;
-        final kommandos = ref.read(meineKommandoGesamtwehrenProvider).value ??
+        final kommandos =
+            ref.read(meineKommandoGesamtwehrenProvider).value ??
             const <String>{};
         final ziel = _uebungsZiel(meine, kommandos, abteilungen);
         if (ziel == null) return;
-        final laufend = ref
-            .read(temporaereRechteDerAbteilungProvider(ziel))
-            .value
-            ?.where((r) => r.userId == user.id && r.laeuft)
-            .firstOrNull;
+        final laufend =
+            ref
+                .read(temporaereRechteDerAbteilungProvider(ziel))
+                .value
+                ?.where((r) => r.userId == user.id && r.laeuft)
+                .firstOrNull;
         await _uebungsrechte(context, ref, ziel, laufend);
       case 'mitgliedschaften':
         await _editMitgliedschaften(context, ref, abteilungen);
       case 'kommandant':
-        final meine = ref.read(meineKommandoGesamtwehrenProvider).value ??
+        final meine =
+            ref.read(meineKommandoGesamtwehrenProvider).value ??
             const <String>{};
         final ziel = _kommandantZiel(meine, abteilungen);
         if (ziel == null) return;
         final ernennen = !user.kommandantGesamtwehren.contains(ziel);
         final ok = await _confirm(
-            context,
-            ernennen
-                ? 'Zum Feuerwehrkommandanten ernennen?'
-                : 'Als Feuerwehrkommandant entlassen?',
-            ernennen
-                ? '„${user.username}“ darf danach in allen Abteilungen der '
-                    'Gesamtwehr schreiben, Abteilungen anlegen und '
-                    'Kommandanten ernennen oder entlassen.'
-                : '„${user.username}“ behält alle Mitgliedschaften, verliert '
-                    'aber die Gesamtwehr-Rechte.');
+          context,
+          ernennen
+              ? 'Zum Feuerwehrkommandanten ernennen?'
+              : 'Als Feuerwehrkommandant entlassen?',
+          ernennen
+              ? '„${user.username}“ darf danach in allen Abteilungen der '
+                  'Gesamtwehr schreiben, Abteilungen anlegen und '
+                  'Kommandanten ernennen oder entlassen.'
+              : '„${user.username}“ behält alle Mitgliedschaften, verliert '
+                  'aber die Gesamtwehr-Rechte.',
+        );
         if (ok && context.mounted) {
           await _run(
-              context,
-              ref,
-              () => invokeAdminUsers(ref.read(supabaseClientProvider), {
-                    'action': 'set_kommandant',
-                    'user_id': user.id,
-                    'gesamtwehr_id': ziel,
-                    'kommandant': ernennen,
-                  }));
+            context,
+            ref,
+            () => invokeAdminUsers(ref.read(supabaseClientProvider), {
+              'action': 'set_kommandant',
+              'user_id': user.id,
+              'gesamtwehr_id': ziel,
+              'kommandant': ernennen,
+            }),
+          );
         }
       case 'reset':
         final password = generateInitialPassword();
         final ok = await _confirm(
-            context,
-            'Passwort zurücksetzen?',
-            'Für „${user.username}“ wird ein neues Initialpasswort gesetzt; '
-                'das alte Passwort gilt sofort nicht mehr.');
+          context,
+          'Passwort zurücksetzen?',
+          'Für „${user.username}“ wird ein neues Initialpasswort gesetzt; '
+              'das alte Passwort gilt sofort nicht mehr.',
+        );
         if (ok && context.mounted) {
           await _run(context, ref, () async {
             await invokeAdminUsers(ref.read(supabaseClientProvider), {
@@ -1004,61 +1163,68 @@ class _UserTile extends ConsumerWidget {
         // meldet sich die Person mit der Adresse an, der Zettel-Name gilt
         // nicht mehr. Wer das nicht weiß, sperrt jemanden versehentlich aus.
         final ctrl = TextEditingController(
-            text: hatEchteMail(user.email) ? user.email : '');
+          text: hatEchteMail(user.email) ? user.email : '',
+        );
         final ok = await showDialog<bool>(
           context: context,
-          builder: (ctx) => AlertDialog(
-            title: Text('E-Mail für „${user.username}“'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: ctrl,
-                  decoration: const InputDecoration(
-                    labelText: 'E-Mail-Adresse',
-                    helperText: 'Für „Passwort vergessen“ — nur nötig für '
-                        'Admins und Gerätewarte',
+          builder:
+              (ctx) => AlertDialog(
+                title: Text('E-Mail für „${user.username}“'),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: ctrl,
+                      decoration: const InputDecoration(
+                        labelText: 'E-Mail-Adresse',
+                        helperText:
+                            'Für „Passwort vergessen“ — nur nötig für '
+                            'Admins und Gerätewarte',
+                      ),
+                      keyboardType: TextInputType.emailAddress,
+                      autocorrect: false,
+                      autofocus: true,
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Achtung: Diese Person meldet sich danach mit der '
+                      'E-Mail-Adresse an, nicht mehr mit dem Nutzernamen. Bitte '
+                      'Bescheid geben.',
+                      style: TextStyle(fontSize: 12, color: Colors.orange),
+                    ),
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx, false),
+                    child: const Text('Abbrechen'),
                   ),
-                  keyboardType: TextInputType.emailAddress,
-                  autocorrect: false,
-                  autofocus: true,
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'Achtung: Diese Person meldet sich danach mit der '
-                  'E-Mail-Adresse an, nicht mehr mit dem Nutzernamen. Bitte '
-                  'Bescheid geben.',
-                  style: TextStyle(fontSize: 12, color: Colors.orange),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                  onPressed: () => Navigator.pop(ctx, false),
-                  child: const Text('Abbrechen')),
-              FilledButton(
-                  onPressed: () => Navigator.pop(ctx, true),
-                  child: const Text('Speichern')),
-            ],
-          ),
+                  FilledButton(
+                    onPressed: () => Navigator.pop(ctx, true),
+                    child: const Text('Speichern'),
+                  ),
+                ],
+              ),
         );
         if (ok == true && context.mounted) {
           await _run(
-              context,
-              ref,
-              () => invokeAdminUsers(ref.read(supabaseClientProvider), {
-                    'action': 'set_email',
-                    'user_id': user.id,
-                    'email': ctrl.text.trim(),
-                  }));
+            context,
+            ref,
+            () => invokeAdminUsers(ref.read(supabaseClientProvider), {
+              'action': 'set_email',
+              'user_id': user.id,
+              'email': ctrl.text.trim(),
+            }),
+          );
         }
       case 'zugangsmail':
         final ok = await _confirm(
-            context,
-            'Passwort-Mail senden?',
-            '„${user.username}“ bekommt an ${user.email} einen Code, mit dem '
-                'die Person sich selbst ein Passwort setzen kann. Kommt die '
-                'Mail nicht an, stimmt die Adresse nicht.');
+          context,
+          'Passwort-Mail senden?',
+          '„${user.username}“ bekommt an ${user.email} einen Code, mit dem '
+              'die Person sich selbst ein Passwort setzen kann. Kommt die '
+              'Mail nicht an, stimmt die Adresse nicht.',
+        );
         if (ok && context.mounted) {
           await _run(context, ref, () async {
             // Öffentlicher Endpunkt, kein Admin-Aufruf: Genau denselben Weg
@@ -1071,134 +1237,172 @@ class _UserTile extends ConsumerWidget {
         }
       case 'mfa':
         final ok = await _confirm(
-            context,
-            'Zwei-Faktor zurücksetzen?',
-            'Für „${user.username}“ wird der zweite Faktor entfernt. Die '
-                'Person meldet sich danach nur noch mit dem Passwort an und '
-                'kann ihn neu einrichten. Nur machen, wenn du sicher bist, '
-                'wen du vor dir hast — das ist der Weg für ein verlorenes '
-                'Telefon.');
+          context,
+          'Zwei-Faktor zurücksetzen?',
+          'Für „${user.username}“ wird der zweite Faktor entfernt. Die '
+              'Person meldet sich danach nur noch mit dem Passwort an und '
+              'kann ihn neu einrichten. Nur machen, wenn du sicher bist, '
+              'wen du vor dir hast — das ist der Weg für ein verlorenes '
+              'Telefon.',
+        );
         if (ok && context.mounted) {
           await _run(
-              context,
-              ref,
-              () => invokeAdminUsers(ref.read(supabaseClientProvider), {
-                    'action': 'clear_mfa',
-                    'user_id': user.id,
-                  }));
+            context,
+            ref,
+            () => invokeAdminUsers(ref.read(supabaseClientProvider), {
+              'action': 'clear_mfa',
+              'user_id': user.id,
+            }),
+          );
         }
       case 'role':
         var role = user.role;
         final ok = await showDialog<bool>(
           context: context,
-          builder: (ctx) => AlertDialog(
-            title: Text('Rolle von „${user.username}“'),
-            content: StatefulBuilder(
-              builder: (ctx, setState) => DropdownButtonFormField<String>(
-                initialValue: role,
-                items: const [
-                  DropdownMenuItem(
-                      value: 'member', child: Text('Truppmann (liest)')),
-                  DropdownMenuItem(
-                      value: 'geraetewart',
-                      child: Text('Gerätewart (bearbeitet)')),
-                  DropdownMenuItem(
-                      value: 'admin',
-                      child: Text('Abteilungskommandant (verwaltet)')),
+          builder:
+              (ctx) => AlertDialog(
+                title: Text('Rolle von „${user.username}“'),
+                content: StatefulBuilder(
+                  builder:
+                      (ctx, setState) => DropdownButtonFormField<String>(
+                        initialValue: role,
+                        items: const [
+                          DropdownMenuItem(
+                            value: 'member',
+                            child: Text('Truppmann (liest)'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'geraetewart',
+                            child: Text('Gerätewart (bearbeitet)'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'admin',
+                            child: Text('Abteilungskommandant (verwaltet)'),
+                          ),
+                        ],
+                        onChanged: (v) => setState(() => role = v ?? role),
+                      ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx, false),
+                    child: const Text('Abbrechen'),
+                  ),
+                  FilledButton(
+                    onPressed: () => Navigator.pop(ctx, true),
+                    child: const Text('Speichern'),
+                  ),
                 ],
-                onChanged: (v) => setState(() => role = v ?? role),
               ),
-            ),
-            actions: [
-              TextButton(
-                  onPressed: () => Navigator.pop(ctx, false),
-                  child: const Text('Abbrechen')),
-              FilledButton(
-                  onPressed: () => Navigator.pop(ctx, true),
-                  child: const Text('Speichern')),
-            ],
-          ),
         );
         if (ok == true && context.mounted) {
           await _run(
-              context,
-              ref,
-              () => invokeAdminUsers(ref.read(supabaseClientProvider),
-                  {'action': 'set_role', 'user_id': user.id, 'role': role}));
+            context,
+            ref,
+            () => invokeAdminUsers(ref.read(supabaseClientProvider), {
+              'action': 'set_role',
+              'user_id': user.id,
+              'role': role,
+            }),
+          );
         }
       case 'abteilung':
         // Vorauswahl: die aktuelle Abteilung, sonst die erste wählbare —
         // ein Dropdown ohne gültigen Wert wirft zur Laufzeit.
-        var ziel = abteilungen.any((a) => a.id == user.abteilungId)
-            ? user.abteilungId!
-            : abteilungen.first.id;
+        var ziel =
+            abteilungen.any((a) => a.id == user.abteilungId)
+                ? user.abteilungId!
+                : abteilungen.first.id;
         final ok = await showDialog<bool>(
           context: context,
-          builder: (ctx) => AlertDialog(
-            title: Text('Abteilung von „${user.username}“'),
-            content: StatefulBuilder(
-              builder: (ctx, setState) => Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  DropdownButtonFormField<String>(
-                    initialValue: ziel,
-                    items: [
-                      for (final a in abteilungen)
-                        DropdownMenuItem(value: a.id, child: Text(a.name)),
-                    ],
-                    onChanged: (v) => setState(() => ziel = v ?? ziel),
+          builder:
+              (ctx) => AlertDialog(
+                title: Text('Abteilung von „${user.username}“'),
+                content: StatefulBuilder(
+                  builder:
+                      (ctx, setState) => Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          DropdownButtonFormField<String>(
+                            initialValue: ziel,
+                            items: [
+                              for (final a in abteilungen)
+                                DropdownMenuItem(
+                                  value: a.id,
+                                  child: Text(a.name),
+                                ),
+                            ],
+                            onChanged: (v) => setState(() => ziel = v ?? ziel),
+                          ),
+                          const SizedBox(height: 12),
+                          const Text(
+                            'Das Konto arbeitet danach im Bestand der neuen '
+                            'Abteilung. Ein bereits eingerichtetes Gerät holt sich '
+                            'den neuen Stand erst beim nächsten Pull.',
+                            style: TextStyle(fontSize: 12),
+                          ),
+                        ],
+                      ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx, false),
+                    child: const Text('Abbrechen'),
                   ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Das Konto arbeitet danach im Bestand der neuen '
-                    'Abteilung. Ein bereits eingerichtetes Gerät holt sich '
-                    'den neuen Stand erst beim nächsten Pull.',
-                    style: TextStyle(fontSize: 12),
+                  FilledButton(
+                    onPressed: () => Navigator.pop(ctx, true),
+                    child: const Text('Speichern'),
                   ),
                 ],
               ),
-            ),
-            actions: [
-              TextButton(
-                  onPressed: () => Navigator.pop(ctx, false),
-                  child: const Text('Abbrechen')),
-              FilledButton(
-                  onPressed: () => Navigator.pop(ctx, true),
-                  child: const Text('Speichern')),
-            ],
-          ),
         );
         if (ok == true && context.mounted) {
           await _run(
-              context,
-              ref,
-              () => invokeAdminUsers(ref.read(supabaseClientProvider), {
-                    'action': 'set_abteilung',
-                    'user_id': user.id,
-                    'abteilung_id': ziel,
-                  }));
+            context,
+            ref,
+            () => invokeAdminUsers(ref.read(supabaseClientProvider), {
+              'action': 'set_abteilung',
+              'user_id': user.id,
+              'abteilung_id': ziel,
+            }),
+          );
         }
       case 'disable':
       case 'enable':
-        final ok = action == 'enable' ||
+        final ok =
+            action == 'enable' ||
             await _confirm(
-                context,
-                'Konto sperren?',
-                '„${user.username}“ kann sich danach nicht mehr anmelden, '
-                    'bis das Konto entsperrt wird.');
+              context,
+              'Konto sperren?',
+              '„${user.username}“ kann sich danach nicht mehr anmelden, '
+                  'bis das Konto entsperrt wird.',
+            );
         if (ok && context.mounted) {
-          await _run(context, ref,
-              () => invokeAdminUsers(ref.read(supabaseClientProvider), {'action': action, 'user_id': user.id}));
+          await _run(
+            context,
+            ref,
+            () => invokeAdminUsers(ref.read(supabaseClientProvider), {
+              'action': action,
+              'user_id': user.id,
+            }),
+          );
         }
       case 'delete':
         final ok = await _confirm(
-            context,
-            'Konto löschen?',
-            '„${user.username}“ wird endgültig gelöscht. Für zeitweiliges '
-                'Stilllegen besser „Sperren“ verwenden.');
+          context,
+          'Konto löschen?',
+          '„${user.username}“ wird endgültig gelöscht. Für zeitweiliges '
+              'Stilllegen besser „Sperren“ verwenden.',
+        );
         if (ok && context.mounted) {
-          await _run(context, ref,
-              () => invokeAdminUsers(ref.read(supabaseClientProvider), {'action': 'delete', 'user_id': user.id}));
+          await _run(
+            context,
+            ref,
+            () => invokeAdminUsers(ref.read(supabaseClientProvider), {
+              'action': 'delete',
+              'user_id': user.id,
+            }),
+          );
         }
     }
   }
@@ -1207,8 +1411,11 @@ class _UserTile extends ConsumerWidget {
   /// „– keine –" beendet die Mitgliedschaft dort. Gespeichert wird nur
   /// der Unterschied zum Ist-Stand (ein Aufruf je Änderung; die Function
   /// prüft jede einzeln gegen die Hierarchie).
-  Future<void> _editMitgliedschaften(BuildContext context, WidgetRef ref,
-      List<AbteilungInfo> abteilungen) async {
+  Future<void> _editMitgliedschaften(
+    BuildContext context,
+    WidgetRef ref,
+    List<AbteilungInfo> abteilungen,
+  ) async {
     if (abteilungen.isEmpty) return;
     final auswahl = <String, String?>{
       for (final a in abteilungen) a.id: user.memberships[a.id],
@@ -1216,53 +1423,64 @@ class _UserTile extends ConsumerWidget {
     final echteMail = hatEchteMail(user.email);
     final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('Rollen von „${user.username}“'),
-        content: StatefulBuilder(
-          builder: (ctx, setState) => SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (final a in abteilungen) ...[
-                  DropdownButtonFormField<String?>(
-                    initialValue: auswahl[a.id],
-                    decoration: InputDecoration(labelText: a.name),
-                    items: [
-                      const DropdownMenuItem<String?>(
-                          value: null, child: Text('– keine –')),
-                      for (final rolle in const [
-                        'member',
-                        'geraetewart',
-                        'admin',
-                      ])
-                        DropdownMenuItem<String?>(
-                            value: rolle,
-                            child: Text(
-                                rolleAnzeigename(rolle, echteMail: echteMail))),
-                    ],
-                    onChanged: (v) => setState(() => auswahl[a.id] = v),
+      builder:
+          (ctx) => AlertDialog(
+            title: Text('Rollen von „${user.username}“'),
+            content: StatefulBuilder(
+              builder:
+                  (ctx, setState) => SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        for (final a in abteilungen) ...[
+                          DropdownButtonFormField<String?>(
+                            initialValue: auswahl[a.id],
+                            decoration: InputDecoration(labelText: a.name),
+                            items: [
+                              const DropdownMenuItem<String?>(
+                                value: null,
+                                child: Text('– keine –'),
+                              ),
+                              for (final rolle in const [
+                                'member',
+                                'geraetewart',
+                                'admin',
+                              ])
+                                DropdownMenuItem<String?>(
+                                  value: rolle,
+                                  child: Text(
+                                    rolleAnzeigename(
+                                      rolle,
+                                      echteMail: echteMail,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                            onChanged: (v) => setState(() => auswahl[a.id] = v),
+                          ),
+                          const SizedBox(height: 8),
+                        ],
+                        const Text(
+                          'Ohne Mitgliedschaft sieht das Konto den Bestand dieser '
+                          'Abteilung nur noch lesend über die Gesamtwehr — oder gar '
+                          'nicht mehr, wenn keine Mitgliedschaft übrig bleibt.',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 8),
-                ],
-                const Text(
-                  'Ohne Mitgliedschaft sieht das Konto den Bestand dieser '
-                  'Abteilung nur noch lesend über die Gesamtwehr — oder gar '
-                  'nicht mehr, wenn keine Mitgliedschaft übrig bleibt.',
-                  style: TextStyle(fontSize: 12),
-                ),
-              ],
             ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Abbrechen'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Speichern'),
+              ),
+            ],
           ),
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Abbrechen')),
-          FilledButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Speichern')),
-        ],
-      ),
     );
     if (ok != true || !context.mounted) return;
 
@@ -1292,18 +1510,21 @@ class _UserTile extends ConsumerWidget {
   Future<bool> _confirm(BuildContext context, String title, String body) async {
     final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(title),
-        content: Text(body),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Abbrechen')),
-          FilledButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Ja')),
-        ],
-      ),
+      builder:
+          (ctx) => AlertDialog(
+            title: Text(title),
+            content: Text(body),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Abbrechen'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Ja'),
+              ),
+            ],
+          ),
     );
     return ok == true;
   }
@@ -1330,14 +1551,14 @@ Future<void> _run(
   try {
     await action();
     if (erfolg != null && context.mounted) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(erfolg)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(erfolg)));
     }
   } catch (e) {
     if (context.mounted) {
       final text = fehlerText == null ? 'Fehlgeschlagen: $e' : fehlerText(e);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(text)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
     }
   } finally {
     ref.invalidate(managedUsersProvider);
@@ -1359,65 +1580,69 @@ class _UebungsrechteDialogState extends State<_UebungsrechteDialog> {
   /// Stunden ab jetzt; `null` = bis Tagesende (Zeitzone des Geräts).
   int? _stunden;
 
-  DateTime get _bis => _stunden == null
-      ? tagesendeAblauf()
-      : DateTime.now().add(Duration(hours: _stunden!));
+  DateTime get _bis =>
+      _stunden == null
+          ? tagesendeAblauf()
+          : DateTime.now().add(Duration(hours: _stunden!));
 
   @override
   Widget build(BuildContext context) => AlertDialog(
-        title: const Text('Übungsrechte erteilen'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '„${widget.name}“ darf danach in dieser Abteilung Fahrzeuge, '
-              'Fächer und Geräte anlegen und ändern — wie ein Gerätewart, '
-              'aber befristet. Nutzer verwalten kann er weiterhin nicht.',
-              style: const TextStyle(fontSize: 13),
-            ),
-            const SizedBox(height: 12),
-            // Bewusst ListTiles statt RadioListTile: Letzteres ist seit
-            // Flutter 3.32 zugunsten eines RadioGroup-Vorfahren abgekündigt,
-            // und drei Zeilen Auswahl rechtfertigen den nicht.
-            for (final wahl in const [
-              (null, 'Bis Tagesende'),
-              (2, 'Zwei Stunden'),
-              (4, 'Vier Stunden'),
-            ])
-              ListTile(
-                onTap: () => setState(() => _stunden = wahl.$1),
-                title: Text(wahl.$2),
-                leading: Icon(_stunden == wahl.$1
-                    ? Icons.radio_button_checked
-                    : Icons.radio_button_unchecked),
-                contentPadding: EdgeInsets.zero,
-                dense: true,
-              ),
-            const SizedBox(height: 4),
-            Text(
-              'Läuft ab um ${_fmtUhr(_bis)}. Rechte wirken nur online — vor '
-              'der Übung erteilen, nicht im Keller.',
-              style: const TextStyle(fontSize: 12),
-            ),
-          ],
+    title: const Text('Übungsrechte erteilen'),
+    content: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '„${widget.name}“ darf danach in dieser Abteilung Fahrzeuge, '
+          'Fächer und Geräte anlegen und ändern — wie ein Gerätewart, '
+          'aber befristet. Nutzer verwalten kann er weiterhin nicht.',
+          style: const TextStyle(fontSize: 13),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Abbrechen'),
+        const SizedBox(height: 12),
+        // Bewusst ListTiles statt RadioListTile: Letzteres ist seit
+        // Flutter 3.32 zugunsten eines RadioGroup-Vorfahren abgekündigt,
+        // und drei Zeilen Auswahl rechtfertigen den nicht.
+        for (final wahl in const [
+          (null, 'Bis Tagesende'),
+          (2, 'Zwei Stunden'),
+          (4, 'Vier Stunden'),
+        ])
+          ListTile(
+            onTap: () => setState(() => _stunden = wahl.$1),
+            title: Text(wahl.$2),
+            leading: Icon(
+              _stunden == wahl.$1
+                  ? Icons.radio_button_checked
+                  : Icons.radio_button_unchecked,
+            ),
+            contentPadding: EdgeInsets.zero,
+            dense: true,
           ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, _bis),
-            child: const Text('Erteilen'),
-          ),
-        ],
-      );
+        const SizedBox(height: 4),
+        Text(
+          'Läuft ab um ${_fmtUhr(_bis)}. Rechte wirken nur online — vor '
+          'der Übung erteilen, nicht im Keller.',
+          style: const TextStyle(fontSize: 12),
+        ),
+      ],
+    ),
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.pop(context),
+        child: const Text('Abbrechen'),
+      ),
+      FilledButton(
+        onPressed: () => Navigator.pop(context, _bis),
+        child: const Text('Erteilen'),
+      ),
+    ],
+  );
 }
 
 /// „18:00", bei einem anderen Tag mit Datum davor.
 String _fmtUhr(DateTime t) {
-  final uhr = '${t.hour.toString().padLeft(2, '0')}:'
+  final uhr =
+      '${t.hour.toString().padLeft(2, '0')}:'
       '${t.minute.toString().padLeft(2, '0')}';
   final heute = DateTime.now();
   final gleicherTag =

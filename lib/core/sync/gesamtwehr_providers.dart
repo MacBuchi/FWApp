@@ -82,19 +82,21 @@ class EigenerAntrag {
 
 /// Eigene Abteilung samt Gesamtwehr. `null` im Lokalmodus, ohne Login oder
 /// auf einem Server ohne Mandanten-Schema.
-final meineOrganisationProvider =
-    FutureProvider<MeineOrganisation?>((ref) async {
+final meineOrganisationProvider = FutureProvider<MeineOrganisation?>((
+  ref,
+) async {
   final client = ref.watch(supabaseClientProvider);
   final session = ref.watch(sessionStreamProvider).value;
   if (client == null || session == null) return null;
   final meine = await ref.watch(myAbteilungIdProvider.future);
   if (meine == null) return null;
   try {
-    final row = await client
-        .from('abteilungen')
-        .select('id, name, status, gesamtwehr_id, gesamtwehren(name)')
-        .eq('id', meine)
-        .maybeSingle();
+    final row =
+        await client
+            .from('abteilungen')
+            .select('id, name, status, gesamtwehr_id, gesamtwehren(name)')
+            .eq('id', meine)
+            .maybeSingle();
     if (row == null) return null;
     return MeineOrganisation(
       abteilungId: row['id'] as String,
@@ -117,8 +119,10 @@ final gesamtwehrenProvider = FutureProvider<List<GesamtwehrInfo>>((ref) async {
   final session = ref.watch(sessionStreamProvider).value;
   if (client == null || session == null) return const [];
   try {
-    final rows =
-        await client.from('gesamtwehren').select('id, name').order('name');
+    final rows = await client
+        .from('gesamtwehren')
+        .select('id, name')
+        .order('name');
     return [
       for (final r in rows)
         GesamtwehrInfo(id: r['id'] as String, name: r['name'] as String),
@@ -132,8 +136,9 @@ final gesamtwehrenProvider = FutureProvider<List<GesamtwehrInfo>>((ref) async {
 /// Offene Anfragen an die eigene Gesamtwehr. Kommt über eine RPC, weil die
 /// anfragende Abteilung noch keine Schwester ist und RLS ihren Namen deshalb
 /// nicht herausgibt — genau darüber wird ja gerade entschieden.
-final offeneAnfragenProvider =
-    FutureProvider<List<VerbindungsAnfrage>>((ref) async {
+final offeneAnfragenProvider = FutureProvider<List<VerbindungsAnfrage>>((
+  ref,
+) async {
   final client = ref.watch(supabaseClientProvider);
   final session = ref.watch(sessionStreamProvider).value;
   if (client == null || session == null) return const [];
@@ -164,13 +169,14 @@ final eigenerAntragProvider = FutureProvider<EigenerAntrag?>((ref) async {
   final meine = await ref.watch(myAbteilungIdProvider.future);
   if (meine == null) return null;
   try {
-    final row = await client
-        .from('gesamtwehr_anfragen')
-        .select('id, gesamtwehr_id, status, decided_note')
-        .eq('abteilung_id', meine)
-        .order('created_at', ascending: false)
-        .limit(1)
-        .maybeSingle();
+    final row =
+        await client
+            .from('gesamtwehr_anfragen')
+            .select('id, gesamtwehr_id, status, decided_note')
+            .eq('abteilung_id', meine)
+            .order('created_at', ascending: false)
+            .limit(1)
+            .maybeSingle();
     if (row == null) return null;
     return EigenerAntrag(
       id: row['id'] as String,
@@ -268,35 +274,50 @@ class GesamtwehrService {
   /// Benennt eine Abteilung um (#119). Die Kennung bleibt, also bleiben auch
   /// alle Verweise — nur die Beschriftung ändert sich, und zwar für alle.
   Future<void> benenneAbteilungUm(String abteilungId, String name) async {
-    await _client.rpc('rename_abteilung',
-        params: {'ziel': abteilungId, 'neuer_name': name});
+    await _client.rpc(
+      'rename_abteilung',
+      params: {'ziel': abteilungId, 'neuer_name': name},
+    );
     _aktualisiereSichten();
   }
 
   Future<void> benenneGesamtwehrUm(String gesamtwehrId, String name) async {
-    await _client.rpc('rename_gesamtwehr',
-        params: {'ziel': gesamtwehrId, 'neuer_name': name});
+    await _client.rpc(
+      'rename_gesamtwehr',
+      params: {'ziel': gesamtwehrId, 'neuer_name': name},
+    );
     _aktualisiereSichten();
   }
 
-  Future<void> beantrageVerbindung(String gesamtwehrId,
-      {String? nachricht}) async {
-    await _client.rpc('request_gesamtwehr_verbindung', params: {
-      'ziel': gesamtwehrId,
-      if (nachricht != null && nachricht.trim().isNotEmpty)
-        'nachricht': nachricht.trim(),
-    });
+  Future<void> beantrageVerbindung(
+    String gesamtwehrId, {
+    String? nachricht,
+  }) async {
+    await _client.rpc(
+      'request_gesamtwehr_verbindung',
+      params: {
+        'ziel': gesamtwehrId,
+        if (nachricht != null && nachricht.trim().isNotEmpty)
+          'nachricht': nachricht.trim(),
+      },
+    );
     _aktualisiereSichten();
   }
 
-  Future<void> entscheide(String anfrageId,
-      {required bool freigeben, String? nachricht}) async {
-    await _client.rpc('decide_gesamtwehr_verbindung', params: {
-      'anfrage': anfrageId,
-      'freigeben': freigeben,
-      if (nachricht != null && nachricht.trim().isNotEmpty)
-        'nachricht': nachricht.trim(),
-    });
+  Future<void> entscheide(
+    String anfrageId, {
+    required bool freigeben,
+    String? nachricht,
+  }) async {
+    await _client.rpc(
+      'decide_gesamtwehr_verbindung',
+      params: {
+        'anfrage': anfrageId,
+        'freigeben': freigeben,
+        if (nachricht != null && nachricht.trim().isNotEmpty)
+          'nachricht': nachricht.trim(),
+      },
+    );
     _aktualisiereSichten();
   }
 }

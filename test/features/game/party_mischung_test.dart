@@ -18,11 +18,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/features/game/party/domain/party_frage.dart';
 
 PartyFrage frage(PartyFrageArt art, String text) => PartyFrage(
-      art: art,
-      text: text,
-      antworten: const [PartyAntwort('a'), PartyAntwort('b')],
-      richtig: 0,
-    );
+  art: art,
+  text: text,
+  antworten: const [PartyAntwort('a'), PartyAntwort('b')],
+  richtig: 0,
+);
 
 List<PartyFrage> topf(PartyFrageArt art, String praefix, int n) =>
     List.generate(n, (i) => frage(art, '$praefix$i'));
@@ -30,9 +30,9 @@ List<PartyFrage> topf(PartyFrageArt art, String praefix, int n) =>
 /// Zerlegt eine Partie in ihre Runden — genauso, wie `PartyStand.zugNummer`
 /// am Handy rechnet.
 List<List<PartyFrage>> runden(List<PartyFrage> partie, int proRunde) => [
-      for (var i = 0; i < partie.length; i += proRunde)
-        partie.sublist(i, min(i + proRunde, partie.length)),
-    ];
+  for (var i = 0; i < partie.length; i += proRunde)
+    partie.sublist(i, min(i + proRunde, partie.length)),
+];
 
 void main() {
   final zufall = Random(160);
@@ -91,8 +91,7 @@ void main() {
     expect(partie.where((f) => f.art == PartyFrageArt.bild), isNotEmpty);
   });
 
-  test('frische Installation: spielbar allein aus dem mitgelieferten Topf',
-      () {
+  test('frische Installation: spielbar allein aus dem mitgelieferten Topf', () {
     // Kein Fahrzeug, keine Fotos — genau der Zustand nach der ersten
     // Installation. Ohne das wäre der Modus dort tot.
     final partie = mischePartie(
@@ -107,8 +106,7 @@ void main() {
     expect(partie.every((f) => f.art == PartyFrageArt.unerwartet), isTrue);
   });
 
-  test('zu wenig Vorrat: so viele Fragen wie da sind, statt Wiederholung',
-      () {
+  test('zu wenig Vorrat: so viele Fragen wie da sind, statt Wiederholung', () {
     final partie = mischePartie(
       fach: topf(PartyFrageArt.fach, 'F', 2),
       bild: const [],
@@ -123,23 +121,27 @@ void main() {
 
   test('gar kein Vorrat oder nichts bestellt: leere Partie', () {
     expect(
-        mischePartie(
-            fach: const [],
-            bild: const [],
-            unerwartet: const [],
-            anzahl: 6,
-            proRunde: 2,
-            zufall: zufall),
-        isEmpty);
+      mischePartie(
+        fach: const [],
+        bild: const [],
+        unerwartet: const [],
+        anzahl: 6,
+        proRunde: 2,
+        zufall: zufall,
+      ),
+      isEmpty,
+    );
     expect(
-        mischePartie(
-            fach: topf(PartyFrageArt.fach, 'F', 5),
-            bild: const [],
-            unerwartet: const [],
-            anzahl: 0,
-            proRunde: 2,
-            zufall: zufall),
-        isEmpty);
+      mischePartie(
+        fach: topf(PartyFrageArt.fach, 'F', 5),
+        bild: const [],
+        unerwartet: const [],
+        anzahl: 0,
+        proRunde: 2,
+        zufall: zufall,
+      ),
+      isEmpty,
+    );
   });
 
   group('eine Runde, eine Kategorie (Issue #172)', () {
@@ -156,8 +158,11 @@ void main() {
       );
       expect(partie, hasLength(20));
       for (final runde in runden(partie, 5)) {
-        expect(runde.map((f) => f.art).toSet(), hasLength(1),
-            reason: 'gemischte Runde: ${runde.map((f) => f.text)}');
+        expect(
+          runde.map((f) => f.art).toSet(),
+          hasLength(1),
+          reason: 'gemischte Runde: ${runde.map((f) => f.text)}',
+        );
       }
     });
 
@@ -197,8 +202,12 @@ void main() {
           proRunde: 3,
           zufall: Random(lauf),
         );
-        stellen.add(runden(partie, 3)
-            .indexWhere((r) => r.first.art == PartyFrageArt.unerwartet));
+        stellen.add(
+          runden(
+            partie,
+            3,
+          ).indexWhere((r) => r.first.art == PartyFrageArt.unerwartet),
+        );
       }
       expect(stellen, hasLength(greaterThan(1)));
     });
@@ -251,8 +260,11 @@ void main() {
 
     for (final runde in runden(partie, 4)) {
       if (runde.length < 4) continue; // der angehängte Rest zählt nicht
-      expect(runde.map((f) => f.art).toSet(), hasLength(1),
-          reason: 'Eine Runde, eine Kategorie (Issue #172).');
+      expect(
+        runde.map((f) => f.art).toSet(),
+        hasLength(1),
+        reason: 'Eine Runde, eine Kategorie (Issue #172).',
+      );
     }
   });
 

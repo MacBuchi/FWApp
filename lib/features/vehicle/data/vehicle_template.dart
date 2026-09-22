@@ -35,7 +35,8 @@ const kVehicleTemplateDir = 'assets/vehicle_templates';
 /// Trägt die Kennzeichnung im Namen statt in einer Datenbankspalte: Sie ist
 /// damit überall sichtbar, wo das Fach auftaucht, und verschwindet von selbst,
 /// sobald der Gerätewart die Geräte verteilt und das Fach löscht.
-const kUnassignedCompartmentLabel = 'Normbeladung (ungeprüft) – noch zuzuordnen';
+const kUnassignedCompartmentLabel =
+    'Normbeladung (ungeprüft) – noch zuzuordnen';
 
 /// Ein Geräteraum der Vorlage.
 class TemplateCompartment {
@@ -142,17 +143,19 @@ VehicleTemplate? parseVehicleTemplate(String raw) {
       if (label == null || label.isEmpty) continue;
       final seite = c['seite'] as String?;
       final laengsposition = c['laengsposition'] as String?;
-      compartments.add(TemplateCompartment(
-        label: label,
-        position: (c['position'] as num?)?.toInt() ?? index,
-        // Nur Werte, die auch der Server annimmt (CHECK-Zwilling in
-        // fahrzeug_seiten.dart): Ein Tippfehler in einer Vorlage fiele
-        // sonst erst beim Veröffentlichen auf — und dann mit dem ganzen
-        // Schnappschuss. Lieber ein Fach unter „Ohne Seite".
-        seite: istGueltigeSeite(seite) ? seite : null,
-        laengsposition:
-            istGueltigeLaengsposition(laengsposition) ? laengsposition : null,
-      ));
+      compartments.add(
+        TemplateCompartment(
+          label: label,
+          position: (c['position'] as num?)?.toInt() ?? index,
+          // Nur Werte, die auch der Server annimmt (CHECK-Zwilling in
+          // fahrzeug_seiten.dart): Ein Tippfehler in einer Vorlage fiele
+          // sonst erst beim Veröffentlichen auf — und dann mit dem ganzen
+          // Schnappschuss. Lieber ein Fach unter „Ohne Seite".
+          seite: istGueltigeSeite(seite) ? seite : null,
+          laengsposition:
+              istGueltigeLaengsposition(laengsposition) ? laengsposition : null,
+        ),
+      );
       index++;
     }
 
@@ -170,11 +173,13 @@ VehicleTemplate? parseVehicleTemplate(String raw) {
         final equipmentId = i['equipment_id'] as String?;
         if (equipmentId == null || equipmentId.isEmpty) continue;
         final compartment = i['compartment'] as String?;
-        items.add(TemplateItem(
-          equipmentId: equipmentId,
-          quantity: (i['quantity'] as num?)?.toInt() ?? 1,
-          compartment: labels.contains(compartment) ? compartment : null,
-        ));
+        items.add(
+          TemplateItem(
+            equipmentId: equipmentId,
+            quantity: (i['quantity'] as num?)?.toInt() ?? 1,
+            compartment: labels.contains(compartment) ? compartment : null,
+          ),
+        );
       }
       if (items.isNotEmpty) {
         loading = TemplateLoading(
@@ -219,13 +224,15 @@ const kBundledVehicleTemplateIds = [
 ];
 
 /// Lädt die mitgelieferten Vorlagen. Unlesbare fallen still heraus.
-final vehicleTemplatesProvider =
-    FutureProvider<List<VehicleTemplate>>((ref) async {
+final vehicleTemplatesProvider = FutureProvider<List<VehicleTemplate>>((
+  ref,
+) async {
   final templates = <VehicleTemplate>[];
   for (final id in kBundledVehicleTemplateIds) {
     try {
-      final raw =
-          await rootBundle.loadString('$kVehicleTemplateDir/$id/template.json');
+      final raw = await rootBundle.loadString(
+        '$kVehicleTemplateDir/$id/template.json',
+      );
       final template = parseVehicleTemplate(raw);
       if (template != null) templates.add(template);
     } catch (e) {

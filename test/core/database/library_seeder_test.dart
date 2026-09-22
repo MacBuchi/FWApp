@@ -2,6 +2,7 @@
 /// Uses an in-memory Drift database and the real asset bundle (loaded via
 /// TestWidgetsFlutterBinding) so no mocking of rootBundle is required.
 library;
+
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/core/database/app_database.dart';
@@ -86,48 +87,59 @@ void main() {
       await seeder.seedIfNeeded();
       final items = await db.equipmentDao.getAll();
       expect(
-          items.every((e) =>
-              e.imagePath == pictogramPath(e.libraryEquipmentId!)),
-          isTrue);
+        items.every((e) => e.imagePath == pictogramPath(e.libraryEquipmentId!)),
+        isTrue,
+      );
     });
 
     test('backfill sets pictograms but never overwrites photos', () async {
       await seeder.seedIfNeeded();
       final items = await db.equipmentDao.getAll();
       // Bestand simulieren: ein Gerät ohne Bild, eines mit echtem Foto.
-      await db.equipmentDao.patchEquipment(items[0].id,
-          const EquipmentItemsCompanion(imagePath: Value(null)));
-      await db.equipmentDao.patchEquipment(items[1].id,
-          const EquipmentItemsCompanion(
-              imagePath: Value('supabase://equipment-images/foto.jpg')));
+      await db.equipmentDao.patchEquipment(
+        items[0].id,
+        const EquipmentItemsCompanion(imagePath: Value(null)),
+      );
+      await db.equipmentDao.patchEquipment(
+        items[1].id,
+        const EquipmentItemsCompanion(
+          imagePath: Value('supabase://equipment-images/foto.jpg'),
+        ),
+      );
 
       await seeder.seedIfNeeded();
 
       final after = await db.equipmentDao.getAll();
-      final restored =
-          after.firstWhere((e) => e.id == items[0].id);
+      final restored = after.firstWhere((e) => e.id == items[0].id);
       final photo = after.firstWhere((e) => e.id == items[1].id);
-      expect(restored.imagePath,
-          pictogramPath(restored.libraryEquipmentId!));
+      expect(restored.imagePath, pictogramPath(restored.libraryEquipmentId!));
       expect(photo.imagePath, 'supabase://equipment-images/foto.jpg');
     });
 
-    test('every assignment references an existing compartment and equipment',
-        () async {
-      await seeder.seedIfNeeded();
-      final vehicles = await db.vehicleDao.getAll();
-      for (final v in vehicles) {
-        final assignments = await db.assignmentDao.getByVehicle(v.id);
-        for (final a in assignments) {
-          final comp = await db.compartmentDao.getById(a.compartmentId);
-          final equip = await db.equipmentDao.getById(a.equipmentId);
-          expect(comp, isNotNull,
-              reason: 'Assignment ${a.id} references missing compartment');
-          expect(equip, isNotNull,
-              reason: 'Assignment ${a.id} references missing equipment');
+    test(
+      'every assignment references an existing compartment and equipment',
+      () async {
+        await seeder.seedIfNeeded();
+        final vehicles = await db.vehicleDao.getAll();
+        for (final v in vehicles) {
+          final assignments = await db.assignmentDao.getByVehicle(v.id);
+          for (final a in assignments) {
+            final comp = await db.compartmentDao.getById(a.compartmentId);
+            final equip = await db.equipmentDao.getById(a.equipmentId);
+            expect(
+              comp,
+              isNotNull,
+              reason: 'Assignment ${a.id} references missing compartment',
+            );
+            expect(
+              equip,
+              isNotNull,
+              reason: 'Assignment ${a.id} references missing equipment',
+            );
+          }
         }
-      }
-    });
+      },
+    );
 
     test('every assignment has quantity >= 1', () async {
       await seeder.seedIfNeeded();
@@ -144,65 +156,76 @@ void main() {
   // ── Idempotency ───────────────────────────────────────────────────────────
 
   group('idempotency', () {
-    test('calling seedIfNeeded twice produces identical vehicle count',
-        () async {
-      await seeder.seedIfNeeded();
-      final countAfterFirst = (await db.vehicleDao.getAll()).length;
+    test(
+      'calling seedIfNeeded twice produces identical vehicle count',
+      () async {
+        await seeder.seedIfNeeded();
+        final countAfterFirst = (await db.vehicleDao.getAll()).length;
 
-      await seeder.seedIfNeeded();
-      final countAfterSecond = (await db.vehicleDao.getAll()).length;
+        await seeder.seedIfNeeded();
+        final countAfterSecond = (await db.vehicleDao.getAll()).length;
 
-      expect(countAfterSecond, countAfterFirst);
-    });
+        expect(countAfterSecond, countAfterFirst);
+      },
+    );
 
-    test('calling seedIfNeeded twice produces identical equipment count',
-        () async {
-      await seeder.seedIfNeeded();
-      final countAfterFirst = (await db.equipmentDao.getAll()).length;
+    test(
+      'calling seedIfNeeded twice produces identical equipment count',
+      () async {
+        await seeder.seedIfNeeded();
+        final countAfterFirst = (await db.equipmentDao.getAll()).length;
 
-      await seeder.seedIfNeeded();
-      final countAfterSecond = (await db.equipmentDao.getAll()).length;
+        await seeder.seedIfNeeded();
+        final countAfterSecond = (await db.equipmentDao.getAll()).length;
 
-      expect(countAfterSecond, countAfterFirst);
-    });
+        expect(countAfterSecond, countAfterFirst);
+      },
+    );
 
-    test('calling seedIfNeeded twice produces identical assignment count',
-        () async {
-      await seeder.seedIfNeeded();
-      final vehicles = await db.vehicleDao.getAll();
-      int countAfterFirst = 0;
-      for (final v in vehicles) {
-        countAfterFirst += (await db.assignmentDao.getByVehicle(v.id)).length;
-      }
+    test(
+      'calling seedIfNeeded twice produces identical assignment count',
+      () async {
+        await seeder.seedIfNeeded();
+        final vehicles = await db.vehicleDao.getAll();
+        int countAfterFirst = 0;
+        for (final v in vehicles) {
+          countAfterFirst += (await db.assignmentDao.getByVehicle(v.id)).length;
+        }
 
-      await seeder.seedIfNeeded();
-      int countAfterSecond = 0;
-      for (final v in await db.vehicleDao.getAll()) {
-        countAfterSecond +=
-            (await db.assignmentDao.getByVehicle(v.id)).length;
-      }
+        await seeder.seedIfNeeded();
+        int countAfterSecond = 0;
+        for (final v in await db.vehicleDao.getAll()) {
+          countAfterSecond +=
+              (await db.assignmentDao.getByVehicle(v.id)).length;
+        }
 
-      expect(countAfterSecond, countAfterFirst);
-    });
+        expect(countAfterSecond, countAfterFirst);
+      },
+    );
 
-    test('early-exit path: skips seeding when a library row already exists',
-        () async {
-      // Pre-populate one library row to trigger the early-return guard
-      await db.equipmentDao.insertEquipment(
-        EquipmentItemsCompanion.insert(
-          name: 'Pre-existing library item',
-          libraryEquipmentId: const Value('sentinel_library_id'),
-        ),
-      );
+    test(
+      'early-exit path: skips seeding when a library row already exists',
+      () async {
+        // Pre-populate one library row to trigger the early-return guard
+        await db.equipmentDao.insertEquipment(
+          EquipmentItemsCompanion.insert(
+            name: 'Pre-existing library item',
+            libraryEquipmentId: const Value('sentinel_library_id'),
+          ),
+        );
 
-      await seeder.seedIfNeeded();
+        await seeder.seedIfNeeded();
 
-      // No vehicle seeding should have occurred
-      final vehicles = await db.vehicleDao.getAll();
-      expect(vehicles, isEmpty,
+        // No vehicle seeding should have occurred
+        final vehicles = await db.vehicleDao.getAll();
+        expect(
+          vehicles,
+          isEmpty,
           reason:
-              'Seeder must not insert vehicles when library rows are already present');
-    });
+              'Seeder must not insert vehicles when library rows are already present',
+        );
+      },
+    );
 
     test('calling seedIfNeeded three times is still idempotent', () async {
       await seeder.seedIfNeeded();
@@ -226,21 +249,25 @@ void main() {
     /// Bibliothekszeile, damit der Seeder sich für „schon geseedet" hält.
     Future<int> alteInstallation() async {
       final vehicleId = await db.vehicleDao.insertVehicle(
-          VehiclesCompanion.insert(name: 'HLF 20 (Demo)', type: 'HLF 20'));
+        VehiclesCompanion.insert(name: 'HLF 20 (Demo)', type: 'HLF 20'),
+      );
       for (final label in ['G1 – Löschangriff', 'Dach', 'Mannschaftsraum']) {
         await db.compartmentDao.insertCompartment(
-            CompartmentsCompanion.insert(
-                vehicleId: vehicleId, label: label));
+          CompartmentsCompanion.insert(vehicleId: vehicleId, label: label),
+        );
       }
-      await db.equipmentDao.insertEquipment(EquipmentItemsCompanion.insert(
-        name: 'Bereits geseedet',
-        libraryEquipmentId: const Value('sentinel_library_id'),
-      ));
+      await db.equipmentDao.insertEquipment(
+        EquipmentItemsCompanion.insert(
+          name: 'Bereits geseedet',
+          libraryEquipmentId: const Value('sentinel_library_id'),
+        ),
+      );
       return vehicleId;
     }
 
     Future<Map<String, ({String? seite, String? laengsposition})>> faecherVon(
-        int vehicleId) async {
+      int vehicleId,
+    ) async {
       final rows = await db.compartmentDao.getByVehicle(vehicleId);
       return {
         for (final c in rows)
@@ -254,18 +281,30 @@ void main() {
       final faecher = await faecherVon(vehicle.id);
 
       expect(faecher, hasLength(_expectedCompartments));
-      expect(faecher.values.where((f) => f.seite == null), isEmpty,
-          reason: 'Ohne Seite bliebe das Demo-Fahrzeug grau');
+      expect(
+        faecher.values.where((f) => f.seite == null),
+        isEmpty,
+        reason: 'Ohne Seite bliebe das Demo-Fahrzeug grau',
+      );
       // Dieselbe Konvention wie in den Vorlagen (#144): ungerade Nummern
       // Fahrerseite, gerade Beifahrerseite, G1/G2 vorne … G5/G6 hinten.
-      expect(faecher['G1 – Löschangriff'],
-          (seite: 'fahrerseite', laengsposition: 'vorne'));
-      expect(faecher['G6 – Werkzeug & Sonstiges'],
-          (seite: 'beifahrerseite', laengsposition: 'hinten'));
-      expect(faecher['GR – Pumpe & Wasser (Heck)'],
-          (seite: 'heck', laengsposition: null));
+      expect(faecher['G1 – Löschangriff'], (
+        seite: 'fahrerseite',
+        laengsposition: 'vorne',
+      ));
+      expect(faecher['G6 – Werkzeug & Sonstiges'], (
+        seite: 'beifahrerseite',
+        laengsposition: 'hinten',
+      ));
+      expect(faecher['GR – Pumpe & Wasser (Heck)'], (
+        seite: 'heck',
+        laengsposition: null,
+      ));
       expect(faecher['Dach'], (seite: 'dach', laengsposition: null));
-      expect(faecher['Mannschaftsraum'], (seite: 'front', laengsposition: null));
+      expect(faecher['Mannschaftsraum'], (
+        seite: 'front',
+        laengsposition: null,
+      ));
     });
 
     test('trägt die Verortung auf einer alten Installation nach', () async {
@@ -274,17 +313,21 @@ void main() {
       await seeder.seedIfNeeded();
 
       final faecher = await faecherVon(vehicleId);
-      expect(faecher['G1 – Löschangriff'],
-          (seite: 'fahrerseite', laengsposition: 'vorne'));
+      expect(faecher['G1 – Löschangriff'], (
+        seite: 'fahrerseite',
+        laengsposition: 'vorne',
+      ));
       expect(faecher['Dach'], (seite: 'dach', laengsposition: null));
     });
 
     test('überschreibt keine selbst gesetzte Seite', () async {
       final vehicleId = await alteInstallation();
-      final dach = (await db.compartmentDao.getByVehicle(vehicleId))
-          .firstWhere((c) => c.label == 'Dach');
-      await (db.update(db.compartments)..where((t) => t.id.equals(dach.id)))
-          .write(const CompartmentsCompanion(seite: Value('heck')));
+      final dach = (await db.compartmentDao.getByVehicle(
+        vehicleId,
+      )).firstWhere((c) => c.label == 'Dach');
+      await (db.update(db.compartments)..where(
+        (t) => t.id.equals(dach.id),
+      )).write(const CompartmentsCompanion(seite: Value('heck')));
 
       await seeder.seedIfNeeded();
 
@@ -295,11 +338,13 @@ void main() {
     test('fasst gleichnamige Fächer anderer Fahrzeuge nicht an', () async {
       await alteInstallation();
       final echtes = await db.vehicleDao.insertVehicle(
-          VehiclesCompanion.insert(name: 'LF 20', type: 'LF 20'));
+        VehiclesCompanion.insert(name: 'LF 20', type: 'LF 20'),
+      );
       // „Dach" heißt an fast jedem Fahrzeug so — der Nachtrag darf nur das
       // Demo-Fahrzeug aus vehicle.json betreffen.
       await db.compartmentDao.insertCompartment(
-          CompartmentsCompanion.insert(vehicleId: echtes, label: 'Dach'));
+        CompartmentsCompanion.insert(vehicleId: echtes, label: 'Dach'),
+      );
 
       await seeder.seedIfNeeded();
 

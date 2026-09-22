@@ -2,6 +2,7 @@
 /// Tagesserie, XP/Level, Wochenziel, "Weiterlernen"-Empfehlung, letzte
 /// Ergebnisse.
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -29,42 +30,47 @@ class HomeScreen extends ConsumerWidget {
       body: statsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Fehler: $e')),
-        data: (stats) => ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            const GesamtwehrHeader(),
-            const HomeBanners(),
-            const _GeraeteSucheCard(),
-            const SizedBox(height: 12),
-            Row(
+        data:
+            (stats) => ListView(
+              padding: const EdgeInsets.all(16),
               children: [
-                Expanded(child: _StreakCard(stats: stats)),
-                const SizedBox(width: 12),
-                Expanded(child: _LevelCard(stats: stats)),
+                const GesamtwehrHeader(),
+                const HomeBanners(),
+                const _GeraeteSucheCard(),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(child: _StreakCard(stats: stats)),
+                    const SizedBox(width: 12),
+                    Expanded(child: _LevelCard(stats: stats)),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                _WeekGoalCard(stats: stats),
+                const SizedBox(height: 12),
+                if (stats.suggestion != null)
+                  _SuggestionCard(suggestion: stats.suggestion!),
+                if (isAdmin) const _InspectionsCard(),
+                if (stats.recentResults.isNotEmpty) ...[
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(4, 16, 4, 8),
+                    child: Text(
+                      'Letzte Übungen',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ),
+                  ...stats.recentResults.map(
+                    (r) => _ResultTile(
+                      quizType: r.quizType,
+                      score: r.score,
+                      total: r.total,
+                      playedAt: r.playedAt,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 24),
               ],
             ),
-            const SizedBox(height: 12),
-            _WeekGoalCard(stats: stats),
-            const SizedBox(height: 12),
-            if (stats.suggestion != null)
-              _SuggestionCard(suggestion: stats.suggestion!),
-            if (isAdmin) const _InspectionsCard(),
-            if (stats.recentResults.isNotEmpty) ...[
-              Padding(
-                padding: const EdgeInsets.fromLTRB(4, 16, 4, 8),
-                child: Text('Letzte Übungen',
-                    style: Theme.of(context).textTheme.titleMedium),
-              ),
-              ...stats.recentResults.map((r) => _ResultTile(
-                    quizType: r.quizType,
-                    score: r.score,
-                    total: r.total,
-                    playedAt: r.playedAt,
-                  )),
-            ],
-            const SizedBox(height: 24),
-          ],
-        ),
       ),
     );
   }
@@ -95,9 +101,7 @@ class _IconChip extends StatelessWidget {
       child: Icon(
         icon,
         size: 24,
-        color: muted
-            ? scheme.onSurfaceVariant
-            : scheme.onSecondaryContainer,
+        color: muted ? scheme.onSurfaceVariant : scheme.onSecondaryContainer,
         semanticLabel: semanticLabel,
       ),
     );
@@ -128,8 +132,10 @@ class _StreakCard extends StatelessWidget {
               semanticLabel: active ? 'Serie aktiv' : 'Keine Serie',
             ),
             const SizedBox(height: 12),
-            Text('${stats.streakDays}',
-                style: Theme.of(context).textTheme.headlineMedium),
+            Text(
+              '${stats.streakDays}',
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
             Text(
               stats.streakDays == 1 ? 'Tag Serie' : 'Tage Serie',
               style: Theme.of(context).textTheme.bodySmall,
@@ -137,11 +143,14 @@ class _StreakCard extends StatelessWidget {
             if (active && !stats.trainedToday)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
-                child: Text('Heute noch üben!',
-                    style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.orange.shade800)),
+                child: Text(
+                  'Heute noch üben!',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.orange.shade800,
+                  ),
+                ),
               ),
           ],
         ),
@@ -164,10 +173,14 @@ class _LevelCard extends StatelessWidget {
           children: [
             const _IconChip(Icons.military_tech),
             const SizedBox(height: 12),
-            Text('Level ${stats.level}',
-                style: Theme.of(context).textTheme.headlineMedium),
-            Text('${stats.xp} XP',
-                style: Theme.of(context).textTheme.bodySmall),
+            Text(
+              'Level ${stats.level}',
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            Text(
+              '${stats.xp} XP',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
             const SizedBox(height: 8),
             LinearProgressIndicator(value: stats.levelProgress, minHeight: 8),
             // Hier steht, woher die Marke am eigenen Kopf kommt (Issue #135):
@@ -192,11 +205,11 @@ class _WeekGoalCard extends ConsumerWidget {
     return Card(
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        leading: _IconChip(
-          done ? Icons.emoji_events : Icons.flag,
+        leading: _IconChip(done ? Icons.emoji_events : Icons.flag),
+        title: Text(
+          done ? 'Wochenziel erreicht!' : 'Wochenziel',
+          style: const TextStyle(fontWeight: FontWeight.w600),
         ),
-        title: Text(done ? 'Wochenziel erreicht!' : 'Wochenziel',
-            style: const TextStyle(fontWeight: FontWeight.w600)),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 8),
           child: LinearProgressIndicator(
@@ -204,9 +217,10 @@ class _WeekGoalCard extends ConsumerWidget {
             minHeight: 8,
           ),
         ),
-        trailing: Text('${stats.weekSessions}/${stats.weekGoal}',
-            style: const TextStyle(
-                fontWeight: FontWeight.w700, fontSize: 16)),
+        trailing: Text(
+          '${stats.weekSessions}/${stats.weekGoal}',
+          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+        ),
         onTap: () => _editGoal(context, ref),
       ),
     );
@@ -215,15 +229,19 @@ class _WeekGoalCard extends ConsumerWidget {
   Future<void> _editGoal(BuildContext context, WidgetRef ref) async {
     final goal = await showDialog<int>(
       context: context,
-      builder: (ctx) => SimpleDialog(
-        title: const Text('Übungen pro Woche'),
-        children: [3, 5, 7, 10, 14]
-            .map((g) => SimpleDialogOption(
-                  onPressed: () => Navigator.pop(ctx, g),
-                  child: Text('$g Übungen'),
-                ))
-            .toList(),
-      ),
+      builder:
+          (ctx) => SimpleDialog(
+            title: const Text('Übungen pro Woche'),
+            children:
+                [3, 5, 7, 10, 14]
+                    .map(
+                      (g) => SimpleDialogOption(
+                        onPressed: () => Navigator.pop(ctx, g),
+                        child: Text('$g Übungen'),
+                      ),
+                    )
+                    .toList(),
+          ),
     );
     if (goal != null) {
       await ref.read(weekGoalProvider.notifier).set(goal);
@@ -274,21 +292,26 @@ class _SuggestionCard extends StatelessWidget {
                       color: scheme.onPrimary.withValues(alpha: 0.18),
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: Icon(Icons.play_arrow_rounded,
-                        size: 34, color: scheme.onPrimary),
+                    child: Icon(
+                      Icons.play_arrow_rounded,
+                      size: 34,
+                      color: scheme.onPrimary,
+                    ),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Weiterlernen',
-                            style: TextStyle(
-                              color: scheme.onPrimary,
-                              fontSize: 19,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -0.2,
-                            )),
+                        Text(
+                          'Weiterlernen',
+                          style: TextStyle(
+                            color: scheme.onPrimary,
+                            fontSize: 19,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.2,
+                          ),
+                        ),
                         const SizedBox(height: 2),
                         Text(
                           '${suggestion.vehicleName} · '
@@ -325,15 +348,14 @@ class _GeraeteSucheCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Card(
-        child: ListTile(
-          leading: const _IconChip(Icons.search, semanticLabel: 'Suche'),
-          title: const Text('Gerätesuche'),
-          subtitle:
-              const Text('Wo liegt was? Fahrzeug und Fach auf einen Blick'),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => context.push('/geraetesuche'),
-        ),
-      );
+    child: ListTile(
+      leading: const _IconChip(Icons.search, semanticLabel: 'Suche'),
+      title: const Text('Gerätesuche'),
+      subtitle: const Text('Wo liegt was? Fahrzeug und Fach auf einen Blick'),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () => context.push('/geraetesuche'),
+    ),
+  );
 }
 
 /// Gerätewart-Hinweis — nur für Admins auf dem Dashboard.
@@ -347,16 +369,17 @@ class _InspectionsCard extends ConsumerWidget {
     final now = DateTime.now();
     final overdue = entries.where((e) => e.isOverdue(now)).length;
     final dueSoon = entries.length - overdue;
-    final color =
-        overdue > 0 ? Colors.red.shade700 : Colors.orange.shade800;
+    final color = overdue > 0 ? Colors.red.shade700 : Colors.orange.shade800;
     return Card(
       child: ListTile(
         leading: Icon(Icons.fact_check, color: color),
         title: const Text('Prüftermine'),
-        subtitle: Text([
-          if (overdue > 0) '$overdue überfällig',
-          if (dueSoon > 0) '$dueSoon bald fällig',
-        ].join(' · ')),
+        subtitle: Text(
+          [
+            if (overdue > 0) '$overdue überfällig',
+            if (dueSoon > 0) '$dueSoon bald fällig',
+          ].join(' · '),
+        ),
         trailing: const Icon(Icons.chevron_right),
         onTap: () => context.push('/inspections'),
       ),
@@ -385,13 +408,16 @@ class _ResultTile extends StatelessWidget {
         dense: true,
         leading: CircleAvatar(
           radius: 16,
-          backgroundColor: pct >= 80
-              ? Colors.green
-              : pct >= 50
+          backgroundColor:
+              pct >= 80
+                  ? Colors.green
+                  : pct >= 50
                   ? Colors.orange
                   : Colors.red,
-          child: Text('$pct%',
-              style: const TextStyle(color: Colors.white, fontSize: 10)),
+          child: Text(
+            '$pct%',
+            style: const TextStyle(color: Colors.white, fontSize: 10),
+          ),
         ),
         title: Text(switch (quizType) {
           'compartment' => 'Fach-Quiz',

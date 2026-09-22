@@ -1,5 +1,6 @@
 /// json_utils.dart – Helpers for encoding/decoding JSON arrays stored in Drift TEXT columns.
 library;
+
 import 'dart:convert';
 
 List<String> jsonToStringList(String json) {

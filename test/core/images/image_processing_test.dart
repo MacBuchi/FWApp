@@ -5,6 +5,7 @@
 /// sie sind mit der Funktion hierher gewandert, damit Test und Code
 /// beieinander liegen.
 library;
+
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -27,12 +28,14 @@ Uint8List _noiseImage(int width, int height) {
 Uint8List _markedImage(int width, int height) {
   final image = img.Image(width: width, height: height);
   img.fill(image, color: img.ColorRgb8(0, 0, 0));
-  img.fillRect(image,
-      x1: 0,
-      y1: 0,
-      x2: (width ~/ 4) - 1,
-      y2: (height ~/ 4) - 1,
-      color: img.ColorRgb8(255, 0, 0));
+  img.fillRect(
+    image,
+    x1: 0,
+    y1: 0,
+    x2: (width ~/ 4) - 1,
+    y2: (height ~/ 4) - 1,
+    color: img.ColorRgb8(255, 0, 0),
+  );
   return img.encodePng(image);
 }
 
@@ -40,8 +43,7 @@ bool _isRedish(img.Pixel p) => p.r > 200 && p.g < 80 && p.b < 80;
 
 void main() {
   group('compressImageForUpload', () {
-    test('shrinks a large noisy image below the size and dimension budget',
-        () {
+    test('shrinks a large noisy image below the size and dimension budget', () {
       final result = compressImageForUpload(_noiseImage(2400, 1600));
 
       expect(result.length, lessThanOrEqualTo(kMaxImageBytes));
@@ -70,8 +72,10 @@ void main() {
     });
 
     test('rejects data that is not an image', () {
-      expect(() => compressImageForUpload(Uint8List.fromList([1, 2, 3])),
-          throwsFormatException);
+      expect(
+        () => compressImageForUpload(Uint8List.fromList([1, 2, 3])),
+        throwsFormatException,
+      );
     });
   });
 
@@ -95,8 +99,10 @@ void main() {
     });
 
     test('meldet unlesbare Daten statt still ein leeres Bild zu liefern', () {
-      expect(() => bakeOrientationBytes(Uint8List.fromList([9, 9, 9])),
-          throwsFormatException);
+      expect(
+        () => bakeOrientationBytes(Uint8List.fromList([9, 9, 9])),
+        throwsFormatException,
+      );
     });
   });
 }

@@ -1,6 +1,7 @@
 /// compartment_grid_editor_widget_test.dart – Grid editor tab: placing a
 /// compartment persists gridRow/gridCol and updates the cutaway layout.
 library;
+
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -16,20 +17,31 @@ void main() {
 
   setUp(() async {
     db = createTestDatabase();
-    vehicleId = await db.vehicleDao
-        .insertVehicle(VehiclesCompanion.insert(name: 'AB-G', type: 'AB-G'));
+    vehicleId = await db.vehicleDao.insertVehicle(
+      VehiclesCompanion.insert(name: 'AB-G', type: 'AB-G'),
+    );
     for (final (i, label) in ['Dach', 'G1', 'G2'].indexed) {
-      await db.compartmentDao.insertCompartment(CompartmentsCompanion.insert(
-          vehicleId: vehicleId, label: label, position: Value(i)));
+      await db.compartmentDao.insertCompartment(
+        CompartmentsCompanion.insert(
+          vehicleId: vehicleId,
+          label: label,
+          position: Value(i),
+        ),
+      );
     }
   });
 
   tearDown(() => db.close());
 
-  testWidgets('Kachel im Raster platzieren persistiert Zeile/Spalte/Breite',
-      (tester) async {
-    await tester.pumpWidget(buildTestApp(
-        db: db, home: CompartmentManagerScreen(vehicleId: vehicleId)));
+  testWidgets('Kachel im Raster platzieren persistiert Zeile/Spalte/Breite', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      buildTestApp(
+        db: db,
+        home: CompartmentManagerScreen(vehicleId: vehicleId),
+      ),
+    );
     await tester.pumpAndSettle();
 
     // Zum Raster-Tab wechseln: alle Fächer sind unplatziert.
@@ -57,16 +69,19 @@ void main() {
     expect(dach.gridColSpan, 3);
 
     // Hinweis zählt nur noch die zwei unplatzierten Fächer.
-    expect(find.textContaining('2 Fach/Fächer noch nicht platziert'),
-        findsOneWidget);
+    expect(
+      find.textContaining('2 Fach/Fächer noch nicht platziert'),
+      findsOneWidget,
+    );
 
     // "Aus Raster entfernen" setzt die Platzierung zurück.
     await tester.tap(find.text('Dach'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Aus Raster entfernen'));
     await tester.pumpAndSettle();
-    final reset = (await db.compartmentDao.getByVehicle(vehicleId))
-        .firstWhere((c) => c.label == 'Dach');
+    final reset = (await db.compartmentDao.getByVehicle(
+      vehicleId,
+    )).firstWhere((c) => c.label == 'Dach');
     expect(reset.gridRow, isNull);
     expect(reset.gridColSpan, 1);
 

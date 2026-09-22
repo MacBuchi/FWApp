@@ -1,5 +1,6 @@
 /// vehicle_form_screen.dart – Create / edit a vehicle.
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -28,8 +29,9 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
       // Riverpod providers are fully wired up.
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (!mounted) return;
-        final vehicle =
-            await ref.read(vehicleDetailProvider(widget.editId!).future);
+        final vehicle = await ref.read(
+          vehicleDetailProvider(widget.editId!).future,
+        );
         if (vehicle != null && mounted) {
           ref.read(vehicleFormProvider.notifier).load(vehicle);
           _nameCtrl.text = vehicle.name;
@@ -70,7 +72,9 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.editId == null ? 'Fahrzeug anlegen' : 'Fahrzeug bearbeiten'),
+        title: Text(
+          widget.editId == null ? 'Fahrzeug anlegen' : 'Fahrzeug bearbeiten',
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -88,8 +92,9 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
                 leading: const Icon(Icons.auto_awesome_motion),
                 title: const Text('Aus Vorlage anlegen'),
                 subtitle: const Text(
-                    'Geräteräume passend zum Fahrzeugtyp, auf Wunsch mit '
-                    'Normbeladung'),
+                  'Geräteräume passend zum Fahrzeugtyp, auf Wunsch mit '
+                  'Normbeladung',
+                ),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.push('/vehicles/new/template'),
               ),
@@ -120,7 +125,11 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
                     right: 8,
                     child: CircleAvatar(
                       backgroundColor: Colors.black54,
-                      child: const Icon(Icons.edit, color: Colors.white, size: 20),
+                      child: const Icon(
+                        Icons.edit,
+                        color: Colors.white,
+                        size: 20,
+                      ),
                     ),
                   ),
                 ],
@@ -144,34 +153,37 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
           const SizedBox(height: 12),
           TextField(
             controller: _typeCtrl,
-            decoration:
-                const InputDecoration(labelText: 'Fahrzeugtyp* (z.B. HLF 20)'),
+            decoration: const InputDecoration(
+              labelText: 'Fahrzeugtyp* (z.B. HLF 20)',
+            ),
             onChanged: ref.read(vehicleFormProvider.notifier).setType,
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _plateCtrl,
-            decoration:
-                const InputDecoration(labelText: 'Kennzeichen (optional)'),
-            onChanged:
-                ref.read(vehicleFormProvider.notifier).setLicensePlate,
+            decoration: const InputDecoration(
+              labelText: 'Kennzeichen (optional)',
+            ),
+            onChanged: ref.read(vehicleFormProvider.notifier).setLicensePlate,
           ),
           if (state.error != null) ...[
             const SizedBox(height: 12),
-            Text(state.error!,
-                style: TextStyle(
-                    color: Theme.of(context).colorScheme.error)),
+            Text(
+              state.error!,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
           ],
           const SizedBox(height: 24),
           FilledButton(
             onPressed: state.isSubmitting ? null : _submit,
-            child: state.isSubmitting
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text('Speichern'),
+            child:
+                state.isSubmitting
+                    ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                    : const Text('Speichern'),
           ),
         ],
       ),

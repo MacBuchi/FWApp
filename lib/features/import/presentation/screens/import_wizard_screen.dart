@@ -1,6 +1,7 @@
 /// import_wizard_screen.dart – 4-step Beladeliste import wizard:
 /// Datei laden → Spalten zuordnen → Abgleich → Bestätigen.
 library;
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,15 +27,17 @@ class ImportWizardScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Beladeliste importieren'),
-        leading: BackButton(onPressed: () {
-          if (state.step > 0 && state.result == null) {
-            notifier.back();
-          } else if (context.canPop()) {
-            context.pop();
-          } else {
-            context.go('/');
-          }
-        }),
+        leading: BackButton(
+          onPressed: () {
+            if (state.step > 0 && state.result == null) {
+              notifier.back();
+            } else if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/');
+            }
+          },
+        ),
       ),
       body: Column(
         children: [
@@ -48,9 +51,12 @@ class ImportWizardScreen extends ConsumerWidget {
                 color: Theme.of(context).colorScheme.errorContainer,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Text(state.error!,
-                  style: TextStyle(
-                      color: Theme.of(context).colorScheme.onErrorContainer)),
+              child: Text(
+                state.error!,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onErrorContainer,
+                ),
+              ),
             ),
           Expanded(
             child: switch (state.step) {
@@ -83,22 +89,31 @@ class _StepIndicator extends StatelessWidget {
             CircleAvatar(
               radius: 12,
               backgroundColor:
-                  i <= current ? scheme.primary : scheme.surfaceContainerHighest,
-              child: i < current
-                  ? Icon(Icons.check, size: 14, color: scheme.onPrimary)
-                  : Text('${i + 1}',
-                      style: TextStyle(
+                  i <= current
+                      ? scheme.primary
+                      : scheme.surfaceContainerHighest,
+              child:
+                  i < current
+                      ? Icon(Icons.check, size: 14, color: scheme.onPrimary)
+                      : Text(
+                        '${i + 1}',
+                        style: TextStyle(
                           fontSize: 12,
-                          color: i <= current
-                              ? scheme.onPrimary
-                              : scheme.onSurfaceVariant)),
+                          color:
+                              i <= current
+                                  ? scheme.onPrimary
+                                  : scheme.onSurfaceVariant,
+                        ),
+                      ),
             ),
             const SizedBox(width: 4),
-            Text(_labels[i],
-                style: TextStyle(
-                    fontSize: 12,
-                    fontWeight:
-                        i == current ? FontWeight.bold : FontWeight.normal)),
+            Text(
+              _labels[i],
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: i == current ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
             if (i < _labels.length - 1)
               const Expanded(child: Divider(indent: 6, endIndent: 6)),
           ],
@@ -125,42 +140,50 @@ class _FileStep extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Unterstützte Formate',
-                    style: Theme.of(context).textTheme.titleSmall),
+                Text(
+                  'Unterstützte Formate',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
                 const SizedBox(height: 8),
                 const Text(
-                    '• Excel (.xlsx, .xls)\n'
-                    '• CSV (Trennzeichen ; , oder Tab – wird erkannt)\n\n'
-                    'Die Spalten musst du nicht umbenennen: Im nächsten '
-                    'Schritt ordnest du sie zu.',
-                    style: TextStyle(fontSize: 13)),
+                  '• Excel (.xlsx, .xls)\n'
+                  '• CSV (Trennzeichen ; , oder Tab – wird erkannt)\n\n'
+                  'Die Spalten musst du nicht umbenennen: Im nächsten '
+                  'Schritt ordnest du sie zu.',
+                  style: TextStyle(fontSize: 13),
+                ),
               ],
             ),
           ),
         ),
         const SizedBox(height: 20),
         FilledButton.icon(
-          icon: state.busy
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(
-                      strokeWidth: 2, color: Colors.white))
-              : const Icon(Icons.upload_file),
+          icon:
+              state.busy
+                  ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                  : const Icon(Icons.upload_file),
           label: const Text('Datei auswählen'),
-          onPressed: state.busy
-              ? null
-              : () async {
-                  final picked = await FilePicker.pickFiles(
-                    type: FileType.custom,
-                    allowedExtensions: ['xlsx', 'xls', 'csv', 'txt'],
-                  );
-                  final file = picked.firstOrNull;
-                  if (file == null) return;
-                  await ref
-                      .read(importWizardProvider.notifier)
-                      .loadFile(file.name, await file.readAsBytes());
-                },
+          onPressed:
+              state.busy
+                  ? null
+                  : () async {
+                    final picked = await FilePicker.pickFiles(
+                      type: FileType.custom,
+                      allowedExtensions: ['xlsx', 'xls', 'csv', 'txt'],
+                    );
+                    final file = picked.firstOrNull;
+                    if (file == null) return;
+                    await ref
+                        .read(importWizardProvider.notifier)
+                        .loadFile(file.name, await file.readAsBytes());
+                  },
         ),
       ],
     );
@@ -206,7 +229,9 @@ class _MappingStep extends ConsumerWidget {
             items: [
               for (var i = 0; i < state.file!.tables.length; i++)
                 DropdownMenuItem(
-                    value: i, child: Text(state.file!.tables[i].name)),
+                  value: i,
+                  child: Text(state.file!.tables[i].name),
+                ),
             ],
             onChanged: (i) => i == null ? null : notifier.selectTable(i),
           ),
@@ -214,27 +239,34 @@ class _MappingStep extends ConsumerWidget {
           contentPadding: EdgeInsets.zero,
           title: const Text('Erste Zeile ist Überschrift'),
           value: mapping.firstRowIsHeader,
-          onChanged: (v) =>
-              notifier.updateMapping(mapping.copyWith(firstRowIsHeader: v)),
+          onChanged:
+              (v) =>
+                  notifier.updateMapping(mapping.copyWith(firstRowIsHeader: v)),
         ),
         DropdownButtonFormField<int?>(
           initialValue: mapping.vehicleColumn,
           decoration: const InputDecoration(labelText: 'Fahrzeug'),
           items: [
             const DropdownMenuItem<int?>(
-                value: null, child: Text('Fester Wert (kein Spaltenbezug)')),
+              value: null,
+              child: Text('Fester Wert (kein Spaltenbezug)'),
+            ),
             ...columnItems,
           ],
-          onChanged: (v) =>
-              notifier.updateMapping(mapping.copyWith(vehicleColumn: () => v)),
+          onChanged:
+              (v) => notifier.updateMapping(
+                mapping.copyWith(vehicleColumn: () => v),
+              ),
         ),
         if (mapping.vehicleColumn == null)
           Padding(
             padding: const EdgeInsets.only(top: 4),
             child: _FixedVehicleField(
               initial: mapping.fixedVehicleName,
-              onChanged: (v) =>
-                  notifier.updateMapping(mapping.copyWith(fixedVehicleName: v)),
+              onChanged:
+                  (v) => notifier.updateMapping(
+                    mapping.copyWith(fixedVehicleName: v),
+                  ),
             ),
           ),
         DropdownButtonFormField<int?>(
@@ -242,28 +274,37 @@ class _MappingStep extends ConsumerWidget {
               mapping.compartmentColumn >= 0 ? mapping.compartmentColumn : null,
           decoration: const InputDecoration(labelText: 'Fach / Lagerort *'),
           items: columnItems,
-          onChanged: (v) => notifier
-              .updateMapping(mapping.copyWith(compartmentColumn: v ?? -1)),
+          onChanged:
+              (v) => notifier.updateMapping(
+                mapping.copyWith(compartmentColumn: v ?? -1),
+              ),
         ),
         DropdownButtonFormField<int?>(
           initialValue:
               mapping.equipmentColumn >= 0 ? mapping.equipmentColumn : null,
           decoration: const InputDecoration(labelText: 'Gerät / Gegenstand *'),
           items: columnItems,
-          onChanged: (v) => notifier
-              .updateMapping(mapping.copyWith(equipmentColumn: v ?? -1)),
+          onChanged:
+              (v) => notifier.updateMapping(
+                mapping.copyWith(equipmentColumn: v ?? -1),
+              ),
         ),
         DropdownButtonFormField<int?>(
           initialValue: mapping.quantityColumn,
-          decoration:
-              const InputDecoration(labelText: 'Menge (optional, sonst 1)'),
+          decoration: const InputDecoration(
+            labelText: 'Menge (optional, sonst 1)',
+          ),
           items: [
             const DropdownMenuItem<int?>(
-                value: null, child: Text('Keine Spalte')),
+              value: null,
+              child: Text('Keine Spalte'),
+            ),
             ...columnItems,
           ],
-          onChanged: (v) =>
-              notifier.updateMapping(mapping.copyWith(quantityColumn: () => v)),
+          onChanged:
+              (v) => notifier.updateMapping(
+                mapping.copyWith(quantityColumn: () => v),
+              ),
         ),
         const SizedBox(height: 16),
         Text('Vorschau', style: Theme.of(context).textTheme.titleSmall),
@@ -271,13 +312,17 @@ class _MappingStep extends ConsumerWidget {
         _MappingPreview(table: table, mapping: mapping),
         const SizedBox(height: 16),
         FilledButton.icon(
-          icon: state.busy
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(
-                      strokeWidth: 2, color: Colors.white))
-              : const Icon(Icons.arrow_forward),
+          icon:
+              state.busy
+                  ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                  : const Icon(Icons.arrow_forward),
           label: const Text('Weiter zum Abgleich'),
           onPressed:
               state.busy || !mapping.isValid ? null : notifier.buildPreview,
@@ -299,8 +344,9 @@ class _FixedVehicleField extends StatefulWidget {
 }
 
 class _FixedVehicleFieldState extends State<_FixedVehicleField> {
-  late final TextEditingController _controller =
-      TextEditingController(text: widget.initial);
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.initial,
+  );
 
   @override
   void dispose() {
@@ -310,11 +356,13 @@ class _FixedVehicleFieldState extends State<_FixedVehicleField> {
 
   @override
   Widget build(BuildContext context) => TextField(
-        controller: _controller,
-        decoration: const InputDecoration(
-            labelText: 'Fahrzeugname *', hintText: 'z.B. LF 10'),
-        onChanged: widget.onChanged,
-      );
+    controller: _controller,
+    decoration: const InputDecoration(
+      labelText: 'Fahrzeugname *',
+      hintText: 'z.B. LF 10',
+    ),
+    onChanged: widget.onChanged,
+  );
 }
 
 class _MappingPreview extends StatelessWidget {
@@ -326,8 +374,10 @@ class _MappingPreview extends StatelessWidget {
   Widget build(BuildContext context) {
     final rows = ImportParser.applyMapping(table, mapping).take(5).toList();
     if (rows.isEmpty) {
-      return const Text('Keine Datenzeilen mit dieser Zuordnung.',
-          style: TextStyle(color: Colors.grey));
+      return const Text(
+        'Keine Datenzeilen mit dieser Zuordnung.',
+        style: TextStyle(color: Colors.grey),
+      );
     }
     return Card(
       child: SingleChildScrollView(
@@ -344,15 +394,22 @@ class _MappingPreview extends StatelessWidget {
           ],
           rows: [
             for (final r in rows)
-              DataRow(cells: [
-                DataCell(Text(r.vehicleName)),
-                DataCell(Text(r.compartmentLabel)),
-                DataCell(SizedBox(
-                    width: 220,
-                    child: Text(r.equipmentName,
-                        overflow: TextOverflow.ellipsis))),
-                DataCell(Text('${r.quantity}')),
-              ]),
+              DataRow(
+                cells: [
+                  DataCell(Text(r.vehicleName)),
+                  DataCell(Text(r.compartmentLabel)),
+                  DataCell(
+                    SizedBox(
+                      width: 220,
+                      child: Text(
+                        r.equipmentName,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                  DataCell(Text('${r.quantity}')),
+                ],
+              ),
           ],
         ),
       ),
@@ -408,7 +465,10 @@ class _MatchStep extends ConsumerWidget {
               _CountChip(color: Colors.orange, label: '$yellow zugeordnet'),
               _CountChip(color: Colors.red, label: '$red neu'),
               if (skippedCount > 0)
-                _CountChip(color: Colors.grey, label: '$skippedCount übersprungen'),
+                _CountChip(
+                  color: Colors.grey,
+                  label: '$skippedCount übersprungen',
+                ),
             ],
           ),
         ),
@@ -454,10 +514,10 @@ class _CountChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Chip(
-        visualDensity: VisualDensity.compact,
-        avatar: CircleAvatar(backgroundColor: color, radius: 6),
-        label: Text(label, style: const TextStyle(fontSize: 12)),
-      );
+    visualDensity: VisualDensity.compact,
+    avatar: CircleAvatar(backgroundColor: color, radius: 6),
+    label: Text(label, style: const TextStyle(fontSize: 12)),
+  );
 }
 
 class _MatchTile extends ConsumerWidget {
@@ -474,22 +534,21 @@ class _MatchTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(importWizardProvider);
     final match = state.matches[matchKey];
-    final decision = state.decisions[matchKey] ??
+    final decision =
+        state.decisions[matchKey] ??
         const RowDecision(action: RowAction.createCustom);
 
     final (Color color, String status) = switch (decision.action) {
       RowAction.skip => (Colors.grey, 'Wird übersprungen'),
-      RowAction.createCustom => (
-          Colors.red,
-          'Wird als neues Gerät angelegt'
-        ),
-      RowAction.useEquipment when match?.kind == MatchKind.exact ||
+      RowAction.createCustom => (Colors.red, 'Wird als neues Gerät angelegt'),
+      RowAction.useEquipment
+          when match?.kind == MatchKind.exact ||
               match?.kind == MatchKind.alias =>
         (Colors.green, '→ ${_targetName(state, decision)}'),
       RowAction.useEquipment => (
-          Colors.orange,
-          '→ ${_targetName(state, decision)}'
-        ),
+        Colors.orange,
+        '→ ${_targetName(state, decision)}',
+      ),
     };
 
     return Card(
@@ -498,16 +557,19 @@ class _MatchTile extends ConsumerWidget {
         leading: CircleAvatar(backgroundColor: color, radius: 8),
         title: Text(rawName, maxLines: 2, overflow: TextOverflow.ellipsis),
         subtitle: Text(
-            rowCount > 1 ? '$status · $rowCount Zeilen' : status,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis),
-        trailing: const Icon(Icons.edit, size: 18),
-        onTap: () => showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          showDragHandle: true,
-          builder: (_) => _ResolutionSheet(matchKey: matchKey, rawName: rawName),
+          rowCount > 1 ? '$status · $rowCount Zeilen' : status,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
+        trailing: const Icon(Icons.edit, size: 18),
+        onTap:
+            () => showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              showDragHandle: true,
+              builder:
+                  (_) => _ResolutionSheet(matchKey: matchKey, rawName: rawName),
+            ),
       ),
     );
   }
@@ -545,90 +607,112 @@ class _ResolutionSheetState extends ConsumerState<_ResolutionSheet> {
     final allEquipment = equipmentAsync.value ?? const <EquipmentItem>[];
 
     final searchNorm = EquipmentMatcher.normalize(_search);
-    final searchResults = _search.trim().isEmpty
-        ? const <EquipmentItem>[]
-        : allEquipment
-            .where((e) =>
-                EquipmentMatcher.normalize(e.name).contains(searchNorm))
-            .take(10)
-            .toList();
+    final searchResults =
+        _search.trim().isEmpty
+            ? const <EquipmentItem>[]
+            : allEquipment
+                .where(
+                  (e) =>
+                      EquipmentMatcher.normalize(e.name).contains(searchNorm),
+                )
+                .take(10)
+                .toList();
 
     void choose(int equipmentId) {
       notifier.setDecision(
-          widget.matchKey,
-          RowDecision(
-            action: RowAction.useEquipment,
-            equipmentId: equipmentId,
-            rememberAlias: _rememberAlias,
-          ));
+        widget.matchKey,
+        RowDecision(
+          action: RowAction.useEquipment,
+          equipmentId: equipmentId,
+          rememberAlias: _rememberAlias,
+        ),
+      );
       Navigator.of(context).pop();
     }
 
     return Padding(
       padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom),
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: DraggableScrollableSheet(
         expand: false,
         initialChildSize: 0.7,
-        builder: (context, scrollController) => ListView(
-          controller: scrollController,
-          padding: const EdgeInsets.all(16),
-          children: [
-            Text(widget.rawName,
-                style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            CheckboxListTile(
-              contentPadding: EdgeInsets.zero,
-              dense: true,
-              title: const Text('Als Alias merken (künftig automatisch)'),
-              value: _rememberAlias,
-              onChanged: (v) => setState(() => _rememberAlias = v ?? true),
-            ),
-            if (match != null && match.suggestions.isNotEmpty) ...[
-              Text('Vorschläge', style: Theme.of(context).textTheme.titleSmall),
-              ...match.suggestions.map((s) => ListTile(
-                    dense: true,
-                    leading: const Icon(Icons.lightbulb_outline, size: 20),
-                    title: Text(s.equipmentName),
-                    subtitle: Text('Ähnlichkeit ${(s.score * 100).round()} %'),
-                    onTap: () => choose(s.equipmentId),
-                  )),
-              const Divider(),
-            ],
-            TextField(
-              decoration: const InputDecoration(
-                  labelText: 'Gerätedatenbank durchsuchen',
-                  prefixIcon: Icon(Icons.search)),
-              onChanged: (v) => setState(() => _search = v),
-            ),
-            ...searchResults.map((e) => ListTile(
+        builder:
+            (context, scrollController) => ListView(
+              controller: scrollController,
+              padding: const EdgeInsets.all(16),
+              children: [
+                Text(
+                  widget.rawName,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                CheckboxListTile(
+                  contentPadding: EdgeInsets.zero,
                   dense: true,
-                  title: Text(e.name),
-                  onTap: () => choose(e.id),
-                )),
-            const Divider(),
-            ListTile(
-              dense: true,
-              leading: const Icon(Icons.add_circle_outline),
-              title: const Text('Als neues Gerät anlegen'),
-              onTap: () {
-                notifier.setDecision(widget.matchKey,
-                    const RowDecision(action: RowAction.createCustom));
-                Navigator.of(context).pop();
-              },
+                  title: const Text('Als Alias merken (künftig automatisch)'),
+                  value: _rememberAlias,
+                  onChanged: (v) => setState(() => _rememberAlias = v ?? true),
+                ),
+                if (match != null && match.suggestions.isNotEmpty) ...[
+                  Text(
+                    'Vorschläge',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  ...match.suggestions.map(
+                    (s) => ListTile(
+                      dense: true,
+                      leading: const Icon(Icons.lightbulb_outline, size: 20),
+                      title: Text(s.equipmentName),
+                      subtitle: Text(
+                        'Ähnlichkeit ${(s.score * 100).round()} %',
+                      ),
+                      onTap: () => choose(s.equipmentId),
+                    ),
+                  ),
+                  const Divider(),
+                ],
+                TextField(
+                  decoration: const InputDecoration(
+                    labelText: 'Gerätedatenbank durchsuchen',
+                    prefixIcon: Icon(Icons.search),
+                  ),
+                  onChanged: (v) => setState(() => _search = v),
+                ),
+                ...searchResults.map(
+                  (e) => ListTile(
+                    dense: true,
+                    title: Text(e.name),
+                    onTap: () => choose(e.id),
+                  ),
+                ),
+                const Divider(),
+                ListTile(
+                  dense: true,
+                  leading: const Icon(Icons.add_circle_outline),
+                  title: const Text('Als neues Gerät anlegen'),
+                  onTap: () {
+                    notifier.setDecision(
+                      widget.matchKey,
+                      const RowDecision(action: RowAction.createCustom),
+                    );
+                    Navigator.of(context).pop();
+                  },
+                ),
+                ListTile(
+                  dense: true,
+                  leading: const Icon(Icons.block),
+                  title: const Text('Überspringen'),
+                  onTap: () {
+                    notifier.setDecision(
+                      widget.matchKey,
+                      const RowDecision(action: RowAction.skip),
+                    );
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
             ),
-            ListTile(
-              dense: true,
-              leading: const Icon(Icons.block),
-              title: const Text('Überspringen'),
-              onTap: () {
-                notifier.setDecision(widget.matchKey,
-                    const RowDecision(action: RowAction.skip));
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -673,11 +757,15 @@ class _ConfirmStep extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Zusammenfassung',
-                    style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'Zusammenfassung',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 const SizedBox(height: 8),
-                Text('${state.rows.length} Zeilen aus '
-                    '„${state.file?.fileName ?? ''}“'),
+                Text(
+                  '${state.rows.length} Zeilen aus '
+                  '„${state.file?.fileName ?? ''}“',
+                ),
                 Text('$useCount Geräte zugeordnet'),
                 Text('$customCount Geräte werden neu angelegt'),
                 if (skipCount > 0) Text('$skipCount werden übersprungen'),
@@ -687,24 +775,29 @@ class _ConfirmStep extends ConsumerWidget {
         ),
         const SizedBox(height: 20),
         FilledButton.icon(
-          icon: state.busy
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(
-                      strokeWidth: 2, color: Colors.white))
-              : const Icon(Icons.download_done),
+          icon:
+              state.busy
+                  ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                  : const Icon(Icons.download_done),
           label: const Text('Import ausführen'),
-          onPressed: state.busy
-              ? null
-              : () async {
-                  await notifier.applyImport();
-                  // Refresh lists fed from the changed tables.
-                  ref.invalidate(vehicleListStreamProvider);
-                  ref.invalidate(vehicleListProvider);
-                  ref.invalidate(equipmentListProvider);
-                  ref.invalidate(equipmentListStreamProvider);
-                },
+          onPressed:
+              state.busy
+                  ? null
+                  : () async {
+                    await notifier.applyImport();
+                    // Refresh lists fed from the changed tables.
+                    ref.invalidate(vehicleListStreamProvider);
+                    ref.invalidate(vehicleListProvider);
+                    ref.invalidate(equipmentListProvider);
+                    ref.invalidate(equipmentListStreamProvider);
+                  },
         ),
       ],
     );
@@ -729,12 +822,16 @@ class _ResultView extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(children: [
-                  const Icon(Icons.check_circle, color: Colors.green),
-                  const SizedBox(width: 8),
-                  Text('Import abgeschlossen',
-                      style: Theme.of(context).textTheme.titleMedium),
-                ]),
+                Row(
+                  children: [
+                    const Icon(Icons.check_circle, color: Colors.green),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Import abgeschlossen',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 8),
                 Text('${result.assignmentsWritten} Zuordnungen geschrieben'),
                 if (result.vehiclesCreated > 0)
@@ -760,26 +857,32 @@ class _ResultView extends ConsumerWidget {
               try {
                 final version = await syncService.publish();
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text('Version $version veröffentlicht.')));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Version $version veröffentlicht.')),
+                  );
                 }
               } on OutdatedClientException {
                 // Der Import selbst ist durch — nur das Hochladen ist
                 // gesperrt (Issue #35). Die Daten liegen lokal vor.
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                    duration: Duration(seconds: 8),
-                    content: Text(
-                      'Diese App-Version ist zu alt zum Veröffentlichen. Der '
-                      'Import ist lokal gespeichert — bitte die App '
-                      'aktualisieren und dann veröffentlichen.',
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      duration: Duration(seconds: 8),
+                      content: Text(
+                        'Diese App-Version ist zu alt zum Veröffentlichen. Der '
+                        'Import ist lokal gespeichert — bitte die App '
+                        'aktualisieren und dann veröffentlichen.',
+                      ),
                     ),
-                  ));
+                  );
                 }
               } catch (e) {
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text('Veröffentlichen fehlgeschlagen: $e')));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Veröffentlichen fehlgeschlagen: $e'),
+                    ),
+                  );
                 }
               }
             },
@@ -788,8 +891,7 @@ class _ResultView extends ConsumerWidget {
         OutlinedButton.icon(
           icon: const Icon(Icons.upload_file),
           label: const Text('Weitere Datei importieren'),
-          onPressed: () =>
-              ref.read(importWizardProvider.notifier).reset(),
+          onPressed: () => ref.read(importWizardProvider.notifier).reset(),
         ),
         const SizedBox(height: 8),
         OutlinedButton.icon(

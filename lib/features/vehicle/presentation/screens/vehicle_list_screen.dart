@@ -1,5 +1,6 @@
 /// vehicle_list_screen.dart – Shows all vehicles with navigation to detail and create.
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -42,13 +43,15 @@ class VehicleListScreen extends ConsumerWidget {
         ],
       ),
       floatingActionButton: vehiclesAsync.maybeWhen(
-        data: (vehicles) => vehicles.isEmpty
-            ? null
-            : FloatingActionButton.extended(
-                icon: const Icon(Icons.local_fire_department),
-                label: const Text('Einsatz'),
-                onPressed: () => context.push('/operation'),
-              ),
+        data:
+            (vehicles) =>
+                vehicles.isEmpty
+                    ? null
+                    : FloatingActionButton.extended(
+                      icon: const Icon(Icons.local_fire_department),
+                      label: const Text('Einsatz'),
+                      onPressed: () => context.push('/operation'),
+                    ),
         orElse: () => null,
       ),
       body: vehiclesAsync.when(
@@ -62,8 +65,10 @@ class VehicleListScreen extends ConsumerWidget {
                 children: [
                   Icon(Icons.fire_truck, size: 64, color: Colors.grey),
                   SizedBox(height: 16),
-                  Text('Noch keine Fahrzeuge angelegt.',
-                      style: TextStyle(color: Colors.grey)),
+                  Text(
+                    'Noch keine Fahrzeuge angelegt.',
+                    style: TextStyle(color: Colors.grey),
+                  ),
                 ],
               ),
             );
@@ -84,9 +89,10 @@ class VehicleListScreen extends ConsumerWidget {
                       height: 56,
                     ),
                   ),
-                  title: Text(v.name,
-                      style:
-                          const TextStyle(fontWeight: FontWeight.bold)),
+                  title: Text(
+                    v.name,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   subtitle: Text(v.type),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -129,11 +135,14 @@ class _DueBadge extends StatelessWidget {
         children: [
           const Icon(Icons.fact_check, color: Colors.white, size: 14),
           const SizedBox(width: 4),
-          Text('$count',
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold)),
+          Text(
+            '$count',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );

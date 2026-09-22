@@ -1,5 +1,6 @@
 /// equipment_providers.dart – Riverpod providers for equipment feature.
 library;
+
 import 'package:fwapp/core/database/database_providers.dart';
 import 'package:fwapp/features/equipment/data/repositories/equipment_repository_impl.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_item.dart';
@@ -29,8 +30,7 @@ Future<int> equipmentCount(Ref ref) =>
     ref.watch(equipmentRepositoryProvider).count();
 
 @riverpod
-Future<List<EquipmentItem>> equipmentSearch(
-        Ref ref, String query) =>
+Future<List<EquipmentItem>> equipmentSearch(Ref ref, String query) =>
     ref.watch(equipmentRepositoryProvider).search(query);
 
 // ─── Filter State ─────────────────────────────────────────────
@@ -52,14 +52,13 @@ class EquipmentFilter {
     bool clearFunction = false,
     String? scenarioFilter,
     bool clearScenario = false,
-  }) =>
-      EquipmentFilter(
-        searchQuery: searchQuery ?? this.searchQuery,
-        functionFilter:
-            clearFunction ? null : (functionFilter ?? this.functionFilter),
-        scenarioFilter:
-            clearScenario ? null : (scenarioFilter ?? this.scenarioFilter),
-      );
+  }) => EquipmentFilter(
+    searchQuery: searchQuery ?? this.searchQuery,
+    functionFilter:
+        clearFunction ? null : (functionFilter ?? this.functionFilter),
+    scenarioFilter:
+        clearScenario ? null : (scenarioFilter ?? this.scenarioFilter),
+  );
 
   bool get hasFilter =>
       searchQuery.isNotEmpty ||
@@ -88,8 +87,7 @@ class EquipmentFilterNotifier extends _$EquipmentFilterNotifier {
 /// Riverpod als „setState during build" meldet. Mit dem Strom ist die Liste
 /// von selbst aktuell, egal wer schreibt.
 @riverpod
-Future<List<EquipmentItem>> filteredEquipment(
-    Ref ref) async {
+Future<List<EquipmentItem>> filteredEquipment(Ref ref) async {
   final filter = ref.watch(equipmentFilterProvider);
   final all = await ref.watch(equipmentListStreamProvider.future);
 
@@ -102,7 +100,9 @@ Future<List<EquipmentItem>> filteredEquipment(
       }
     }
     if (filter.functionFilter != null) {
-      if (!item.equipmentFunctions.contains(filter.functionFilter)) return false;
+      if (!item.equipmentFunctions.contains(filter.functionFilter)) {
+        return false;
+      }
     }
     if (filter.scenarioFilter != null) {
       if (!item.deploymentScenarios.contains(filter.scenarioFilter)) {

@@ -1,6 +1,7 @@
 /// update_check_test.dart – Versionsvergleich und Kanalwahl des
 /// Update-Checks.
 library;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -106,13 +107,20 @@ void main() {
 
     test('liefert null, wenn nichts Veröffentlichtes übrig bleibt', () {
       expect(firstPublishedRelease([]), isNull);
-      expect(firstPublishedRelease([{'draft': true}]), isNull);
+      expect(
+        firstPublishedRelease([
+          {'draft': true},
+        ]),
+        isNull,
+      );
       expect(firstPublishedRelease(['unsinn']), isNull);
     });
   });
 
   group('Vorab-Schalter', () {
-    Future<ProviderContainer> container({Map<String, Object> prefs = const {}}) async {
+    Future<ProviderContainer> container({
+      Map<String, Object> prefs = const {},
+    }) async {
       SharedPreferences.setMockInitialValues(prefs);
       final c = ProviderContainer();
       addTearDown(c.dispose);

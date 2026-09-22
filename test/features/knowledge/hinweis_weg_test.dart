@@ -30,24 +30,30 @@ void main() {
     required Fragenherkunft herkunft,
     String? remoteId,
   }) async {
-    final id = await db.wissenDao.insertFrage(WissensfragenCompanion.insert(
-      gebiet: 'funk',
-      frage: 'Welcher Kanal ist der Anrufkanal?',
-      antwortenJson: const Value('["a","b"]'),
-      richtigeJson: const Value('[0]'),
-      herkunft: Value(herkunft.schluessel),
-      stand: const Value('freigegeben'),
-      remoteId: Value(remoteId),
-    ));
+    final id = await db.wissenDao.insertFrage(
+      WissensfragenCompanion.insert(
+        gebiet: 'funk',
+        frage: 'Welcher Kanal ist der Anrufkanal?',
+        antwortenJson: const Value('["a","b"]'),
+        richtigeJson: const Value('[0]'),
+        herkunft: Value(herkunft.schluessel),
+        stand: const Value('freigegeben'),
+        remoteId: Value(remoteId),
+      ),
+    );
     return (await db.wissenDao.getById(id))!;
   }
 
-  test('mitgelieferte Frage geht an den Bot — sie ist in jeder Wehr dieselbe',
-      () async {
-    final f = await frage(
-        herkunft: Fragenherkunft.mitgeliefert, remoteId: null);
-    expect(hinweisWegFuer(f, hatWehr: true), Hinweisweg.bot);
-  });
+  test(
+    'mitgelieferte Frage geht an den Bot — sie ist in jeder Wehr dieselbe',
+    () async {
+      final f = await frage(
+        herkunft: Fragenherkunft.mitgeliefert,
+        remoteId: null,
+      );
+      expect(hinweisWegFuer(f, hatWehr: true), Hinweisweg.bot);
+    },
+  );
 
   test('mitgeliefert schlägt alles andere — auch ohne Wehr', () async {
     // Eine mitgelieferte Frage hat auf dem Server nie eine Zeile (siehe
@@ -58,16 +64,24 @@ void main() {
     expect(hinweisWegFuer(f, hatWehr: false), Hinweisweg.bot);
   });
 
-  test('eigene Frage der Wehr geht an den Gerätewart, NIE an den Bot',
-      () async {
-    final f = await frage(
-        herkunft: Fragenherkunft.eigen, remoteId: 'abc-123');
-    final weg = hinweisWegFuer(f, hatWehr: true);
-    expect(weg, Hinweisweg.geraetewart);
-    expect(weg, isNot(Hinweisweg.bot),
-        reason: 'Ein Hinweis auf eine eigene Frage der Wehr hat in einem '
-            'öffentlichen Issue nichts verloren.');
-  });
+  test(
+    'eigene Frage der Wehr geht an den Gerätewart, NIE an den Bot',
+    () async {
+      final f = await frage(
+        herkunft: Fragenherkunft.eigen,
+        remoteId: 'abc-123',
+      );
+      final weg = hinweisWegFuer(f, hatWehr: true);
+      expect(weg, Hinweisweg.geraetewart);
+      expect(
+        weg,
+        isNot(Hinweisweg.bot),
+        reason:
+            'Ein Hinweis auf eine eigene Frage der Wehr hat in einem '
+            'öffentlichen Issue nichts verloren.',
+      );
+    },
+  );
 
   test('eigene Frage ohne Serverzeile ist nur lokal — es gibt keinen '
       'Empfänger', () async {
@@ -79,8 +93,7 @@ void main() {
   });
 
   test('eigene Frage ohne Gesamtwehr ist nur lokal', () async {
-    final f = await frage(
-        herkunft: Fragenherkunft.eigen, remoteId: 'abc-123');
+    final f = await frage(herkunft: Fragenherkunft.eigen, remoteId: 'abc-123');
     expect(hinweisWegFuer(f, hatWehr: false), Hinweisweg.nurLokal);
   });
 }

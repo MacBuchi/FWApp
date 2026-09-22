@@ -1,6 +1,7 @@
 /// library_seeder.dart – Idempotent seeder that populates the DB from the JSON asset library.
 /// Run once on first launch. Uses libraryEquipmentId to detect already-seeded rows.
 library;
+
 import 'dart:convert';
 
 import 'package:drift/drift.dart' show Value;
@@ -29,9 +30,9 @@ class LibrarySeeder {
     try {
       // A device that has pulled the central dataset must not be re-seeded
       // with the bundled demo library — the published data is authoritative.
-      final syncMeta = await (_db.select(_db.syncMeta)
-            ..where((t) => t.id.equals(1)))
-          .getSingleOrNull();
+      final syncMeta =
+          await (_db.select(_db.syncMeta)
+            ..where((t) => t.id.equals(1))).getSingleOrNull();
       if ((syncMeta?.lastPulledVersion ?? 0) > 0) {
         appLog.i('Central dataset present – skipping library seed.');
         return;
@@ -39,8 +40,7 @@ class LibrarySeeder {
 
       // Check if already seeded: look for any row with libraryEquipmentId set
       final existing = await _db.equipmentDao.getAll();
-      final seeded =
-          existing.any((e) => e.libraryEquipmentId != null);
+      final seeded = existing.any((e) => e.libraryEquipmentId != null);
       // Standard-Grunddatenbank (Normbeladung) — idempotent per item. Muss
       // vor dem Demo-Fahrzeug laufen, dessen Beladeplan Katalog-IDs referenziert.
       await _seedCatalog();
@@ -83,17 +83,20 @@ class LibrarySeeder {
   /// Zuordnung, und ein Fach „Dach" am echten Fahrzeug wird nicht angefasst.
   Future<void> _verorteDemoFaecher(String vehicleId) async {
     final vehicleJson = await _loadJson(
-        'assets/equipment_library/vehicles/$vehicleId/vehicle.json');
+      'assets/equipment_library/vehicles/$vehicleId/vehicle.json',
+    );
     final planJson = await _loadJson(
-        'assets/equipment_library/vehicles/$vehicleId/loading_plan.json');
+      'assets/equipment_library/vehicles/$vehicleId/loading_plan.json',
+    );
     if (vehicleJson == null || planJson == null) return;
 
     final vehicleName =
         (vehicleJson['name'] ?? vehicleJson['vehicle_name'] ?? vehicleId)
             as String;
-    final vehicle = (await _db.vehicleDao.getAll())
-        .where((v) => v.name == vehicleName)
-        .firstOrNull;
+    final vehicle =
+        (await _db.vehicleDao.getAll())
+            .where((v) => v.name == vehicleName)
+            .firstOrNull;
     if (vehicle == null) return;
 
     final ausPlan = <String, Map<String, dynamic>>{
@@ -108,11 +111,13 @@ class LibrarySeeder {
       if (compMap == null) continue;
       final seite = _seiteAus(compMap);
       if (seite == null) continue;
-      await (_db.update(_db.compartments)..where((t) => t.id.equals(c.id)))
-          .write(CompartmentsCompanion(
-        seite: Value(seite),
-        laengsposition: Value(_laengspositionAus(compMap)),
-      ));
+      await (_db.update(_db.compartments)
+        ..where((t) => t.id.equals(c.id))).write(
+        CompartmentsCompanion(
+          seite: Value(seite),
+          laengsposition: Value(_laengspositionAus(compMap)),
+        ),
+      );
       nachgetragen++;
     }
     if (nachgetragen > 0) {
@@ -123,12 +128,14 @@ class LibrarySeeder {
   Future<void> _seedVehicle(String vehicleId) async {
     // 1. Load vehicle.json
     final vehicleJson = await _loadJson(
-        'assets/equipment_library/vehicles/$vehicleId/vehicle.json');
+      'assets/equipment_library/vehicles/$vehicleId/vehicle.json',
+    );
     if (vehicleJson == null) return;
 
     // 2. Load loading_plan.json
     final planJson = await _loadJson(
-        'assets/equipment_library/vehicles/$vehicleId/loading_plan.json');
+      'assets/equipment_library/vehicles/$vehicleId/loading_plan.json',
+    );
     if (planJson == null) return;
 
     await _db.transaction(() async {
@@ -141,9 +148,7 @@ class LibrarySeeder {
           (vehicleJson['type'] ?? vehicleJson['vehicle_type'] ?? vehicleId)
               as String;
       final vehicles = await _db.vehicleDao.getAll();
-      final existing = vehicles
-          .where((v) => v.name == vehicleName)
-          .firstOrNull;
+      final existing = vehicles.where((v) => v.name == vehicleName).firstOrNull;
       if (existing != null) {
         dbVehicleId = existing.id;
       } else {
@@ -164,8 +169,9 @@ class LibrarySeeder {
         final position = compMap['position'] as int? ?? 0;
 
         // Upsert compartment
-        final existingComps =
-            await _db.compartmentDao.getByVehicle(dbVehicleId);
+        final existingComps = await _db.compartmentDao.getByVehicle(
+          dbVehicleId,
+        );
         CompartmentData? compRow;
         for (final c in existingComps) {
           if (c.label == compartmentLabel) {
@@ -193,24 +199,24 @@ class LibrarySeeder {
         }
 
         // Process items in this compartment
-        final items =
-            (compMap['items'] as List<dynamic>?) ?? [];
+        final items = (compMap['items'] as List<dynamic>?) ?? [];
         for (final itemRaw in items) {
           final itemMap = itemRaw as Map<String, dynamic>;
-          final equipmentLibId =
-              itemMap['equipment_id'] as String;
+          final equipmentLibId = itemMap['equipment_id'] as String;
           final quantity = itemMap['quantity'] as int? ?? 1;
 
           // Load equipment JSON
           int equipmentId;
-          final equipRow =
-              await _db.equipmentDao.getByLibraryId(equipmentLibId);
+          final equipRow = await _db.equipmentDao.getByLibraryId(
+            equipmentLibId,
+          );
           if (equipRow != null) {
             equipmentId = equipRow.id;
           } else {
             // Try to load from asset
             final eJson = await _loadJson(
-                'assets/equipment_library/vehicles/$vehicleId/equipment/$equipmentLibId.json');
+              'assets/equipment_library/vehicles/$vehicleId/equipment/$equipmentLibId.json',
+            );
             String name = equipmentLibId.replaceAll('_', ' ');
             List<String> functions = [];
             List<String> scenarios = [];
@@ -228,29 +234,26 @@ class LibrarySeeder {
               shortName = eJson['short_name'] as String?;
               trainingQuestions =
                   ((eJson['training_questions'] as List?)?.cast<String>()) ??
-                      [];
+                  [];
               typicalUse =
                   ((eJson['typical_use'] as List?)?.cast<String>()) ?? [];
               functions =
-                  ((eJson['equipment_functions'] as List?)
-                          ?.cast<String>()) ??
-                      [];
+                  ((eJson['equipment_functions'] as List?)?.cast<String>()) ??
+                  [];
               scenarios =
-                  ((eJson['deployment_scenarios'] as List?)
-                          ?.cast<String>()) ??
-                      [];
-              description =
-                  (eJson['description'] as String?) ?? '';
+                  ((eJson['deployment_scenarios'] as List?)?.cast<String>()) ??
+                  [];
+              description = (eJson['description'] as String?) ?? '';
               if (eJson['manuals'] is List &&
                   (eJson['manuals'] as List).isNotEmpty) {
                 trainingUrl = (eJson['manuals'] as List).first as String?;
               }
-              final images =
-                  ((eJson['images'] as List?)?.cast<String>()) ?? [];
+              final images = ((eJson['images'] as List?)?.cast<String>()) ?? [];
               if (images.isNotEmpty) imagePath = images.first;
               if (eJson['technical_data'] is Map) {
                 extra = Map<String, dynamic>.from(
-                    eJson['technical_data'] as Map);
+                  eJson['technical_data'] as Map,
+                );
               }
             }
 
@@ -260,10 +263,8 @@ class LibrarySeeder {
                 shortName: Value(shortName),
                 libraryEquipmentId: Value(equipmentLibId),
                 isCustom: const Value(false),
-                equipmentFunctionsJson:
-                    Value(jsonEncode(functions)),
-                deploymentScenariosJson:
-                    Value(jsonEncode(scenarios)),
+                equipmentFunctionsJson: Value(jsonEncode(functions)),
+                deploymentScenariosJson: Value(jsonEncode(scenarios)),
                 description: Value(description),
                 imagePath: Value(imagePath),
                 trainingUrl: Value(trainingUrl),
@@ -276,10 +277,12 @@ class LibrarySeeder {
           }
 
           // Upsert assignment
-          final existingAssignments =
-              await _db.assignmentDao.getByCompartment(compartmentId);
-          final alreadyAssigned = existingAssignments
-              .any((a) => a.equipmentId == equipmentId);
+          final existingAssignments = await _db.assignmentDao.getByCompartment(
+            compartmentId,
+          );
+          final alreadyAssigned = existingAssignments.any(
+            (a) => a.equipmentId == equipmentId,
+          );
           if (!alreadyAssigned) {
             await _db.assignmentDao.insertAssignment(
               EquipmentAssignmentsCompanion.insert(
@@ -312,8 +315,10 @@ class LibrarySeeder {
         // Backfill für Bestände von vor der Bildbibliothek: nur wenn noch
         // gar kein Bild gesetzt ist (Fotos nie überschreiben).
         if (existing.imagePath == null) {
-          await _db.equipmentDao.patchEquipment(existing.id,
-              EquipmentItemsCompanion(imagePath: Value(pictogramPath(id))));
+          await _db.equipmentDao.patchEquipment(
+            existing.id,
+            EquipmentItemsCompanion(imagePath: Value(pictogramPath(id))),
+          );
         }
         continue;
       }

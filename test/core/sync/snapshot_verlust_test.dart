@@ -34,19 +34,27 @@ void main() {
     List<int> faecher = const [],
     List<int> geraete = const [],
     List<int> einheiten = const [],
-  }) =>
-      {
-        'vehicles': [for (final id in fahrzeuge) {'id': id}],
-        'compartments': [for (final id in faecher) {'id': id}],
-        'equipment_items': [for (final id in geraete) {'id': id}],
-        'equipment_assignments': const [],
-        'equipment_instances': [for (final id in einheiten) {'id': id}],
-        'inspection_schedules': const [],
-        'inspection_log': const [],
-      };
+  }) => {
+    'vehicles': [
+      for (final id in fahrzeuge) {'id': id},
+    ],
+    'compartments': [
+      for (final id in faecher) {'id': id},
+    ],
+    'equipment_items': [
+      for (final id in geraete) {'id': id},
+    ],
+    'equipment_assignments': const [],
+    'equipment_instances': [
+      for (final id in einheiten) {'id': id},
+    ],
+    'inspection_schedules': const [],
+    'inspection_log': const [],
+  };
 
-  Future<int> fahrzeug(String name) => db.vehicleDao
-      .insertVehicle(VehiclesCompanion.insert(name: name, type: 'HLF'));
+  Future<int> fahrzeug(String name) => db.vehicleDao.insertVehicle(
+    VehiclesCompanion.insert(name: name, type: 'HLF'),
+  );
 
   /// Setzt alles auf „war schon oben" — das tut sonst ein erfolgreiches
   /// Veröffentlichen. Ohne das zählt seit #67 gar nichts mehr als Verlust.
@@ -65,8 +73,12 @@ void main() {
   }
 
   Future<int> einheit(int geraetId, String kennung) =>
-      db.inspectionDao.insertInstance(EquipmentInstancesCompanion.insert(
-          equipmentId: geraetId, identifier: Value(kennung)));
+      db.inspectionDao.insertInstance(
+        EquipmentInstancesCompanion.insert(
+          equipmentId: geraetId,
+          identifier: Value(kennung),
+        ),
+      );
 
   test('was der Server kennt, geht nicht verloren', () async {
     // ⚠️ Der wichtigste Fall: der gewöhnliche Zug. Käme hier eine Warnung,
@@ -78,17 +90,19 @@ void main() {
     expect(verlust.gesamt, 0);
   });
 
-  test('⚠️ was hier entstand und nie oben war, zählt NICHT als Verlust',
-      () async {
-    // Der Kern von #67: Der Zug behält es. Würde es hier gezählt, fragte die
-    // App bei jedem gemeinsamen Erfassen nach einem Verlust, den es nicht
-    // gibt — und der Zweite klickte die Warnung weg, die ihn einmal wirklich
-    // schützen soll.
-    await fahrzeug('MTW Probe');
-    final verlust = await berechneVerlust(db, snapshot());
+  test(
+    '⚠️ was hier entstand und nie oben war, zählt NICHT als Verlust',
+    () async {
+      // Der Kern von #67: Der Zug behält es. Würde es hier gezählt, fragte die
+      // App bei jedem gemeinsamen Erfassen nach einem Verlust, den es nicht
+      // gibt — und der Zweite klickte die Warnung weg, die ihn einmal wirklich
+      // schützen soll.
+      await fahrzeug('MTW Probe');
+      final verlust = await berechneVerlust(db, snapshot());
 
-    expect(verlust.istNichts, isTrue);
-  });
+      expect(verlust.istNichts, isTrue);
+    },
+  );
 
   test('ein Fahrzeug, das jemand anders gelöscht hat, wird gezählt', () async {
     await fahrzeug('HLF 20');
@@ -106,13 +120,16 @@ void main() {
     // hier angelegten, nie veröffentlichten Einheit; die überlebt den Zug
     // inzwischen — siehe oben.)
     final v = await fahrzeug('HLF 20');
-    final g = await db.equipmentDao
-        .insertEquipment(EquipmentItemsCompanion.insert(name: 'Tauchpumpe'));
+    final g = await db.equipmentDao.insertEquipment(
+      EquipmentItemsCompanion.insert(name: 'Tauchpumpe'),
+    );
     await einheit(g, 'TP 2');
     await alsVeroeffentlicht();
 
     final verlust = await berechneVerlust(
-        db, snapshot(fahrzeuge: [v], geraete: [g]));
+      db,
+      snapshot(fahrzeuge: [v], geraete: [g]),
+    );
 
     expect(verlust.jeTabelle['equipment_instances'], 1);
     expect(verlust.beschreibung, '1 Geräte-Einheit');
@@ -121,8 +138,9 @@ void main() {
   test('mehrere Sorten werden zu einem lesbaren Satz', () async {
     await fahrzeug('HLF 20');
     await fahrzeug('LF 20');
-    final g = await db.equipmentDao
-        .insertEquipment(EquipmentItemsCompanion.insert(name: 'Tauchpumpe'));
+    final g = await db.equipmentDao.insertEquipment(
+      EquipmentItemsCompanion.insert(name: 'Tauchpumpe'),
+    );
     await einheit(g, 'TP 1');
     await einheit(g, 'TP 2');
     await alsVeroeffentlicht();
@@ -136,38 +154,49 @@ void main() {
   test('drei Sorten bekommen Kommas und ein „und"', () async {
     final v = await fahrzeug('HLF 20');
     await db.compartmentDao.insertCompartment(
-        CompartmentsCompanion.insert(vehicleId: v, label: 'G1'));
-    final g = await db.equipmentDao
-        .insertEquipment(EquipmentItemsCompanion.insert(name: 'Tauchpumpe'));
+      CompartmentsCompanion.insert(vehicleId: v, label: 'G1'),
+    );
+    final g = await db.equipmentDao.insertEquipment(
+      EquipmentItemsCompanion.insert(name: 'Tauchpumpe'),
+    );
     await einheit(g, 'TP 1');
     await alsVeroeffentlicht();
 
     final verlust = await berechneVerlust(db, snapshot());
 
-    expect(verlust.beschreibung,
-        '1 Fahrzeug, 1 Fach, 1 Gerät und 1 Geräte-Einheit');
+    expect(
+      verlust.beschreibung,
+      '1 Fahrzeug, 1 Fach, 1 Gerät und 1 Geräte-Einheit',
+    );
   });
 
   test('Einzahl und Mehrzahl stimmen', () async {
-    final g = await db.equipmentDao
-        .insertEquipment(EquipmentItemsCompanion.insert(name: 'Tauchpumpe'));
+    final g = await db.equipmentDao.insertEquipment(
+      EquipmentItemsCompanion.insert(name: 'Tauchpumpe'),
+    );
     await einheit(g, 'TP 1');
     await alsVeroeffentlicht();
-    expect((await berechneVerlust(db, snapshot(geraete: [g]))).beschreibung,
-        '1 Geräte-Einheit');
+    expect(
+      (await berechneVerlust(db, snapshot(geraete: [g]))).beschreibung,
+      '1 Geräte-Einheit',
+    );
 
     await einheit(g, 'TP 2');
     await alsVeroeffentlicht();
-    expect((await berechneVerlust(db, snapshot(geraete: [g]))).beschreibung,
-        '2 Geräte-Einheiten');
+    expect(
+      (await berechneVerlust(db, snapshot(geraete: [g]))).beschreibung,
+      '2 Geräte-Einheiten',
+    );
   });
 
   test('eine leere lokale Datenbank verliert nichts', () async {
     // Der erste Start einer Schwester-Abteilung: Die Datei ist leer, der
     // Server bringt alles mit. Da gibt es nichts zu fragen.
     expect(
-      (await berechneVerlust(db, snapshot(fahrzeuge: [1, 2], geraete: [7])))
-          .istNichts,
+      (await berechneVerlust(
+        db,
+        snapshot(fahrzeuge: [1, 2], geraete: [7]),
+      )).istNichts,
       isTrue,
     );
   });

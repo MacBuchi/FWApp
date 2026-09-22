@@ -12,6 +12,16 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.58.1] – 2026-09-22
+
+### Geändert
+
+- **Innere Aufräumarbeit: einheitliche Code-Formatierung.** An der App
+  ändert sich nichts — kein Bildschirm, kein Ablauf, keine Zahl. Der
+  Quelltext war von Hand umbrochen und ist jetzt einmal durch das
+  Standardwerkzeug gelaufen; die Prüfung dafür läuft ab sofort bei jeder
+  Änderung automatisch mit, damit es so bleibt.
+
 ## [1.58.0] – 2026-09-22
 
 ### Geändert

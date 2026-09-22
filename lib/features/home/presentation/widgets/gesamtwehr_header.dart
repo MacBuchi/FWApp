@@ -72,9 +72,9 @@ class GesamtwehrKopf extends StatelessWidget {
               child: Text(
                 titel!,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.2,
-                    ),
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.2,
+                ),
               ),
             ),
           if (text != null && text!.isNotEmpty)
@@ -83,9 +83,9 @@ class GesamtwehrKopf extends StatelessWidget {
               child: Text(
                 text!,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                      height: 1.35,
-                    ),
+                  color: scheme.onSurfaceVariant,
+                  height: 1.35,
+                ),
               ),
             )
           // Ohne Text fehlt dem Titel sonst der untere Rand; hinter einem Bild
@@ -181,22 +181,23 @@ class GesamtwehrHeader extends ConsumerWidget {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: darfPflegen
-          ? Stack(
-              children: [
-                kopf,
-                Positioned.fill(
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(22),
-                      onTap: () => context.push('/gesamtwehr/kopfbereich'),
+      child:
+          darfPflegen
+              ? Stack(
+                children: [
+                  kopf,
+                  Positioned.fill(
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(22),
+                        onTap: () => context.push('/gesamtwehr/kopfbereich'),
+                      ),
                     ),
                   ),
-                ),
-              ],
-            )
-          : kopf,
+                ],
+              )
+              : kopf,
     );
   }
 }

@@ -31,8 +31,7 @@ void main() {
       expect(abzeichenFuerLevel(99), Leistungsabzeichen.gold);
     });
 
-    test('die Aufzählung steht in derselben Reihenfolge wie die Schwellen',
-        () {
+    test('die Aufzählung steht in derselben Reihenfolge wie die Schwellen', () {
       // [abzeichenFuerLevel] läuft die Aufzählung durch und behält die
       // letzte passende Stufe. Stünde Gold vor Bronze, käme bei Level 20
       // Bronze heraus — und niemand käme auf die Idee, danach zu suchen.
@@ -61,8 +60,11 @@ void main() {
       final jetzt = abzeichenFuerLevel(level);
       if (vorher != null) {
         expect(jetzt, isNotNull, reason: 'Level $level verlor die Stufe');
-        expect(jetzt!.index, greaterThanOrEqualTo(vorher.index),
-            reason: 'Level $level fiel zurück');
+        expect(
+          jetzt!.index,
+          greaterThanOrEqualTo(vorher.index),
+          reason: 'Level $level fiel zurück',
+        );
       }
       vorher = jetzt;
     }
@@ -81,8 +83,10 @@ void main() {
     });
 
     test('nennt das Level, ab dem sie hängt', () {
-      expect(naechsteStufe(1)?.abLevel,
-          kAbzeichenAbLevel[Leistungsabzeichen.bronze]);
+      expect(
+        naechsteStufe(1)?.abLevel,
+        kAbzeichenAbLevel[Leistungsabzeichen.bronze],
+      );
     });
   });
 

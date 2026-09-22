@@ -6,6 +6,7 @@
 /// Die Zwischenablage bleibt als Rückfall, wenn das Teilen-Blatt fehlt — in
 /// jedem Desktop-Browser ist das der Normalfall.
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -45,13 +46,17 @@ class InventoryReportScreen extends ConsumerWidget {
         error: (e, _) => Center(child: Text('Fehler: $e')),
         data: (checks) {
           final summary = InventorySummary.from(checks);
-          final open = checks
-              .where((c) => c.status == InventoryChecks.statusOpen)
-              .toList();
-          final issues = checks
-              .where((c) =>
-                  InventorySummary.abweichendeStatus.contains(c.status))
-              .toList();
+          final open =
+              checks
+                  .where((c) => c.status == InventoryChecks.statusOpen)
+                  .toList();
+          final issues =
+              checks
+                  .where(
+                    (c) =>
+                        InventorySummary.abweichendeStatus.contains(c.status),
+                  )
+                  .toList();
 
           return ListView(
             padding: const EdgeInsets.all(16),
@@ -62,21 +67,31 @@ class InventoryReportScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Zusammenfassung',
-                          style: Theme.of(context).textTheme.titleMedium),
+                      Text(
+                        'Zusammenfassung',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
                       const SizedBox(height: 8),
                       Text('${summary.checked} von ${summary.total} geprüft'),
-                      Text('${summary.ok} vollständig',
-                          style: TextStyle(color: Colors.green.shade700)),
+                      Text(
+                        '${summary.ok} vollständig',
+                        style: TextStyle(color: Colors.green.shade700),
+                      ),
                       if (summary.missing > 0)
-                        Text('${summary.missing} fehlen',
-                            style: TextStyle(color: Colors.red.shade700)),
+                        Text(
+                          '${summary.missing} fehlen',
+                          style: TextStyle(color: Colors.red.shade700),
+                        ),
                       if (summary.damaged > 0)
-                        Text('${summary.damaged} beschädigt',
-                            style: TextStyle(color: Colors.orange.shade800)),
+                        Text(
+                          '${summary.damaged} beschädigt',
+                          style: TextStyle(color: Colors.orange.shade800),
+                        ),
                       if (summary.repair > 0)
-                        Text('${summary.repair} in Reparatur',
-                            style: TextStyle(color: Colors.blue.shade700)),
+                        Text(
+                          '${summary.repair} in Reparatur',
+                          style: TextStyle(color: Colors.blue.shade700),
+                        ),
                     ],
                   ),
                 ),
@@ -84,8 +99,10 @@ class InventoryReportScreen extends ConsumerWidget {
               if (open.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: Text('${open.length} Geräte noch ungeprüft.',
-                      style: TextStyle(color: Colors.orange.shade800)),
+                  child: Text(
+                    '${open.length} Geräte noch ungeprüft.',
+                    style: TextStyle(color: Colors.orange.shade800),
+                  ),
                 ),
               if (issues.isNotEmpty) ...[
                 const SizedBox(height: 16),
@@ -96,11 +113,13 @@ class InventoryReportScreen extends ConsumerWidget {
                     child: ListTile(
                       leading: Icon(symbol, color: farbe),
                       title: Text(c.equipmentName),
-                      subtitle: Text([
-                        c.compartmentLabel,
-                        statusText(c.status),
-                        if (c.note.isNotEmpty) c.note,
-                      ].join(' · ')),
+                      subtitle: Text(
+                        [
+                          c.compartmentLabel,
+                          statusText(c.status),
+                          if (c.note.isNotEmpty) c.note,
+                        ].join(' · '),
+                      ),
                     ),
                   );
                 }),
@@ -130,8 +149,9 @@ class InventoryReportScreen extends ConsumerWidget {
     final kopf = await ref.read(inventurBerichtKopfProvider(sessionId).future);
     // Die geführten Einheiten, damit im Bericht steht, WONACH zu suchen ist
     // — nicht nur „2 von 4" (#178).
-    final einheiten =
-        await ref.read(inventurEinheitenProvider(sessionId).future);
+    final einheiten = await ref.read(
+      inventurEinheitenProvider(sessionId).future,
+    );
     if (!context.mounted) return;
     await teile(
       context,
@@ -155,26 +175,34 @@ class InventoryReportScreen extends ConsumerWidget {
         ref.read(inventoryChecksProvider(sessionId)).value ?? const [];
     await Clipboard.setData(ClipboardData(text: _buildReport(checks)));
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Inventurbericht in die Zwischenablage kopiert.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Inventurbericht in die Zwischenablage kopiert.'),
+        ),
+      );
     }
   }
 
   String _buildReport(List<InventoryCheckData> checks) {
     final summary = InventorySummary.from(checks);
     final buffer = StringBuffer('Inventurbericht\n');
-    buffer.writeln('${summary.checked}/${summary.total} geprüft · '
-        '${summary.ok} i.O. · ${summary.missing} fehlt · '
-        '${summary.damaged} beschädigt · '
-        '${summary.repair} in Reparatur\n');
+    buffer.writeln(
+      '${summary.checked}/${summary.total} geprüft · '
+      '${summary.ok} i.O. · ${summary.missing} fehlt · '
+      '${summary.damaged} beschädigt · '
+      '${summary.repair} in Reparatur\n',
+    );
     final issues = checks.where(
-        (c) => InventorySummary.abweichendeStatus.contains(c.status));
+      (c) => InventorySummary.abweichendeStatus.contains(c.status),
+    );
     if (issues.isNotEmpty) {
       buffer.writeln('Mängel:');
       for (final c in issues) {
-        buffer.writeln('  - ${c.compartmentLabel} · ${c.equipmentName} · '
-            '${statusText(c.status)}'
-            '${c.note.isNotEmpty ? ' (${c.note})' : ''}');
+        buffer.writeln(
+          '  - ${c.compartmentLabel} · ${c.equipmentName} · '
+          '${statusText(c.status)}'
+          '${c.note.isNotEmpty ? ' (${c.note})' : ''}',
+        );
       }
     }
     return buffer.toString().trimRight();
@@ -183,8 +211,9 @@ class InventoryReportScreen extends ConsumerWidget {
   Future<void> _finish(BuildContext context, WidgetRef ref) async {
     await ref.read(inventoryServiceProvider).finish(sessionId);
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Inventur abgeschlossen.')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Inventur abgeschlossen.')));
       context.go('/');
     }
   }

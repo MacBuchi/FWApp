@@ -4,6 +4,7 @@
 /// Releases-API, Tag `v<version>` gegen die installierte Version verglichen,
 /// APK-Asset als Download-Quelle für das In-App-Update (ota_update).
 library;
+
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -158,18 +159,23 @@ final updateInfoProvider = FutureProvider<UpdateInfo?>((ref) async {
   final vorab = await ref.watch(prereleaseUpdatesProvider.future);
   try {
     final packageInfo = await PackageInfo.fromPlatform();
-    final response = await http.get(
-      Uri.parse(vorab
-          ? 'https://api.github.com/repos/MacBuchi/FWApp/releases?per_page=10'
-          : 'https://api.github.com/repos/MacBuchi/FWApp/releases/latest'),
-      headers: {'Accept': 'application/vnd.github+json'},
-    ).timeout(const Duration(seconds: 10));
+    final response = await http
+        .get(
+          Uri.parse(
+            vorab
+                ? 'https://api.github.com/repos/MacBuchi/FWApp/releases?per_page=10'
+                : 'https://api.github.com/repos/MacBuchi/FWApp/releases/latest',
+          ),
+          headers: {'Accept': 'application/vnd.github+json'},
+        )
+        .timeout(const Duration(seconds: 10));
     if (response.statusCode != 200) return null;
 
     final decoded = jsonDecode(response.body);
-    final release = vorab
-        ? firstPublishedRelease(decoded as List<dynamic>)
-        : decoded as Map<String, dynamic>;
+    final release =
+        vorab
+            ? firstPublishedRelease(decoded as List<dynamic>)
+            : decoded as Map<String, dynamic>;
     if (release == null) return null;
     final tag = (release['tag_name'] as String? ?? '');
     final latest = tag.startsWith('v') ? tag.substring(1) : tag;
@@ -178,9 +184,9 @@ final updateInfoProvider = FutureProvider<UpdateInfo?>((ref) async {
     }
 
     final assets = release['assets'] as List<dynamic>? ?? const [];
-    final apk = assets
-        .cast<Map<String, dynamic>>()
-        .where((a) => (a['name'] as String? ?? '').endsWith('.apk'));
+    final apk = assets.cast<Map<String, dynamic>>().where(
+      (a) => (a['name'] as String? ?? '').endsWith('.apk'),
+    );
     if (apk.isEmpty) return null;
 
     return UpdateInfo(

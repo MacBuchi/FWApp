@@ -54,8 +54,11 @@ const int kSplashVollMs = kFachMs + kPruefenMs + kZeichenMs;
 const int kSplashKurzMs = 600;
 
 /// Das Fach, in dem die erste Szene spielt.
-final Rect _fachAussen =
-    Rect.fromCenter(center: const Offset(_cx, 830), width: 660, height: 470);
+final Rect _fachAussen = Rect.fromCenter(
+  center: const Offset(_cx, 830),
+  width: 660,
+  height: 470,
+);
 final Rect _fachInnen = _fachAussen.deflate(26);
 
 /// Abschnitt einer Szene: [p] auf [a]..[b] abbilden und mit [kurve] beugen.
@@ -131,7 +134,13 @@ class SplashPainter extends CustomPainter {
     final mitte = Offset(_cx + 232, 1052);
     final r = 132.0 * kommen;
     canvas.drawCircle(mitte, r + 26, Paint()..color = _rot);
-    canvas.drawCircle(mitte, r, Paint()..color = _weiss..isAntiAlias = true);
+    canvas.drawCircle(
+      mitte,
+      r,
+      Paint()
+        ..color = _weiss
+        ..isAntiAlias = true,
+    );
 
     // Der Haken wächst von links nach rechts ein, statt einfach da zu sein.
     if (haken > 0.001) {
@@ -139,9 +148,14 @@ class SplashPainter extends CustomPainter {
       canvas.translate(mitte.dx, mitte.dy);
       canvas.scale(kommen * 132 / kAbzeichenScheibe);
       canvas.translate(-kAbzeichenMitte.dx, -kAbzeichenMitte.dy);
-      canvas.clipRect(Rect.fromLTWH(
-          kAbzeichenMitte.dx - 140, kAbzeichenMitte.dy - 140,
-          280 * haken, 280));
+      canvas.clipRect(
+        Rect.fromLTWH(
+          kAbzeichenMitte.dx - 140,
+          kAbzeichenMitte.dy - 140,
+          280 * haken,
+          280,
+        ),
+      );
       canvas.drawPath(fwPfad(kHakenPfad), Paint()..color = _rot);
       canvas.restore();
     }
@@ -182,7 +196,10 @@ class SplashPainter extends CustomPainter {
       zeichneFwMarke(
         canvas,
         ziel: Rect.fromCenter(
-            center: Offset(_cx, y), width: breite, height: hoehe),
+          center: Offset(_cx, y),
+          width: breite,
+          height: hoehe,
+        ),
         vordergrund: _weiss.withValues(alpha: kommen.clamp(0, 1)),
         grund: _rot,
       );
@@ -234,25 +251,38 @@ class SplashPainter extends CustomPainter {
     canvas.scale(0.82 + 0.18 * rahmen);
     canvas.translate(-_cx, -830);
 
-    final weiss = Paint()..color = _weiss..isAntiAlias = true;
-    final rot = Paint()..color = _rot..isAntiAlias = true;
+    final weiss =
+        Paint()
+          ..color = _weiss
+          ..isAntiAlias = true;
+    final rot =
+        Paint()
+          ..color = _rot
+          ..isAntiAlias = true;
 
     canvas.drawRRect(
-        RRect.fromRectAndRadius(_fachAussen, const Radius.circular(44)),
-        weiss);
+      RRect.fromRectAndRadius(_fachAussen, const Radius.circular(44)),
+      weiss,
+    );
     canvas.drawRRect(
-        RRect.fromRectAndRadius(_fachInnen, const Radius.circular(26)), rot);
+      RRect.fromRectAndRadius(_fachInnen, const Radius.circular(26)),
+      rot,
+    );
 
     canvas.save();
     canvas.clipRRect(
-        RRect.fromRectAndRadius(_fachInnen, const Radius.circular(26)));
+      RRect.fromRectAndRadius(_fachInnen, const Radius.circular(26)),
+    );
 
     // Inhalt: ein aufgerollter Schlauch, ein Strahlrohr und zwei Kupplungen
     // — genug, dass das Fach beladen aussieht und nicht wie eine Karte mit
     // zwei Strichen.
     if (inhalt > 0.001) {
       final auf = _weiss.withValues(alpha: inhalt);
-      final voll = Paint()..color = auf..isAntiAlias = true;
+      final voll =
+          Paint()
+            ..color = auf
+            ..isAntiAlias = true;
       canvas.drawCircle(
         Offset(_fachInnen.left + 150, _fachInnen.bottom - 130),
         78,
@@ -265,8 +295,12 @@ class SplashPainter extends CustomPainter {
       for (final (dy, breite) in [(-250.0, 300.0), (-170.0, 224.0)]) {
         canvas.drawRRect(
           RRect.fromRectAndRadius(
-            Rect.fromLTWH(_fachInnen.left + 290,
-                _fachInnen.bottom + dy, breite, 46),
+            Rect.fromLTWH(
+              _fachInnen.left + 290,
+              _fachInnen.bottom + dy,
+              breite,
+              46,
+            ),
             const Radius.circular(23),
           ),
           voll,
@@ -274,8 +308,10 @@ class SplashPainter extends CustomPainter {
       }
       for (var i = 0; i < 3; i++) {
         canvas.drawCircle(
-            Offset(_fachInnen.left + 320 + i * 96, _fachInnen.bottom - 76),
-            34, voll);
+          Offset(_fachInnen.left + 320 + i * 96, _fachInnen.bottom - 76),
+          34,
+          voll,
+        );
       }
     }
 
@@ -290,8 +326,12 @@ class SplashPainter extends CustomPainter {
       final y = _fachInnen.top + 14 + i * teilung - hub;
       canvas.drawRRect(
         RRect.fromRectAndRadius(
-          Rect.fromLTWH(_fachInnen.left + 24, y, _fachInnen.width - 48,
-              lamelle),
+          Rect.fromLTWH(
+            _fachInnen.left + 24,
+            y,
+            _fachInnen.width - 48,
+            lamelle,
+          ),
           const Radius.circular(23),
         ),
         weiss,

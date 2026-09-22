@@ -30,13 +30,15 @@ Future<void> _zeige(WidgetTester tester, List<Compartment> faecher) async {
   tester.view.physicalSize = const Size(600, 1600);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
-  await tester.pumpWidget(MaterialApp(
-    home: Scaffold(
-      body: SingleChildScrollView(
-        child: VehicleCutawayView(compartments: faecher),
+  await tester.pumpWidget(
+    MaterialApp(
+      home: Scaffold(
+        body: SingleChildScrollView(
+          child: VehicleCutawayView(compartments: faecher),
+        ),
       ),
     ),
-  ));
+  );
   await tester.pumpAndSettle();
 }
 
@@ -62,8 +64,12 @@ void main() {
         _fach(3, 'G1', seite: 'fahrerseite'),
         _fach(4, 'Dachkasten', seite: 'dach'),
       ]);
-      expect(bereiche.map((b) => b.seite),
-          ['dach', 'fahrerseite', 'heck', 'beifahrerseite']);
+      expect(bereiche.map((b) => b.seite), [
+        'dach',
+        'fahrerseite',
+        'heck',
+        'beifahrerseite',
+      ]);
     });
 
     test('leere Bereiche entstehen gar nicht', () {
@@ -90,8 +96,10 @@ void main() {
         _fach(1, 'G1', seite: 'fahrerseite'),
         _fach(2, 'Rätsel', seite: 'anhaengerkupplung'),
       ]);
-      final alle =
-          bereiche.expand((b) => b.reihen).expand((r) => r).map((c) => c.label);
+      final alle = bereiche
+          .expand((b) => b.reihen)
+          .expand((r) => r)
+          .map((c) => c.label);
       expect(alle, containsAll(['G1', 'Rätsel']));
       expect(bereiche.last.seite, isNull);
     });
@@ -110,16 +118,18 @@ void main() {
   });
 
   group('die Ansicht', () {
-    testWidgets('ohne Seitenangaben steht keine Überschrift da',
-        (tester) async {
+    testWidgets('ohne Seitenangaben steht keine Überschrift da', (
+      tester,
+    ) async {
       await _zeige(tester, [_fach(1, 'G1'), _fach(2, 'G2')]);
       expect(find.text('OHNE SEITE'), findsNothing);
       expect(find.text('FAHRERSEITE'), findsNothing);
       expect(find.text('G1'), findsOneWidget);
     });
 
-    testWidgets('mit Seiten steht das Dach oben und die Beifahrerseite unten',
-        (tester) async {
+    testWidgets('mit Seiten steht das Dach oben und die Beifahrerseite unten', (
+      tester,
+    ) async {
       await _zeige(tester, [
         _fach(1, 'G2', seite: 'beifahrerseite'),
         _fach(2, 'GR', seite: 'heck'),

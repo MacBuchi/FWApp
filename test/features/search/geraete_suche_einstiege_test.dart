@@ -30,8 +30,9 @@ void main() {
     addTearDown(tester.view.reset);
   }
 
-  testWidgets('die Startseite trägt eine Kachel zur Gerätesuche',
-      (tester) async {
+  testWidgets('die Startseite trägt eine Kachel zur Gerätesuche', (
+    tester,
+  ) async {
     breitesGeraet(tester);
     await tester.pumpWidget(schirm(const HomeScreen()));
     await tester.pumpAndSettle();
@@ -42,8 +43,9 @@ void main() {
     await endTestApp(tester);
   });
 
-  testWidgets('die Kachel steht vor den Lernkarten, nicht darunter',
-      (tester) async {
+  testWidgets('die Kachel steht vor den Lernkarten, nicht darunter', (
+    tester,
+  ) async {
     // „Wo liegt das?" fragt man unter Zeitdruck. Rutscht der Einstieg unter
     // das Wochenziel, ist er im Einsatz nicht mehr da.
     breitesGeraet(tester);
@@ -64,8 +66,12 @@ void main() {
     await tester.pumpWidget(schirm(const VehicleListScreen()));
     await tester.pumpAndSettle();
 
-    final lupe = tester.widget<IconButton>(find.ancestor(
-        of: find.byIcon(Icons.search), matching: find.byType(IconButton)));
+    final lupe = tester.widget<IconButton>(
+      find.ancestor(
+        of: find.byIcon(Icons.search),
+        matching: find.byType(IconButton),
+      ),
+    );
     expect(lupe.tooltip, 'Gerät im Fuhrpark suchen');
 
     await endTestApp(tester);

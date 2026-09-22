@@ -29,41 +29,44 @@ class PalettePicker extends ConsumerWidget {
     return paletteAsync.when(
       loading: () => const ListTile(title: Text('Lade...')),
       error: (e, _) => ListTile(title: Text('Fehler: $e')),
-      data: (current) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ListTile(
-            leading: const Icon(Icons.palette),
-            title: const Text('Farbthema'),
-            subtitle: Text(current.description),
-          ),
-          SizedBox(
-            height: 96,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              children: [
-                for (final p in kAppPalettes)
-                  _Swatch(
-                    label: p.name,
-                    color: schemeForPalette(p, brightness).primary,
-                    selected: current.id == p.id,
-                    onTap: () =>
-                        ref.read(appPaletteProvider.notifier).select(p),
-                  ),
-                _Swatch(
-                  label: 'Eigenes',
-                  color: current.id == kCustomPaletteId
-                      ? schemeForPalette(current, brightness).primary
-                      : null,
-                  selected: current.id == kCustomPaletteId,
-                  onTap: () => _pickCustom(context, ref, current),
+      data:
+          (current) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.palette),
+                title: const Text('Farbthema'),
+                subtitle: Text(current.description),
+              ),
+              SizedBox(
+                height: 96,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  children: [
+                    for (final p in kAppPalettes)
+                      _Swatch(
+                        label: p.name,
+                        color: schemeForPalette(p, brightness).primary,
+                        selected: current.id == p.id,
+                        onTap:
+                            () =>
+                                ref.read(appPaletteProvider.notifier).select(p),
+                      ),
+                    _Swatch(
+                      label: 'Eigenes',
+                      color:
+                          current.id == kCustomPaletteId
+                              ? schemeForPalette(current, brightness).primary
+                              : null,
+                      selected: current.id == kCustomPaletteId,
+                      onTap: () => _pickCustom(context, ref, current),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -75,11 +78,13 @@ class PalettePicker extends ConsumerWidget {
     final seed = await showModalBottomSheet<Color>(
       context: context,
       isScrollControlled: true,
-      builder: (_) => CustomColorSheet(
-        initial: current.id == kCustomPaletteId
-            ? current.seed
-            : kCustomPaletteFallbackSeed,
-      ),
+      builder:
+          (_) => CustomColorSheet(
+            initial:
+                current.id == kCustomPaletteId
+                    ? current.seed
+                    : kCustomPaletteFallbackSeed,
+          ),
     );
     if (seed == null) return;
     await ref.read(appPaletteProvider.notifier).setCustomSeed(seed);
@@ -122,22 +127,31 @@ class _Swatch extends StatelessWidget {
                   color: color ?? theme.colorScheme.surfaceContainerHighest,
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: selected
-                        ? theme.colorScheme.onSurface
-                        : theme.colorScheme.outlineVariant,
+                    color:
+                        selected
+                            ? theme.colorScheme.onSurface
+                            : theme.colorScheme.outlineVariant,
                     width: selected ? 3 : 1,
                   ),
                 ),
-                child: color == null
-                    ? Icon(Icons.colorize, color: theme.colorScheme.onSurface)
-                    : (selected
-                        ? Icon(Icons.check,
-                            color: ThemeData.estimateBrightnessForColor(
-                                        color!) ==
-                                    Brightness.dark
-                                ? Colors.white
-                                : Colors.black)
-                        : null),
+                child:
+                    color == null
+                        ? Icon(
+                          Icons.colorize,
+                          color: theme.colorScheme.onSurface,
+                        )
+                        : (selected
+                            ? Icon(
+                              Icons.check,
+                              color:
+                                  ThemeData.estimateBrightnessForColor(
+                                            color!,
+                                          ) ==
+                                          Brightness.dark
+                                      ? Colors.white
+                                      : Colors.black,
+                            )
+                            : null),
               ),
               const SizedBox(height: 6),
               Text(
@@ -178,12 +192,7 @@ class _CustomColorSheetState extends State<CustomColorSheet> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final preview = schemeForPalette(
-      AppPalette(
-        id: kCustomPaletteId,
-        name: '',
-        description: '',
-        seed: _color,
-      ),
+      AppPalette(id: kCustomPaletteId, name: '', description: '', seed: _color),
       theme.brightness,
     );
 
@@ -275,21 +284,27 @@ class _PreviewBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget block(Color c, Color on, String label) => Expanded(
-          child: Container(
-            height: 56,
-            color: c,
-            alignment: Alignment.center,
-            child: Text(label,
-                style: TextStyle(color: on, fontSize: 11, height: 1.1)),
-          ),
-        );
+      child: Container(
+        height: 56,
+        color: c,
+        alignment: Alignment.center,
+        child: Text(
+          label,
+          style: TextStyle(color: on, fontSize: 11, height: 1.1),
+        ),
+      ),
+    );
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: Row(
         children: [
           block(scheme.primary, scheme.onPrimary, 'Primär'),
           block(scheme.primaryContainer, scheme.onPrimaryContainer, 'Fläche'),
-          block(scheme.secondaryContainer, scheme.onSecondaryContainer, 'Akzent'),
+          block(
+            scheme.secondaryContainer,
+            scheme.onSecondaryContainer,
+            'Akzent',
+          ),
           block(scheme.surfaceContainerHighest, scheme.onSurface, 'Karte'),
         ],
       ),

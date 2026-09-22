@@ -67,49 +67,48 @@ void main() {
     required List<int> faecher,
     required List<int> geraete,
     List<Map<String, dynamic>> zuordnungen = const [],
-  }) =>
-      {
-        'vehicles': [
-          for (final id in fahrzeuge)
-            {
-              'id': id,
-              'name': 'HLF 20',
-              'type': 'HLF',
-              'created_at': _z,
-              'updated_at': _z,
-            },
-        ],
-        'equipment_items': [
-          for (final id in geraete)
-            {
-              'id': id,
-              'name': 'Strahlrohr',
-              'equipment_functions_json': '[]',
-              'deployment_scenarios_json': '[]',
-              'description': '',
-              'is_custom': false,
-              'extra_attributes_json': '{}',
-              'training_questions_json': '[]',
-              'typical_use_json': '[]',
-              'updated_at': _z,
-            },
-        ],
-        'compartments': [
-          for (final id in faecher)
-            {
-              'id': id,
-              'vehicle_id': fahrzeuge.first,
-              'label': 'G$id',
-              'position': 0,
-              'grid_col_span': 1,
-              'updated_at': _z,
-            },
-        ],
-        'equipment_assignments': zuordnungen,
-        'equipment_instances': const [],
-        'inspection_schedules': const [],
-        'inspection_log': const [],
-      };
+  }) => {
+    'vehicles': [
+      for (final id in fahrzeuge)
+        {
+          'id': id,
+          'name': 'HLF 20',
+          'type': 'HLF',
+          'created_at': _z,
+          'updated_at': _z,
+        },
+    ],
+    'equipment_items': [
+      for (final id in geraete)
+        {
+          'id': id,
+          'name': 'Strahlrohr',
+          'equipment_functions_json': '[]',
+          'deployment_scenarios_json': '[]',
+          'description': '',
+          'is_custom': false,
+          'extra_attributes_json': '{}',
+          'training_questions_json': '[]',
+          'typical_use_json': '[]',
+          'updated_at': _z,
+        },
+    ],
+    'compartments': [
+      for (final id in faecher)
+        {
+          'id': id,
+          'vehicle_id': fahrzeuge.first,
+          'label': 'G$id',
+          'position': 0,
+          'grid_col_span': 1,
+          'updated_at': _z,
+        },
+    ],
+    'equipment_assignments': zuordnungen,
+    'equipment_instances': const [],
+    'inspection_schedules': const [],
+    'inspection_log': const [],
+  };
 
   test('⚠️ die eigene Erfassung ueberlebt den Zug', () async {
     // Der Kern: B hat G2 erfasst, A hat veroeffentlicht. B zieht.
@@ -185,7 +184,8 @@ void main() {
     expect(
       fremde.id,
       meine,
-      reason: 'Die gezogene behaelt ihre ID — oben '
+      reason:
+          'Die gezogene behaelt ihre ID — oben '
           'IST sie dieser Schluessel.',
     );
     expect(fremde.dirty, isFalse);

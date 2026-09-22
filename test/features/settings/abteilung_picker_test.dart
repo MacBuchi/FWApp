@@ -1,6 +1,7 @@
 /// abteilung_picker_test.dart – Abteilungs-Kachel und Auswahl-Sheet
 /// (Issue #57 Phase 2).
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/core/database/app_database.dart';
@@ -13,9 +14,17 @@ import '../../helpers/test_database.dart';
 import '../../helpers/widget_harness.dart';
 
 const _own = AbteilungInfo(
-    id: 'A', name: 'Stadtmitte', status: 'active', gesamtwehrName: 'Musterstadt');
+  id: 'A',
+  name: 'Stadtmitte',
+  status: 'active',
+  gesamtwehrName: 'Musterstadt',
+);
 const _sister = AbteilungInfo(
-    id: 'B', name: 'Nord', status: 'active', gesamtwehrName: 'Musterstadt');
+  id: 'B',
+  name: 'Nord',
+  status: 'active',
+  gesamtwehrName: 'Musterstadt',
+);
 
 void main() {
   late AppDatabase db;
@@ -27,32 +36,33 @@ void main() {
   tearDown(() => db.close());
 
   Widget host(List<AbteilungInfo> list) => buildTestApp(
-        db: db,
-        home: const Scaffold(body: AbteilungTile()),
-        overrides: [
-          abteilungenProvider.overrideWith((ref) async => list),
-          myAbteilungIdProvider.overrideWith((ref) async => 'A'),
-          supabaseClientProvider.overrideWithValue(null),
-        ],
-      );
+    db: db,
+    home: const Scaffold(body: AbteilungTile()),
+    overrides: [
+      abteilungenProvider.overrideWith((ref) async => list),
+      myAbteilungIdProvider.overrideWith((ref) async => 'A'),
+      supabaseClientProvider.overrideWithValue(null),
+    ],
+  );
 
-  testWidgets('ohne Abteilungen bleibt die Kachel unsichtbar',
-      (tester) async {
+  testWidgets('ohne Abteilungen bleibt die Kachel unsichtbar', (tester) async {
     await tester.pumpWidget(host(const []));
     await tester.pumpAndSettle();
     expect(find.byType(ListTile), findsNothing);
   });
 
-  testWidgets('zeigt die eigene Abteilung mit Gesamtwehr-Kontext',
-      (tester) async {
+  testWidgets('zeigt die eigene Abteilung mit Gesamtwehr-Kontext', (
+    tester,
+  ) async {
     await tester.pumpWidget(host(const [_own, _sister]));
     await tester.pumpAndSettle();
     expect(find.text('Stadtmitte · Musterstadt'), findsOneWidget);
     expect(find.textContaining('Deine Abteilung'), findsOneWidget);
   });
 
-  testWidgets('Wechsel zur Schwester: nur lesen, Wahl wird gemerkt',
-      (tester) async {
+  testWidgets('Wechsel zur Schwester: nur lesen, Wahl wird gemerkt', (
+    tester,
+  ) async {
     await tester.pumpWidget(host(const [_own, _sister]));
     await tester.pumpAndSettle();
 
@@ -71,8 +81,9 @@ void main() {
     expect(find.textContaining('Der Bestand wird geladen'), findsOneWidget);
   });
 
-  testWidgets('zurück zur eigenen: Auswahl wird zu null (Datei-Invariante)',
-      (tester) async {
+  testWidgets('zurück zur eigenen: Auswahl wird zu null (Datei-Invariante)', (
+    tester,
+  ) async {
     await tester.pumpWidget(host(const [_own, _sister]));
     await tester.pumpAndSettle();
 

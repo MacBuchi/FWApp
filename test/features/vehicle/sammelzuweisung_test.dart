@@ -9,6 +9,7 @@
 /// Datenschicht den Stapel korrekt schreibt UND dass es die Bedienstelle
 /// dafür wirklich gibt.
 library;
+
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -29,16 +30,22 @@ void main() {
   setUp(() async {
     db = createTestDatabase();
     vehicleId = await db.vehicleDao.insertVehicle(
-        VehiclesCompanion.insert(name: 'HLF 20', type: 'HLF 20'));
+      VehiclesCompanion.insert(name: 'HLF 20', type: 'HLF 20'),
+    );
     sammelfach = await db.compartmentDao.insertCompartment(
-        CompartmentsCompanion.insert(
-            vehicleId: vehicleId, label: 'Normbeladung – noch zuzuordnen'));
+      CompartmentsCompanion.insert(
+        vehicleId: vehicleId,
+        label: 'Normbeladung – noch zuzuordnen',
+      ),
+    );
     g1 = await db.compartmentDao.insertCompartment(
-        CompartmentsCompanion.insert(vehicleId: vehicleId, label: 'G1'));
+      CompartmentsCompanion.insert(vehicleId: vehicleId, label: 'G1'),
+    );
     geraete = {};
     for (final name in ['Strahlrohr', 'Verteiler', 'Standrohr', 'Kupplung']) {
-      geraete[name] = await db.equipmentDao
-          .insertEquipment(EquipmentItemsCompanion.insert(name: name));
+      geraete[name] = await db.equipmentDao.insertEquipment(
+        EquipmentItemsCompanion.insert(name: name),
+      );
     }
   });
 
@@ -53,8 +60,10 @@ void main() {
 
   group('Datenschicht', () {
     test('assignMany schreibt den ganzen Stapel', () async {
-      final geschrieben =
-          await db.assignmentDao.assignMany(g1, geraete.values.toList());
+      final geschrieben = await db.assignmentDao.assignMany(
+        g1,
+        geraete.values.toList(),
+      );
 
       expect(geschrieben, 4);
       expect(await db.assignmentDao.getByCompartment(g1), hasLength(4));
@@ -62,11 +71,16 @@ void main() {
 
     test('assignMany überspringt, was schon im Fach liegt', () async {
       await db.assignmentDao.insertAssignment(
-          EquipmentAssignmentsCompanion.insert(
-              compartmentId: g1, equipmentId: geraete['Strahlrohr']!));
+        EquipmentAssignmentsCompanion.insert(
+          compartmentId: g1,
+          equipmentId: geraete['Strahlrohr']!,
+        ),
+      );
 
-      final geschrieben = await db.assignmentDao
-          .assignMany(g1, [geraete['Strahlrohr']!, geraete['Verteiler']!]);
+      final geschrieben = await db.assignmentDao.assignMany(g1, [
+        geraete['Strahlrohr']!,
+        geraete['Verteiler']!,
+      ]);
 
       // Nur der Verteiler ist neu — das Strahlrohr bekommt keine zweite
       // Zeile, sonst stünde es doppelt in der Liste.
@@ -91,49 +105,57 @@ void main() {
 
       expect(bewegt, 2);
       expect(await db.assignmentDao.getByCompartment(g1), hasLength(2));
-      expect(await db.assignmentDao.getByCompartment(sammelfach),
-          hasLength(2));
+      expect(await db.assignmentDao.getByCompartment(sammelfach), hasLength(2));
     });
 
-    test('moveMany führt zusammen, statt eine zweite Zeile anzulegen',
-        () async {
-      // Der Fall, den es ohne Unique-Schlüssel wirklich gibt: dasselbe Gerät
-      // liegt im Ziel schon. Zwei Zeilen für ein Gerät im selben Fach hält
-      // danach niemand mehr auseinander.
-      final strahlrohr = geraete['Strahlrohr']!;
-      await db.assignmentDao.insertAssignment(
+    test(
+      'moveMany führt zusammen, statt eine zweite Zeile anzulegen',
+      () async {
+        // Der Fall, den es ohne Unique-Schlüssel wirklich gibt: dasselbe Gerät
+        // liegt im Ziel schon. Zwei Zeilen für ein Gerät im selben Fach hält
+        // danach niemand mehr auseinander.
+        final strahlrohr = geraete['Strahlrohr']!;
+        await db.assignmentDao.insertAssignment(
           EquipmentAssignmentsCompanion.insert(
-              compartmentId: g1,
-              equipmentId: strahlrohr,
-              quantity: const Value(2)));
-      final quelle = await db.assignmentDao.insertAssignment(
+            compartmentId: g1,
+            equipmentId: strahlrohr,
+            quantity: const Value(2),
+          ),
+        );
+        final quelle = await db.assignmentDao.insertAssignment(
           EquipmentAssignmentsCompanion.insert(
-              compartmentId: sammelfach,
-              equipmentId: strahlrohr,
-              quantity: const Value(3)));
+            compartmentId: sammelfach,
+            equipmentId: strahlrohr,
+            quantity: const Value(3),
+          ),
+        );
 
-      final bewegt = await db.assignmentDao.moveMany([quelle], g1);
+        final bewegt = await db.assignmentDao.moveMany([quelle], g1);
 
-      expect(bewegt, 1);
-      expect(await db.assignmentDao.getByCompartment(g1), hasLength(1));
-      expect(await mengeIn(g1, 'Strahlrohr'), 5);
-      expect(await db.assignmentDao.getByCompartment(sammelfach), isEmpty);
-    });
+        expect(bewegt, 1);
+        expect(await db.assignmentDao.getByCompartment(g1), hasLength(1));
+        expect(await mengeIn(g1, 'Strahlrohr'), 5);
+        expect(await db.assignmentDao.getByCompartment(sammelfach), isEmpty);
+      },
+    );
 
-    test('moveMany lässt das Ziel in Ruhe, wenn es schon das Ziel ist',
-        () async {
-      await db.assignmentDao.assignMany(g1, [geraete['Strahlrohr']!]);
-      final id = (await db.assignmentDao.getByCompartment(g1)).single.id;
+    test(
+      'moveMany lässt das Ziel in Ruhe, wenn es schon das Ziel ist',
+      () async {
+        await db.assignmentDao.assignMany(g1, [geraete['Strahlrohr']!]);
+        final id = (await db.assignmentDao.getByCompartment(g1)).single.id;
 
-      expect(await db.assignmentDao.moveMany([id], g1), 0);
-      expect(await db.assignmentDao.getByCompartment(g1), hasLength(1));
-    });
+        expect(await db.assignmentDao.moveMany([id], g1), 0);
+        expect(await db.assignmentDao.getByCompartment(g1), hasLength(1));
+      },
+    );
 
     test('deleteAssignments entfernt den ganzen Stapel', () async {
       await db.assignmentDao.assignMany(g1, geraete.values.toList());
-      final ids = (await db.assignmentDao.getByCompartment(g1))
-          .map((a) => a.id)
-          .toList();
+      final ids =
+          (await db.assignmentDao.getByCompartment(
+            g1,
+          )).map((a) => a.id).toList();
 
       await db.assignmentDao.deleteAssignments(ids.take(3).toList());
 
@@ -151,15 +173,17 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
-      await tester.pumpWidget(buildTestApp(
-          db: db, home: VehicleDetailScreen(vehicleId: vehicleId)));
+      await tester.pumpWidget(
+        buildTestApp(db: db, home: VehicleDetailScreen(vehicleId: vehicleId)),
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.text(label).last);
       await tester.pumpAndSettle();
     }
 
-    testWidgets('mehrere Geräte wandern mit einem Knopfdruck ins Fach',
-        (tester) async {
+    testWidgets('mehrere Geräte wandern mit einem Knopfdruck ins Fach', (
+      tester,
+    ) async {
       await oeffneFach(tester, 'G1');
       await tester.tap(find.text('Gerät zuweisen'));
       await tester.pumpAndSettle();
@@ -220,8 +244,9 @@ void main() {
       await endTestApp(tester);
     });
 
-    testWidgets('ausgewählte Geräte lassen sich in ein anderes Fach schieben',
-        (tester) async {
+    testWidgets('ausgewählte Geräte lassen sich in ein anderes Fach schieben', (
+      tester,
+    ) async {
       await db.assignmentDao.assignMany(sammelfach, geraete.values.toList());
       await oeffneFach(tester, 'Normbeladung – noch zuzuordnen');
 
@@ -237,23 +262,27 @@ void main() {
       // eingegrenzt werden: Der Fachname steht auch dahinter noch auf der
       // Karte, ein globales `findsNothing` wäre immer rot.
       final imDialog = find.descendant(
-          of: find.byType(SimpleDialog), matching: find.byType(Text));
+        of: find.byType(SimpleDialog),
+        matching: find.byType(Text),
+      );
       expect(
-          find.descendant(
-              of: find.byType(SimpleDialog),
-              matching: find.text('Normbeladung – noch zuzuordnen')),
-          findsNothing);
+        find.descendant(
+          of: find.byType(SimpleDialog),
+          matching: find.text('Normbeladung – noch zuzuordnen'),
+        ),
+        findsNothing,
+      );
       await tester.tap(imDialog.at(1));
       await tester.pumpAndSettle();
 
       expect(await db.assignmentDao.getByCompartment(g1), hasLength(2));
-      expect(
-          await db.assignmentDao.getByCompartment(sammelfach), hasLength(2));
+      expect(await db.assignmentDao.getByCompartment(sammelfach), hasLength(2));
       await endTestApp(tester);
     });
 
-    testWidgets('ausgewählte Geräte lassen sich gemeinsam entfernen',
-        (tester) async {
+    testWidgets('ausgewählte Geräte lassen sich gemeinsam entfernen', (
+      tester,
+    ) async {
       await db.assignmentDao.assignMany(sammelfach, geraete.values.toList());
       await oeffneFach(tester, 'Normbeladung – noch zuzuordnen');
 
@@ -264,13 +293,13 @@ void main() {
       await tester.tap(find.byTooltip('Aus dem Fach entfernen'));
       await tester.pumpAndSettle();
 
-      expect(
-          await db.assignmentDao.getByCompartment(sammelfach), hasLength(2));
+      expect(await db.assignmentDao.getByCompartment(sammelfach), hasLength(2));
       await endTestApp(tester);
     });
 
-    testWidgets('ohne Schreibrecht öffnet langes Tippen keine Auswahl',
-        (tester) async {
+    testWidgets('ohne Schreibrecht öffnet langes Tippen keine Auswahl', (
+      tester,
+    ) async {
       // Spiegel des Rollen-Gates: Ein Mitglied liest den Bestand. Die
       // Sammelaktionen sind kein Sonderfall davon.
       await db.assignmentDao.assignMany(sammelfach, geraete.values.toList());
@@ -278,11 +307,13 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
-      await tester.pumpWidget(buildTestApp(
-        db: db,
-        home: VehicleDetailScreen(vehicleId: vehicleId),
-        overrides: [canEditProvider.overrideWithValue(false)],
-      ));
+      await tester.pumpWidget(
+        buildTestApp(
+          db: db,
+          home: VehicleDetailScreen(vehicleId: vehicleId),
+          overrides: [canEditProvider.overrideWithValue(false)],
+        ),
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.text('Normbeladung – noch zuzuordnen').last);
       await tester.pumpAndSettle();
@@ -291,8 +322,12 @@ void main() {
       // hängt am langen Tippen gar kein Handler, und der kurze Tipp führt
       // weiterhin zum Gerät. Ein simuliertes Langdrücken liefe hier in
       // genau diese Navigation und würde etwas anderes messen.
-      final zeile = tester.widget<ListTile>(find.ancestor(
-          of: find.text('Strahlrohr'), matching: find.byType(ListTile)));
+      final zeile = tester.widget<ListTile>(
+        find.ancestor(
+          of: find.text('Strahlrohr'),
+          matching: find.byType(ListTile),
+        ),
+      );
       expect(zeile.onLongPress, isNull);
       expect(find.byType(Checkbox), findsNothing);
       await endTestApp(tester);

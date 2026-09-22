@@ -17,17 +17,21 @@ import 'package:fwapp/features/compartment/presentation/seiten_farben.dart';
 import 'package:fwapp/features/vehicle/presentation/widgets/vehicle_cutaway_view.dart';
 import 'package:fwapp/features/vehicle/presentation/widgets/vehicle_top_view.dart';
 
-Compartment _fach(int id, String label, {String? seite, String? laengsposition}) =>
-    Compartment(
-      id: id,
-      vehicleId: 1,
-      label: label,
-      position: id,
-      gridColSpan: 1,
-      seite: seite,
-      laengsposition: laengsposition,
-      updatedAt: DateTime(2026),
-    );
+Compartment _fach(
+  int id,
+  String label, {
+  String? seite,
+  String? laengsposition,
+}) => Compartment(
+  id: id,
+  vehicleId: 1,
+  label: label,
+  position: id,
+  gridColSpan: 1,
+  seite: seite,
+  laengsposition: laengsposition,
+  updatedAt: DateTime(2026),
+);
 
 final _faecher = [
   _fach(1, 'G1', seite: 'fahrerseite', laengsposition: 'vorne'),
@@ -38,20 +42,21 @@ final _faecher = [
 
 /// Die Füllfarbe der Kachel, die [label] trägt: In beiden Ansichten sitzt der
 /// Text in einem [Material], dessen `color` die Kachelfläche ist.
-Color _kachelFarbe(WidgetTester tester, String label) => tester
-    .widget<Material>(
-      find.ancestor(of: find.text(label), matching: find.byType(Material)).first,
-    )
-    .color!;
+Color _kachelFarbe(WidgetTester tester, String label) =>
+    tester
+        .widget<Material>(
+          find
+              .ancestor(of: find.text(label), matching: find.byType(Material))
+              .first,
+        )
+        .color!;
 
 Future<void> _zeige(WidgetTester tester, Widget ansicht) async {
   tester.view.physicalSize = const Size(900, 1800);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
   await tester.pumpWidget(
-    MaterialApp(
-      home: Scaffold(body: SingleChildScrollView(child: ansicht)),
-    ),
+    MaterialApp(home: Scaffold(body: SingleChildScrollView(child: ansicht))),
   );
   await tester.pumpAndSettle();
 }
@@ -64,19 +69,22 @@ void main() {
       String? seite, {
       CutawayTileStatus status = CutawayTileStatus.normal,
       Brightness brightness = Brightness.light,
-    }) =>
-        fachKachelFarben(
-          seite: seite,
-          status: status,
-          scheme: scheme,
-          brightness: brightness,
-        );
+    }) => fachKachelFarben(
+      seite: seite,
+      status: status,
+      scheme: scheme,
+      brightness: brightness,
+    );
 
     test('nimmt die feste Farbe der Seite', () {
-      expect(farben('fahrerseite').fill,
-          kSeitenFarben['fahrerseite']!.flaeche(Brightness.light));
-      expect(farben('beifahrerseite').fill,
-          kSeitenFarben['beifahrerseite']!.flaeche(Brightness.light));
+      expect(
+        farben('fahrerseite').fill,
+        kSeitenFarben['fahrerseite']!.flaeche(Brightness.light),
+      );
+      expect(
+        farben('beifahrerseite').fill,
+        kSeitenFarben['beifahrerseite']!.flaeche(Brightness.light),
+      );
     });
 
     test('fällt ohne Seite auf das Theme zurück', () {
@@ -89,15 +97,21 @@ void main() {
     test('Richtig und Falsch stechen die Seitenfarbe', () {
       // Im Lernmodus zählt die Rückmeldung mehr als der Ort — sonst müsste
       // man Grün von Grün unterscheiden.
-      expect(farben('fahrerseite', status: CutawayTileStatus.correct).fill,
-          Colors.green.shade100);
-      expect(farben('heck', status: CutawayTileStatus.wrong).fill,
-          Colors.red.shade100);
+      expect(
+        farben('fahrerseite', status: CutawayTileStatus.correct).fill,
+        Colors.green.shade100,
+      );
+      expect(
+        farben('heck', status: CutawayTileStatus.wrong).fill,
+        Colors.red.shade100,
+      );
     });
 
     test('im Dunkeln eine Lasur statt Pastell', () {
-      expect(farben('fahrerseite', brightness: Brightness.dark).fill,
-          isNot(kSeitenFarben['fahrerseite']!.flaeche(Brightness.light)));
+      expect(
+        farben('fahrerseite', brightness: Brightness.dark).fill,
+        isNot(kSeitenFarben['fahrerseite']!.flaeche(Brightness.light)),
+      );
     });
   });
 
@@ -105,32 +119,40 @@ void main() {
     testWidgets('färben dasselbe Fach gleich', (tester) async {
       await _zeige(tester, VehicleTopView(compartments: _faecher));
       final ausDraufsicht = {
-        for (final l in ['G1', 'G2', 'Heck', 'Ohne']) l: _kachelFarbe(tester, l),
+        for (final l in ['G1', 'G2', 'Heck', 'Ohne'])
+          l: _kachelFarbe(tester, l),
       };
 
       await _zeige(tester, VehicleCutawayView(compartments: _faecher));
       final ausAufklappbild = {
-        for (final l in ['G1', 'G2', 'Heck', 'Ohne']) l: _kachelFarbe(tester, l),
+        for (final l in ['G1', 'G2', 'Heck', 'Ohne'])
+          l: _kachelFarbe(tester, l),
       };
 
       expect(ausAufklappbild, ausDraufsicht);
     });
 
-    testWidgets('Aufklappbild trägt die Seitenfarbe, nicht das Theme',
-        (tester) async {
+    testWidgets('Aufklappbild trägt die Seitenfarbe, nicht das Theme', (
+      tester,
+    ) async {
       // Die Gegenprobe zum Fehler: Vorher lieferte diese Ansicht für JEDES
       // Fach dieselbe Theme-Fläche.
       await _zeige(tester, VehicleCutawayView(compartments: _faecher));
 
-      expect(_kachelFarbe(tester, 'G1'),
-          kSeitenFarben['fahrerseite']!.flaeche(Brightness.light));
-      expect(_kachelFarbe(tester, 'G2'),
-          kSeitenFarben['beifahrerseite']!.flaeche(Brightness.light));
+      expect(
+        _kachelFarbe(tester, 'G1'),
+        kSeitenFarben['fahrerseite']!.flaeche(Brightness.light),
+      );
+      expect(
+        _kachelFarbe(tester, 'G2'),
+        kSeitenFarben['beifahrerseite']!.flaeche(Brightness.light),
+      );
       expect(_kachelFarbe(tester, 'G1'), isNot(_kachelFarbe(tester, 'G2')));
     });
 
-    testWidgets('Richtig/Falsch bleibt auch im Aufklappbild sichtbar',
-        (tester) async {
+    testWidgets('Richtig/Falsch bleibt auch im Aufklappbild sichtbar', (
+      tester,
+    ) async {
       await _zeige(
         tester,
         VehicleCutawayView(
@@ -150,8 +172,7 @@ void main() {
       ('Aufklappbild', VehicleCutawayView.new),
       ('Draufsicht', VehicleTopView.new),
     ]) {
-      testWidgets('$name zeigt Richtig/Falsch auch ohne Farbe',
-          (tester) async {
+      testWidgets('$name zeigt Richtig/Falsch auch ohne Farbe', (tester) async {
         // Das Heck ist grün und „richtig" ist grün; die Beifahrerseite ist
         // rostrot und „falsch" ist rot. Auf der Fläche allein ist das kaum
         // zu unterscheiden — das Zeichen muss die Antwort tragen.

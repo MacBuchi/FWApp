@@ -161,8 +161,7 @@ class NfcDienst {
       try {
         // Erst das frisch Gelesene, sonst das, was beim Erkennen anfiel —
         // ein Tag, das gerade wieder weg ist, liefert oben null.
-        final nachricht =
-            await ndef.getNdefMessage() ?? ndef.cachedNdefMessage;
+        final nachricht = await ndef.getNdefMessage() ?? ndef.cachedNdefMessage;
         text = _ersterText(nachricht);
       } catch (e) {
         appLog.w('NDEF nicht lesbar', error: e);
@@ -177,14 +176,16 @@ class NfcDienst {
     if (ndef == null || !ndef.isWritable) {
       return NfcSchreibLage.schreibgeschuetzt;
     }
-    final nachricht = NdefMessage(records: [
-      NdefRecord(
-        typeNameFormat: TypeNameFormat.wellKnown,
-        type: Uint8List.fromList([0x54]), // 'T' — Textdatensatz
-        identifier: Uint8List(0),
-        payload: nfcTextNutzlast(code),
-      ),
-    ]);
+    final nachricht = NdefMessage(
+      records: [
+        NdefRecord(
+          typeNameFormat: TypeNameFormat.wellKnown,
+          type: Uint8List.fromList([0x54]), // 'T' — Textdatensatz
+          identifier: Uint8List(0),
+          payload: nfcTextNutzlast(code),
+        ),
+      ],
+    );
     // Vorher messen statt hinterher scheitern: Ein zu großer Datensatz
     // bricht sonst mitten im Schreiben ab, und was dann auf dem Tag steht,
     // weiß niemand.

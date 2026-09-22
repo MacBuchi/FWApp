@@ -131,6 +131,13 @@ jobs:
       - name: Analyze
         run: flutter analyze
 
+      # Bis 1.58.1 war das Repo nie durch den Formatter gelaufen. Ein
+      # beiläufiges `dart format .` schrieb damit 285 Dateien um und
+      # begrub die eigentliche Änderung (Issue #226). Ohne diesen Schritt
+      # fällt die Drift nirgends auf, weil sie sich still wieder aufbaut.
+      - name: Check formatting
+        run: dart format --output=none --set-exit-if-changed .
+
       # Edge Functions ship via the VM's autodeploy on merge (issue #74) and
       # have no compile step of their own — a syntax error surfaces only as a
       # function that never boots, so every invocation hangs until the gateway

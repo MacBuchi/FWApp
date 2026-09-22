@@ -1,6 +1,7 @@
 /// operation_flow_test.dart – Einsatzassistent: Session-Logik und die
 /// Ausladen-Interaktion (Gerät entnehmen → Fortschritt, Entnommen-Liste).
 library;
+
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,17 +22,22 @@ void main() {
 
   setUp(() async {
     db = createTestDatabase();
-    vehicleId = await db.vehicleDao
-        .insertVehicle(VehiclesCompanion.insert(name: 'HLF 20', type: 'HLF'));
+    vehicleId = await db.vehicleDao.insertVehicle(
+      VehiclesCompanion.insert(name: 'HLF 20', type: 'HLF'),
+    );
     compartmentId = await db.compartmentDao.insertCompartment(
-        CompartmentsCompanion.insert(vehicleId: vehicleId, label: 'G1'));
+      CompartmentsCompanion.insert(vehicleId: vehicleId, label: 'G1'),
+    );
     final equipmentId = await db.equipmentDao.insertEquipment(
-        EquipmentItemsCompanion.insert(name: 'Spineboard'));
+      EquipmentItemsCompanion.insert(name: 'Spineboard'),
+    );
     assignmentId = await db.assignmentDao.insertAssignment(
-        EquipmentAssignmentsCompanion.insert(
-            compartmentId: compartmentId,
-            equipmentId: equipmentId,
-            quantity: const Value(1)));
+      EquipmentAssignmentsCompanion.insert(
+        compartmentId: compartmentId,
+        equipmentId: equipmentId,
+        quantity: const Value(1),
+      ),
+    );
   });
 
   tearDown(() => db.close());
@@ -41,8 +47,7 @@ void main() {
     addTearDown(container.dispose);
     final notifier = container.read(operationProvider.notifier);
 
-    notifier.start(
-        vehicleIds: [vehicleId], scenario: DeploymentScenario.vuPkw);
+    notifier.start(vehicleIds: [vehicleId], scenario: DeploymentScenario.vuPkw);
     var state = container.read(operationProvider);
     expect(state.active, isTrue);
     expect(state.scenario, DeploymentScenario.vuPkw);
@@ -57,27 +62,34 @@ void main() {
     expect(container.read(operationProvider).active, isFalse);
   });
 
-  testWidgets('Ausladen-Screen ohne aktiven Einsatz zeigt Startaufforderung',
-      (tester) async {
-    await tester.pumpWidget(ProviderScope(
-      overrides: [appDatabaseProvider.overrideWithValue(db)],
-      child: const MaterialApp(home: OperationRunScreen()),
-    ));
+  testWidgets('Ausladen-Screen ohne aktiven Einsatz zeigt Startaufforderung', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [appDatabaseProvider.overrideWithValue(db)],
+        child: const MaterialApp(home: OperationRunScreen()),
+      ),
+    );
     await tester.pump();
     expect(find.text('Einsatz starten'), findsOneWidget);
   });
 
-  testWidgets('Ausladen-Screen mit aktivem Einsatz baut die Ansicht auf',
-      (tester) async {
+  testWidgets('Ausladen-Screen mit aktivem Einsatz baut die Ansicht auf', (
+    tester,
+  ) async {
     final container = ProviderContainer(
-        overrides: [appDatabaseProvider.overrideWithValue(db)]);
+      overrides: [appDatabaseProvider.overrideWithValue(db)],
+    );
     addTearDown(container.dispose);
     container.read(operationProvider.notifier).start(vehicleIds: [vehicleId]);
 
-    await tester.pumpWidget(UncontrolledProviderScope(
-      container: container,
-      child: const MaterialApp(home: OperationRunScreen()),
-    ));
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(home: OperationRunScreen()),
+      ),
+    );
     // Gezielt pumpen (kein pumpAndSettle wegen DB-Async + Sheet-Animation).
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));

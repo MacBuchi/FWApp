@@ -39,10 +39,11 @@ class _MerkService implements ProfilService {
 }
 
 /// Der grosse Kopf oben — die Vorschau.
-AvatarKonfiguration _vorschau(WidgetTester tester) => tester
-    .widgetList<FwAvatar>(find.byType(FwAvatar))
-    .firstWhere((a) => a.groesse > 100)
-    .konfiguration;
+AvatarKonfiguration _vorschau(WidgetTester tester) =>
+    tester
+        .widgetList<FwAvatar>(find.byType(FwAvatar))
+        .firstWhere((a) => a.groesse > 100)
+        .konfiguration;
 
 void main() {
   late AppDatabase db;
@@ -70,44 +71,52 @@ void main() {
   /// Abzeichen, und die übrigen Prüfungen hier bleiben von der Lern-Datenbank
   /// unabhängig.
   Widget host({MeinProfil? profil, int? level}) => buildTestApp(
-        db: db,
-        home: const ProfilScreen(),
-        overrides: [
-          supabaseClientProvider.overrideWithValue(null),
-          sessionStreamProvider.overrideWith((ref) => Stream.value(null)),
-          meinProfilProvider.overrideWith((ref) async =>
-              profil ??
-              const MeinProfil(username: 'wart.stadt', serverKenntProfil: true)),
-          profilServiceProvider.overrideWithValue(service),
-          lernLevelProvider.overrideWithValue(level),
-        ],
-      );
+    db: db,
+    home: const ProfilScreen(),
+    overrides: [
+      supabaseClientProvider.overrideWithValue(null),
+      sessionStreamProvider.overrideWith((ref) => Stream.value(null)),
+      meinProfilProvider.overrideWith(
+        (ref) async =>
+            profil ??
+            const MeinProfil(username: 'wart.stadt', serverKenntProfil: true),
+      ),
+      profilServiceProvider.overrideWithValue(service),
+      lernLevelProvider.overrideWithValue(level),
+    ],
+  );
 
-  testWidgets('ohne gespeicherten Kopf steht der Standardkopf da',
-      (tester) async {
+  testWidgets('ohne gespeicherten Kopf steht der Standardkopf da', (
+    tester,
+  ) async {
     await zeige(tester, host());
     expect(_vorschau(tester), const AvatarKonfiguration());
     expect(find.text('wart.stadt'), findsOneWidget);
   });
 
-  testWidgets('ein gespeicherter Kopf und Name werden übernommen',
-      (tester) async {
+  testWidgets('ein gespeicherter Kopf und Name werden übernommen', (
+    tester,
+  ) async {
     const kopf = AvatarKonfiguration(gear: 'scba', eyes: 'shades');
-    await zeige(tester, host(
-      profil: MeinProfil(
-        anzeigename: 'Marcus B.',
-        username: 'marcus.bucher',
-        avatarText: kopf.kodiert,
-        serverKenntProfil: true,
+    await zeige(
+      tester,
+      host(
+        profil: MeinProfil(
+          anzeigename: 'Marcus B.',
+          username: 'marcus.bucher',
+          avatarText: kopf.kodiert,
+          serverKenntProfil: true,
+        ),
       ),
-    ));
+    );
     expect(_vorschau(tester), kopf);
     // Zweimal: als Überschrift über dem Kopf und im Eingabefeld.
     expect(find.text('Marcus B.'), findsNWidgets(2));
   });
 
-  testWidgets('das erlernte Abzeichen hängt am eigenen Kopf — und nur dort',
-      (tester) async {
+  testWidgets('das erlernte Abzeichen hängt am eigenen Kopf — und nur dort', (
+    tester,
+  ) async {
     // Issue #135. Die 36 Vorlagen darunter sind ein Katalog, kein Mensch, der
     // etwas geleistet hätte — ein Abzeichen an ihnen wäre schlicht falsch.
     await zeige(tester, host(level: 8));
@@ -125,8 +134,9 @@ void main() {
     expect(find.text('Noch 7 Level bis Gold.'), findsOneWidget);
   });
 
-  testWidgets('ohne geladene Lernzahlen bleibt der Kopf ohne Marke',
-      (tester) async {
+  testWidgets('ohne geladene Lernzahlen bleibt der Kopf ohne Marke', (
+    tester,
+  ) async {
     await zeige(tester, host());
     expect(
       tester
@@ -138,27 +148,34 @@ void main() {
     expect(find.textContaining('Leistungsabzeichen'), findsNothing);
   });
 
-  testWidgets('eine Vorlage antippen übernimmt den Kopf — aber NICHT den Namen',
-      (tester) async {
-    await zeige(tester, host(
-      profil: const MeinProfil(
-        anzeigename: 'Marcus B.',
-        username: 'marcus.bucher',
-        serverKenntProfil: true,
-      ),
-    ));
+  testWidgets(
+    'eine Vorlage antippen übernimmt den Kopf — aber NICHT den Namen',
+    (tester) async {
+      await zeige(
+        tester,
+        host(
+          profil: const MeinProfil(
+            anzeigename: 'Marcus B.',
+            username: 'marcus.bucher',
+            serverKenntProfil: true,
+          ),
+        ),
+      );
 
-    final vorlage = kAvatarVorlagen.firstWhere((v) => v.rolle == 'Dalmatiner');
-    await tester.tap(find.text(vorlage.name));
-    await tester.pumpAndSettle();
+      final vorlage = kAvatarVorlagen.firstWhere(
+        (v) => v.rolle == 'Dalmatiner',
+      );
+      await tester.tap(find.text(vorlage.name));
+      await tester.pumpAndSettle();
 
-    expect(_vorschau(tester), vorlage.kopf);
-    // Der Vorlagenname gehört dem Avatar, nicht der Person.
-    expect(
-      tester.widget<TextField>(find.byType(TextField)).controller!.text,
-      'Marcus B.',
-    );
-  });
+      expect(_vorschau(tester), vorlage.kopf);
+      // Der Vorlagenname gehört dem Avatar, nicht der Person.
+      expect(
+        tester.widget<TextField>(find.byType(TextField)).controller!.text,
+        'Marcus B.',
+      );
+    },
+  );
 
   testWidgets('der Baukasten ändert genau einen Wert', (tester) async {
     await zeige(tester, host());
@@ -188,13 +205,12 @@ void main() {
     expect(service.avatar?.gear, 'cap');
   });
 
-  testWidgets('auf einem Alt-Server ist Speichern gar nicht erst anwählbar',
-      (tester) async {
+  testWidgets('auf einem Alt-Server ist Speichern gar nicht erst anwählbar', (
+    tester,
+  ) async {
     // Ehrlicher als ein Knopf, der in „Funktion unbekannt" läuft — und der
     // Satz daneben sagt, woran es liegt.
-    await zeige(tester, host(
-      profil: const MeinProfil(username: 'wart.stadt'),
-    ));
+    await zeige(tester, host(profil: const MeinProfil(username: 'wart.stadt')));
 
     expect(
       tester

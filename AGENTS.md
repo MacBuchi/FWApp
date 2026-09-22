@@ -143,12 +143,24 @@ entfernt, bekommt ihn im CI-Lauf zurück — und weil der Codegen-Guard direkt
 nach `pub get` ein `git diff --exit-code` macht, bricht die CI dort mit
 „Generated files are stale" ab, obwohl kein generierter Code betroffen ist.
 
-⚠️ **Kein `dart format` über Bestandsdateien.** Das Repo ist alt formatiert
-(Dart-3.7-Formatter, nie migriert); `dart format .` will 114 Dateien umbauen
-und erzeugt dabei zwei neue `curly_braces`-Lints. CI hat deshalb **keinen**
-Format-Check — anders als im Rest des Portfolios, wo er der häufigste
-vermeidbare Fehlschlag ist. Die Umstellung ist ein eigener PR; bis dahin kein
-pauschales Formatieren in Feature-PRs.
+**Formatierung:** `dart format` gilt, und CI prüft es
+(`--set-exit-if-changed` im Job *Analyze & Test*). Vor dem Push also
+`dart format .` → `flutter analyze` → `flutter test`.
+
+Das galt bis 1.58.1 **nicht**: Das Repo war von Hand auf 80 Spalten
+umbrochen und nie durch den Formatter gelaufen, ein `dart format .` schrieb
+285 Dateien um. Genau das ist in einer Feature-PR passiert und hat eine
+halbe Sitzung gekostet, obwohl die Warnung hier stand — deshalb steht die
+Regel jetzt in der CI statt nur in der Doku (Issue #226).
+
+⚠️ Der Formatter setzt bei `if (x) einZeiler();` den Rumpf auf eine eigene
+Zeile, und genau daran stört sich `curly_braces_in_flow_control_structures`.
+Wer so etwas schreibt, bekommt nach dem Formatieren einen Lint — Klammern
+setzen, nicht den Umbruch bekämpfen.
+
+⚠️ Generierten Code nicht ausnehmen: `build_runner` gibt bereits
+formatterreine Dateien aus, `dart format` ändert dort nichts, und der
+Codegen-Guard bleibt unberührt.
 
 ## Code-Konventionen
 
@@ -553,7 +565,8 @@ pauschales Formatieren in Feature-PRs.
 
 ## Tests
 
-**Pflicht nach jeder Änderung:** `flutter analyze` + `flutter test`.
+**Pflicht nach jeder Änderung:** `dart format .` + `flutter analyze` +
+`flutter test`.
 
 - **Harness:** [test/helpers/widget_harness.dart](test/helpers/widget_harness.dart)
   (`buildTestApp` mit In-Memory-Drift-DB). Am Testende `endTestApp(tester)`

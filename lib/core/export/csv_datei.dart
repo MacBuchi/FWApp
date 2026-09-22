@@ -23,12 +23,10 @@ const kCsvTrenner = ';';
 /// Anführungszeichen, eingebettete Semikolons und Zeilenumbrüche in Notizen
 /// erledigt das Paket — von Hand ist genau das die Fehlerquelle.
 String alsCsvDatei(List<List<String>> zeilen) =>
-    const CsvEncoder(fieldDelimiter: kCsvTrenner, addBom: true)
-        .convert(zeilen);
+    const CsvEncoder(fieldDelimiter: kCsvTrenner, addBom: true).convert(zeilen);
 
 /// Datum in der Form, in der es IN der Datei steht: `TT.MM.JJJJ`.
-String csvDatum(DateTime d) =>
-    '${_zwei(d.day)}.${_zwei(d.month)}.${d.year}';
+String csvDatum(DateTime d) => '${_zwei(d.day)}.${_zwei(d.month)}.${d.year}';
 
 /// Datum für einen DATEINAMEN: `JJJJ-MM-TT`, damit eine Ablage von selbst
 /// chronologisch sortiert.

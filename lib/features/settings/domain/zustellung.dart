@@ -146,8 +146,8 @@ String _grundText(Zustellereignis e) {
 /// Die Zeile unter der Adresse in der Einladungsliste — ohne Zeitangabe,
 /// die hängt der Bildschirm mit seinem eigenen Format an.
 String zustellungText(Zustellung z) => switch (z.zustand) {
-      Zustellzustand.gescheitert => 'unzustellbar: ${z.grund}',
-      Zustellzustand.zugestellt => 'zugestellt',
-      Zustellzustand.unterwegs => 'unterwegs',
-      Zustellzustand.unbekannt => 'Zustellung nicht prüfbar',
-    };
+  Zustellzustand.gescheitert => 'unzustellbar: ${z.grund}',
+  Zustellzustand.zugestellt => 'zugestellt',
+  Zustellzustand.unterwegs => 'unterwegs',
+  Zustellzustand.unbekannt => 'Zustellung nicht prüfbar',
+};

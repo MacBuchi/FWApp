@@ -26,17 +26,19 @@ String fahrzeugEntfernenText({
     if (faecher > 0) _fach(faecher),
     if (beladung > 0) '${_eintrag(beladung)} der Beladeliste',
   ];
-  final kopf = teile.isEmpty
-      ? '„$name" wird entfernt. Es hängt nichts daran.'
-      : '„$name" wird entfernt — mit ${teile.join(' und ')}.';
+  final kopf =
+      teile.isEmpty
+          ? '„$name" wird entfernt. Es hängt nichts daran.'
+          : '„$name" wird entfernt — mit ${teile.join(' und ')}.';
 
   // Die wichtigste Zeile ist die zweite: Ohne sie liest sich das Löschen
   // eines Fahrzeugs wie das Löschen des halben Bestands.
-  final rest = faecher > 0 || beladung > 0
-      ? ' Die Geräte selbst bleiben im Bestand — nur ihre Zuordnung zu '
-          'diesem Fahrzeug entfällt. Prüfpflichtige Exemplare behalten ihre '
-          'Prüfhistorie, verlieren aber ihren Standort.'
-      : '';
+  final rest =
+      faecher > 0 || beladung > 0
+          ? ' Die Geräte selbst bleiben im Bestand — nur ihre Zuordnung zu '
+              'diesem Fahrzeug entfällt. Prüfpflichtige Exemplare behalten ihre '
+              'Prüfhistorie, verlieren aber ihren Standort.'
+          : '';
 
   return '$kopf$rest Rückgängig machen lässt sich das nicht.';
 }

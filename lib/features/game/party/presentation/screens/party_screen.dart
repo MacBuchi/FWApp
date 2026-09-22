@@ -78,7 +78,9 @@ class _PartyScreenState extends ConsumerState<PartyScreen> {
 
   Future<void> _starten() async {
     setState(() => _laedt = true);
-    final klappt = await ref.read(partySpielProvider.notifier).starte(
+    final klappt = await ref
+        .read(partySpielProvider.notifier)
+        .starte(
           namen: _namen,
           fragenProSpieler: _fragenProSpieler,
           trinkspiel: _trinkspiel,
@@ -87,9 +89,14 @@ class _PartyScreenState extends ConsumerState<PartyScreen> {
     if (!mounted) return;
     setState(() => _laedt = false);
     if (!klappt) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Keine Fragen verfügbar. Bitte zuerst ein Fahrzeug '
-              'mit Beladung anlegen.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Keine Fragen verfügbar. Bitte zuerst ein Fahrzeug '
+            'mit Beladung anlegen.',
+          ),
+        ),
+      );
     }
   }
 
@@ -132,19 +139,25 @@ class _PartyScreenState extends ConsumerState<PartyScreen> {
           Wrap(
             spacing: 8,
             runSpacing: 4,
-            children: _namen
-                .map((n) => Chip(
-                      label: Text(n),
-                      onDeleted: () => setState(() => _namen.remove(n)),
-                    ))
-                .toList(),
+            children:
+                _namen
+                    .map(
+                      (n) => Chip(
+                        label: Text(n),
+                        onDeleted: () => setState(() => _namen.remove(n)),
+                      ),
+                    )
+                    .toList(),
           ),
           if (!genugSpieler)
             Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: Text('Mindestens zwei Spieler.',
-                  style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant)),
+              child: Text(
+                'Mindestens zwei Spieler.',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
             ),
           const SizedBox(height: 20),
           fahrzeuge.when(
@@ -154,41 +167,49 @@ class _PartyScreenState extends ConsumerState<PartyScreen> {
             // echter Fahrzeugname („HLF 20/16 Florian Musterstadt 1/44")
             // ließ die Auswahl auf einem Handy um knapp 300 Pixel überlaufen
             // — die gestreifte Fehlerfläche statt des Namens.
-            data: (liste) => DropdownButtonFormField<Vehicle?>(
-              initialValue: _fahrzeug,
-              isExpanded: true,
-              decoration: const InputDecoration(
-                  labelText: 'Fahrzeug (optional)',
-                  border: OutlineInputBorder()),
-              items: [
-                const DropdownMenuItem(
-                    value: null, child: Text('Alle Fahrzeuge')),
-                ...liste.map((v) => DropdownMenuItem(
-                    value: v,
-                    child: Text(v.name, overflow: TextOverflow.ellipsis))),
-              ],
-              onChanged: (v) => setState(() => _fahrzeug = v),
-            ),
+            data:
+                (liste) => DropdownButtonFormField<Vehicle?>(
+                  initialValue: _fahrzeug,
+                  isExpanded: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Fahrzeug (optional)',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: [
+                    const DropdownMenuItem(
+                      value: null,
+                      child: Text('Alle Fahrzeuge'),
+                    ),
+                    ...liste.map(
+                      (v) => DropdownMenuItem(
+                        value: v,
+                        child: Text(v.name, overflow: TextOverflow.ellipsis),
+                      ),
+                    ),
+                  ],
+                  onChanged: (v) => setState(() => _fahrzeug = v),
+                ),
           ),
           const SizedBox(height: 20),
           const Text('Fragen je Spieler'),
           const SizedBox(height: 8),
           SegmentedButton<int>(
-            segments: kFragenProSpieler
-                .map((n) =>
-                    ButtonSegment(value: n, label: Text('$n')))
-                .toList(),
+            segments:
+                kFragenProSpieler
+                    .map((n) => ButtonSegment(value: n, label: Text('$n')))
+                    .toList(),
             selected: {_fragenProSpieler},
-            onSelectionChanged: (s) =>
-                setState(() => _fragenProSpieler = s.first),
+            onSelectionChanged:
+                (s) => setState(() => _fragenProSpieler = s.first),
           ),
           const SizedBox(height: 12),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
             title: const Text('Trinkspiel'),
             subtitle: const Text(
-                'Bei einer falschen Antwort: ein Schluck — oder die Aufgabe, '
-                'die das Spiel stattdessen vorschlägt.'),
+              'Bei einer falschen Antwort: ein Schluck — oder die Aufgabe, '
+              'die das Spiel stattdessen vorschlägt.',
+            ),
             value: _trinkspiel,
             onChanged: (v) => setState(() => _trinkspiel = v),
           ),
@@ -205,9 +226,9 @@ class _PartyScreenState extends ConsumerState<PartyScreen> {
                       child: Text(
                         'Wer heute Bereitschaft hat, nimmt die Aufgabe.',
                         style: TextStyle(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onTertiaryContainer),
+                          color:
+                              Theme.of(context).colorScheme.onTertiaryContainer,
+                        ),
                       ),
                     ),
                   ],
@@ -216,12 +237,14 @@ class _PartyScreenState extends ConsumerState<PartyScreen> {
             ),
           const SizedBox(height: 24),
           FilledButton.icon(
-            icon: _laedt
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2))
-                : const Icon(Icons.play_arrow),
+            icon:
+                _laedt
+                    ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                    : const Icon(Icons.play_arrow),
             label: const Text('Losgeht\'s'),
             onPressed: genugSpieler && !_laedt ? _starten : null,
           ),
@@ -240,8 +263,9 @@ class _PartyScreenState extends ConsumerState<PartyScreen> {
         // Runde bei einer Art Frage, und was niemand sieht, ist am Tisch
         // keine Regel, sondern Zufall. Verraten wird damit nichts —
         // „Wo liegt was?" gilt für jedes Fach jedes Fahrzeugs.
-        title:
-            Text('Runde ${stand.zugNummer} · ${stand.frage.art.bezeichnung}'),
+        title: Text(
+          'Runde ${stand.zugNummer} · ${stand.frage.art.bezeichnung}',
+        ),
         automaticallyImplyLeading: false,
         actions: [
           TextButton(
@@ -256,23 +280,26 @@ class _PartyScreenState extends ConsumerState<PartyScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.swipe_right_alt,
-                  size: 72, color: theme.colorScheme.primary),
+              Icon(
+                Icons.swipe_right_alt,
+                size: 72,
+                color: theme.colorScheme.primary,
+              ),
               const SizedBox(height: 16),
               const Text('Handy weitergeben an'),
               const SizedBox(height: 8),
               Text(
                 stand.amZug.name,
-                style: theme.textTheme.headlineMedium
-                    ?.copyWith(fontWeight: FontWeight.bold),
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
               FilledButton.icon(
                 icon: const Icon(Icons.visibility),
                 label: const Text('Bereit'),
-                onPressed: () =>
-                    ref.read(partySpielProvider.notifier).bereit(),
+                onPressed: () => ref.read(partySpielProvider.notifier).bereit(),
               ),
               const SizedBox(height: 32),
               _punktestand(stand),
@@ -284,14 +311,19 @@ class _PartyScreenState extends ConsumerState<PartyScreen> {
   }
 
   Widget _punktestand(PartyStand stand) => Wrap(
-        spacing: 12,
-        runSpacing: 4,
-        alignment: WrapAlignment.center,
-        children: stand.rangliste
-            .map((s) => Text('${s.name} ${s.punkte}',
-                style: Theme.of(context).textTheme.bodySmall))
+    spacing: 12,
+    runSpacing: 4,
+    alignment: WrapAlignment.center,
+    children:
+        stand.rangliste
+            .map(
+              (s) => Text(
+                '${s.name} ${s.punkte}',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            )
             .toList(),
-      );
+  );
 
   // ── Frage ─────────────────────────────────────────────────────────────
 
@@ -302,11 +334,13 @@ class _PartyScreenState extends ConsumerState<PartyScreen> {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: Text(
-            '${stand.amZug.name} · ${stand.index + 1}/${stand.fragen.length}'),
+          '${stand.amZug.name} · ${stand.index + 1}/${stand.fragen.length}',
+        ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(4),
           child: LinearProgressIndicator(
-              value: stand.index / stand.fragen.length),
+            value: stand.index / stand.fragen.length,
+          ),
         ),
       ),
       body: ListView(
@@ -321,10 +355,11 @@ class _PartyScreenState extends ConsumerState<PartyScreen> {
             ),
           if (frage.kopfzeile != null) ...[
             const SizedBox(height: 8),
-            Text(frage.kopfzeile!,
-                style: const TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center),
+            Text(
+              frage.kopfzeile!,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
           ],
           // Das Fahrzeug gehört über die Antworten, nicht in die Auflösung:
           // Zur Wahl stehen die Fächer eines bestimmten Wagens, und wer den
@@ -335,19 +370,26 @@ class _PartyScreenState extends ConsumerState<PartyScreen> {
             const SizedBox(height: 10),
             Center(
               child: Chip(
-                avatar: Icon(Icons.fire_truck,
-                    size: 18, color: theme.colorScheme.onSecondaryContainer),
+                avatar: Icon(
+                  Icons.fire_truck,
+                  size: 18,
+                  color: theme.colorScheme.onSecondaryContainer,
+                ),
                 label: Text(frage.fahrzeug!),
                 backgroundColor: theme.colorScheme.secondaryContainer,
                 labelStyle: TextStyle(
-                    color: theme.colorScheme.onSecondaryContainer,
-                    fontWeight: FontWeight.w600),
+                  color: theme.colorScheme.onSecondaryContainer,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],
           const SizedBox(height: 12),
-          Text(frage.text,
-              style: theme.textTheme.titleMedium, textAlign: TextAlign.center),
+          Text(
+            frage.text,
+            style: theme.textTheme.titleMedium,
+            textAlign: TextAlign.center,
+          ),
           const SizedBox(height: 20),
           ...List.generate(frage.antworten.length, (i) {
             final antwort = frage.antworten[i];
@@ -368,17 +410,22 @@ class _PartyScreenState extends ConsumerState<PartyScreen> {
                     // Waagerecht ausdrücklich: `symmetric(vertical:)` setzt
                     // die Seiten auf 0, und der Farbpunkt klebte am Rand.
                     padding: const EdgeInsets.symmetric(
-                        vertical: 12, horizontal: 16),
+                      vertical: 12,
+                      horizontal: 16,
+                    ),
                   ),
-                  onPressed: stand.beantwortet
-                      ? null
-                      : () =>
-                          ref.read(partySpielProvider.notifier).antworte(i),
-                  child: antwort.fach != null
-                      ? FachAntwortInhalt(antwort: antwort.fach!)
-                      : Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(antwort.text)),
+                  onPressed:
+                      stand.beantwortet
+                          ? null
+                          : () =>
+                              ref.read(partySpielProvider.notifier).antworte(i),
+                  child:
+                      antwort.fach != null
+                          ? FachAntwortInhalt(antwort: antwort.fach!)
+                          : Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(antwort.text),
+                          ),
                 ),
               ),
             );
@@ -389,9 +436,11 @@ class _PartyScreenState extends ConsumerState<PartyScreen> {
             const SizedBox(height: 16),
             FilledButton(
               onPressed: () => ref.read(partySpielProvider.notifier).weiter(),
-              child: Text(stand.index + 1 < stand.fragen.length
-                  ? 'Weitergeben'
-                  : 'Ergebnis'),
+              child: Text(
+                stand.index + 1 < stand.fragen.length
+                    ? 'Weitergeben'
+                    : 'Ergebnis',
+              ),
             ),
           ],
         ],
@@ -430,26 +479,35 @@ class _PartyScreenState extends ConsumerState<PartyScreen> {
       children: [
         Row(
           children: [
-            Icon(richtig ? Icons.check_circle : Icons.cancel,
-                color: richtig ? Colors.green.shade700 : Colors.red.shade700),
+            Icon(
+              richtig ? Icons.check_circle : Icons.cancel,
+              color: richtig ? Colors.green.shade700 : Colors.red.shade700,
+            ),
             const SizedBox(width: 8),
-            Text(richtig ? 'Richtig' : 'Daneben',
-                style: theme.textTheme.titleMedium),
+            Text(
+              richtig ? 'Richtig' : 'Daneben',
+              style: theme.textTheme.titleMedium,
+            ),
           ],
         ),
         if (stand.frage.erklaerung != null) ...[
           const SizedBox(height: 8),
-          Text(stand.frage.erklaerung!,
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+          Text(
+            stand.frage.erklaerung!,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
         ],
         // Die Fundstelle steht in der Auflösung, weil genau hier
         // widersprochen wird (Issue #174). Antippen öffnet die amtliche
         // Fassung — damit endet der Streit am Gesetz und nicht am Handy.
         if (stand.frage.quelle != null) ...[
           const SizedBox(height: 8),
-          QuellenZeile(stand.frage.quelle!,
-              geltungshinweis: stand.frage.geltungshinweis),
+          QuellenZeile(
+            stand.frage.quelle!,
+            geltungshinweis: stand.frage.geltungshinweis,
+          ),
         ],
         if (stand.aufgabe != null) ...[
           const SizedBox(height: 12),
@@ -458,13 +516,14 @@ class _PartyScreenState extends ConsumerState<PartyScreen> {
             child: Padding(
               padding: const EdgeInsets.all(14),
               child: DefaultTextStyle.merge(
-                style:
-                    TextStyle(color: theme.colorScheme.onTertiaryContainer),
+                style: TextStyle(color: theme.colorScheme.onTertiaryContainer),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Ein Schluck — oder:',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Text(
+                      'Ein Schluck — oder:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     const SizedBox(height: 4),
                     Text(stand.aufgabe!),
                   ],
@@ -492,31 +551,35 @@ class _PartyScreenState extends ConsumerState<PartyScreen> {
         padding: const EdgeInsets.all(20),
         children: [
           Text(
-              sieger.length == 1
-                  ? 'Sieger: ${sieger.single.name}'
-                  : 'Unentschieden: ${namenAufzaehlung(sieger)}',
-              style: theme.textTheme.headlineSmall
-                  ?.copyWith(fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center),
+            sieger.length == 1
+                ? 'Sieger: ${sieger.single.name}'
+                : 'Unentschieden: ${namenAufzaehlung(sieger)}',
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
           const SizedBox(height: 20),
           ...rang.map((s) {
             final platz = stand.platz(s);
             return ListTile(
               leading: CircleAvatar(
-                backgroundColor: platz == 1
-                    ? theme.colorScheme.primary
-                    : theme.colorScheme.surfaceContainerHighest,
-                foregroundColor: platz == 1
-                    ? theme.colorScheme.onPrimary
-                    : theme.colorScheme.onSurface,
+                backgroundColor:
+                    platz == 1
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.surfaceContainerHighest,
+                foregroundColor:
+                    platz == 1
+                        ? theme.colorScheme.onPrimary
+                        : theme.colorScheme.onSurface,
                 child: Text('$platz'),
               ),
               title: Text(s.name),
-              subtitle: stand.trinkspiel && s.konsequenzen > 0
-                  ? Text('${s.konsequenzen}× Schluck oder Aufgabe')
-                  : null,
-              trailing:
-                  Text('${s.punkte}', style: theme.textTheme.titleLarge),
+              subtitle:
+                  stand.trinkspiel && s.konsequenzen > 0
+                      ? Text('${s.konsequenzen}× Schluck oder Aufgabe')
+                      : null,
+              trailing: Text('${s.punkte}', style: theme.textTheme.titleLarge),
             );
           }),
           const SizedBox(height: 24),

@@ -127,7 +127,8 @@ class _CodeScannenScreenState extends State<CodeScannenScreen> {
                   child: Text(
                     _meldung!,
                     style: TextStyle(
-                        color: Theme.of(context).colorScheme.onInverseSurface),
+                      color: Theme.of(context).colorScheme.onInverseSurface,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -148,20 +149,20 @@ class _KeinBild extends StatelessWidget {
   Widget build(BuildContext context) {
     final (String titel, String rat) = switch (fehler.errorCode) {
       MobileScannerErrorCode.permissionDenied => (
-          'Kein Zugriff auf die Kamera',
-          'Die Erlaubnis fehlt. In den Einstellungen des Geräts freigeben — '
-              'oder den Code stattdessen eintippen.',
-        ),
+        'Kein Zugriff auf die Kamera',
+        'Die Erlaubnis fehlt. In den Einstellungen des Geräts freigeben — '
+            'oder den Code stattdessen eintippen.',
+      ),
       MobileScannerErrorCode.unsupported => (
-          'Scannen geht hier nicht',
-          'Dieses Gerät oder dieser Browser stellt keine Kamera bereit. '
-              'Der Code lässt sich eintippen.',
-        ),
+        'Scannen geht hier nicht',
+        'Dieses Gerät oder dieser Browser stellt keine Kamera bereit. '
+            'Der Code lässt sich eintippen.',
+      ),
       _ => (
-          'Die Kamera ließ sich nicht starten',
-          'Benutzt eine andere App gerade die Kamera? Sonst hilft der Weg '
-              'über die Tastatur.',
-        ),
+        'Die Kamera ließ sich nicht starten',
+        'Benutzt eine andere App gerade die Kamera? Sonst hilft der Weg '
+            'über die Tastatur.',
+      ),
     };
 
     return Center(

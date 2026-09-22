@@ -1,6 +1,7 @@
 /// crash_report_test.dart – Fingerprint und Kürzung der Absturzberichte
 /// (Issue #34).
 library;
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/core/crash/crash_report.dart';
 
@@ -26,37 +27,49 @@ const _stackB = '''
 void main() {
   group('crashFingerprint', () {
     test('ist stabil für denselben Fehler', () {
-      expect(crashFingerprint('Bad state: x', _stackA),
-          crashFingerprint('Bad state: x', _stackA));
+      expect(
+        crashFingerprint('Bad state: x', _stackA),
+        crashFingerprint('Bad state: x', _stackA),
+      );
     });
 
     test('ignoriert Zeilen-/Spaltennummern', () {
       // Eine verschobene Codezeile ist derselbe Absturz — sonst bekäme jeder
       // Release neue Fingerprints und die Dedupe liefe leer.
-      expect(crashFingerprint('Bad state: x', _stackA),
-          crashFingerprint('Bad state: x', _stackAShifted));
+      expect(
+        crashFingerprint('Bad state: x', _stackA),
+        crashFingerprint('Bad state: x', _stackAShifted),
+      );
     });
 
     test('ignoriert die Fehlermeldung hinter dem Typ', () {
       // „Bad state: Foo 42" und „Bad state: Foo 43" sind derselbe Fall.
-      expect(crashFingerprint('Bad state: Foo 42', _stackA),
-          crashFingerprint('Bad state: Foo 43', _stackA));
+      expect(
+        crashFingerprint('Bad state: Foo 42', _stackA),
+        crashFingerprint('Bad state: Foo 43', _stackA),
+      );
     });
 
     test('unterscheidet verschiedene Fehlerstellen', () {
-      expect(crashFingerprint('Bad state: x', _stackA),
-          isNot(crashFingerprint('Bad state: x', _stackB)));
+      expect(
+        crashFingerprint('Bad state: x', _stackA),
+        isNot(crashFingerprint('Bad state: x', _stackB)),
+      );
     });
 
     test('unterscheidet verschiedene Fehlertypen an gleicher Stelle', () {
-      expect(crashFingerprint('Bad state: x', _stackA),
-          isNot(crashFingerprint('RangeError: x', _stackA)));
+      expect(
+        crashFingerprint('Bad state: x', _stackA),
+        isNot(crashFingerprint('RangeError: x', _stackA)),
+      );
     });
 
     test('kommt ohne eigene Frames aus', () {
       // Reiner Framework-Absturz: Dann trägt der Fehlertyp allein.
       final onlyFramework = crashFingerprint(
-          'Bad state: x', '#0 f (package:flutter/src/a.dart:1:1)');
+        'Bad state: x',
+        '#0 f (package:flutter/src/a.dart:1:1)',
+      );
       expect(onlyFramework, isNotEmpty);
       expect(onlyFramework, crashFingerprint('Bad state: x', ''));
     });

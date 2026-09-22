@@ -9,6 +9,7 @@
 /// Der Katalog muss deshalb gezielt, Position für Position, nachlegbar sein —
 /// nicht nur einmal beim ersten Start.
 library;
+
 import 'dart:convert';
 
 import 'package:drift/drift.dart' show Value;
@@ -62,9 +63,7 @@ class StandardCatalog {
   /// **beides**: die Regel am Fixture und ihre Wirkung an den 110
   /// ausgelieferten Geräten.
   StandardCatalog.ausEintraegen(List<Map<String, dynamic>> items)
-      : _byId = {
-          for (final item in items) item['id'] as String: item,
-        };
+    : _byId = {for (final item in items) item['id'] as String: item};
 
   /// Alle Katalog-IDs in Dateireihenfolge.
   Iterable<String> get ids => _byId.keys;
@@ -97,49 +96,58 @@ class StandardCatalog {
   /// bleibt dem Import-Assistenten vorbehalten, wo ein Mensch bestätigt.
   String? idFuerName(String name) => _nameIndex[_norm(name)];
 
-  late final Map<String, String> _nameIndex = (() {
-    final index = <String, String>{};
-    void merke(String? text, String id) {
-      final n = _norm(text ?? '');
-      if (n.isNotEmpty) index.putIfAbsent(n, () => id);
-    }
+  late final Map<String, String> _nameIndex =
+      (() {
+        final index = <String, String>{};
+        void merke(String? text, String id) {
+          final n = _norm(text ?? '');
+          if (n.isNotEmpty) index.putIfAbsent(n, () => id);
+        }
 
-    for (final entry in _byId.entries) {
-      merke(entry.value['name'] as String?, entry.key);
-      merke(entry.value['short_name'] as String?, entry.key);
-      for (final alias in (entry.value['aliases'] as List?) ?? const []) {
-        merke(alias as String?, entry.key);
-      }
-    }
-    return index;
-  })();
+        for (final entry in _byId.entries) {
+          merke(entry.value['name'] as String?, entry.key);
+          merke(entry.value['short_name'] as String?, entry.key);
+          for (final alias in (entry.value['aliases'] as List?) ?? const []) {
+            merke(alias as String?, entry.key);
+          }
+        }
+        return index;
+      })();
 
   /// Spiegelt EquipmentMatcher.normalize — hierher kopiert statt importiert,
   /// weil core/ nicht in features/ greifen darf.
-  static String _norm(String s) => s
-      .toLowerCase()
-      .replaceAll('ä', 'ae')
-      .replaceAll('ö', 'oe')
-      .replaceAll('ü', 'ue')
-      .replaceAll('ß', 'ss')
-      .replaceAll(RegExp(r'[^a-z0-9]+'), ' ')
-      .trim();
+  static String _norm(String s) =>
+      s
+          .toLowerCase()
+          .replaceAll('ä', 'ae')
+          .replaceAll('ö', 'oe')
+          .replaceAll('ü', 'ue')
+          .replaceAll('ß', 'ss')
+          .replaceAll(RegExp(r'[^a-z0-9]+'), ' ')
+          .trim();
 
   /// Lädt den gebündelten Katalog. Ein fehlendes oder unlesbares Asset ist
   /// ein Build-Fehler und landet im Log — die Aufrufer bekommen trotzdem
   /// einen (leeren) Katalog und können weiterarbeiten.
   static Future<StandardCatalog> load() async {
     try {
-      final raw = jsonDecode(await rootBundle
-          .loadString('assets/equipment_library/catalog/standard_catalog.json'));
+      final raw = jsonDecode(
+        await rootBundle.loadString(
+          'assets/equipment_library/catalog/standard_catalog.json',
+        ),
+      );
       final items = raw is List ? raw : (raw as Map)['items'] as List? ?? [];
       return StandardCatalog._({
         for (final item in items.cast<Map<String, dynamic>>())
           item['id'] as String: item,
       });
     } catch (e, s) {
-      appLog.w('Standard-Katalog nicht lesbar — Vorlagen und Seed bleiben '
-          'ohne Normbeladung', error: e, stackTrace: s);
+      appLog.w(
+        'Standard-Katalog nicht lesbar — Vorlagen und Seed bleiben '
+        'ohne Normbeladung',
+        error: e,
+        stackTrace: s,
+      );
       return StandardCatalog.empty();
     }
   }
@@ -155,24 +163,36 @@ class StandardCatalog {
   /// [dirty] sagt, wem die Zeile gehört: Wer ein Fahrzeug aus einer Vorlage
   /// baut, erfasst etwas Eigenes und will es veröffentlichen. Der Seed legt
   /// dagegen nur die Lieferung der App aus und ruft mit `dirty: false`.
-  Future<int?> createEquipment(AppDatabase db, String libraryId,
-      {bool dirty = true}) async {
+  Future<int?> createEquipment(
+    AppDatabase db,
+    String libraryId, {
+    bool dirty = true,
+  }) async {
     final item = _byId[libraryId];
     if (item == null) return null;
-    return db.equipmentDao.insertEquipment(EquipmentItemsCompanion.insert(
-      name: item['name'] as String,
-      shortName: Value(item['short_name'] as String?),
-      libraryEquipmentId: Value(libraryId),
-      isCustom: const Value(false),
-      imagePath: Value(pictogramPath(libraryId)),
-      equipmentFunctionsJson: Value(jsonEncode(
-          ((item['equipment_functions'] as List?)?.cast<String>()) ?? [])),
-      description: Value((item['description'] as String?) ?? ''),
-      typicalUseJson: Value(jsonEncode(
-          ((item['typical_use'] as List?)?.cast<String>()) ?? [])),
-      trainingQuestionsJson: Value(jsonEncode(
-          ((item['training_questions'] as List?)?.cast<String>()) ?? [])),
-      dirty: Value(dirty),
-    ));
+    return db.equipmentDao.insertEquipment(
+      EquipmentItemsCompanion.insert(
+        name: item['name'] as String,
+        shortName: Value(item['short_name'] as String?),
+        libraryEquipmentId: Value(libraryId),
+        isCustom: const Value(false),
+        imagePath: Value(pictogramPath(libraryId)),
+        equipmentFunctionsJson: Value(
+          jsonEncode(
+            ((item['equipment_functions'] as List?)?.cast<String>()) ?? [],
+          ),
+        ),
+        description: Value((item['description'] as String?) ?? ''),
+        typicalUseJson: Value(
+          jsonEncode(((item['typical_use'] as List?)?.cast<String>()) ?? []),
+        ),
+        trainingQuestionsJson: Value(
+          jsonEncode(
+            ((item['training_questions'] as List?)?.cast<String>()) ?? [],
+          ),
+        ),
+        dirty: Value(dirty),
+      ),
+    );
   }
 }

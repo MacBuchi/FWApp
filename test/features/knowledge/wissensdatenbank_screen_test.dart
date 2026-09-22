@@ -29,27 +29,30 @@ void main() {
     String gebiet = 'gefahrgut',
     String? kapitel,
     String? bild,
-  }) =>
-      db.wissenDao.insertFrage(WissensfragenCompanion.insert(
-        gebiet: gebiet,
-        frage: frage,
-        antwortenJson: const Value('["Stimmt","Daneben"]'),
-        richtigeJson: const Value('[0]'),
-        kapitel: Value(kapitel),
-        bildPfad: Value(bild),
-        herkunft: const Value('mitgeliefert'),
-        stand: const Value('freigegeben'),
-      ));
+  }) => db.wissenDao.insertFrage(
+    WissensfragenCompanion.insert(
+      gebiet: gebiet,
+      frage: frage,
+      antwortenJson: const Value('["Stimmt","Daneben"]'),
+      richtigeJson: const Value('[0]'),
+      kapitel: Value(kapitel),
+      bildPfad: Value(bild),
+      herkunft: const Value('mitgeliefert'),
+      stand: const Value('freigegeben'),
+    ),
+  );
 
   Future<void> pumpe(WidgetTester tester, {bool darfFreigeben = true}) async {
     tester.view.physicalSize = const Size(1200, 2400);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(buildTestApp(
-      db: db,
-      home: const WissensdatenbankScreen(),
-      overrides: [canEditProvider.overrideWithValue(darfFreigeben)],
-    ));
+    await tester.pumpWidget(
+      buildTestApp(
+        db: db,
+        home: const WissensdatenbankScreen(),
+        overrides: [canEditProvider.overrideWithValue(darfFreigeben)],
+      ),
+    );
     await tester.pumpAndSettle();
   }
 
@@ -76,10 +79,13 @@ void main() {
     await tester.scrollUntilVisible(
       knopf,
       300,
-      scrollable: find
-          .byWidgetPredicate((w) =>
-              w is Scrollable && w.axisDirection == AxisDirection.right)
-          .first,
+      scrollable:
+          find
+              .byWidgetPredicate(
+                (w) =>
+                    w is Scrollable && w.axisDirection == AxisDirection.right,
+              )
+              .first,
     );
     await tester.ensureVisible(knopf);
     await tester.pumpAndSettle();
@@ -103,8 +109,10 @@ void main() {
 
     final bild = tester.widget<Image>(find.byType(Image).first);
     expect(bild.image, isA<AssetImage>());
-    expect((bild.image as AssetImage).assetName,
-        'assets/knowledge/bilder/gefahrzettel_klasse_3.png');
+    expect(
+      (bild.image as AssetImage).assetName,
+      'assets/knowledge/bilder/gefahrzettel_klasse_3.png',
+    );
 
     await endTestApp(tester);
   });
@@ -146,8 +154,7 @@ void main() {
     await endTestApp(tester);
   });
 
-  testWidgets('ein Gebietswechsel räumt den Kapitelfilter weg',
-      (tester) async {
+  testWidgets('ein Gebietswechsel räumt den Kapitelfilter weg', (tester) async {
     await anlegen(frage: 'Erste ABC-Frage', kapitel: 'Dekontamination');
     await anlegen(frage: 'Zweite ABC-Frage', kapitel: 'Gefahrengruppen');
     await anlegen(frage: 'Eine Frage zum Sprechfunk', gebiet: 'funk');
@@ -168,8 +175,9 @@ void main() {
 
   // ── Lernbereiche abschalten (Marcus, 2026-08-28) ────────────────────────
 
-  testWidgets('der Gerätewart bekommt den Schalter erst mit gewähltem Gebiet',
-      (tester) async {
+  testWidgets('der Gerätewart bekommt den Schalter erst mit gewähltem Gebiet', (
+    tester,
+  ) async {
     await anlegen(frage: 'Was ist die Dekon-Stufe I?');
     await pumpe(tester);
 
@@ -183,8 +191,9 @@ void main() {
     await endTestApp(tester);
   });
 
-  testWidgets('wer nicht freigeben darf, sieht den Schalter nicht',
-      (tester) async {
+  testWidgets('wer nicht freigeben darf, sieht den Schalter nicht', (
+    tester,
+  ) async {
     await anlegen(frage: 'Was ist die Dekon-Stufe I?');
     await pumpe(tester, darfFreigeben: false);
     await gebietWaehlen(tester, 'Gefahrgut');
@@ -194,8 +203,9 @@ void main() {
     await endTestApp(tester);
   });
 
-  testWidgets('ein abgeschaltetes Gebiet steht am Schalter und an der Frage',
-      (tester) async {
+  testWidgets('ein abgeschaltetes Gebiet steht am Schalter und an der Frage', (
+    tester,
+  ) async {
     await anlegen(frage: 'Was ist die Dekon-Stufe I?');
     await abschalten('gefahrgut');
     await pumpe(tester);
@@ -210,29 +220,35 @@ void main() {
     await endTestApp(tester);
   });
 
-  testWidgets('bei abgeschaltetem Gebiet meint der Schalter nicht das Kapitel',
-      (tester) async {
-    // Ein Kapitel-Schalter unter einem abgeschalteten Gebiet wäre eine Lüge:
-    // Er könnte nichts einschalten, was das Gebiet nicht wieder freigibt.
-    await anlegen(frage: 'Frage A', kapitel: 'Dekontamination');
-    await anlegen(frage: 'Frage B', kapitel: 'Gefahrzettel und Kennzeichnung');
-    await abschalten('gefahrgut');
-    await pumpe(tester);
-    await gebietWaehlen(tester, 'Gefahrgut');
+  testWidgets(
+    'bei abgeschaltetem Gebiet meint der Schalter nicht das Kapitel',
+    (tester) async {
+      // Ein Kapitel-Schalter unter einem abgeschalteten Gebiet wäre eine Lüge:
+      // Er könnte nichts einschalten, was das Gebiet nicht wieder freigibt.
+      await anlegen(frage: 'Frage A', kapitel: 'Dekontamination');
+      await anlegen(
+        frage: 'Frage B',
+        kapitel: 'Gefahrzettel und Kennzeichnung',
+      );
+      await abschalten('gefahrgut');
+      await pumpe(tester);
+      await gebietWaehlen(tester, 'Gefahrgut');
 
-    await tester.tap(find.textContaining('Dekontamination (').first);
-    await tester.pumpAndSettle();
+      await tester.tap(find.textContaining('Dekontamination (').first);
+      await tester.pumpAndSettle();
 
-    expect(find.text('„Gefahrgut" wird nicht abgefragt'), findsOneWidget);
-    expect(find.text('„Dekontamination" wird abgefragt'), findsNothing);
+      expect(find.text('„Gefahrgut" wird nicht abgefragt'), findsOneWidget);
+      expect(find.text('„Dekontamination" wird abgefragt'), findsNothing);
 
-    await endTestApp(tester);
-  });
+      await endTestApp(tester);
+    },
+  );
 
   // ── Hinweise (Issue #194) ───────────────────────────────────────────────
 
-  testWidgets('jede Frage trägt einen Hinweis-Knopf — auch die mitgelieferte',
-      (tester) async {
+  testWidgets('jede Frage trägt einen Hinweis-Knopf — auch die mitgelieferte', (
+    tester,
+  ) async {
     // Gerade an einer mitgelieferten Frage ist er der einzige Weg, einen
     // Fehler loszuwerden: Löschen darf sie niemand.
     await anlegen(frage: 'Welcher Kanal ist der Anrufkanal?');
@@ -246,8 +262,9 @@ void main() {
     await endTestApp(tester);
   });
 
-  testWidgets('der Hinweis-Dialog sagt, dass es öffentlich wird',
-      (tester) async {
+  testWidgets('der Hinweis-Dialog sagt, dass es öffentlich wird', (
+    tester,
+  ) async {
     // Der Hinweis auf eine MITGELIEFERTE Frage endet in einem Issue im
     // öffentlichen Repo. Wer das nicht weiß, schreibt Dinge hinein, die dort
     // nicht stehen sollen.

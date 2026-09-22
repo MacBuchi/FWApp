@@ -2,6 +2,7 @@
 /// configured), seeds the library, pulls the central dataset, and launches
 /// the router.
 library;
+
 import 'dart:async' show unawaited;
 import 'dart:ui' show PlatformDispatcher;
 
@@ -68,8 +69,11 @@ Future<void> main() async {
       error: details.exception,
       stackTrace: details.stack,
     );
-    appLog.e('Flutter framework error',
-        error: details.exception, stackTrace: details.stack);
+    appLog.e(
+      'Flutter framework error',
+      error: details.exception,
+      stackTrace: details.stack,
+    );
     FlutterError.presentError(details);
   };
   PlatformDispatcher.instance.onError = (error, stack) {
@@ -97,12 +101,10 @@ Future<void> main() async {
       await Supabase.initialize(url: url, anonKey: key);
       supabaseReady = true;
       // Lets resolveImage() and the precache fetch from the private bucket.
-      supabaseStorageBaseUrl = url.endsWith('/')
-          ? url.substring(0, url.length - 1)
-          : url;
+      supabaseStorageBaseUrl =
+          url.endsWith('/') ? url.substring(0, url.length - 1) : url;
       supabaseStorageHeaders = () {
-        final token =
-            Supabase.instance.client.auth.currentSession?.accessToken;
+        final token = Supabase.instance.client.auth.currentSession?.accessToken;
         return {
           'apikey': key,
           if (token != null) 'Authorization': 'Bearer $token',
@@ -111,8 +113,11 @@ Future<void> main() async {
     }
   } catch (e, s) {
     // Offline or misconfigured – app stays fully usable in local mode.
-    appLog.w('Supabase-Init fehlgeschlagen – App startet im Lokalmodus',
-        error: e, stackTrace: s);
+    appLog.w(
+      'Supabase-Init fehlgeschlagen – App startet im Lokalmodus',
+      error: e,
+      stackTrace: s,
+    );
   }
 
   // Gemerkte Abteilungswahl (Issue #57 Phase 2) — muss VOR dem ersten
@@ -149,8 +154,7 @@ Future<void> main() async {
     ProviderScope(
       overrides: [
         supabaseReadyProvider.overrideWithValue(supabaseReady),
-        selectedAbteilungIdProvider
-            .overrideWith((ref) => selectedAbteilung),
+        selectedAbteilungIdProvider.overrideWith((ref) => selectedAbteilung),
       ],
       child: FWApp(vollerSplash: vollerSplash),
     ),
@@ -182,8 +186,9 @@ class _FWAppState extends ConsumerState<FWApp> {
     // nicht aus einer Migration: Die Einordnung einer Frage ist eine
     // redaktionelle Entscheidung, die man mit der nächsten App-Version
     // korrigieren können muss.
-    await WissenSeeder(db)
-        .seedIfNeeded(await ref.read(partyInhalteProvider.future));
+    await WissenSeeder(
+      db,
+    ).seedIfNeeded(await ref.read(partyInhalteProvider.future));
     if (!mounted) return;
     // Der Fachbestand aus den Dienstvorschriften (Issue #174, Schritt 2) —
     // eigener Weg, weil er Fundstellen trägt und der Party-Topf nicht.
@@ -239,8 +244,10 @@ class _FWAppState extends ConsumerState<FWApp> {
         unawaited(ref.read(imagePrecacheProvider.notifier).run());
       } catch (e) {
         // Offline – last pulled snapshot stays in place.
-        appLog.w('Start-Pull fehlgeschlagen (Server nicht erreichbar?)',
-            error: e);
+        appLog.w(
+          'Start-Pull fehlgeschlagen (Server nicht erreichbar?)',
+          error: e,
+        );
       }
     }
   }
@@ -262,19 +269,17 @@ class _FWAppState extends ConsumerState<FWApp> {
       routerConfig: ref.watch(routerProvider),
       // Die Animation liegt ÜBER der App, nicht davor: Der Router baut
       // darunter schon auf, es geht keine Startzeit verloren.
-      builder: (context, child) => SplashGate(
-        voll: widget.vollerSplash,
-        child: child ?? const SizedBox.shrink(),
-      ),
+      builder:
+          (context, child) => SplashGate(
+            voll: widget.vollerSplash,
+            child: child ?? const SizedBox.shrink(),
+          ),
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
       ],
-      supportedLocales: const [
-        Locale('de', 'DE'),
-        Locale('en', 'US'),
-      ],
+      supportedLocales: const [Locale('de', 'DE'), Locale('en', 'US')],
       locale: const Locale('de', 'DE'),
     );
   }

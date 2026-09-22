@@ -23,20 +23,24 @@ Map<String, dynamic> geraet(
   String name, {
   required List<String> funktionen,
   required List<String> verwendung,
-}) =>
-    {
-      'id': id,
-      'name': name,
-      'equipment_functions': funktionen,
-      'typical_use': verwendung,
-      'description': '$name, Beschreibung.',
-    };
+}) => {
+  'id': id,
+  'name': name,
+  'equipment_functions': funktionen,
+  'typical_use': verwendung,
+  'description': '$name, Beschreibung.',
+};
 
 void main() {
   test('aus einer eigenen Verwendung wird eine Frage mit drei Ablenkern', () {
     final k = katalogAus([
       geraet('std_a', 'Gerät A', funktionen: ['WASSER'], verwendung: ['Nur A']),
-      geraet('std_b', 'Gerät B', funktionen: ['RETTUNG'], verwendung: ['Nur B']),
+      geraet(
+        'std_b',
+        'Gerät B',
+        funktionen: ['RETTUNG'],
+        verwendung: ['Nur B'],
+      ),
       geraet('std_c', 'Gerät C', funktionen: ['PSA'], verwendung: ['Nur C']),
       geraet('std_d', 'Gerät D', funktionen: ['BRAND'], verwendung: ['Nur D']),
     ]);
@@ -51,36 +55,65 @@ void main() {
     expect(a.falsche, isNot(contains('Nur A')));
   });
 
-  test('ein Gerät mit gemeinsamer Funktionsgruppe liefert KEINEN Ablenker',
-      () {
+  test('ein Gerät mit gemeinsamer Funktionsgruppe liefert KEINEN Ablenker', () {
     // Der Kern der zweiten Regel: Zwei Lampen haben austauschbare
     // Verwendungen. Stünde die eine bei der anderen, hätte die Frage zwei
     // richtige Antworten.
     final k = katalogAus([
-      geraet('std_lampe1', 'Handlampe',
-          funktionen: ['BELEUCHTUNG'], verwendung: ['Ausleuchten im Innenangriff']),
-      geraet('std_lampe2', 'Helmlampe',
-          funktionen: ['BELEUCHTUNG'], verwendung: ['Beleuchtung am Helm']),
-      geraet('std_b', 'Gerät B', funktionen: ['RETTUNG'], verwendung: ['Nur B']),
+      geraet(
+        'std_lampe1',
+        'Handlampe',
+        funktionen: ['BELEUCHTUNG'],
+        verwendung: ['Ausleuchten im Innenangriff'],
+      ),
+      geraet(
+        'std_lampe2',
+        'Helmlampe',
+        funktionen: ['BELEUCHTUNG'],
+        verwendung: ['Beleuchtung am Helm'],
+      ),
+      geraet(
+        'std_b',
+        'Gerät B',
+        funktionen: ['RETTUNG'],
+        verwendung: ['Nur B'],
+      ),
       geraet('std_c', 'Gerät C', funktionen: ['PSA'], verwendung: ['Nur C']),
       geraet('std_d', 'Gerät D', funktionen: ['BRAND'], verwendung: ['Nur D']),
     ]);
 
-    final lampe = baueGeraetefragen(k).firstWhere(
-        (f) => f.geraet == 'std_lampe1');
-    expect(lampe.falsche, isNot(contains('Beleuchtung am Helm')),
-        reason: 'Die andere Lampe darf keinen Ablenker stellen.');
+    final lampe = baueGeraetefragen(
+      k,
+    ).firstWhere((f) => f.geraet == 'std_lampe1');
+    expect(
+      lampe.falsche,
+      isNot(contains('Beleuchtung am Helm')),
+      reason: 'Die andere Lampe darf keinen Ablenker stellen.',
+    );
   });
 
   test('eine Funktionsgruppe reicht schon, um auszuschließen', () {
     // Auch eine TEILWEISE Überschneidung schließt aus — sonst käme über die
     // zweite Gruppe wieder ein austauschbarer Satz herein.
     final k = katalogAus([
-      geraet('std_a', 'Gerät A',
-          funktionen: ['WASSER', 'ARMATUREN'], verwendung: ['Nur A']),
-      geraet('std_ueberlappt', 'Überlappt',
-          funktionen: ['ARMATUREN', 'LOGISTIK'], verwendung: ['Von Ueberlappt']),
-      geraet('std_b', 'Gerät B', funktionen: ['RETTUNG'], verwendung: ['Nur B']),
+      geraet(
+        'std_a',
+        'Gerät A',
+        funktionen: ['WASSER', 'ARMATUREN'],
+        verwendung: ['Nur A'],
+      ),
+      geraet(
+        'std_ueberlappt',
+        'Überlappt',
+        funktionen: ['ARMATUREN', 'LOGISTIK'],
+        verwendung: ['Von Ueberlappt'],
+      ),
+      geraet(
+        'std_b',
+        'Gerät B',
+        funktionen: ['RETTUNG'],
+        verwendung: ['Nur B'],
+      ),
       geraet('std_c', 'Gerät C', funktionen: ['PSA'], verwendung: ['Nur C']),
       geraet('std_d', 'Gerät D', funktionen: ['BRAND'], verwendung: ['Nur D']),
     ]);
@@ -91,10 +124,18 @@ void main() {
 
   test('eine generische Verwendung wird weder Antwort noch Ablenker', () {
     final k = katalogAus([
-      geraet('std_a', 'Gerät A',
-          funktionen: ['WASSER'], verwendung: ['Jeder Einsatz', 'Nur A']),
-      geraet('std_b', 'Gerät B',
-          funktionen: ['RETTUNG'], verwendung: ['Jeder Einsatz', 'Nur B']),
+      geraet(
+        'std_a',
+        'Gerät A',
+        funktionen: ['WASSER'],
+        verwendung: ['Jeder Einsatz', 'Nur A'],
+      ),
+      geraet(
+        'std_b',
+        'Gerät B',
+        funktionen: ['RETTUNG'],
+        verwendung: ['Jeder Einsatz', 'Nur B'],
+      ),
       geraet('std_c', 'Gerät C', funktionen: ['PSA'], verwendung: ['Nur C']),
       geraet('std_d', 'Gerät D', funktionen: ['BRAND'], verwendung: ['Nur D']),
       geraet('std_e', 'Gerät E', funktionen: ['STROM'], verwendung: ['Nur E']),
@@ -119,18 +160,26 @@ void main() {
     expect(baueGeraetefragen(k), isEmpty);
   });
 
-  test('zwei Läufe liefern dasselbe — sonst wüchse der Bestand bei jedem Start',
-      () {
-    final k = katalogAus([
-      for (var i = 0; i < 8; i++)
-        geraet('std_$i', 'Gerät $i',
-            funktionen: ['G$i'], verwendung: ['Verwendung $i']),
-    ]);
-    final a = baueGeraetefragen(k);
-    final b = baueGeraetefragen(k);
-    expect(a.map((f) => '${f.geraet}|${f.richtige}|${f.falsche.join(",")}'),
-        b.map((f) => '${f.geraet}|${f.richtige}|${f.falsche.join(",")}'));
-  });
+  test(
+    'zwei Läufe liefern dasselbe — sonst wüchse der Bestand bei jedem Start',
+    () {
+      final k = katalogAus([
+        for (var i = 0; i < 8; i++)
+          geraet(
+            'std_$i',
+            'Gerät $i',
+            funktionen: ['G$i'],
+            verwendung: ['Verwendung $i'],
+          ),
+      ]);
+      final a = baueGeraetefragen(k);
+      final b = baueGeraetefragen(k);
+      expect(
+        a.map((f) => '${f.geraet}|${f.richtige}|${f.falsche.join(",")}'),
+        b.map((f) => '${f.geraet}|${f.richtige}|${f.falsche.join(",")}'),
+      );
+    },
+  );
 
   group('gegen den echten ausgelieferten Katalog', () {
     late StandardCatalog katalog;
@@ -153,9 +202,13 @@ void main() {
       for (final f in fragen) {
         final eintrag = katalog.eintrag(f.geraet)!;
         for (final falsch in f.falsche) {
-          expect(eintrag.typischeVerwendung, isNot(contains(falsch)),
-              reason: '„${f.frage}" hätte mit „$falsch" zwei richtige '
-                  'Antworten.');
+          expect(
+            eintrag.typischeVerwendung,
+            isNot(contains(falsch)),
+            reason:
+                '„${f.frage}" hätte mit „$falsch" zwei richtige '
+                'Antworten.',
+          );
         }
       }
     });

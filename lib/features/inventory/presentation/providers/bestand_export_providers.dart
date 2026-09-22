@@ -20,11 +20,11 @@ import 'package:fwapp/features/inventory/data/bestand_export.dart';
 /// Geräten wäre das Gegenteil hundertzehnmal langsamer, und der Export läuft
 /// auf einem Handy.
 Future<String> bestandAlsCsv(AppDatabase db) async => bestandCsv(
-      fahrzeuge: await db.vehicleDao.getAll(),
-      faecher: await db.compartmentDao.getAll(),
-      zuordnungen: await db.assignmentDao.getAll(),
-      geraete: await db.equipmentDao.getAll(),
-      einheiten: await db.inspectionDao.getAllInstances(),
-      codes: await db.tagDao.alleTags(),
-      pruefungen: await db.inspectionDao.getAllSchedules(),
-    );
+  fahrzeuge: await db.vehicleDao.getAll(),
+  faecher: await db.compartmentDao.getAll(),
+  zuordnungen: await db.assignmentDao.getAll(),
+  geraete: await db.equipmentDao.getAll(),
+  einheiten: await db.inspectionDao.getAllInstances(),
+  codes: await db.tagDao.alleTags(),
+  pruefungen: await db.inspectionDao.getAllSchedules(),
+);

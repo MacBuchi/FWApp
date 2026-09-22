@@ -23,14 +23,16 @@ void main() {
   tearDown(() => db.close());
 
   Future<void> frage(String text, String gebiet, {String? kapitel}) =>
-      db.wissenDao.insertFrage(WissensfragenCompanion.insert(
-        gebiet: gebiet,
-        frage: text,
-        antwortenJson: const Value('["a","b"]'),
-        richtigeJson: const Value('[0]'),
-        kapitel: Value(kapitel),
-        stand: const Value('freigegeben'),
-      ));
+      db.wissenDao.insertFrage(
+        WissensfragenCompanion.insert(
+          gebiet: gebiet,
+          frage: text,
+          antwortenJson: const Value('["a","b"]'),
+          richtigeJson: const Value('[0]'),
+          kapitel: Value(kapitel),
+          stand: const Value('freigegeben'),
+        ),
+      );
 
   Future<void> abschalten(String gebiet, {String? kapitel}) async {
     final bestand = await db.wissenDao.getAbgeschaltet();
@@ -65,8 +67,11 @@ void main() {
   group('ein einzelnes Kapitel abschalten', () {
     setUp(() async {
       await frage('Was ist Dekon?', 'gefahrgut', kapitel: 'Dekontamination');
-      await frage('Welcher Zettel?', 'gefahrgut',
-          kapitel: 'Gefahrzettel und Kennzeichnung');
+      await frage(
+        'Welcher Zettel?',
+        'gefahrgut',
+        kapitel: 'Gefahrzettel und Kennzeichnung',
+      );
       await frage('Gefahrgut ohne Kapitel?', 'gefahrgut');
     });
 
@@ -108,23 +113,25 @@ void main() {
     expect(await spielbar(), ['Kommt wieder?']);
   });
 
-  test('eine nicht freigegebene Frage bleibt auch ohne Abschaltung draußen',
-      () async {
-    await db.wissenDao.insertFrage(WissensfragenCompanion.insert(
-      gebiet: 'funk',
-      frage: 'Noch nicht freigegeben?',
-      antwortenJson: const Value('["a","b"]'),
-      richtigeJson: const Value('[0]'),
-    ));
+  test(
+    'eine nicht freigegebene Frage bleibt auch ohne Abschaltung draußen',
+    () async {
+      await db.wissenDao.insertFrage(
+        WissensfragenCompanion.insert(
+          gebiet: 'funk',
+          frage: 'Noch nicht freigegeben?',
+          antwortenJson: const Value('["a","b"]'),
+          richtigeJson: const Value('[0]'),
+        ),
+      );
 
-    expect(await spielbar(), isEmpty);
-  });
+      expect(await spielbar(), isEmpty);
+    },
+  );
 
   group('istAbgeschaltet', () {
     test('ein abgeschaltetes Gebiet gilt auch für seine Kapitel', () {
-      const bereiche = [
-        AbgeschalteterLernbereich(id: 1, gebiet: 'gefahrgut'),
-      ];
+      const bereiche = [AbgeschalteterLernbereich(id: 1, gebiet: 'gefahrgut')];
       expect(istAbgeschaltet(bereiche, 'gefahrgut'), isTrue);
       expect(istAbgeschaltet(bereiche, 'gefahrgut', kapitel: 'Dekon'), isTrue);
       expect(istAbgeschaltet(bereiche, 'funk'), isFalse);
@@ -137,7 +144,9 @@ void main() {
       expect(istAbgeschaltet(bereiche, 'gefahrgut', kapitel: 'Dekon'), isTrue);
       expect(istAbgeschaltet(bereiche, 'gefahrgut'), isFalse);
       expect(
-          istAbgeschaltet(bereiche, 'gefahrgut', kapitel: 'Anderes'), isFalse);
+        istAbgeschaltet(bereiche, 'gefahrgut', kapitel: 'Anderes'),
+        isFalse,
+      );
     });
   });
 }

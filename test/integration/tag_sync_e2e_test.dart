@@ -36,7 +36,8 @@ const _url = 'http://127.0.0.1:54321';
 const _anonKey =
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
 
-final _serviceRoleKey = Platform.environment['SUPABASE_SERVICE_ROLE_KEY'] ??
+final _serviceRoleKey =
+    Platform.environment['SUPABASE_SERVICE_ROLE_KEY'] ??
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU';
 
 Future<bool> _erreichbar(String url) async {
@@ -88,19 +89,22 @@ Future<void> main() async {
     String kind = 'qr',
     bool selfIssued = true,
     DateTime? entferntAm,
-  }) =>
-      asService((s) => s.from('equipment_tags').upsert({
-            'abteilung_id': abteilung,
-            'code': code,
-            'instance_id': instanceId,
-            'kind': kind,
-            'self_issued': selfIssued,
-            'deleted_at': entferntAm?.toUtc().toIso8601String(),
-          }));
+  }) => asService(
+    (s) => s.from('equipment_tags').upsert({
+      'abteilung_id': abteilung,
+      'code': code,
+      'instance_id': instanceId,
+      'kind': kind,
+      'self_issued': selfIssued,
+      'deleted_at': entferntAm?.toUtc().toIso8601String(),
+    }),
+  );
 
-  Future<List<Map<String, dynamic>>> aufDemServer() async =>
-      asService((s) async => List<Map<String, dynamic>>.from(
-          await s.from('equipment_tags').select().eq('abteilung_id', abteilung)));
+  Future<List<Map<String, dynamic>>> aufDemServer() async => asService(
+    (s) async => List<Map<String, dynamic>>.from(
+      await s.from('equipment_tags').select().eq('abteilung_id', abteilung),
+    ),
+  );
 
   setUpAll(() async {
     await stackSperreHolen();
@@ -110,22 +114,24 @@ Future<void> main() async {
       password: 'test1234',
     );
     await asService((s) async {
-      final gw = await s
-          .from('gesamtwehren')
-          .insert({'name': 'Tag Wehr', 'slug': 'tag-wehr'})
-          .select('id')
-          .single();
+      final gw =
+          await s
+              .from('gesamtwehren')
+              .insert({'name': 'Tag Wehr', 'slug': 'tag-wehr'})
+              .select('id')
+              .single();
       wehr = gw['id'] as String;
-      final abt = await s
-          .from('abteilungen')
-          .insert({
-            'name': 'Tag Abteilung',
-            'slug': 'tag-abt',
-            'status': 'active',
-            'gesamtwehr_id': wehr,
-          })
-          .select('id')
-          .single();
+      final abt =
+          await s
+              .from('abteilungen')
+              .insert({
+                'name': 'Tag Abteilung',
+                'slug': 'tag-abt',
+                'status': 'active',
+                'gesamtwehr_id': wehr,
+              })
+              .select('id')
+              .single();
       abteilung = abt['id'] as String;
       await s.from('memberships').upsert({
         'user_id': wart.auth.currentUser!.id,
@@ -151,15 +157,23 @@ Future<void> main() async {
     sync = TagSync(db: db, client: wart);
     dienst = TagDienst(db);
     final geraet = await db.equipmentDao.insertEquipment(
-        EquipmentItemsCompanion.insert(name: 'Pressluftatmer'));
+      EquipmentItemsCompanion.insert(name: 'Pressluftatmer'),
+    );
     einheitA = await db.inspectionDao.insertInstance(
-        EquipmentInstancesCompanion.insert(
-            equipmentId: geraet, identifier: const Value('Flasche 3')));
+      EquipmentInstancesCompanion.insert(
+        equipmentId: geraet,
+        identifier: const Value('Flasche 3'),
+      ),
+    );
     einheitB = await db.inspectionDao.insertInstance(
-        EquipmentInstancesCompanion.insert(
-            equipmentId: geraet, identifier: const Value('Flasche 4')));
+      EquipmentInstancesCompanion.insert(
+        equipmentId: geraet,
+        identifier: const Value('Flasche 4'),
+      ),
+    );
     await asService(
-        (s) => s.from('equipment_tags').delete().eq('abteilung_id', abteilung));
+      (s) => s.from('equipment_tags').delete().eq('abteilung_id', abteilung),
+    );
   });
 
   tearDown(() => db.close());
@@ -176,51 +190,68 @@ Future<void> main() async {
       expect(zeilen.single['self_issued'], isTrue);
       expect(zeilen.single['deleted_at'], isNull);
 
-      expect((await db.tagDao.findByCode(code))!.dirty, isFalse,
-          reason: 'Was oben steht, darf nicht erneut geschoben werden.');
+      expect(
+        (await db.tagDao.findByCode(code))!.dirty,
+        isFalse,
+        reason: 'Was oben steht, darf nicht erneut geschoben werden.',
+      );
       expect(await sync.schiebe(abteilung), 0);
     });
 
-    test('ein übernommener Hersteller-Barcode geht als solcher hinaus',
-        () async {
-      await dienst.verknuepfe(einheitA, '4006381333931');
-      await sync.schiebe(abteilung);
+    test(
+      'ein übernommener Hersteller-Barcode geht als solcher hinaus',
+      () async {
+        await dienst.verknuepfe(einheitA, '4006381333931');
+        await sync.schiebe(abteilung);
 
-      final zeile = (await aufDemServer()).single;
-      expect(zeile['kind'], 'barcode');
-      expect(zeile['self_issued'], isFalse);
-    });
+        final zeile = (await aufDemServer()).single;
+        expect(zeile['kind'], 'barcode');
+        expect(zeile['self_issued'], isFalse);
+      },
+    );
 
-    test('ein entfernter Code geht als Grabstein hinaus und fällt hier weg',
-        () async {
-      final code = await dienst.vergebeCode(einheitA);
-      await sync.schiebe(abteilung);
+    test(
+      'ein entfernter Code geht als Grabstein hinaus und fällt hier weg',
+      () async {
+        final code = await dienst.vergebeCode(einheitA);
+        await sync.schiebe(abteilung);
 
-      await dienst.entferne((await db.tagDao.findByCode(code))!);
-      expect(await sync.schiebe(abteilung), 1);
+        await dienst.entferne((await db.tagDao.findByCode(code))!);
+        expect(await sync.schiebe(abteilung), 1);
 
-      expect((await aufDemServer()).single['deleted_at'], isNotNull,
-          reason: 'Ohne Grabstein könnte kein anderes Gerät die Löschung '
-              'sehen — ein Zug sieht nur, was da ist.');
-      expect(await db.tagDao.findByCodeAuchEntfernt(code), isNull,
-          reason: 'Der Grabstein hat seinen Zweck erfüllt und gibt den Code '
-              'hier wieder frei.');
-    });
+        expect(
+          (await aufDemServer()).single['deleted_at'],
+          isNotNull,
+          reason:
+              'Ohne Grabstein könnte kein anderes Gerät die Löschung '
+              'sehen — ein Zug sieht nur, was da ist.',
+        );
+        expect(
+          await db.tagDao.findByCodeAuchEntfernt(code),
+          isNull,
+          reason:
+              'Der Grabstein hat seinen Zweck erfüllt und gibt den Code '
+              'hier wieder frei.',
+        );
+      },
+    );
 
-    test('zwei Geräte mit derselben lokalen ID überschreiben einander nicht',
-        () async {
-      // ⚠️ Der Grund, warum der Primärschlüssel der CODE ist. Zwei
-      // Gerätewarte, zwei Geräteräume, dieselbe laufende Nummer aus der
-      // jeweils eigenen Datenbank — mit `(abteilung_id, id)` zeigte einer
-      // der beiden Aufkleber danach auf das falsche Gerät.
-      await vonEinemAnderenGeraet(code: 'FW-AAAAAAA', instanceId: einheitA);
-      await dienst.verknuepfe(einheitA, 'FW-BBBBBBB');
-      await sync.schiebe(abteilung);
+    test(
+      'zwei Geräte mit derselben lokalen ID überschreiben einander nicht',
+      () async {
+        // ⚠️ Der Grund, warum der Primärschlüssel der CODE ist. Zwei
+        // Gerätewarte, zwei Geräteräume, dieselbe laufende Nummer aus der
+        // jeweils eigenen Datenbank — mit `(abteilung_id, id)` zeigte einer
+        // der beiden Aufkleber danach auf das falsche Gerät.
+        await vonEinemAnderenGeraet(code: 'FW-AAAAAAA', instanceId: einheitA);
+        await dienst.verknuepfe(einheitA, 'FW-BBBBBBB');
+        await sync.schiebe(abteilung);
 
-      final codes =
-          (await aufDemServer()).map((z) => z['code'] as String).toSet();
-      expect(codes, {'FW-AAAAAAA', 'FW-BBBBBBB'});
-    });
+        final codes =
+            (await aufDemServer()).map((z) => z['code'] as String).toSet();
+        expect(codes, {'FW-AAAAAAA', 'FW-BBBBBBB'});
+      },
+    );
   });
 
   group('ziehen', () {
@@ -229,9 +260,13 @@ Future<void> main() async {
       expect(await sync.ziehe(abteilung), 1);
 
       final treffer = await dienst.schlageNach('fw-ccccccc');
-      expect(treffer, isNotNull,
-          reason: 'Genau dafür ist der Abgleich da: Der Aufkleber des '
-              'Gerätewarts muss beim nächsten die Inventur abhaken.');
+      expect(
+        treffer,
+        isNotNull,
+        reason:
+            'Genau dafür ist der Abgleich da: Der Aufkleber des '
+            'Gerätewarts muss beim nächsten die Inventur abhaken.',
+      );
       expect(treffer!.einheit.id, einheitB);
       expect((await db.tagDao.findByCode('FW-CCCCCCC'))!.dirty, isFalse);
     });
@@ -242,27 +277,34 @@ Future<void> main() async {
       expect(await db.tagDao.findByCode('FW-DDDDDDD'), isNotNull);
 
       await vonEinemAnderenGeraet(
-          code: 'FW-DDDDDDD',
-          instanceId: einheitA,
-          entferntAm: DateTime.now());
+        code: 'FW-DDDDDDD',
+        instanceId: einheitA,
+        entferntAm: DateTime.now(),
+      );
       await sync.ziehe(abteilung);
 
       expect(await db.tagDao.findByCodeAuchEntfernt('FW-DDDDDDD'), isNull);
     });
 
-    test('was hier noch aufs Hochladen wartet, wird NICHT überschrieben',
-        () async {
-      // Der teuerste Fehler dieser Bauform: Der Gerätewart klebt einen
-      // Aufkleber, aktualisiert zwischendurch — und verliert ihn.
-      await dienst.verknuepfe(einheitA, 'FW-EEEEEEE');
-      await vonEinemAnderenGeraet(code: 'FW-EEEEEEE', instanceId: einheitB);
+    test(
+      'was hier noch aufs Hochladen wartet, wird NICHT überschrieben',
+      () async {
+        // Der teuerste Fehler dieser Bauform: Der Gerätewart klebt einen
+        // Aufkleber, aktualisiert zwischendurch — und verliert ihn.
+        await dienst.verknuepfe(einheitA, 'FW-EEEEEEE');
+        await vonEinemAnderenGeraet(code: 'FW-EEEEEEE', instanceId: einheitB);
 
-      await sync.ziehe(abteilung);
+        await sync.ziehe(abteilung);
 
-      expect((await db.tagDao.findByCode('FW-EEEEEEE'))!.instanceId, einheitA,
-          reason: 'Erst schieben, dann ziehen — und was noch dirty ist, '
-              'gehört dem Gerät.');
-    });
+        expect(
+          (await db.tagDao.findByCode('FW-EEEEEEE'))!.instanceId,
+          einheitA,
+          reason:
+              'Erst schieben, dann ziehen — und was noch dirty ist, '
+              'gehört dem Gerät.',
+        );
+      },
+    );
 
     test('ein entfernter Code kommt durch den Zug nicht zurück', () async {
       await vonEinemAnderenGeraet(code: 'FW-FFFFFFF', instanceId: einheitA);
@@ -271,23 +313,29 @@ Future<void> main() async {
 
       await sync.ziehe(abteilung);
 
-      expect(await db.tagDao.findByCode('FW-FFFFFFF'), isNull,
-          reason: 'Der Aufkleber ist ab. Ihn zurückzuholen wäre genau der '
-              'Fehler, den der Grabstein verhindert.');
+      expect(
+        await db.tagDao.findByCode('FW-FFFFFFF'),
+        isNull,
+        reason:
+            'Der Aufkleber ist ab. Ihn zurückzuholen wäre genau der '
+            'Fehler, den der Grabstein verhindert.',
+      );
     });
 
-    test('ein Code auf eine unbekannte Einheit bricht den Zug nicht ab',
-        () async {
-      // Kommt vor: Der andere hat den Code vergeben, aber den Bestand noch
-      // nicht veröffentlicht. Die Spalte trägt einen Fremdschlüssel — ohne
-      // die Prüfung risse der ganze Abgleich hier ab.
-      await vonEinemAnderenGeraet(code: 'FW-GGGGGGG', instanceId: 999999);
-      await vonEinemAnderenGeraet(code: 'FW-HHHHHHH', instanceId: einheitA);
+    test(
+      'ein Code auf eine unbekannte Einheit bricht den Zug nicht ab',
+      () async {
+        // Kommt vor: Der andere hat den Code vergeben, aber den Bestand noch
+        // nicht veröffentlicht. Die Spalte trägt einen Fremdschlüssel — ohne
+        // die Prüfung risse der ganze Abgleich hier ab.
+        await vonEinemAnderenGeraet(code: 'FW-GGGGGGG', instanceId: 999999);
+        await vonEinemAnderenGeraet(code: 'FW-HHHHHHH', instanceId: einheitA);
 
-      expect(await sync.ziehe(abteilung), 1);
-      expect(await db.tagDao.findByCode('FW-HHHHHHH'), isNotNull);
-      expect(await db.tagDao.findByCode('FW-GGGGGGG'), isNull);
-    });
+        expect(await sync.ziehe(abteilung), 1);
+        expect(await db.tagDao.findByCode('FW-HHHHHHH'), isNotNull);
+        expect(await db.tagDao.findByCode('FW-GGGGGGG'), isNull);
+      },
+    );
   });
 
   group('Rechte', () {
@@ -309,9 +357,11 @@ Future<void> main() async {
             .eq('code', 'FW-JJJJJJJ');
       } on PostgrestException catch (_) {}
 
-      expect((await aufDemServer()).map((z) => z['code']),
-          contains('FW-JJJJJJJ'),
-          reason: 'Ohne Grant und ohne Policy bleibt die Zeile stehen.');
+      expect(
+        (await aufDemServer()).map((z) => z['code']),
+        contains('FW-JJJJJJJ'),
+        reason: 'Ohne Grant und ohne Policy bleibt die Zeile stehen.',
+      );
     });
   });
 }

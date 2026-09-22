@@ -95,10 +95,8 @@ enum Geltungsbereich {
   final String schluessel;
   final String label;
 
-  static Geltungsbereich ausSchluessel(String? wert) => values.firstWhere(
-        (g) => g.schluessel == wert,
-        orElse: () => bund,
-      );
+  static Geltungsbereich ausSchluessel(String? wert) =>
+      values.firstWhere((g) => g.schluessel == wert, orElse: () => bund);
 }
 
 /// Die Länderkürzel. Vollständig angelegt, damit ein zweites Land später
@@ -174,10 +172,8 @@ enum Fragenherkunft {
   const Fragenherkunft(this.schluessel);
   final String schluessel;
 
-  static Fragenherkunft ausSchluessel(String? wert) => values.firstWhere(
-        (h) => h.schluessel == wert,
-        orElse: () => eigen,
-      );
+  static Fragenherkunft ausSchluessel(String? wert) =>
+      values.firstWhere((h) => h.schluessel == wert, orElse: () => eigen);
 }
 
 /// Ist die Frage im Spiel?
@@ -195,10 +191,8 @@ enum Fragenstand {
   final String schluessel;
   final String label;
 
-  static Fragenstand ausSchluessel(String? wert) => values.firstWhere(
-        (s) => s.schluessel == wert,
-        orElse: () => eingereicht,
-      );
+  static Fragenstand ausSchluessel(String? wert) =>
+      values.firstWhere((s) => s.schluessel == wert, orElse: () => eingereicht);
 }
 
 /// Eine Frage der Wissensdatenbank.
@@ -276,9 +270,10 @@ class Wissensfrage {
       gewaehlt.length == richtige.length && gewaehlt.containsAll(richtige);
 
   /// Wo die Frage gilt, in einem Wort für die Anzeige.
-  String get geltungAnzeige => geltung == Geltungsbereich.bund
-      ? Geltungsbereich.bund.label
-      : (kBundeslaender[land] ?? Geltungsbereich.land.label);
+  String get geltungAnzeige =>
+      geltung == Geltungsbereich.bund
+          ? Geltungsbereich.bund.label
+          : (kBundeslaender[land] ?? Geltungsbereich.land.label);
 
   /// Was ausgeliefert wurde, darf niemand löschen — nur abwählen.
   bool get loeschbar => herkunft != Fragenherkunft.mitgeliefert;

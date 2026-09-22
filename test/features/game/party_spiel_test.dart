@@ -22,13 +22,14 @@ import '../../helpers/test_database.dart';
 /// Ein überschaubarer Topf: Die richtige Antwort heißt immer „Richtig".
 final testInhalte = PartyInhalte(
   fragen: List.generate(
-      12,
-      (i) => UnerwarteteFrage(
-            frage: 'Testfrage $i',
-            antworten: const ['Richtig', 'Falsch A', 'Falsch B'],
-            richtig: 0,
-            kategorie: kKategorieWissen,
-          )),
+    12,
+    (i) => UnerwarteteFrage(
+      frage: 'Testfrage $i',
+      antworten: const ['Richtig', 'Falsch A', 'Falsch B'],
+      richtig: 0,
+      kategorie: kKategorieWissen,
+    ),
+  ),
   aufgaben: const ['Zehn Liegestütze'],
 );
 
@@ -40,13 +41,15 @@ void main() {
   /// das ist derselbe Weg, den die App geht.
   Future<void> seedWissen({int anzahl = 12}) async {
     for (var i = 0; i < anzahl; i++) {
-      await db.wissenDao.insertFrage(WissensfragenCompanion.insert(
-        gebiet: 'recht_organisation',
-        frage: 'Testfrage $i',
-        antwortenJson: const Value('["Richtig","Falsch A","Falsch B"]'),
-        richtigeJson: const Value('[0]'),
-        stand: const Value('freigegeben'),
-      ));
+      await db.wissenDao.insertFrage(
+        WissensfragenCompanion.insert(
+          gebiet: 'recht_organisation',
+          frage: 'Testfrage $i',
+          antwortenJson: const Value('["Richtig","Falsch A","Falsch B"]'),
+          richtigeJson: const Value('[0]'),
+          stand: const Value('freigegeben'),
+        ),
+      );
     }
   }
 
@@ -59,8 +62,9 @@ void main() {
   /// Ein Fahrzeug mit vier Fächern und einem verorteten Gerät — genug für
   /// eine Fach-Frage.
   Future<void> seedBestand() async {
-    final vehicleId = await db.vehicleDao
-        .insertVehicle(VehiclesCompanion.insert(name: 'HLF 20', type: 'HLF 20'));
+    final vehicleId = await db.vehicleDao.insertVehicle(
+      VehiclesCompanion.insert(name: 'HLF 20', type: 'HLF 20'),
+    );
     final faecher = <int>[];
     for (final (label, seite) in const [
       ('G1', 'fahrerseite'),
@@ -68,16 +72,25 @@ void main() {
       ('G3', 'fahrerseite'),
       ('G4', 'beifahrerseite'),
     ]) {
-      faecher.add(await db.compartmentDao.insertCompartment(
-        CompartmentsCompanion.insert(
-            vehicleId: vehicleId, label: label, seite: Value(seite)),
-      ));
+      faecher.add(
+        await db.compartmentDao.insertCompartment(
+          CompartmentsCompanion.insert(
+            vehicleId: vehicleId,
+            label: label,
+            seite: Value(seite),
+          ),
+        ),
+      );
     }
-    final geraet = await db.equipmentDao
-        .insertEquipment(EquipmentItemsCompanion.insert(name: 'Spreizer'));
+    final geraet = await db.equipmentDao.insertEquipment(
+      EquipmentItemsCompanion.insert(name: 'Spreizer'),
+    );
     await db.assignmentDao.insertAssignment(
-        EquipmentAssignmentsCompanion.insert(
-            compartmentId: faecher.first, equipmentId: geraet));
+      EquipmentAssignmentsCompanion.insert(
+        compartmentId: faecher.first,
+        equipmentId: geraet,
+      ),
+    );
   }
 
   ProviderContainer container({PartyInhalte? inhalte}) {
@@ -86,10 +99,14 @@ void main() {
     // blanke Konstruktor scheiterte hier reproduzierbar mit
     // „_listenedElement was called on null", sobald ein Notifier über einen
     // await hinweg gelesen wird.
-    final c = ProviderContainer.test(overrides: [
-      appDatabaseProvider.overrideWithValue(db),
-      partyInhalteProvider.overrideWith((ref) async => inhalte ?? testInhalte),
-    ]);
+    final c = ProviderContainer.test(
+      overrides: [
+        appDatabaseProvider.overrideWithValue(db),
+        partyInhalteProvider.overrideWith(
+          (ref) async => inhalte ?? testInhalte,
+        ),
+      ],
+    );
     c.read(partySpielProvider.notifier).festerZufall(Random(160));
     return c;
   }
@@ -116,10 +133,13 @@ void main() {
     int fragenProSpieler = 3,
     bool trinkspiel = false,
   }) async {
-    final klappt = await c.read(partySpielProvider.notifier).starte(
-        namen: namen,
-        fragenProSpieler: fragenProSpieler,
-        trinkspiel: trinkspiel);
+    final klappt = await c
+        .read(partySpielProvider.notifier)
+        .starte(
+          namen: namen,
+          fragenProSpieler: fragenProSpieler,
+          trinkspiel: trinkspiel,
+        );
     expect(klappt, isTrue);
     return stand(c);
   }
@@ -127,10 +147,13 @@ void main() {
   /// Beantwortet die laufende Frage; [richtig] entscheidet, wie.
   void antworte(ProviderContainer c, {required bool richtig}) {
     final frage = stand(c).frage;
-    final index = richtig
-        ? frage.richtig
-        : List.generate(frage.antworten.length, (i) => i)
-            .firstWhere((i) => i != frage.richtig);
+    final index =
+        richtig
+            ? frage.richtig
+            : List.generate(
+              frage.antworten.length,
+              (i) => i,
+            ).firstWhere((i) => i != frage.richtig);
     c.read(partySpielProvider.notifier).antworte(index);
   }
 
@@ -140,8 +163,11 @@ void main() {
 
   test('Zahl der Fragen: Spieler mal Fragen je Spieler', () async {
     final c = container();
-    final stand = await starte(c,
-        namen: const ['Anna', 'Ben', 'Cem'], fragenProSpieler: 3);
+    final stand = await starte(
+      c,
+      namen: const ['Anna', 'Ben', 'Cem'],
+      fragenProSpieler: 3,
+    );
     expect(stand.fragen, hasLength(9));
   });
 
@@ -223,7 +249,8 @@ void main() {
 
     test('leerer Aufgabentopf lässt das Spiel weiterlaufen', () async {
       final c = container(
-          inhalte: PartyInhalte(fragen: testInhalte.fragen, aufgaben: const []));
+        inhalte: PartyInhalte(fragen: testInhalte.fragen, aufgaben: const []),
+      );
       await starte(c, trinkspiel: true);
       c.read(partySpielProvider.notifier).bereit();
       antworte(c, richtig: false);
@@ -241,39 +268,46 @@ void main() {
     });
   });
 
-  test('Mehrfachantwort-Fragen kommen NICHT in die Partie (Issue #174)',
-      () async {
-    // Am Tisch geht das Handy reihum — mehrere Kästchen anzukreuzen ist dort
-    // kein Spielzug. Die Frage bleibt in der Wissensdatenbank, sie wird nur
-    // nicht gestellt.
-    for (final f in await db.wissenDao.getAll()) {
-      await db.wissenDao.deleteFrage(f.id);
-    }
-    await db.wissenDao.insertFrage(WissensfragenCompanion.insert(
-      gebiet: 'loeschlehre',
-      frage: 'Welche Aussagen sind richtig?',
-      antwortenJson: const Value('["A","B","C"]'),
-      richtigeJson: const Value('[0,2]'),
-      stand: Value(Fragenstand.freigegeben.schluessel),
-    ));
-    await db.wissenDao.insertFrage(WissensfragenCompanion.insert(
-      gebiet: 'loeschlehre',
-      frage: 'Eine einzige richtige Antwort?',
-      antwortenJson: const Value('["Richtig","Falsch A","Falsch B"]'),
-      richtigeJson: const Value('[0]'),
-      stand: Value(Fragenstand.freigegeben.schluessel),
-    ));
+  test(
+    'Mehrfachantwort-Fragen kommen NICHT in die Partie (Issue #174)',
+    () async {
+      // Am Tisch geht das Handy reihum — mehrere Kästchen anzukreuzen ist dort
+      // kein Spielzug. Die Frage bleibt in der Wissensdatenbank, sie wird nur
+      // nicht gestellt.
+      for (final f in await db.wissenDao.getAll()) {
+        await db.wissenDao.deleteFrage(f.id);
+      }
+      await db.wissenDao.insertFrage(
+        WissensfragenCompanion.insert(
+          gebiet: 'loeschlehre',
+          frage: 'Welche Aussagen sind richtig?',
+          antwortenJson: const Value('["A","B","C"]'),
+          richtigeJson: const Value('[0,2]'),
+          stand: Value(Fragenstand.freigegeben.schluessel),
+        ),
+      );
+      await db.wissenDao.insertFrage(
+        WissensfragenCompanion.insert(
+          gebiet: 'loeschlehre',
+          frage: 'Eine einzige richtige Antwort?',
+          antwortenJson: const Value('["Richtig","Falsch A","Falsch B"]'),
+          richtigeJson: const Value('[0]'),
+          stand: Value(Fragenstand.freigegeben.schluessel),
+        ),
+      );
 
-    final c = container(inhalte: PartyInhalte.leer);
-    final stand = await starte(c, fragenProSpieler: 3);
-    final texte = stand.fragen.map((f) => f.text).toSet();
-    expect(texte, contains('Eine einzige richtige Antwort?'));
-    expect(texte, isNot(contains('Welche Aussagen sind richtig?')));
-    // Und kein Platzhalter hat sich eingeschlichen.
-    expect(
+      final c = container(inhalte: PartyInhalte.leer);
+      final stand = await starte(c, fragenProSpieler: 3);
+      final texte = stand.fragen.map((f) => f.text).toSet();
+      expect(texte, contains('Eine einzige richtige Antwort?'));
+      expect(texte, isNot(contains('Welche Aussagen sind richtig?')));
+      // Und kein Platzhalter hat sich eingeschlichen.
+      expect(
         stand.fragen.every((f) => f.antworten.every((a) => a.text != '—')),
-        isTrue);
-  });
+        isTrue,
+      );
+    },
+  );
 
   test('mit Bestand kommen auch Fach-Fragen vor', () async {
     await seedBestand();
@@ -298,10 +332,11 @@ void main() {
     }
     // Unerwartete Fragen haben kein Fahrzeug — dort wäre die Angabe falsch.
     expect(
-        stand.fragen
-            .where((f) => f.art == PartyFrageArt.unerwartet)
-            .every((f) => f.fahrzeug == null),
-        isTrue);
+      stand.fragen
+          .where((f) => f.art == PartyFrageArt.unerwartet)
+          .every((f) => f.fahrzeug == null),
+      isTrue,
+    );
   });
 
   test('eine Runde stellt nur eine Art Frage (Issue #172)', () async {
@@ -313,10 +348,15 @@ void main() {
     const namen = ['Anna', 'Ben', 'Cem'];
     final stand = await starte(c, namen: namen, fragenProSpieler: 3);
     for (var start = 0; start < stand.fragen.length; start += namen.length) {
-      final runde = stand.fragen
-          .sublist(start, min(start + namen.length, stand.fragen.length));
-      expect(runde.map((f) => f.art).toSet(), hasLength(1),
-          reason: 'Runde ab $start ist gemischt');
+      final runde = stand.fragen.sublist(
+        start,
+        min(start + namen.length, stand.fragen.length),
+      );
+      expect(
+        runde.map((f) => f.art).toSet(),
+        hasLength(1),
+        reason: 'Runde ab $start ist gemischt',
+      );
     }
   });
 
@@ -329,7 +369,11 @@ void main() {
     final c = container(inhalte: PartyInhalte.leer);
     final klappt = await c
         .read(partySpielProvider.notifier)
-        .starte(namen: const ['Anna', 'Ben'], fragenProSpieler: 3, trinkspiel: false);
+        .starte(
+          namen: const ['Anna', 'Ben'],
+          fragenProSpieler: 3,
+          trinkspiel: false,
+        );
     expect(klappt, isFalse);
     expect(c.read(partySpielProvider), isNull);
   });
@@ -369,23 +413,29 @@ void main() {
       expect(s.platz(s.spieler[1]), 1);
     });
 
-    test('gleiche Punkte teilen den Platz, der nächste rutscht nicht auf',
-        () async {
-      final c = container(inhalte: testInhalte);
-      await starte(c, namen: const ['Anna', 'Ben', 'Cem'], fragenProSpieler: 1);
-      // Anna und Ben treffen, Cem nicht.
-      for (final treffer in [true, true, false]) {
-        c.read(partySpielProvider.notifier).bereit();
-        antworte(c, richtig: treffer);
-        c.read(partySpielProvider.notifier).weiter();
-      }
+    test(
+      'gleiche Punkte teilen den Platz, der nächste rutscht nicht auf',
+      () async {
+        final c = container(inhalte: testInhalte);
+        await starte(
+          c,
+          namen: const ['Anna', 'Ben', 'Cem'],
+          fragenProSpieler: 1,
+        );
+        // Anna und Ben treffen, Cem nicht.
+        for (final treffer in [true, true, false]) {
+          c.read(partySpielProvider.notifier).bereit();
+          antworte(c, richtig: treffer);
+          c.read(partySpielProvider.notifier).weiter();
+        }
 
-      final s = stand(c);
-      expect(s.platz(s.spieler[0]), 1);
-      expect(s.platz(s.spieler[1]), 1);
-      // Nicht Platz 2: Vor Cem liegen zwei.
-      expect(s.platz(s.spieler[2]), 3);
-    });
+        final s = stand(c);
+        expect(s.platz(s.spieler[0]), 1);
+        expect(s.platz(s.spieler[1]), 1);
+        // Nicht Platz 2: Vor Cem liegen zwei.
+        expect(s.platz(s.spieler[2]), 3);
+      },
+    );
   });
 
   test('Abbrechen räumt die Partie weg', () async {

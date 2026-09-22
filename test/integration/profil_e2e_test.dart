@@ -71,12 +71,13 @@ Future<void> main() async {
   }
 
   Future<Map<String, dynamic>> profilVon(String id) => asService(
-        (s) async => await s
+    (s) async =>
+        await s
             .from('profiles')
             .select('username, anzeigename, avatar')
             .eq('id', id)
             .single(),
-      );
+  );
 
   setUpAll(() async {
     await stackSperreHolen();
@@ -106,45 +107,55 @@ Future<void> main() async {
     stackSperreFreigeben();
   });
 
-  setUp(() => asService((s) async {
-        await s
-            .from('profiles')
-            .update({'anzeigename': null, 'avatar': null})
-            .inFilter('id', [wartId, truppfuehrerId]);
-      }));
+  setUp(
+    () => asService((s) async {
+      await s
+          .from('profiles')
+          .update({'anzeigename': null, 'avatar': null})
+          .inFilter('id', [wartId, truppfuehrerId]);
+    }),
+  );
 
   group('setzen', () {
     test('ein Truppführer setzt seinen eigenen Namen und Kopf', () async {
       const kopf = AvatarKonfiguration(gear: 'scba', eyes: 'shades');
-      await truppfuehrer.rpc('mein_profil_setzen', params: {
-        'neuer_anzeigename': 'Marcus B.',
-        'neuer_avatar': kopf.kodiert,
-      });
+      await truppfuehrer.rpc(
+        'mein_profil_setzen',
+        params: {
+          'neuer_anzeigename': 'Marcus B.',
+          'neuer_avatar': kopf.kodiert,
+        },
+      );
 
       final zeile = await profilVon(truppfuehrerId);
       expect(zeile['anzeigename'], 'Marcus B.');
       expect(AvatarKonfiguration.dekodiert(zeile['avatar'] as String?), kopf);
     });
 
-    test('der Nutzername bleibt unangetastet — er ist die Anmeldung',
-        () async {
+    test('der Nutzername bleibt unangetastet — er ist die Anmeldung', () async {
       final vorher = (await profilVon(truppfuehrerId))['username'];
-      await truppfuehrer.rpc('mein_profil_setzen', params: {
-        'neuer_anzeigename': 'Ganz jemand anderes',
-        'neuer_avatar': const AvatarKonfiguration().kodiert,
-      });
+      await truppfuehrer.rpc(
+        'mein_profil_setzen',
+        params: {
+          'neuer_anzeigename': 'Ganz jemand anderes',
+          'neuer_avatar': const AvatarKonfiguration().kodiert,
+        },
+      );
       expect((await profilVon(truppfuehrerId))['username'], vorher);
     });
 
     test('leer setzen löscht beides wieder', () async {
-      await truppfuehrer.rpc('mein_profil_setzen', params: {
-        'neuer_anzeigename': 'Marcus B.',
-        'neuer_avatar': const AvatarKonfiguration(gear: 'cap').kodiert,
-      });
-      await truppfuehrer.rpc('mein_profil_setzen', params: {
-        'neuer_anzeigename': '',
-        'neuer_avatar': '',
-      });
+      await truppfuehrer.rpc(
+        'mein_profil_setzen',
+        params: {
+          'neuer_anzeigename': 'Marcus B.',
+          'neuer_avatar': const AvatarKonfiguration(gear: 'cap').kodiert,
+        },
+      );
+      await truppfuehrer.rpc(
+        'mein_profil_setzen',
+        params: {'neuer_anzeigename': '', 'neuer_avatar': ''},
+      );
 
       final zeile = await profilVon(truppfuehrerId);
       expect(zeile['anzeigename'], isNull);
@@ -152,10 +163,13 @@ Future<void> main() async {
     });
 
     test('Leerzeichen ringsum zählen nicht als Name', () async {
-      await truppfuehrer.rpc('mein_profil_setzen', params: {
-        'neuer_anzeigename': '   ',
-        'neuer_avatar': '  ${const AvatarKonfiguration().kodiert}  ',
-      });
+      await truppfuehrer.rpc(
+        'mein_profil_setzen',
+        params: {
+          'neuer_anzeigename': '   ',
+          'neuer_avatar': '  ${const AvatarKonfiguration().kodiert}  ',
+        },
+      );
       final zeile = await profilVon(truppfuehrerId);
       expect(zeile['anzeigename'], isNull);
       expect(zeile['avatar'], const AvatarKonfiguration().kodiert);
@@ -167,52 +181,63 @@ Future<void> main() async {
       // Die RPC KANN kein fremdes Konto ansprechen — es gibt keinen
       // Parameter dafür. Das ist die eigentliche Absicherung; dieser Test
       // hält fest, dass sie auch wirkt.
-      await wart.rpc('mein_profil_setzen', params: {
-        'neuer_anzeigename': 'Der Wart',
-        'neuer_avatar': const AvatarKonfiguration(gear: 'cap').kodiert,
-      });
+      await wart.rpc(
+        'mein_profil_setzen',
+        params: {
+          'neuer_anzeigename': 'Der Wart',
+          'neuer_avatar': const AvatarKonfiguration(gear: 'cap').kodiert,
+        },
+      );
 
       expect((await profilVon(wartId))['anzeigename'], 'Der Wart');
       expect((await profilVon(truppfuehrerId))['anzeigename'], isNull);
     });
 
-    test('ein fremdes Profil lässt sich auch nicht direkt beschreiben',
-        () async {
-      // profiles hat keine Update-Policy — geschrieben wird nur über RPCs.
-      // Ohne diese Zeile wäre der Rest hier Theater.
-      //
-      // Maßstab ist die unversehrte Zeile, nicht die Fehlermeldung: Fehlt
-      // `authenticated` das UPDATE-Recht, kommt 42501; ist es da, filtert RLS
-      // die fremde Zeile weg und das UPDATE trifft still nichts. Die frühere
-      // Fassung erwartete allein den Wurf und kippte deshalb unter CLI
-      // 2.116.0 (#185). Den Rechtestand selbst prüft
-      // tool/check_schema_grants.sql.
-      await erwarteKeinenDurchgriff(
-        () => truppfuehrer
-            .from('profiles')
-            .update({'anzeigename': 'Übernommen'}).eq('id', wartId),
-      );
-      expect((await profilVon(wartId))['anzeigename'], isNot('Übernommen'));
-    });
+    test(
+      'ein fremdes Profil lässt sich auch nicht direkt beschreiben',
+      () async {
+        // profiles hat keine Update-Policy — geschrieben wird nur über RPCs.
+        // Ohne diese Zeile wäre der Rest hier Theater.
+        //
+        // Maßstab ist die unversehrte Zeile, nicht die Fehlermeldung: Fehlt
+        // `authenticated` das UPDATE-Recht, kommt 42501; ist es da, filtert RLS
+        // die fremde Zeile weg und das UPDATE trifft still nichts. Die frühere
+        // Fassung erwartete allein den Wurf und kippte deshalb unter CLI
+        // 2.116.0 (#185). Den Rechtestand selbst prüft
+        // tool/check_schema_grants.sql.
+        await erwarteKeinenDurchgriff(
+          () => truppfuehrer
+              .from('profiles')
+              .update({'anzeigename': 'Übernommen'})
+              .eq('id', wartId),
+        );
+        expect((await profilVon(wartId))['anzeigename'], isNot('Übernommen'));
+      },
+    );
 
     test('das eigene Profil liest man, ein fremdes nicht', () async {
-      await wart.rpc('mein_profil_setzen', params: {
-        'neuer_anzeigename': 'Der Wart',
-        'neuer_avatar': const AvatarKonfiguration().kodiert,
-      });
+      await wart.rpc(
+        'mein_profil_setzen',
+        params: {
+          'neuer_anzeigename': 'Der Wart',
+          'neuer_avatar': const AvatarKonfiguration().kodiert,
+        },
+      );
 
-      final eigenes = await truppfuehrer
-          .from('profiles')
-          .select('id, anzeigename')
-          .eq('id', truppfuehrerId)
-          .maybeSingle();
+      final eigenes =
+          await truppfuehrer
+              .from('profiles')
+              .select('id, anzeigename')
+              .eq('id', truppfuehrerId)
+              .maybeSingle();
       expect(eigenes, isNotNull);
 
-      final fremdes = await truppfuehrer
-          .from('profiles')
-          .select('id, anzeigename')
-          .eq('id', wartId)
-          .maybeSingle();
+      final fremdes =
+          await truppfuehrer
+              .from('profiles')
+              .select('id, anzeigename')
+              .eq('id', wartId)
+              .maybeSingle();
       expect(fremdes, isNull, reason: 'RLS: nur das eigene Profil');
     });
   });
@@ -220,52 +245,58 @@ Future<void> main() async {
   group('die Grenzen', () {
     test('ein zu langer Name wird abgewiesen', () async {
       await expectLater(
-        truppfuehrer.rpc('mein_profil_setzen', params: {
-          'neuer_anzeigename': 'M' * 41,
-          'neuer_avatar': '',
-        }),
+        truppfuehrer.rpc(
+          'mein_profil_setzen',
+          params: {'neuer_anzeigename': 'M' * 41, 'neuer_avatar': ''},
+        ),
         throwsA(predicate((e) => e.toString().contains('name too long'))),
       );
       expect((await profilVon(truppfuehrerId))['anzeigename'], isNull);
     });
 
     test('genau 40 Zeichen gehen noch', () async {
-      await truppfuehrer.rpc('mein_profil_setzen', params: {
-        'neuer_anzeigename': 'M' * 40,
-        'neuer_avatar': '',
-      });
+      await truppfuehrer.rpc(
+        'mein_profil_setzen',
+        params: {'neuer_anzeigename': 'M' * 40, 'neuer_avatar': ''},
+      );
       expect((await profilVon(truppfuehrerId))['anzeigename'], 'M' * 40);
     });
 
     test('ein Zeilenumbruch im Namen wird abgewiesen', () async {
       await expectLater(
-        truppfuehrer.rpc('mein_profil_setzen', params: {
-          'neuer_anzeigename': 'Marcus\nB.',
-          'neuer_avatar': '',
-        }),
-        throwsA(predicate(
-            (e) => e.toString().contains('name has control characters'))),
+        truppfuehrer.rpc(
+          'mein_profil_setzen',
+          params: {'neuer_anzeigename': 'Marcus\nB.', 'neuer_avatar': ''},
+        ),
+        throwsA(
+          predicate(
+            (e) => e.toString().contains('name has control characters'),
+          ),
+        ),
       );
     });
 
     test('ein zu langer Avatar wird abgewiesen', () async {
       await expectLater(
-        truppfuehrer.rpc('mein_profil_setzen', params: {
-          'neuer_anzeigename': '',
-          'neuer_avatar': 'a' * 201,
-        }),
+        truppfuehrer.rpc(
+          'mein_profil_setzen',
+          params: {'neuer_anzeigename': '', 'neuer_avatar': 'a' * 201},
+        ),
         throwsA(predicate((e) => e.toString().contains('avatar too long'))),
       );
     });
 
     test('fremde Zeichen im Avatar werden abgewiesen', () async {
       await expectLater(
-        truppfuehrer.rpc('mein_profil_setzen', params: {
-          'neuer_anzeigename': '',
-          'neuer_avatar': '{"gear":"scba"}',
-        }),
-        throwsA(predicate(
-            (e) => e.toString().contains('avatar has invalid characters'))),
+        truppfuehrer.rpc(
+          'mein_profil_setzen',
+          params: {'neuer_anzeigename': '', 'neuer_avatar': '{"gear":"scba"}'},
+        ),
+        throwsA(
+          predicate(
+            (e) => e.toString().contains('avatar has invalid characters'),
+          ),
+        ),
       );
     });
 
@@ -274,10 +305,13 @@ Future<void> main() async {
       // erzeugen kann, muss die RPC annehmen. Sonst steht jemand vor einem
       // Kopf, den er nicht speichern kann.
       for (final v in kAvatarVorlagen) {
-        await truppfuehrer.rpc('mein_profil_setzen', params: {
-          'neuer_anzeigename': v.rolle,
-          'neuer_avatar': v.kopf.kodiert,
-        });
+        await truppfuehrer.rpc(
+          'mein_profil_setzen',
+          params: {
+            'neuer_anzeigename': v.rolle,
+            'neuer_avatar': v.kopf.kodiert,
+          },
+        );
       }
       final zeile = await profilVon(truppfuehrerId);
       expect(

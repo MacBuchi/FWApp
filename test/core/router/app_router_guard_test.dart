@@ -2,6 +2,7 @@
 /// Edit-/Admin-Routen (Issue #20): Deep-Links dürfen die UI-Gates
 /// (canEdit/isAdmin) nicht umgehen.
 library;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/core/router/app_router.dart';
@@ -17,62 +18,71 @@ void main() {
   // Die Rollen-Fälle laufen alle als angemeldet ohne Pflichtwechsel — sonst
   // schlüge der Anmeldezwang zu, bevor die Rollenregel überhaupt greift.
   String? asMember(String path) => guardRedirect(
-      path: path,
-      canEdit: false,
-      isAdmin: false,
-      supabaseReady: true,
-      loggedIn: true,
-      mustChangePassword: false,
-      recoveryPending: false,
-      mfaPending: false);
+    path: path,
+    canEdit: false,
+    isAdmin: false,
+    supabaseReady: true,
+    loggedIn: true,
+    mustChangePassword: false,
+    recoveryPending: false,
+    mfaPending: false,
+  );
   String? asEditor(String path) => guardRedirect(
-      path: path,
-      canEdit: true,
-      isAdmin: false,
-      supabaseReady: true,
-      loggedIn: true,
-      mustChangePassword: false,
-      recoveryPending: false,
-      mfaPending: false);
+    path: path,
+    canEdit: true,
+    isAdmin: false,
+    supabaseReady: true,
+    loggedIn: true,
+    mustChangePassword: false,
+    recoveryPending: false,
+    mfaPending: false,
+  );
   String? asAdmin(String path) => guardRedirect(
-      path: path,
-      canEdit: true,
-      isAdmin: true,
-      supabaseReady: true,
-      loggedIn: true,
-      mustChangePassword: false,
-      recoveryPending: false,
-      mfaPending: false);
+    path: path,
+    canEdit: true,
+    isAdmin: true,
+    supabaseReady: true,
+    loggedIn: true,
+    mustChangePassword: false,
+    recoveryPending: false,
+    mfaPending: false,
+  );
+
   /// Nicht angemeldet auf einer verbundenen Installation.
   String? ausgeloggt(String path) => guardRedirect(
-      path: path,
-      canEdit: false,
-      isAdmin: false,
-      supabaseReady: true,
-      loggedIn: false,
-      mustChangePassword: false,
-      recoveryPending: false,
-      mfaPending: false);
+    path: path,
+    canEdit: false,
+    isAdmin: false,
+    supabaseReady: true,
+    loggedIn: false,
+    mustChangePassword: false,
+    recoveryPending: false,
+    mfaPending: false,
+  );
+
   /// Reiner Lokalmodus (kein Server konfiguriert).
   String? lokal(String path) => guardRedirect(
-      path: path,
-      canEdit: true,
-      isAdmin: true,
-      supabaseReady: false,
-      loggedIn: false,
-      mustChangePassword: false,
-      recoveryPending: false,
-      mfaPending: false);
+    path: path,
+    canEdit: true,
+    isAdmin: true,
+    supabaseReady: false,
+    loggedIn: false,
+    mustChangePassword: false,
+    recoveryPending: false,
+    mfaPending: false,
+  );
+
   /// Angemeldet, aber noch mit dem Initialpasswort vom Zugangszettel.
   String? mitInitialpasswort(String path) => guardRedirect(
-      path: path,
-      canEdit: true,
-      isAdmin: true,
-      supabaseReady: true,
-      loggedIn: true,
-      mustChangePassword: true,
-      recoveryPending: false,
-      mfaPending: false);
+    path: path,
+    canEdit: true,
+    isAdmin: true,
+    supabaseReady: true,
+    loggedIn: true,
+    mustChangePassword: true,
+    recoveryPending: false,
+    mfaPending: false,
+  );
 
   group('guardRedirect – Anmeldezwang (#57 Phase 4)', () {
     test('ohne Sitzung führt jeder Weg auf die Anmeldung', () {
@@ -103,8 +113,11 @@ void main() {
 
     test('Anmeldung und Notausgang bleiben offen', () {
       expect(ausgeloggt('/login'), isNull);
-      expect(ausgeloggt('/server-settings'), isNull,
-          reason: 'sonst säße man mit falscher Serveradresse fest');
+      expect(
+        ausgeloggt('/server-settings'),
+        isNull,
+        reason: 'sonst säße man mit falscher Serveradresse fest',
+      );
     });
 
     test('Angemeldete werden von der Anmeldung weggeschickt', () {
@@ -130,14 +143,15 @@ void main() {
     /// Die halbe Sitzung aus verifyOTP: angemeldet, aber das neue Passwort
     /// steht noch nicht.
     String? beimZuruecksetzen(String path) => guardRedirect(
-        path: path,
-        canEdit: true,
-        isAdmin: true,
-        supabaseReady: true,
-        loggedIn: true,
-        mustChangePassword: false,
-        recoveryPending: true,
-        mfaPending: false);
+      path: path,
+      canEdit: true,
+      isAdmin: true,
+      supabaseReady: true,
+      loggedIn: true,
+      mustChangePassword: false,
+      recoveryPending: true,
+      mfaPending: false,
+    );
 
     test('die halbe Sitzung springt nicht in die App', () {
       // Ohne diese Regel wäre jemand angemeldet, ohne sein Passwort zu
@@ -155,16 +169,18 @@ void main() {
       // Sonst risse der Pflichtwechsel den Screen weg, während der Nutzer
       // gerade dabei ist, sich genau so ein Passwort zu setzen.
       expect(
-          guardRedirect(
-              path: '/login',
-              canEdit: true,
-              isAdmin: true,
-              supabaseReady: true,
-              loggedIn: true,
-              mustChangePassword: true,
-              recoveryPending: true,
-              mfaPending: false),
-          isNull);
+        guardRedirect(
+          path: '/login',
+          canEdit: true,
+          isAdmin: true,
+          supabaseReady: true,
+          loggedIn: true,
+          mustChangePassword: true,
+          recoveryPending: true,
+          mfaPending: false,
+        ),
+        isNull,
+      );
     });
 
     test('nach dem Zurücksetzen führt der Weg wieder in die App', () {
@@ -175,14 +191,15 @@ void main() {
   group('guardRedirect – zweiter Faktor (#57 Phase 4, Etappe 3)', () {
     /// Passwort stimmt, Code fehlt noch: Die Sitzung steht auf aal1.
     String? codeFehlt(String path) => guardRedirect(
-        path: path,
-        canEdit: true,
-        isAdmin: true,
-        supabaseReady: true,
-        loggedIn: true,
-        mustChangePassword: false,
-        recoveryPending: false,
-        mfaPending: true);
+      path: path,
+      canEdit: true,
+      isAdmin: true,
+      supabaseReady: true,
+      loggedIn: true,
+      mustChangePassword: false,
+      recoveryPending: false,
+      mfaPending: true,
+    );
 
     test('ohne Code kommt niemand in die App', () {
       // Ohne diese Regel wäre der zweite Faktor eine Zierde: Wer die
@@ -209,8 +226,11 @@ void main() {
 
     test('ohne Anmeldung oder ohne Server gibt es keine Einrichtung', () {
       expect(ausgeloggt('/zwei-faktor'), '/login');
-      expect(lokal('/zwei-faktor'), '/',
-          reason: 'im Lokalmodus gibt es kein Konto, das man schützen könnte');
+      expect(
+        lokal('/zwei-faktor'),
+        '/',
+        reason: 'im Lokalmodus gibt es kein Konto, das man schützen könnte',
+      );
     });
   });
 
@@ -234,26 +254,30 @@ void main() {
       // Der einzige Ausweg aus dem Wechsel-Screen ist „Abmelden" — danach
       // muss die Anmeldung gewinnen, nicht wieder der Wechsel.
       expect(
-          guardRedirect(
-              path: '/',
-              canEdit: false,
-              isAdmin: false,
-              supabaseReady: true,
-              loggedIn: false,
-              mustChangePassword: true,
-      recoveryPending: false,
-      mfaPending: false),
-          '/login');
+        guardRedirect(
+          path: '/',
+          canEdit: false,
+          isAdmin: false,
+          supabaseReady: true,
+          loggedIn: false,
+          mustChangePassword: true,
+          recoveryPending: false,
+          mfaPending: false,
+        ),
+        '/login',
+      );
     });
   });
 
   group('guardRedirect – keine Redirect-Schleifen', () {
     // Eine Schleife wäre auf dem Gerät ein Weißbild (go_router bricht nach
     // 5 Sprüngen ab) — kein anderer Test fängt das.
-    String? folge(String start,
-        {required bool ready,
-        required bool loggedIn,
-        required bool mustChange}) {
+    String? folge(
+      String start, {
+      required bool ready,
+      required bool loggedIn,
+      required bool mustChange,
+    }) {
       var pfad = start;
       for (var i = 0; i < 5; i++) {
         final ziel = guardRedirect(
@@ -278,14 +302,18 @@ void main() {
           for (final loggedIn in [true, false]) {
             for (final mustChange in [true, false]) {
               expect(
-                  folge(start,
-                      ready: ready,
-                      loggedIn: loggedIn,
-                      mustChange: mustChange),
-                  isNotNull,
-                  reason: 'Schleife ab $start '
-                      '(ready=$ready, loggedIn=$loggedIn, '
-                      'mustChange=$mustChange)');
+                folge(
+                  start,
+                  ready: ready,
+                  loggedIn: loggedIn,
+                  mustChange: mustChange,
+                ),
+                isNotNull,
+                reason:
+                    'Schleife ab $start '
+                    '(ready=$ready, loggedIn=$loggedIn, '
+                    'mustChange=$mustChange)',
+              );
             }
           }
         }
@@ -333,40 +361,48 @@ void main() {
       expect(asAdmin('/user-management'), isNull);
     });
 
-    test('Nutzerverwaltung braucht Serververbindung (Lokalmodus: kein Ziel)',
-        () {
-      expect(
+    test(
+      'Nutzerverwaltung braucht Serververbindung (Lokalmodus: kein Ziel)',
+      () {
+        expect(
           guardRedirect(
-              path: '/user-management',
-              canEdit: true,
-              isAdmin: true,
-              supabaseReady: false,
-              loggedIn: true,
-              mustChangePassword: false,
-      recoveryPending: false,
-      mfaPending: false),
-          '/');
-    });
-
-    test('Abteilung & Gesamtwehr: Gerätewart ja, Mitglied nein (#57 Phase 3)',
-        () {
-      // Bewusst canEdit statt isAdmin — den Anschluss beantragt auch der
-      // Gerätewart. Über die Freigabe entscheidet der Server, nicht der Guard.
-      expect(asEditor('/gesamtwehr'), isNull);
-      expect(asAdmin('/gesamtwehr'), isNull);
-      expect(
-          guardRedirect(
-              path: '/gesamtwehr',
-              canEdit: true,
-              isAdmin: true,
-              supabaseReady: false,
-              loggedIn: true,
-              mustChangePassword: false,
-      recoveryPending: false,
-      mfaPending: false),
+            path: '/user-management',
+            canEdit: true,
+            isAdmin: true,
+            supabaseReady: false,
+            loggedIn: true,
+            mustChangePassword: false,
+            recoveryPending: false,
+            mfaPending: false,
+          ),
           '/',
-          reason: 'ohne Server gibt es keine Abteilungen');
-    });
+        );
+      },
+    );
+
+    test(
+      'Abteilung & Gesamtwehr: Gerätewart ja, Mitglied nein (#57 Phase 3)',
+      () {
+        // Bewusst canEdit statt isAdmin — den Anschluss beantragt auch der
+        // Gerätewart. Über die Freigabe entscheidet der Server, nicht der Guard.
+        expect(asEditor('/gesamtwehr'), isNull);
+        expect(asAdmin('/gesamtwehr'), isNull);
+        expect(
+          guardRedirect(
+            path: '/gesamtwehr',
+            canEdit: true,
+            isAdmin: true,
+            supabaseReady: false,
+            loggedIn: true,
+            mustChangePassword: false,
+            recoveryPending: false,
+            mfaPending: false,
+          ),
+          '/',
+          reason: 'ohne Server gibt es keine Abteilungen',
+        );
+      },
+    );
 
     test('der Kopfbereich erbt den Schutz der Gesamtwehr-Seite (#57 P5)', () {
       // Die Unterseite darf nicht durchrutschen, nur weil der Guard auf
@@ -374,17 +410,19 @@ void main() {
       expect(asMember('/gesamtwehr/kopfbereich'), '/');
       expect(asEditor('/gesamtwehr/kopfbereich'), isNull);
       expect(
-          guardRedirect(
-              path: '/gesamtwehr/kopfbereich',
-              canEdit: true,
-              isAdmin: true,
-              supabaseReady: false,
-              loggedIn: true,
-              mustChangePassword: false,
-              recoveryPending: false,
-              mfaPending: false),
-          '/',
-          reason: 'ohne Server gibt es keinen geteilten Kopfbereich');
+        guardRedirect(
+          path: '/gesamtwehr/kopfbereich',
+          canEdit: true,
+          isAdmin: true,
+          supabaseReady: false,
+          loggedIn: true,
+          mustChangePassword: false,
+          recoveryPending: false,
+          mfaPending: false,
+        ),
+        '/',
+        reason: 'ohne Server gibt es keinen geteilten Kopfbereich',
+      );
     });
   });
 }

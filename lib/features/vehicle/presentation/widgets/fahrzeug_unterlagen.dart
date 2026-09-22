@@ -36,15 +36,13 @@ class _FahrzeugUnterlagenState extends ConsumerState<FahrzeugUnterlagen> {
 
   @override
   Widget build(BuildContext context) {
-    final anhaengeAsync =
-        ref.watch(fahrzeugAnhaengeProvider(widget.vehicleId));
+    final anhaengeAsync = ref.watch(fahrzeugAnhaengeProvider(widget.vehicleId));
     final darfBearbeiten = ref.watch(canEditProvider);
     // Nicht `kIsWeb` direkt: Der Speicher entscheidet das, und nur so lässt
     // sich der Browser-Zweig überhaupt prüfen (Issue #210).
     final imBrowser = ref.watch(anhangSpeicherProvider).imBrowser;
     final anhaenge = anhaengeAsync.value ?? const <VehicleAttachmentData>[];
-    final fehlenLokal =
-        anhaenge.where((a) => !_liegtHier(a)).toList();
+    final fehlenLokal = anhaenge.where((a) => !_liegtHier(a)).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -54,8 +52,10 @@ class _FahrzeugUnterlagenState extends ConsumerState<FahrzeugUnterlagen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Unterlagen',
-                  style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                'Unterlagen',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
               // Im Browser gibt es den Knopf nicht — er führte bisher in
               // eine rohe `MissingPluginException` (Issue #210). Statt ihn
               // wortlos verschwinden zu lassen, steht der Grund da: Sonst
@@ -70,7 +70,8 @@ class _FahrzeugUnterlagenState extends ConsumerState<FahrzeugUnterlagen> {
                 Text(
                   'Anhängen geht in der App',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
             ],
           ),
@@ -82,14 +83,15 @@ class _FahrzeugUnterlagenState extends ConsumerState<FahrzeugUnterlagen> {
               !darfBearbeiten
                   ? 'Für dieses Fahrzeug sind keine Unterlagen hinterlegt.'
                   : imBrowser
-                      ? 'Noch nichts angehängt. Betriebsanleitung, '
-                          'Fahrzeugschein oder Prüfbescheinigung hängt man '
-                          'in der App an.'
-                      : 'Noch nichts angehängt. Betriebsanleitung, '
-                          'Fahrzeugschein oder Prüfbescheinigung als PDF '
-                          'oder Foto.',
+                  ? 'Noch nichts angehängt. Betriebsanleitung, '
+                      'Fahrzeugschein oder Prüfbescheinigung hängt man '
+                      'in der App an.'
+                  : 'Noch nichts angehängt. Betriebsanleitung, '
+                      'Fahrzeugschein oder Prüfbescheinigung als PDF '
+                      'oder Foto.',
               style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
         ...anhaenge.map(_zeile),
@@ -101,8 +103,10 @@ class _FahrzeugUnterlagenState extends ConsumerState<FahrzeugUnterlagen> {
             child: OutlinedButton.icon(
               onPressed: _laeuft ? null : () => _allesHolen(fehlenLokal),
               icon: const Icon(Icons.download_for_offline_outlined, size: 18),
-              label: Text('${fehlenLokal.length} für den Einsatz '
-                  'herunterladen'),
+              label: Text(
+                '${fehlenLokal.length} für den Einsatz '
+                'herunterladen',
+              ),
             ),
           ),
       ],
@@ -124,27 +128,36 @@ class _FahrzeugUnterlagenState extends ConsumerState<FahrzeugUnterlagen> {
     final theme = Theme.of(context);
     final hier = _liegtHier(a);
     return ListTile(
-      leading: a.kind == 'image' && hier
-          ? ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: resolveImage(
-                  path: a.localPath, width: 40, height: 40, fit: BoxFit.cover),
-            )
-          : Icon(a.kind == 'image'
-              ? Icons.image_outlined
-              : Icons.picture_as_pdf_outlined),
+      leading:
+          a.kind == 'image' && hier
+              ? ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: resolveImage(
+                  path: a.localPath,
+                  width: 40,
+                  height: 40,
+                  fit: BoxFit.cover,
+                ),
+              )
+              : Icon(
+                a.kind == 'image'
+                    ? Icons.image_outlined
+                    : Icons.picture_as_pdf_outlined,
+              ),
       title: Text(a.title),
       subtitle: Row(
         children: [
-          Icon(hier ? Icons.offline_pin : Icons.cloud_outlined,
-              size: 14,
-              color: hier ? Colors.green.shade700 : theme.colorScheme.outline),
+          Icon(
+            hier ? Icons.offline_pin : Icons.cloud_outlined,
+            size: 14,
+            color: hier ? Colors.green.shade700 : theme.colorScheme.outline,
+          ),
           const SizedBox(width: 4),
           Text(
             hier ? 'auf diesem Gerät' : 'nur auf dem Server',
             style: theme.textTheme.bodySmall?.copyWith(
-                color:
-                    hier ? Colors.green.shade700 : theme.colorScheme.outline),
+              color: hier ? Colors.green.shade700 : theme.colorScheme.outline,
+            ),
           ),
           if (a.sizeBytes > 0) ...[
             const SizedBox(width: 8),
@@ -152,21 +165,23 @@ class _FahrzeugUnterlagenState extends ConsumerState<FahrzeugUnterlagen> {
           ],
         ],
       ),
-      trailing: ref.watch(canEditProvider)
-          ? IconButton(
-              icon: const Icon(Icons.delete_outline, size: 20),
-              color: theme.colorScheme.error,
-              tooltip: 'Entfernen',
-              onPressed: _laeuft ? null : () => _entfernen(a),
-            )
-          : null,
+      trailing:
+          ref.watch(canEditProvider)
+              ? IconButton(
+                icon: const Icon(Icons.delete_outline, size: 20),
+                color: theme.colorScheme.error,
+                tooltip: 'Entfernen',
+                onPressed: _laeuft ? null : () => _entfernen(a),
+              )
+              : null,
       onTap: _laeuft ? null : () => _oeffnen(a),
     );
   }
 
-  String _groesse(int bytes) => bytes >= 1024 * 1024
-      ? '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB'
-      : '${(bytes / 1024).round()} KB';
+  String _groesse(int bytes) =>
+      bytes >= 1024 * 1024
+          ? '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB'
+          : '${(bytes / 1024).round()} KB';
 
   Future<void> _hinzufuegen() async {
     final auswahl = await FilePicker.pickFiles(
@@ -184,7 +199,9 @@ class _FahrzeugUnterlagenState extends ConsumerState<FahrzeugUnterlagen> {
       // stillen `null`.
       final bytes = await datei.readAsBytes();
       if (!mounted) return;
-      await ref.read(anhangSpeicherProvider).hinzufuegen(
+      await ref
+          .read(anhangSpeicherProvider)
+          .hinzufuegen(
             vehicleId: widget.vehicleId,
             dateiname: datei.name,
             bytes: bytes,
@@ -205,8 +222,10 @@ class _FahrzeugUnterlagenState extends ConsumerState<FahrzeugUnterlagen> {
     // schickte den Gerätewart auf die Suche nach einem Netzproblem, das es
     // nicht gibt (Issue #210).
     if (ref.read(anhangSpeicherProvider).imBrowser) {
-      _sagen('Öffnen geht in der App — dort liegt die Datei danach auch '
-          'ohne Netz vor.');
+      _sagen(
+        'Öffnen geht in der App — dort liegt die Datei danach auch '
+        'ohne Netz vor.',
+      );
       return;
     }
     setState(() => _laeuft = true);
@@ -215,8 +234,10 @@ class _FahrzeugUnterlagenState extends ConsumerState<FahrzeugUnterlagen> {
     setState(() => _laeuft = false);
 
     if (pfad == null) {
-      _sagen('Die Datei liegt nicht auf diesem Gerät und ließ sich gerade '
-          'nicht laden.');
+      _sagen(
+        'Die Datei liegt nicht auf diesem Gerät und ließ sich gerade '
+        'nicht laden.',
+      );
       return;
     }
     // `open_filex` und nicht `launchUrl`: Ein file://-URI wird auf Android
@@ -237,39 +258,46 @@ class _FahrzeugUnterlagenState extends ConsumerState<FahrzeugUnterlagen> {
     }
     if (!mounted) return;
     setState(() => _laeuft = false);
-    _sagen(geholt == fehlend.length
-        ? 'Alle Unterlagen liegen jetzt auf diesem Gerät.'
-        : '$geholt von ${fehlend.length} geladen — der Rest braucht eine '
-            'Verbindung.');
+    _sagen(
+      geholt == fehlend.length
+          ? 'Alle Unterlagen liegen jetzt auf diesem Gerät.'
+          : '$geholt von ${fehlend.length} geladen — der Rest braucht eine '
+              'Verbindung.',
+    );
   }
 
   Future<void> _entfernen(VehicleAttachmentData a) async {
     final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Unterlage entfernen?'),
-        content: Text('„${a.title}" wird von diesem Gerät und vom Server '
-            'gelöscht. Das lässt sich nicht rückgängig machen.'),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Abbrechen')),
-          FilledButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Entfernen')),
-        ],
-      ),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Unterlage entfernen?'),
+            content: Text(
+              '„${a.title}" wird von diesem Gerät und vom Server '
+              'gelöscht. Das lässt sich nicht rückgängig machen.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Abbrechen'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Entfernen'),
+              ),
+            ],
+          ),
     );
     if (ok != true || !mounted) return;
     setState(() => _laeuft = true);
-    await ref.read(anhangSpeicherProvider).entfernen(a,
-        abteilungId: ref.read(aktiveAbteilungIdProvider));
+    await ref
+        .read(anhangSpeicherProvider)
+        .entfernen(a, abteilungId: ref.read(aktiveAbteilungIdProvider));
     if (mounted) setState(() => _laeuft = false);
   }
 
   void _sagen(String text) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(text)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
   }
 }

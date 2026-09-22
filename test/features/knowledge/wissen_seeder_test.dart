@@ -30,20 +30,22 @@ void main() {
   PartyInhalte inhalte(List<UnerwarteteFrage> fragen) =>
       PartyInhalte(fragen: fragen, aufgaben: const []);
 
-  UnerwarteteFrage frage(String text,
-          {String kategorie = kKategorieWissen, String? gebiet}) =>
-      UnerwarteteFrage(
-        frage: text,
-        antworten: const ['a', 'b'],
-        richtig: 0,
-        kategorie: kategorie,
-        gebiet: gebiet,
-      );
+  UnerwarteteFrage frage(
+    String text, {
+    String kategorie = kKategorieWissen,
+    String? gebiet,
+  }) => UnerwarteteFrage(
+    frage: text,
+    antworten: const ['a', 'b'],
+    richtig: 0,
+    kategorie: kategorie,
+    gebiet: gebiet,
+  );
 
   test('legt den Grundstock an — freigegeben und als mitgeliefert', () async {
-    final n = await WissenSeeder(db).seedIfNeeded(inhalte([
-      frage('Wie lang ist ein C-Schlauch?', gebiet: 'geraetekunde'),
-    ]));
+    final n = await WissenSeeder(db).seedIfNeeded(
+      inhalte([frage('Wie lang ist ein C-Schlauch?', gebiet: 'geraetekunde')]),
+    );
 
     expect(n, 1);
     final f = (await db.wissenDao.getAll()).single;
@@ -66,10 +68,12 @@ void main() {
   });
 
   test('erkennt eine vorhandene Frage trotz anderer Schreibweise', () async {
-    await WissenSeeder(db)
-        .seedIfNeeded(inhalte([frage('Wie lang ist ein C-Schlauch?')]));
-    final nochmal = await WissenSeeder(db).seedIfNeeded(
-        inhalte([frage('  wie LANG ist  ein C-Schlauch?  ')]));
+    await WissenSeeder(
+      db,
+    ).seedIfNeeded(inhalte([frage('Wie lang ist ein C-Schlauch?')]));
+    final nochmal = await WissenSeeder(
+      db,
+    ).seedIfNeeded(inhalte([frage('  wie LANG ist  ein C-Schlauch?  ')]));
 
     expect(nochmal, 0);
   });
@@ -81,7 +85,9 @@ void main() {
     await WissenSeeder(db).seedIfNeeded(topf);
     final f = (await db.wissenDao.getAll()).single;
     await db.wissenDao.aendere(
-        f.id, const WissensfragenCompanion(erklaerung: Value('Von Hand ergänzt')));
+      f.id,
+      const WissensfragenCompanion(erklaerung: Value('Von Hand ergänzt')),
+    );
 
     await WissenSeeder(db).seedIfNeeded(topf);
     expect((await db.wissenDao.getAll()).single.erklaerung, 'Von Hand ergänzt');
@@ -90,12 +96,18 @@ void main() {
   test('ohne Gebiet im Asset landet ein Klischee bei den Klischees', () async {
     // Rückfall für ältere Asset-Fassungen: lieber sichtbar einsortiert als
     // ein Klischee im Prüfungsstoff.
-    await WissenSeeder(db).seedIfNeeded(inhalte([
-      frage('Was ist heiliger als jedes Fahrzeug?',
-          kategorie: kKategorieKlischee),
-    ]));
-    expect((await db.wissenDao.getAll()).single.gebiet,
-        Wissensgebiet.klischee.schluessel);
+    await WissenSeeder(db).seedIfNeeded(
+      inhalte([
+        frage(
+          'Was ist heiliger als jedes Fahrzeug?',
+          kategorie: kKategorieKlischee,
+        ),
+      ]),
+    );
+    expect(
+      (await db.wissenDao.getAll()).single.gebiet,
+      Wissensgebiet.klischee.schluessel,
+    );
   });
 
   test('die AUSGELIEFERTE party.json ist vollständig eingeordnet', () async {
@@ -106,10 +118,12 @@ void main() {
     expect(geparst.fragen, isNotEmpty);
 
     for (final f in geparst.fragen) {
-      expect(f.gebiet, isNotNull,
-          reason: 'ohne Gebiet: "${f.frage}"');
-      expect(Wissensgebiet.ausSchluessel(f.gebiet), isNotNull,
-          reason: 'unbekanntes Gebiet "${f.gebiet}" bei "${f.frage}"');
+      expect(f.gebiet, isNotNull, reason: 'ohne Gebiet: "${f.frage}"');
+      expect(
+        Wissensgebiet.ausSchluessel(f.gebiet),
+        isNotNull,
+        reason: 'unbekanntes Gebiet "${f.gebiet}" bei "${f.frage}"',
+      );
     }
 
     // Und der Grundstock landet vollständig in der Datenbank.
@@ -121,22 +135,23 @@ void main() {
 
   group('seedGeraetefragen', () {
     StandardCatalog katalog() => StandardCatalog.ausEintraegen([
-          for (var i = 0; i < 5; i++)
-            {
-              'id': 'std_$i',
-              'name': 'Gerät $i',
-              'equipment_functions': ['G$i'],
-              'typical_use': ['Verwendung $i'],
-              'description': 'Beschreibung $i.',
-            },
-        ]);
+      for (var i = 0; i < 5; i++)
+        {
+          'id': 'std_$i',
+          'name': 'Gerät $i',
+          'equipment_functions': ['G$i'],
+          'typical_use': ['Verwendung $i'],
+          'description': 'Beschreibung $i.',
+        },
+    ]);
 
     test('legt sie mit Gerätebezug, Quelle und freigegeben an', () async {
       final angelegt = await WissenSeeder(db).seedGeraetefragen(katalog());
       expect(angelegt, 5);
 
-      final f = (await db.wissenDao.getAll())
-          .firstWhere((x) => x.geraet == 'std_0');
+      final f = (await db.wissenDao.getAll()).firstWhere(
+        (x) => x.geraet == 'std_0',
+      );
       expect(f.gebiet, Wissensgebiet.geraetekunde.schluessel);
       expect(f.herkunft, Fragenherkunft.mitgeliefert.schluessel);
       // Ausgeliefertes ist geprüft — es wartet auf niemanden.
@@ -155,8 +170,11 @@ void main() {
         final richtige = indizesAusJson(f.richtigeJson);
         expect(richtige, hasLength(1));
         final nummer = f.geraet!.split('_').last;
-        expect(antworten[richtige.single], 'Verwendung $nummer',
-            reason: f.frage);
+        expect(
+          antworten[richtige.single],
+          'Verwendung $nummer',
+          reason: f.frage,
+        );
       }
     });
 
@@ -168,10 +186,13 @@ void main() {
 
     test('eine von Hand geänderte Frage bleibt unangetastet', () async {
       await WissenSeeder(db).seedGeraetefragen(katalog());
-      final f = (await db.wissenDao.getAll())
-          .firstWhere((x) => x.geraet == 'std_0');
+      final f = (await db.wissenDao.getAll()).firstWhere(
+        (x) => x.geraet == 'std_0',
+      );
       await db.wissenDao.aendere(
-          f.id, const WissensfragenCompanion(erklaerung: Value('Korrigiert')));
+        f.id,
+        const WissensfragenCompanion(erklaerung: Value('Korrigiert')),
+      );
 
       await WissenSeeder(db).seedGeraetefragen(katalog());
 
@@ -180,8 +201,10 @@ void main() {
     });
 
     test('ein leerer Katalog legt nichts an und wirft nicht', () async {
-      expect(await WissenSeeder(db).seedGeraetefragen(StandardCatalog.empty()),
-          0);
+      expect(
+        await WissenSeeder(db).seedGeraetefragen(StandardCatalog.empty()),
+        0,
+      );
     });
   });
 }

@@ -5,6 +5,7 @@
 /// Schichtung: bewusst ohne data/domain-Schicht
 /// (siehe CONTRIBUTING.md „Schichtung je Feature").
 library;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_enums.dart';
 
@@ -34,24 +35,20 @@ class OperationState {
     bool clearScenario = false,
     DateTime? startedAt,
     Set<int>? takenAssignmentIds,
-  }) =>
-      OperationState(
-        active: active ?? this.active,
-        vehicleIds: vehicleIds ?? this.vehicleIds,
-        scenario: clearScenario ? null : (scenario ?? this.scenario),
-        startedAt: startedAt ?? this.startedAt,
-        takenAssignmentIds: takenAssignmentIds ?? this.takenAssignmentIds,
-      );
+  }) => OperationState(
+    active: active ?? this.active,
+    vehicleIds: vehicleIds ?? this.vehicleIds,
+    scenario: clearScenario ? null : (scenario ?? this.scenario),
+    startedAt: startedAt ?? this.startedAt,
+    takenAssignmentIds: takenAssignmentIds ?? this.takenAssignmentIds,
+  );
 }
 
 class OperationNotifier extends Notifier<OperationState> {
   @override
   OperationState build() => const OperationState();
 
-  void start({
-    required List<int> vehicleIds,
-    DeploymentScenario? scenario,
-  }) {
+  void start({required List<int> vehicleIds, DeploymentScenario? scenario}) {
     state = OperationState(
       active: true,
       vehicleIds: vehicleIds,
@@ -70,5 +67,6 @@ class OperationNotifier extends Notifier<OperationState> {
   void end() => state = const OperationState();
 }
 
-final operationProvider =
-    NotifierProvider<OperationNotifier, OperationState>(OperationNotifier.new);
+final operationProvider = NotifierProvider<OperationNotifier, OperationState>(
+  OperationNotifier.new,
+);

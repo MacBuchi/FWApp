@@ -1,6 +1,7 @@
 /// compartment_manager_screen.dart – Add/remove/reorder compartments for a
 /// vehicle plus a grid editor for the cutaway view (Schnittdarstellung).
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/images/image_capture.dart';
@@ -19,8 +20,9 @@ class CompartmentManagerScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final vehicleAsync = ref.watch(vehicleDetailProvider(vehicleId));
-    final compartmentsAsync =
-        ref.watch(compartmentListStreamProvider(vehicleId));
+    final compartmentsAsync = ref.watch(
+      compartmentListStreamProvider(vehicleId),
+    );
 
     return DefaultTabController(
       length: 2,
@@ -42,14 +44,20 @@ class CompartmentManagerScreen extends ConsumerWidget {
               IconButton(
                 icon: const Icon(Icons.auto_fix_high),
                 tooltip: 'Verortung aus den Namen vorschlagen',
-                onPressed: () => _seitenVorschlagen(
-                    context, ref, compartmentsAsync.value ?? const []),
+                onPressed:
+                    () => _seitenVorschlagen(
+                      context,
+                      ref,
+                      compartmentsAsync.value ?? const [],
+                    ),
               ),
           ],
-          bottom: const TabBar(tabs: [
-            Tab(text: 'Liste', icon: Icon(Icons.list)),
-            Tab(text: 'Raster', icon: Icon(Icons.grid_view)),
-          ]),
+          bottom: const TabBar(
+            tabs: [
+              Tab(text: 'Liste', icon: Icon(Icons.list)),
+              Tab(text: 'Raster', icon: Icon(Icons.grid_view)),
+            ],
+          ),
         ),
         body: TabBarView(
           children: [
@@ -61,118 +69,132 @@ class CompartmentManagerScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildListTab(BuildContext context, WidgetRef ref,
-      AsyncValue<List<Compartment>> compartmentsAsync) {
+  Widget _buildListTab(
+    BuildContext context,
+    WidgetRef ref,
+    AsyncValue<List<Compartment>> compartmentsAsync,
+  ) {
     return compartmentsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Fehler: $e')),
-        data: (compartments) {
-          if (compartments.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.inbox, size: 64, color: Colors.grey),
-                  const SizedBox(height: 12),
-                  const Text('Noch keine Fächer.',
-                      style: TextStyle(color: Colors.grey)),
-                  const SizedBox(height: 16),
-                  FilledButton.icon(
-                    onPressed: () => _showAddDialog(context, ref),
-                    icon: const Icon(Icons.add),
-                    label: const Text('Fach hinzufügen'),
-                  ),
-                ],
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(child: Text('Fehler: $e')),
+      data: (compartments) {
+        if (compartments.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.inbox, size: 64, color: Colors.grey),
+                const SizedBox(height: 12),
+                const Text(
+                  'Noch keine Fächer.',
+                  style: TextStyle(color: Colors.grey),
+                ),
+                const SizedBox(height: 16),
+                FilledButton.icon(
+                  onPressed: () => _showAddDialog(context, ref),
+                  icon: const Icon(Icons.add),
+                  label: const Text('Fach hinzufügen'),
+                ),
+              ],
+            ),
+          );
+        }
+        return ReorderableListView.builder(
+          padding: const EdgeInsets.all(12),
+          itemCount: compartments.length,
+          onReorderItem:
+              (oldIndex, newIndex) =>
+                  _reorder(ref, compartments, oldIndex, newIndex),
+          itemBuilder: (context, index) {
+            final c = compartments[index];
+            return Card(
+              key: ValueKey(c.id),
+              child: ListTile(
+                // Der Griff bleibt links — er ist die Bedienung dieser
+                // Liste. Das Foto steht daneben und ist selbst der Knopf:
+                // Wer es sieht, tippt darauf, um es zu ersetzen.
+                leading: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.drag_handle),
+                    const SizedBox(width: 8),
+                    _FachFoto(compartment: c),
+                  ],
+                ),
+                title: Text(c.label),
+                // „Reihenfolge", nicht mehr „Position": Das Wort Position
+                // gehört seit Issue #141 der Längsachse (vorne/Mitte/
+                // hinten), die Zahl hier ist nur die Sortierung.
+                subtitle: Text(
+                  '${verortungAnzeigename(c.seite, c.laengsposition)}'
+                  ' · Reihenfolge ${c.position + 1}',
+                ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.edit, size: 20),
+                      onPressed: () => _showEditDialog(context, ref, c),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline, size: 20),
+                      color: Theme.of(context).colorScheme.error,
+                      onPressed: () => _confirmDelete(context, ref, c),
+                    ),
+                  ],
+                ),
               ),
             );
-          }
-          return ReorderableListView.builder(
-            padding: const EdgeInsets.all(12),
-            itemCount: compartments.length,
-            onReorderItem: (oldIndex, newIndex) =>
-                _reorder(ref, compartments, oldIndex, newIndex),
-            itemBuilder: (context, index) {
-              final c = compartments[index];
-              return Card(
-                key: ValueKey(c.id),
-                child: ListTile(
-                  // Der Griff bleibt links — er ist die Bedienung dieser
-                  // Liste. Das Foto steht daneben und ist selbst der Knopf:
-                  // Wer es sieht, tippt darauf, um es zu ersetzen.
-                  leading: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.drag_handle),
-                      const SizedBox(width: 8),
-                      _FachFoto(compartment: c),
-                    ],
-                  ),
-                  title: Text(c.label),
-                  // „Reihenfolge", nicht mehr „Position": Das Wort Position
-                  // gehört seit Issue #141 der Längsachse (vorne/Mitte/
-                  // hinten), die Zahl hier ist nur die Sortierung.
-                  subtitle: Text(
-                      '${verortungAnzeigename(c.seite, c.laengsposition)}'
-                      ' · Reihenfolge ${c.position + 1}'),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit, size: 20),
-                        onPressed: () =>
-                            _showEditDialog(context, ref, c),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete_outline, size: 20),
-                        color: Theme.of(context).colorScheme.error,
-                        onPressed: () =>
-                            _confirmDelete(context, ref, c),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        },
-      );
+          },
+        );
+      },
+    );
   }
 
   Future<void> _showAddDialog(BuildContext context, WidgetRef ref) async {
     final eingabe = await showDialog<_FachEingabe>(
       context: context,
-      builder: (_) => const _FachDialog(titel: 'Fach hinzufügen',
-          knopf: 'Hinzufügen'),
+      builder:
+          (_) =>
+              const _FachDialog(titel: 'Fach hinzufügen', knopf: 'Hinzufügen'),
     );
     if (eingabe == null) return;
     final repo = ref.read(compartmentRepositoryProvider);
     final existing = await repo.getByVehicle(vehicleId);
-    await repo.insert(Compartment(
-      id: 0,
-      vehicleId: vehicleId,
-      label: eingabe.label,
-      position: existing.length,
-      gridColSpan: 1,
-      seite: eingabe.seite,
-      laengsposition: eingabe.laengsposition,
-      updatedAt: DateTime.now(),
-    ));
+    await repo.insert(
+      Compartment(
+        id: 0,
+        vehicleId: vehicleId,
+        label: eingabe.label,
+        position: existing.length,
+        gridColSpan: 1,
+        seite: eingabe.seite,
+        laengsposition: eingabe.laengsposition,
+        updatedAt: DateTime.now(),
+      ),
+    );
   }
 
   Future<void> _showEditDialog(
-      BuildContext context, WidgetRef ref, Compartment c) async {
+    BuildContext context,
+    WidgetRef ref,
+    Compartment c,
+  ) async {
     final eingabe = await showDialog<_FachEingabe>(
       context: context,
-      builder: (_) => _FachDialog(
-        titel: 'Fach bearbeiten',
-        knopf: 'Speichern',
-        label: c.label,
-        seite: c.seite,
-        laengsposition: c.laengsposition,
-      ),
+      builder:
+          (_) => _FachDialog(
+            titel: 'Fach bearbeiten',
+            knopf: 'Speichern',
+            label: c.label,
+            seite: c.seite,
+            laengsposition: c.laengsposition,
+          ),
     );
     if (eingabe == null) return;
-    await ref.read(compartmentRepositoryProvider).update(
+    await ref
+        .read(compartmentRepositoryProvider)
+        .update(
           c.copyWith(
             label: eingabe.label,
             seite: eingabe.seite,
@@ -191,16 +213,16 @@ class CompartmentManagerScreen extends ConsumerWidget {
   /// Beifahrerseite gelegt hat, hat der Nummern-Konvention widersprochen,
   /// dann darf auch „G3 = Mitte" nicht mehr als gesichert gelten.
   static List<({Compartment fach, String? seite, String? laengsposition})>
-      _vorschlaege(List<Compartment> compartments) {
-    final out =
-        <({Compartment fach, String? seite, String? laengsposition})>[];
+  _vorschlaege(List<Compartment> compartments) {
+    final out = <({Compartment fach, String? seite, String? laengsposition})>[];
     for (final c in compartments) {
       final ausName = seiteAusName(c.label);
       final seite = c.seite == null ? ausName : null;
       final passtZurKonvention = (c.seite ?? ausName) == ausName;
-      final laengsposition = c.laengsposition == null && passtZurKonvention
-          ? laengspositionAusName(c.label)
-          : null;
+      final laengsposition =
+          c.laengsposition == null && passtZurKonvention
+              ? laengspositionAusName(c.label)
+              : null;
       if (seite != null || laengsposition != null) {
         out.add((fach: c, seite: seite, laengsposition: laengsposition));
       }
@@ -214,94 +236,112 @@ class CompartmentManagerScreen extends ConsumerWidget {
   /// Fahrerseite" ist die verbreitete Konvention, aber keine Naturkonstante.
   /// Ein still gesetzter falscher Wert wäre schlimmer als gar keiner — im
   /// Einsatz greift jemand ins falsche Fach.
-  Future<void> _seitenVorschlagen(BuildContext context, WidgetRef ref,
-      List<Compartment> compartments) async {
+  Future<void> _seitenVorschlagen(
+    BuildContext context,
+    WidgetRef ref,
+    List<Compartment> compartments,
+  ) async {
     final vorschlaege = _vorschlaege(compartments);
     if (vorschlaege.isEmpty) return;
     final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Verortung vorschlagen?'),
-        content: SizedBox(
-          width: 320,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Nach der verbreiteten Nummerierung: ungerade Geräteräume '
-                'auf der Fahrerseite, gerade auf der Beifahrerseite — und '
-                'G1/G2 vorne, G3/G4 in der Mitte, G5/G6 hinten. Prüfe es '
-                'an eurem Fahrzeug — ändern kannst du jedes Fach danach '
-                'einzeln.',
-              ),
-              const SizedBox(height: 12),
-              Flexible(
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      for (final v in vorschlaege)
-                        Text('${v.fach.label} → '
-                            '${verortungAnzeigename(
-                          v.seite ?? v.fach.seite,
-                          v.laengsposition ?? v.fach.laengsposition,
-                        )}'),
-                    ],
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Verortung vorschlagen?'),
+            content: SizedBox(
+              width: 320,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Nach der verbreiteten Nummerierung: ungerade Geräteräume '
+                    'auf der Fahrerseite, gerade auf der Beifahrerseite — und '
+                    'G1/G2 vorne, G3/G4 in der Mitte, G5/G6 hinten. Prüfe es '
+                    'an eurem Fahrzeug — ändern kannst du jedes Fach danach '
+                    'einzeln.',
                   ),
-                ),
+                  const SizedBox(height: 12),
+                  Flexible(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          for (final v in vorschlaege)
+                            Text(
+                              '${v.fach.label} → '
+                              '${verortungAnzeigename(v.seite ?? v.fach.seite, v.laengsposition ?? v.fach.laengsposition)}',
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Abbrechen'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text('${vorschlaege.length} übernehmen'),
               ),
             ],
           ),
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Abbrechen')),
-          FilledButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: Text('${vorschlaege.length} übernehmen')),
-        ],
-      ),
     );
     if (ok != true) return;
     final repo = ref.read(compartmentRepositoryProvider);
     for (final v in vorschlaege) {
-      await repo.update(v.fach.copyWith(
-        seite: v.seite ?? v.fach.seite,
-        laengsposition: v.laengsposition ?? v.fach.laengsposition,
-      ));
+      await repo.update(
+        v.fach.copyWith(
+          seite: v.seite ?? v.fach.seite,
+          laengsposition: v.laengsposition ?? v.fach.laengsposition,
+        ),
+      );
     }
   }
 
   Future<void> _confirmDelete(
-      BuildContext context, WidgetRef ref, Compartment c) async {
+    BuildContext context,
+    WidgetRef ref,
+    Compartment c,
+  ) async {
     final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Fach löschen?'),
-        content: Text(
-            '„${c.label}" und alle zugewiesenen Geräte werden gelöscht.'),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Abbrechen')),
-          FilledButton(
-            style: FilledButton.styleFrom(
-                backgroundColor: Theme.of(ctx).colorScheme.error),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Löschen'),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Fach löschen?'),
+            content: Text(
+              '„${c.label}" und alle zugewiesenen Geräte werden gelöscht.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Abbrechen'),
+              ),
+              FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: Theme.of(ctx).colorScheme.error,
+                ),
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Löschen'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
     if (ok == true) {
       await ref.read(compartmentRepositoryProvider).delete(c.id);
     }
   }
 
-  Future<void> _reorder(WidgetRef ref, List<Compartment> compartments,
-      int oldIndex, int newIndex) async {
+  Future<void> _reorder(
+    WidgetRef ref,
+    List<Compartment> compartments,
+    int oldIndex,
+    int newIndex,
+  ) async {
     // Kein `newIndex--` mehr: onReorderItem (ab Flutter 3.41) rechnet die
     // Verkuerzung durch das entnommene Element bereits selbst heraus.
     final repo = ref.read(compartmentRepositoryProvider);
@@ -322,20 +362,25 @@ class _GridEditorTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final compartmentsAsync =
-        ref.watch(compartmentListStreamProvider(vehicleId));
+    final compartmentsAsync = ref.watch(
+      compartmentListStreamProvider(vehicleId),
+    );
     return compartmentsAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(child: Text('Fehler: $e')),
       data: (compartments) {
         if (compartments.isEmpty) {
           return const Center(
-              child: Text('Lege zuerst Fächer an.',
-                  style: TextStyle(color: Colors.grey)));
+            child: Text(
+              'Lege zuerst Fächer an.',
+              style: TextStyle(color: Colors.grey),
+            ),
+          );
         }
-        final unplaced = compartments
-            .where((c) => c.gridRow == null || c.gridCol == null)
-            .length;
+        final unplaced =
+            compartments
+                .where((c) => c.gridRow == null || c.gridCol == null)
+                .length;
         return ListView(
           padding: const EdgeInsets.all(16),
           children: [
@@ -350,10 +395,9 @@ class _GridEditorTab extends ConsumerWidget {
                 child: Text(
                   '$unplaced Fach/Fächer noch nicht platziert '
                   '(werden unten automatisch angeordnet).',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(color: Colors.orange.shade800),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.orange.shade800,
+                  ),
                 ),
               ),
             const SizedBox(height: 12),
@@ -368,7 +412,10 @@ class _GridEditorTab extends ConsumerWidget {
   }
 
   Future<void> _editTile(
-      BuildContext context, WidgetRef ref, Compartment c) async {
+    BuildContext context,
+    WidgetRef ref,
+    Compartment c,
+  ) async {
     await showModalBottomSheet(
       context: context,
       builder: (ctx) => _TileEditorSheet(compartment: c),
@@ -399,11 +446,13 @@ class _TileEditorSheetState extends ConsumerState<_TileEditorSheet> {
 
   Future<void> _save({bool removeFromGrid = false}) async {
     final repo = ref.read(compartmentRepositoryProvider);
-    await repo.update(widget.compartment.copyWith(
-      gridRow: removeFromGrid ? null : _row,
-      gridCol: removeFromGrid ? null : _col,
-      gridColSpan: removeFromGrid ? 1 : _span,
-    ));
+    await repo.update(
+      widget.compartment.copyWith(
+        gridRow: removeFromGrid ? null : _row,
+        gridCol: removeFromGrid ? null : _col,
+        gridColSpan: removeFromGrid ? 1 : _span,
+      ),
+    );
     if (mounted) Navigator.of(context).pop();
   }
 
@@ -416,24 +465,29 @@ class _TileEditorSheetState extends ConsumerState<_TileEditorSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(widget.compartment.label,
-                style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              widget.compartment.label,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 8),
             _Stepper(
-                label: 'Zeile',
-                value: _row,
-                min: 0,
-                onChanged: (v) => setState(() => _row = v)),
+              label: 'Zeile',
+              value: _row,
+              min: 0,
+              onChanged: (v) => setState(() => _row = v),
+            ),
             _Stepper(
-                label: 'Spalte',
-                value: _col,
-                min: 0,
-                onChanged: (v) => setState(() => _col = v)),
+              label: 'Spalte',
+              value: _col,
+              min: 0,
+              onChanged: (v) => setState(() => _col = v),
+            ),
             _Stepper(
-                label: 'Breite (Spalten)',
-                value: _span,
-                min: 1,
-                onChanged: (v) => setState(() => _span = v)),
+              label: 'Breite (Spalten)',
+              value: _span,
+              min: 1,
+              onChanged: (v) => setState(() => _span = v),
+            ),
             const SizedBox(height: 12),
             OverflowBar(
               alignment: MainAxisAlignment.end,
@@ -442,10 +496,7 @@ class _TileEditorSheetState extends ConsumerState<_TileEditorSheet> {
                   onPressed: () => _save(removeFromGrid: true),
                   child: const Text('Aus Raster entfernen'),
                 ),
-                FilledButton(
-                  onPressed: _save,
-                  child: const Text('Speichern'),
-                ),
+                FilledButton(onPressed: _save, child: const Text('Speichern')),
               ],
             ),
           ],
@@ -478,10 +529,13 @@ class _Stepper extends StatelessWidget {
           onPressed: value > min ? () => onChanged(value - 1) : null,
         ),
         SizedBox(
-            width: 32,
-            child: Text('$value',
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontWeight: FontWeight.bold))),
+          width: 32,
+          child: Text(
+            '$value',
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
         IconButton(
           icon: const Icon(Icons.add_circle_outline),
           onPressed: () => onChanged(value + 1),
@@ -519,8 +573,9 @@ class _FachDialog extends StatefulWidget {
 }
 
 class _FachDialogState extends State<_FachDialog> {
-  late final TextEditingController _ctrl =
-      TextEditingController(text: widget.label ?? '');
+  late final TextEditingController _ctrl = TextEditingController(
+    text: widget.label ?? '',
+  );
   late String? _seite = widget.seite;
   late String? _laengsposition = widget.laengsposition;
 
@@ -560,7 +615,8 @@ class _FachDialogState extends State<_FachDialog> {
           TextField(
             controller: _ctrl,
             decoration: const InputDecoration(
-                labelText: 'Bezeichnung (z.B. G1)'),
+              labelText: 'Bezeichnung (z.B. G1)',
+            ),
             autofocus: true,
             onChanged: _nameGeaendert,
           ),
@@ -577,10 +633,11 @@ class _FachDialogState extends State<_FachDialog> {
               for (final s in kFahrzeugSeiten)
                 DropdownMenuItem(value: s, child: Text(seiteAnzeigename(s))),
             ],
-            onChanged: (v) => setState(() {
-              _seite = v;
-              _seiteVonHand = true;
-            }),
+            onChanged:
+                (v) => setState(() {
+                  _seite = v;
+                  _seiteVonHand = true;
+                }),
           ),
           if (_laengsSinnvoll) ...[
             const SizedBox(height: 16),
@@ -593,23 +650,29 @@ class _FachDialogState extends State<_FachDialog> {
               ),
               items: [
                 const DropdownMenuItem(
-                    value: null, child: Text('Ohne Position')),
+                  value: null,
+                  child: Text('Ohne Position'),
+                ),
                 for (final p in kLaengspositionen)
                   DropdownMenuItem(
-                      value: p, child: Text(kLaengspositionLabels[p]!)),
+                    value: p,
+                    child: Text(kLaengspositionLabels[p]!),
+                  ),
               ],
-              onChanged: (v) => setState(() {
-                _laengsposition = v;
-                _laengsVonHand = true;
-              }),
+              onChanged:
+                  (v) => setState(() {
+                    _laengsposition = v;
+                    _laengsVonHand = true;
+                  }),
             ),
           ],
         ],
       ),
       actions: [
         TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Abbrechen')),
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Abbrechen'),
+        ),
         FilledButton(
           onPressed: () {
             final label = _ctrl.text.trim();
@@ -626,7 +689,6 @@ class _FachDialogState extends State<_FachDialog> {
     );
   }
 }
-
 
 /// Foto eines Geräteraums (Issue #181): zeigen, aufnehmen, ersetzen.
 ///
@@ -656,29 +718,36 @@ class _FachFotoState extends ConsumerState<_FachFoto> {
       child: SizedBox(
         width: 44,
         height: 44,
-        child: _laeuft
-            ? const Center(
-                child: SizedBox(
+        child:
+            _laeuft
+                ? const Center(
+                  child: SizedBox(
                     width: 18,
                     height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2)))
-            : pfad == null
-                ? Container(
-                    decoration: BoxDecoration(
-                      color: scheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(Icons.add_a_photo_outlined,
-                        size: 20, color: scheme.onSurfaceVariant),
-                  )
-                : ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: resolveImage(
-                        path: pfad,
-                        width: 44,
-                        height: 44,
-                        fit: BoxFit.cover),
+                    child: CircularProgressIndicator(strokeWidth: 2),
                   ),
+                )
+                : pfad == null
+                ? Container(
+                  decoration: BoxDecoration(
+                    color: scheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.add_a_photo_outlined,
+                    size: 20,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                )
+                : ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: resolveImage(
+                    path: pfad,
+                    width: 44,
+                    height: 44,
+                    fit: BoxFit.cover,
+                  ),
+                ),
       ),
     );
   }
@@ -702,9 +771,14 @@ class _FachFotoState extends ConsumerState<_FachFoto> {
         );
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text('Foto nur lokal gespeichert — Upload '
-                  'fehlgeschlagen: $e')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Foto nur lokal gespeichert — Upload '
+                'fehlgeschlagen: $e',
+              ),
+            ),
+          );
         }
       }
     }
@@ -712,9 +786,14 @@ class _FachFotoState extends ConsumerState<_FachFoto> {
     if (neuerPfad == null) {
       if (mounted) {
         setState(() => _laeuft = false);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Ohne Serververbindung lässt sich das Foto hier '
-                'nicht speichern.')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Ohne Serververbindung lässt sich das Foto hier '
+              'nicht speichern.',
+            ),
+          ),
+        );
       }
       return;
     }
@@ -727,19 +806,24 @@ class _FachFotoState extends ConsumerState<_FachFoto> {
   Future<void> _entfernen() async {
     final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Foto entfernen?'),
-        content: Text('Das Foto von „${widget.compartment.label}" wird '
-            'gelöscht. Das Fach selbst bleibt.'),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Abbrechen')),
-          FilledButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Entfernen')),
-        ],
-      ),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Foto entfernen?'),
+            content: Text(
+              'Das Foto von „${widget.compartment.label}" wird '
+              'gelöscht. Das Fach selbst bleibt.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Abbrechen'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Entfernen'),
+              ),
+            ],
+          ),
     );
     if (ok != true) return;
     await ref

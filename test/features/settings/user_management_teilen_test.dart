@@ -42,24 +42,30 @@ void main() {
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(buildTestApp(
-      db: db,
-      home: const UserManagementScreen(),
-      overrides: [
-        managedUsersProvider.overrideWith((ref) async => const <ManagedUser>[]),
-        abteilungenProvider.overrideWith((ref) async => const [_stadt]),
-        myAbteilungIdProvider.overrideWith((ref) async => 'A'),
-        meineKommandoGesamtwehrenProvider
-            .overrideWith((ref) async => const <String>{}),
-        supabaseClientProvider.overrideWithValue(null),
-      ],
-    ));
+    await tester.pumpWidget(
+      buildTestApp(
+        db: db,
+        home: const UserManagementScreen(),
+        overrides: [
+          managedUsersProvider.overrideWith(
+            (ref) async => const <ManagedUser>[],
+          ),
+          abteilungenProvider.overrideWith((ref) async => const [_stadt]),
+          myAbteilungIdProvider.overrideWith((ref) async => 'A'),
+          meineKommandoGesamtwehrenProvider.overrideWith(
+            (ref) async => const <String>{},
+          ),
+          supabaseClientProvider.overrideWithValue(null),
+        ],
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(
       find.byTooltip('Demo-Zugang teilen'),
       findsOneWidget,
-      reason: 'Der Demo-Zugang gehoert neben „Einladen": Dort sucht der '
+      reason:
+          'Der Demo-Zugang gehoert neben „Einladen": Dort sucht der '
           'Kommandant, wenn er jemanden dazuholen will — und der Blick in '
           'die Demo ist der kleinere Schritt davor.',
     );

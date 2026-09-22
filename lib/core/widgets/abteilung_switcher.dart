@@ -63,9 +63,10 @@ class AbteilungAction extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: Tooltip(
-        message: istHeimat
-            ? '$name — deine Abteilung. Zum Wechseln tippen.'
-            : '$name — Schwester-Abteilung. Zum Wechseln tippen.',
+        message:
+            istHeimat
+                ? '$name — deine Abteilung. Zum Wechseln tippen.'
+                : '$name — Schwester-Abteilung. Zum Wechseln tippen.',
         child: Material(
           color: istHeimat ? Colors.transparent : scheme.tertiaryContainer,
           shape: StadiumBorder(
@@ -143,7 +144,8 @@ Future<void> showAbteilungPicker(BuildContext context, WidgetRef ref) async {
   // Beim Weg zurück aus einer Schwester-Sicht ist man dort nur Leser, in
   // der eigenen aber Gerätewart — „wer pflegen darf, kann veröffentlichen"
   // wäre dann ein Rat an die falsche Person.
-  final darfPublizieren = schreibrolleInAbteilung(
+  final darfPublizieren =
+      schreibrolleInAbteilung(
         abteilungId: target.id,
         gesamtwehrId: target.gesamtwehrId,
         mitgliedschaften: ref.read(meineMitgliedschaftenProvider).value,
@@ -155,7 +157,9 @@ Future<void> showAbteilungPicker(BuildContext context, WidgetRef ref) async {
       null;
 
   // Eigene Abteilung = null: Sie behält die angestammte Datenbank-Datei.
-  final gezogen = await ref.read(abteilungSwitcherProvider).switchTo(
+  final gezogen = await ref
+      .read(abteilungSwitcherProvider)
+      .switchTo(
         target.id == own ? null : target.id,
         // ⚠️ Der Zug ersetzt die Tabellen der NEUEN Sicht (#214). Das
         // trifft vor allem den Weg ZURÜCK in die eigene Abteilung: Wer dort
@@ -163,25 +167,28 @@ Future<void> showAbteilungPicker(BuildContext context, WidgetRef ref) async {
         // beim Zurückkommen.
         bestaetigen: (verlust) async {
           if (!context.mounted) return false;
-          return darfVerlieren(context, verlust,
-              darfVeroeffentlichen: darfPublizieren, vorgang: 'Wechseln');
+          return darfVerlieren(
+            context,
+            verlust,
+            darfVeroeffentlichen: darfPublizieren,
+            vorgang: 'Wechseln',
+          );
         },
       );
   messenger.showSnackBar(
     SnackBar(
       duration:
           gezogen ? const Duration(seconds: 4) : const Duration(seconds: 8),
-      content: Text(
-        switch ((gezogen, target.id == own)) {
-          // Abgelehnt: gewechselt ist gewechselt, nur geladen wurde nichts.
-          // Das gehört gesagt — sonst wundert sich jemand, warum hier nichts
-          // Neues steht.
-          (false, _) => 'Gewechselt, aber nichts geladen — was hier noch '
+      content: Text(switch ((gezogen, target.id == own)) {
+        // Abgelehnt: gewechselt ist gewechselt, nur geladen wurde nichts.
+        // Das gehört gesagt — sonst wundert sich jemand, warum hier nichts
+        // Neues steht.
+        (false, _) =>
+          'Gewechselt, aber nichts geladen — was hier noch '
               'nicht veröffentlicht ist, bleibt stehen.',
-          (_, true) => 'Zurück in deiner Abteilung.',
-          _ => '${target.name}: Der Bestand wird geladen …',
-        },
-      ),
+        (_, true) => 'Zurück in deiner Abteilung.',
+        _ => '${target.name}: Der Bestand wird geladen …',
+      }),
     ),
   );
 }
@@ -271,9 +278,10 @@ class _AbteilungSheet extends ConsumerWidget {
                     temporaereRechte: temporaer,
                   ),
                 ),
-                trailing: a.id == selectedId
-                    ? Icon(Icons.check, color: theme.colorScheme.primary)
-                    : null,
+                trailing:
+                    a.id == selectedId
+                        ? Icon(Icons.check, color: theme.colorScheme.primary)
+                        : null,
                 onTap: () => Navigator.pop(context, a),
               ),
             const SizedBox(height: 8),

@@ -35,8 +35,9 @@ class NfcLesenScreen extends StatefulWidget {
     super.key,
     required this.titel,
     required this.beiFund,
-    this.anleitung = 'Das Handy an das Tag halten — meist an der Rückseite, '
-        'oberes Drittel.',
+    this.anleitung =
+        'Das Handy an das Tag halten — meist an der Rückseite, '
+            'oberes Drittel.',
   });
 
   @override
@@ -107,15 +108,20 @@ class _NfcLesenScreenState extends State<NfcLesenScreen> {
               else if (_lage != NfcLage.bereit)
                 _KeinNfc(lage: _lage!)
               else ...[
-                Icon(Icons.nfc,
-                    size: 96,
-                    color: _beschaeftigt
-                        ? theme.colorScheme.primary
-                        : theme.colorScheme.outline),
+                Icon(
+                  Icons.nfc,
+                  size: 96,
+                  color:
+                      _beschaeftigt
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.outline,
+                ),
                 const SizedBox(height: 24),
-                Text(widget.anleitung,
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.bodyLarge),
+                Text(
+                  widget.anleitung,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyLarge,
+                ),
               ],
               if (_meldung != null) ...[
                 const SizedBox(height: 32),
@@ -126,7 +132,8 @@ class _NfcLesenScreenState extends State<NfcLesenScreen> {
                     child: Text(
                       _meldung!,
                       style: TextStyle(
-                          color: theme.colorScheme.onInverseSurface),
+                        color: theme.colorScheme.onInverseSurface,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -152,19 +159,19 @@ class _KeinNfc extends StatelessWidget {
   Widget build(BuildContext context) {
     final (String titel, String rat) = switch (lage) {
       NfcLage.ausgeschaltet => (
-          'NFC ist ausgeschaltet',
-          'In den Einstellungen des Geräts einschalten — dann hier noch '
-              'einmal öffnen.',
-        ),
+        'NFC ist ausgeschaltet',
+        'In den Einstellungen des Geräts einschalten — dann hier noch '
+            'einmal öffnen.',
+      ),
       NfcLage.keineHardware => (
-          'Dieses Gerät hat kein NFC',
-          'Die Codes lassen sich mit der Kamera scannen oder eintippen.',
-        ),
+        'Dieses Gerät hat kein NFC',
+        'Die Codes lassen sich mit der Kamera scannen oder eintippen.',
+      ),
       _ => (
-          'Hier geht NFC nicht',
-          'Im Browser gibt es keinen NFC-Zugriff. In der App auf einem '
-              'Android-Gerät schon.',
-        ),
+        'Hier geht NFC nicht',
+        'Im Browser gibt es keinen NFC-Zugriff. In der App auf einem '
+            'Android-Gerät schon.',
+      ),
     };
 
     return Column(

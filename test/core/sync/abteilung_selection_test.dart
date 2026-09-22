@@ -1,6 +1,7 @@
 /// abteilung_selection_test.dart – Abteilungswahl (Issue #57 Phase 2):
 /// Datei-Invariante, Lese-Sperre der Schwester-Sicht und der Umschalter.
 library;
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/database/app_database.dart';
@@ -42,7 +43,7 @@ class _TagSpion extends TagSync {
 /// Server lässt sich sonst nicht prüfen, ob der Haken überhaupt ankommt.
 class _SyncSpion extends SyncService {
   _SyncSpion(AppDatabase db)
-      : super(db, SupabaseClient('http://127.0.0.1:1', 'anon'));
+    : super(db, SupabaseClient('http://127.0.0.1:1', 'anon'));
   bool gefragt = false;
 
   @override
@@ -82,20 +83,20 @@ void main() {
 
     test('Schwester-Abteilungen bekommen eigene Dateien', () {
       expect(databaseFileName('abc-123'), 'fwapp_abc-123.sqlite');
-      expect(databaseFileName('abc-123'),
-          isNot(databaseFileName('def-456')));
+      expect(databaseFileName('abc-123'), isNot(databaseFileName('def-456')));
     });
   });
 
   group('canEditProvider mit Abteilungswahl', () {
     ProviderContainer build({String? selected, String? own}) {
-      final container = ProviderContainer(overrides: [
-        supabaseReadyProvider.overrideWithValue(true),
-        currentUserRoleProvider
-            .overrideWith((ref) async => 'geraetewart'),
-        myAbteilungIdProvider.overrideWith((ref) async => own),
-        selectedAbteilungIdProvider.overrideWith((ref) => selected),
-      ]);
+      final container = ProviderContainer(
+        overrides: [
+          supabaseReadyProvider.overrideWithValue(true),
+          currentUserRoleProvider.overrideWith((ref) async => 'geraetewart'),
+          myAbteilungIdProvider.overrideWith((ref) async => own),
+          selectedAbteilungIdProvider.overrideWith((ref) => selected),
+        ],
+      );
       addTearDown(container.dispose);
       return container;
     }
@@ -138,20 +139,26 @@ void main() {
       final anhaenge = _SpeicherSpion(db);
       final tags = _TagSpion(db);
 
-      final container = ProviderContainer(overrides: [
-        supabaseClientProvider.overrideWithValue(null),
-        anhangSpeicherProvider.overrideWithValue(anhaenge),
-        tagSyncProvider.overrideWithValue(tags),
-      ]);
+      final container = ProviderContainer(
+        overrides: [
+          supabaseClientProvider.overrideWithValue(null),
+          anhangSpeicherProvider.overrideWithValue(anhaenge),
+          tagSyncProvider.overrideWithValue(tags),
+        ],
+      );
       addTearDown(container.dispose);
 
       await container.read(abteilungSwitcherProvider).switchTo('B');
 
       expect(anhaenge.gezogen, ['B'], reason: 'Unterlagen der neuen Sicht.');
       expect(tags.gezogen, ['B'], reason: 'Codes der neuen Sicht.');
-      expect(tags.geschoben, ['B'],
-          reason: 'Erst schieben, dann ziehen — sonst überschreibt der Zug '
-              'einen gerade vergebenen Code.');
+      expect(
+        tags.geschoben,
+        ['B'],
+        reason:
+            'Erst schieben, dann ziehen — sonst überschreibt der Zug '
+            'einen gerade vergebenen Code.',
+      );
     });
 
     test('ohne Abteilung bleibt es beim Snapshot', () async {
@@ -162,45 +169,57 @@ void main() {
       addTearDown(db.close);
       final tags = _TagSpion(db);
 
-      final container = ProviderContainer(overrides: [
-        supabaseClientProvider.overrideWithValue(null),
-        anhangSpeicherProvider.overrideWithValue(_SpeicherSpion(db)),
-        tagSyncProvider.overrideWithValue(tags),
-      ]);
+      final container = ProviderContainer(
+        overrides: [
+          supabaseClientProvider.overrideWithValue(null),
+          anhangSpeicherProvider.overrideWithValue(_SpeicherSpion(db)),
+          tagSyncProvider.overrideWithValue(tags),
+        ],
+      );
       addTearDown(container.dispose);
 
       await container.read(abteilungSwitcherProvider).switchTo(null);
       expect(tags.gezogen, isEmpty);
     });
 
-    test('lehnt jemand den Verlust ab, wird gewechselt aber nicht gezogen',
-        () async {
-      // ⚠️ Der Weg ZURÜCK in die eigene Abteilung ist der teure Fall: Wer
-      // dort etwas angelegt, dann kurz zur Schwester geschaut hat, verlöre
-      // es beim Zurückkommen (#214).
-      SharedPreferences.setMockInitialValues({});
-      final db = createTestDatabase();
-      addTearDown(db.close);
-      final dienst = _SyncSpion(db);
+    test(
+      'lehnt jemand den Verlust ab, wird gewechselt aber nicht gezogen',
+      () async {
+        // ⚠️ Der Weg ZURÜCK in die eigene Abteilung ist der teure Fall: Wer
+        // dort etwas angelegt, dann kurz zur Schwester geschaut hat, verlöre
+        // es beim Zurückkommen (#214).
+        SharedPreferences.setMockInitialValues({});
+        final db = createTestDatabase();
+        addTearDown(db.close);
+        final dienst = _SyncSpion(db);
 
-      final container = ProviderContainer(overrides: [
-        supabaseClientProvider.overrideWithValue(null),
-        syncServiceProvider.overrideWithValue(dienst),
-        anhangSpeicherProvider.overrideWithValue(_SpeicherSpion(db)),
-        tagSyncProvider.overrideWithValue(_TagSpion(db)),
-      ]);
-      addTearDown(container.dispose);
+        final container = ProviderContainer(
+          overrides: [
+            supabaseClientProvider.overrideWithValue(null),
+            syncServiceProvider.overrideWithValue(dienst),
+            anhangSpeicherProvider.overrideWithValue(_SpeicherSpion(db)),
+            tagSyncProvider.overrideWithValue(_TagSpion(db)),
+          ],
+        );
+        addTearDown(container.dispose);
 
-      final gezogen = await container
-          .read(abteilungSwitcherProvider)
-          .switchTo('B', bestaetigen: (_) async => false);
+        final gezogen = await container
+            .read(abteilungSwitcherProvider)
+            .switchTo('B', bestaetigen: (_) async => false);
 
-      expect(gezogen, isFalse);
-      expect(dienst.gefragt, isTrue,
-          reason: 'Der Haken muss bis zum Zug durchgereicht werden.');
-      expect(container.read(selectedAbteilungIdProvider), 'B',
-          reason: 'Gewechselt ist gewechselt — nur geladen wurde nichts.');
-    });
+        expect(gezogen, isFalse);
+        expect(
+          dienst.gefragt,
+          isTrue,
+          reason: 'Der Haken muss bis zum Zug durchgereicht werden.',
+        );
+        expect(
+          container.read(selectedAbteilungIdProvider),
+          'B',
+          reason: 'Gewechselt ist gewechselt — nur geladen wurde nichts.',
+        );
+      },
+    );
 
     test('stimmt jemand zu, wird gezogen', () async {
       SharedPreferences.setMockInitialValues({});
@@ -208,12 +227,14 @@ void main() {
       addTearDown(db.close);
       final dienst = _SyncSpion(db);
 
-      final container = ProviderContainer(overrides: [
-        supabaseClientProvider.overrideWithValue(null),
-        syncServiceProvider.overrideWithValue(dienst),
-        anhangSpeicherProvider.overrideWithValue(_SpeicherSpion(db)),
-        tagSyncProvider.overrideWithValue(_TagSpion(db)),
-      ]);
+      final container = ProviderContainer(
+        overrides: [
+          supabaseClientProvider.overrideWithValue(null),
+          syncServiceProvider.overrideWithValue(dienst),
+          anhangSpeicherProvider.overrideWithValue(_SpeicherSpion(db)),
+          tagSyncProvider.overrideWithValue(_TagSpion(db)),
+        ],
+      );
       addTearDown(container.dispose);
 
       final gezogen = await container
@@ -229,9 +250,9 @@ void main() {
       // danach „nichts geladen", obwohl es nie etwas zu laden gab. Gefunden
       // hat das `abteilung_switcher_test.dart`, nicht ich.
       SharedPreferences.setMockInitialValues({});
-      final container = ProviderContainer(overrides: [
-        supabaseClientProvider.overrideWithValue(null),
-      ]);
+      final container = ProviderContainer(
+        overrides: [supabaseClientProvider.overrideWithValue(null)],
+      );
       addTearDown(container.dispose);
 
       expect(
@@ -244,11 +265,13 @@ void main() {
 
     test('merkt die Wahl und stellt den Provider um', () async {
       SharedPreferences.setMockInitialValues({});
-      final container = ProviderContainer(overrides: [
-        // Kein Supabase im Test: Der Switcher muss auch ohne Sync-Service
-        // funktionieren (Pull scheitert dann leise).
-        supabaseClientProvider.overrideWithValue(null),
-      ]);
+      final container = ProviderContainer(
+        overrides: [
+          // Kein Supabase im Test: Der Switcher muss auch ohne Sync-Service
+          // funktionieren (Pull scheitert dann leise).
+          supabaseClientProvider.overrideWithValue(null),
+        ],
+      );
       addTearDown(container.dispose);
 
       await container.read(abteilungSwitcherProvider).switchTo('B');

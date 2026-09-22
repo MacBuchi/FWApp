@@ -3,6 +3,7 @@
 /// flutter_cache_manager cache CachedNetworkImage reads from, so photos are
 /// available offline in the vehicle bay ("Offline-Garantie für den Einsatz").
 library;
+
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/database/database_providers.dart';
@@ -49,7 +50,8 @@ class ImagePrecacheNotifier extends Notifier<ImagePrecacheState> {
     // Tabellen, muss aber genauso offline dastehen wie die Gerätefotos —
     // sonst klafft im Keller ein Loch an der auffälligsten Stelle der App.
     try {
-      final bild = (await ref.read(gesamtwehrBrandingProvider.future))?.bildPfad;
+      final bild =
+          (await ref.read(gesamtwehrBrandingProvider.future))?.bildPfad;
       if (isRemoteImagePath(bild)) paths.add(bild!);
     } catch (e) {
       // Kein Server, keine Gesamtwehr, Alt-Server: Der Rest wird trotzdem
@@ -80,14 +82,23 @@ class ImagePrecacheNotifier extends Notifier<ImagePrecacheState> {
         appLog.w('Bild-Precache fehlgeschlagen für $path: $e');
       }
       state = ImagePrecacheState(
-          running: true, done: done, failed: failed, total: paths.length);
+        running: true,
+        done: done,
+        failed: failed,
+        total: paths.length,
+      );
     }
     state = ImagePrecacheState(
-        running: false, done: done, failed: failed, total: paths.length);
+      running: false,
+      done: done,
+      failed: failed,
+      total: paths.length,
+    );
     appLog.i('Bild-Precache: $done/${paths.length} geladen, $failed Fehler.');
   }
 }
 
 final imagePrecacheProvider =
     NotifierProvider<ImagePrecacheNotifier, ImagePrecacheState>(
-        ImagePrecacheNotifier.new);
+      ImagePrecacheNotifier.new,
+    );

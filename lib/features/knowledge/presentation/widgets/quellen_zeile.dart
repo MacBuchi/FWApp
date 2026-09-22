@@ -42,8 +42,11 @@ class QuellenZeile extends StatelessWidget {
     final zeile = Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(hatLink ? Icons.menu_book : Icons.menu_book_outlined,
-            size: 14, color: farbe),
+        Icon(
+          hatLink ? Icons.menu_book : Icons.menu_book_outlined,
+          size: 14,
+          color: farbe,
+        ),
         const SizedBox(width: 6),
         Expanded(
           child: Text(
@@ -78,16 +81,20 @@ class QuellenZeile extends StatelessWidget {
         // Kein `canLaunchUrl`-Vortest: Der hängt unter Android 11+ an der
         // Package Visibility und meldete funktionierende Links als tot
         // (dieselbe Erfahrung wie beim Lernmaterial im Gerätedetail).
-        geoeffnet =
-            await launchUrl(uri, mode: LaunchMode.externalApplication);
+        geoeffnet = await launchUrl(uri, mode: LaunchMode.externalApplication);
       } catch (e) {
         appLog.w('Fundstelle "${quelle.url}" ließ sich nicht öffnen: $e');
       }
     }
     if (!geoeffnet) {
       messenger.showSnackBar(
-          SnackBar(content: Text('Fundstelle nicht erreichbar: '
-              '${quelle.url}')));
+        SnackBar(
+          content: Text(
+            'Fundstelle nicht erreichbar: '
+            '${quelle.url}',
+          ),
+        ),
+      );
     }
   }
 }

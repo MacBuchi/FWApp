@@ -37,7 +37,8 @@ class PartySpieler {
 
   const PartySpieler(this.name, {this.punkte = 0, this.konsequenzen = 0});
 
-  PartySpieler mitTreffer() => PartySpieler(name, punkte: punkte + 1, konsequenzen: konsequenzen);
+  PartySpieler mitTreffer() =>
+      PartySpieler(name, punkte: punkte + 1, konsequenzen: konsequenzen);
 
   PartySpieler mitKonsequenz() =>
       PartySpieler(name, punkte: punkte, konsequenzen: konsequenzen + 1);
@@ -88,17 +89,16 @@ class PartyStand {
     String? aufgabe,
     bool leereAntwort = false,
     bool leereAufgabe = false,
-  }) =>
-      PartyStand(
-        spieler: spieler ?? this.spieler,
-        fragen: fragen,
-        index: index ?? this.index,
-        gewaehlt: leereAntwort ? null : (gewaehlt ?? this.gewaehlt),
-        uebergabe: uebergabe ?? this.uebergabe,
-        trinkspiel: trinkspiel,
-        aufgabenTopf: aufgabenTopf,
-        aufgabe: leereAufgabe ? null : (aufgabe ?? this.aufgabe),
-      );
+  }) => PartyStand(
+    spieler: spieler ?? this.spieler,
+    fragen: fragen,
+    index: index ?? this.index,
+    gewaehlt: leereAntwort ? null : (gewaehlt ?? this.gewaehlt),
+    uebergabe: uebergabe ?? this.uebergabe,
+    trinkspiel: trinkspiel,
+    aufgabenTopf: aufgabenTopf,
+    aufgabe: leereAufgabe ? null : (aufgabe ?? this.aufgabe),
+  );
 
   bool get beendet => index >= fragen.length;
   bool get beantwortet => gewaehlt != null;
@@ -155,9 +155,10 @@ class PartyTopf {
 Future<PartyTopf> partyTopf(Ref ref, int? vehicleId) async {
   final db = ref.watch(appDatabaseProvider);
   final fahrzeuge = await db.vehicleDao.getAll();
-  final gewaehlt = vehicleId == null
-      ? fahrzeuge
-      : fahrzeuge.where((v) => v.id == vehicleId).toList();
+  final gewaehlt =
+      vehicleId == null
+          ? fahrzeuge
+          : fahrzeuge.where((v) => v.id == vehicleId).toList();
 
   final fach = <PartyFrage>[];
   for (final v in gewaehlt) {
@@ -178,46 +179,53 @@ Future<PartyTopf> partyTopf(Ref ref, int? vehicleId) async {
           ...falsch.take(3).map(FachAntwort.ausFach),
         ]..shuffle();
         final ort = richtigeAntwort.verortung;
-        fach.add(PartyFrage(
-          art: PartyFrageArt.fach,
-          text: 'In welchem Fach liegt das?',
-          kopfzeile: eq.name,
-          // Ohne das Fahrzeug ist die Frage bei mehreren Fahrzeugen nicht zu
-          // beantworten: vier Fachnamen, aber von welchem Wagen? (Issue #172)
-          fahrzeug: v.name,
-          bildPfad: eq.imagePath,
-          funktionen: jsonToStringList(eq.equipmentFunctionsJson),
-          antworten: antworten.map(PartyAntwort.ausFach).toList(),
-          richtig: antworten.indexWhere((x) => identical(x, richtigeAntwort)),
-          erklaerung: '${eq.name} liegt im Fach ${c.label}'
-              '${ort == null ? '' : ' ($ort)'} des Fahrzeugs ${v.name}.',
-        ));
+        fach.add(
+          PartyFrage(
+            art: PartyFrageArt.fach,
+            text: 'In welchem Fach liegt das?',
+            kopfzeile: eq.name,
+            // Ohne das Fahrzeug ist die Frage bei mehreren Fahrzeugen nicht zu
+            // beantworten: vier Fachnamen, aber von welchem Wagen? (Issue #172)
+            fahrzeug: v.name,
+            bildPfad: eq.imagePath,
+            funktionen: jsonToStringList(eq.equipmentFunctionsJson),
+            antworten: antworten.map(PartyAntwort.ausFach).toList(),
+            richtig: antworten.indexWhere((x) => identical(x, richtigeAntwort)),
+            erklaerung:
+                '${eq.name} liegt im Fach ${c.label}'
+                '${ort == null ? '' : ' ($ort)'} des Fahrzeugs ${v.name}.',
+          ),
+        );
       }
     }
   }
 
   final alle = await db.equipmentDao.getAll();
-  final mitFoto = alle
-      .where((e) => e.imagePath != null && e.imagePath!.isNotEmpty)
-      .toList();
+  final mitFoto =
+      alle
+          .where((e) => e.imagePath != null && e.imagePath!.isNotEmpty)
+          .toList();
   final bild = <PartyFrage>[];
   if (alle.length >= 4) {
     for (final eq in mitFoto) {
-      final falsch = ([...alle]..shuffle())
-          .where((e) => e.id != eq.id)
-          .take(3)
-          .map((e) => e.name)
-          .toList();
+      final falsch =
+          ([...alle]..shuffle())
+              .where((e) => e.id != eq.id)
+              .take(3)
+              .map((e) => e.name)
+              .toList();
       if (falsch.length < 3) continue;
       final antworten = [eq.name, ...falsch]..shuffle();
-      bild.add(PartyFrage(
-        art: PartyFrageArt.bild,
-        text: 'Was ist das?',
-        bildPfad: eq.imagePath,
-        funktionen: jsonToStringList(eq.equipmentFunctionsJson),
-        antworten: antworten.map(PartyAntwort.new).toList(),
-        richtig: antworten.indexOf(eq.name),
-      ));
+      bild.add(
+        PartyFrage(
+          art: PartyFrageArt.bild,
+          text: 'Was ist das?',
+          bildPfad: eq.imagePath,
+          funktionen: jsonToStringList(eq.equipmentFunctionsJson),
+          antworten: antworten.map(PartyAntwort.new).toList(),
+          richtig: antworten.indexOf(eq.name),
+        ),
+      );
     }
   }
 
@@ -231,18 +239,22 @@ Future<PartyTopf> partyTopf(Ref ref, int? vehicleId) async {
       for (final a in await db.assignmentDao.getByCompartment(c.id)) {
         final eq = await db.equipmentDao.getById(a.equipmentId);
         if (eq == null) continue;
-        geraete.add(GeraetAufFahrzeug(
-          name: eq.name,
-          bildPfad: eq.imagePath,
-          funktionen: jsonToStringList(eq.equipmentFunctionsJson),
-        ));
+        geraete.add(
+          GeraetAufFahrzeug(
+            name: eq.name,
+            bildPfad: eq.imagePath,
+            funktionen: jsonToStringList(eq.equipmentFunctionsJson),
+          ),
+        );
       }
     }
-    staende.add(FahrzeugStand(
-      name: v.name,
-      kennzeichen: v.licensePlate,
-      geraete: geraete,
-    ));
+    staende.add(
+      FahrzeugStand(
+        name: v.name,
+        kennzeichen: v.licensePlate,
+        geraete: geraete,
+      ),
+    );
   }
 
   return PartyTopf(
@@ -313,9 +325,8 @@ class PartySpiel extends _$PartySpiel {
       fach: topf.fach,
       bild: topf.bild,
       fahrzeug: topf.fahrzeug,
-      unerwartet: wissen
-          .map((f) => wissensfrageAlsPartyFrage(f, _zufall))
-          .toList(),
+      unerwartet:
+          wissen.map((f) => wissensfrageAlsPartyFrage(f, _zufall)).toList(),
       anzahl: namen.length * fragenProSpieler,
       // Eine Runde ist ein Umlauf des Handys — dieselbe Länge, mit der
       // `zugNummer` rechnet. Daran hängt „eine Runde, eine Kategorie".

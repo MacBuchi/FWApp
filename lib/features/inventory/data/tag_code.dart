@@ -54,14 +54,13 @@ String erzeugeTagCode(Set<String> vergeben, {Random? zufall}) {
   // Möglichkeiten heißt „hundertmal danebengegriffen" nicht Pech, sondern
   // dass etwas anderes kaputt ist — dann lieber laut scheitern.
   for (var versuch = 0; versuch < 100; versuch++) {
-    final code = '$kTagPrefix${List.generate(
-      _laenge,
-      (_) => _alphabet[r.nextInt(_alphabet.length)],
-    ).join()}';
+    final code =
+        '$kTagPrefix${List.generate(_laenge, (_) => _alphabet[r.nextInt(_alphabet.length)]).join()}';
     if (!vergeben.contains(code)) return code;
   }
   throw StateError(
-      'Kein freier Tag-Code nach 100 Versuchen — das ist kein Zufall.');
+    'Kein freier Tag-Code nach 100 Versuchen — das ist kein Zufall.',
+  );
 }
 
 /// Ob [code] von dieser App vergeben wurde.

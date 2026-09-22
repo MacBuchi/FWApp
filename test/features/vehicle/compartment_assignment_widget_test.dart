@@ -6,6 +6,7 @@
 /// außer Import und Vorlage. Genau das kann nur ein Test über die Oberfläche
 /// festhalten.
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/core/database/app_database.dart';
@@ -23,13 +24,17 @@ void main() {
   setUp(() async {
     db = createTestDatabase();
     vehicleId = await db.vehicleDao.insertVehicle(
-        VehiclesCompanion.insert(name: 'HLF 20', type: 'HLF 20'));
+      VehiclesCompanion.insert(name: 'HLF 20', type: 'HLF 20'),
+    );
     compartmentId = await db.compartmentDao.insertCompartment(
-        CompartmentsCompanion.insert(vehicleId: vehicleId, label: 'G1'));
-    await db.equipmentDao
-        .insertEquipment(EquipmentItemsCompanion.insert(name: 'Leitkegel'));
-    await db.equipmentDao
-        .insertEquipment(EquipmentItemsCompanion.insert(name: 'Spineboard'));
+      CompartmentsCompanion.insert(vehicleId: vehicleId, label: 'G1'),
+    );
+    await db.equipmentDao.insertEquipment(
+      EquipmentItemsCompanion.insert(name: 'Leitkegel'),
+    );
+    await db.equipmentDao.insertEquipment(
+      EquipmentItemsCompanion.insert(name: 'Spineboard'),
+    );
   });
 
   tearDown(() => db.close());
@@ -48,8 +53,9 @@ void main() {
   }
 
   Future<void> oeffneFach(WidgetTester tester) async {
-    await tester.pumpWidget(buildTestApp(
-        db: db, home: VehicleDetailScreen(vehicleId: vehicleId)));
+    await tester.pumpWidget(
+      buildTestApp(db: db, home: VehicleDetailScreen(vehicleId: vehicleId)),
+    );
     await tester.pumpAndSettle();
     await tippe(tester, find.text('G1').last);
   }
@@ -84,8 +90,9 @@ void main() {
     await endTestApp(tester);
   });
 
-  testWidgets('der Anlege-Weg reicht den Suchbegriff als Namen weiter',
-      (tester) async {
+  testWidgets('der Anlege-Weg reicht den Suchbegriff als Namen weiter', (
+    tester,
+  ) async {
     // Das ist Marcus' Aufnahme-Ablauf: Raum für Raum durchgehen und
     // unterwegs anlegen, was noch fehlt — ohne den Begriff zweimal zu tippen.
     await oeffneFach(tester);
@@ -100,12 +107,16 @@ void main() {
     await endTestApp(tester);
   });
 
-  testWidgets('ein zugewiesenes Gerät lässt sich wieder entfernen',
-      (tester) async {
+  testWidgets('ein zugewiesenes Gerät lässt sich wieder entfernen', (
+    tester,
+  ) async {
     final equipmentId = (await db.equipmentDao.getAll()).first.id;
     await db.assignmentDao.insertAssignment(
-        EquipmentAssignmentsCompanion.insert(
-            compartmentId: compartmentId, equipmentId: equipmentId));
+      EquipmentAssignmentsCompanion.insert(
+        compartmentId: compartmentId,
+        equipmentId: equipmentId,
+      ),
+    );
 
     await oeffneFach(tester);
     await tippe(tester, find.byIcon(Icons.more_vert).first);
@@ -116,15 +127,18 @@ void main() {
     await endTestApp(tester);
   });
 
-  testWidgets('ohne Schreibrecht gibt es keinen Zuweisen-Einstieg',
-      (tester) async {
+  testWidgets('ohne Schreibrecht gibt es keinen Zuweisen-Einstieg', (
+    tester,
+  ) async {
     // Spiegel des Rollen-Gates: Ein Mitglied liest den Bestand, es
     // verändert ihn nicht.
-    await tester.pumpWidget(buildTestApp(
-      db: db,
-      home: VehicleDetailScreen(vehicleId: vehicleId),
-      overrides: [canEditProvider.overrideWithValue(false)],
-    ));
+    await tester.pumpWidget(
+      buildTestApp(
+        db: db,
+        home: VehicleDetailScreen(vehicleId: vehicleId),
+        overrides: [canEditProvider.overrideWithValue(false)],
+      ),
+    );
     await tester.pumpAndSettle();
     await tippe(tester, find.text('G1').last);
 

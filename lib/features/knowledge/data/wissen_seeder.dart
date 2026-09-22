@@ -45,7 +45,8 @@ class WissenSeeder {
       var angelegt = 0;
       for (final f in inhalte.fragen) {
         if (!vorhanden.add(_schluessel(f.frage))) continue;
-        final gebiet = Wissensgebiet.ausSchluessel(f.gebiet) ??
+        final gebiet =
+            Wissensgebiet.ausSchluessel(f.gebiet) ??
             // Ohne Gebiet im Asset: Klischees bleiben Klischees, alles
             // andere landet im organisatorischen Sammelbecken, statt sich
             // ein Sachgebiet anzumaßen.
@@ -53,17 +54,20 @@ class WissenSeeder {
                 ? Wissensgebiet.klischee
                 : Wissensgebiet.rechtUndOrganisation);
 
-        await _db.wissenDao.insertFrage(WissensfragenCompanion.insert(
-          gebiet: gebiet.schluessel,
-          frage: f.frage,
-          antwortenJson: Value(stringListToJson(f.antworten)),
-          richtigeJson: Value(stringListToJson(['${f.richtig}'])
-              .replaceAll('"', '')),
-          erklaerung: Value(f.erklaerung),
-          herkunft: Value(Fragenherkunft.mitgeliefert.schluessel),
-          // Ausgeliefertes ist geprüft — es wartet auf niemanden.
-          stand: Value(Fragenstand.freigegeben.schluessel),
-        ));
+        await _db.wissenDao.insertFrage(
+          WissensfragenCompanion.insert(
+            gebiet: gebiet.schluessel,
+            frage: f.frage,
+            antwortenJson: Value(stringListToJson(f.antworten)),
+            richtigeJson: Value(
+              stringListToJson(['${f.richtig}']).replaceAll('"', ''),
+            ),
+            erklaerung: Value(f.erklaerung),
+            herkunft: Value(Fragenherkunft.mitgeliefert.schluessel),
+            // Ausgeliefertes ist geprüft — es wartet auf niemanden.
+            stand: Value(Fragenstand.freigegeben.schluessel),
+          ),
+        );
         angelegt++;
       }
       if (angelegt > 0) {
@@ -108,18 +112,20 @@ class WissenSeeder {
         // bleibt damit prüfbar, und die richtige Antwort steht trotzdem nicht
         // auf jedem Gerät an derselben Stelle.
         final antworten = [g.richtige, ...g.falsche]..shuffle();
-        await _db.wissenDao.insertFrage(WissensfragenCompanion.insert(
-          gebiet: kGeraetefragenGebiet.schluessel,
-          frage: g.frage,
-          antwortenJson: Value(stringListToJson(antworten)),
-          richtigeJson: Value(jsonEncode([antworten.indexOf(g.richtige)])),
-          erklaerung: Value(g.erklaerung),
-          herkunft: Value(Fragenherkunft.mitgeliefert.schluessel),
-          stand: Value(Fragenstand.freigegeben.schluessel),
-          quelleWerk: Value(kGeraetefragenQuelle.werk),
-          quelleFundstelle: Value(kGeraetefragenQuelle.fundstelle),
-          geraet: Value(g.geraet),
-        ));
+        await _db.wissenDao.insertFrage(
+          WissensfragenCompanion.insert(
+            gebiet: kGeraetefragenGebiet.schluessel,
+            frage: g.frage,
+            antwortenJson: Value(stringListToJson(antworten)),
+            richtigeJson: Value(jsonEncode([antworten.indexOf(g.richtige)])),
+            erklaerung: Value(g.erklaerung),
+            herkunft: Value(Fragenherkunft.mitgeliefert.schluessel),
+            stand: Value(Fragenstand.freigegeben.schluessel),
+            quelleWerk: Value(kGeraetefragenQuelle.werk),
+            quelleFundstelle: Value(kGeraetefragenQuelle.fundstelle),
+            geraet: Value(g.geraet),
+          ),
+        );
         angelegt++;
       }
       if (angelegt > 0) {
@@ -148,23 +154,25 @@ class WissenSeeder {
       var angelegt = 0;
       for (final f in fragen) {
         if (!vorhanden.add(_schluessel(f.frage))) continue;
-        await _db.wissenDao.insertFrage(WissensfragenCompanion.insert(
-          gebiet: f.gebiet.schluessel,
-          frage: f.frage,
-          antwortenJson: Value(stringListToJson(f.antworten)),
-          richtigeJson: Value(jsonEncode(f.richtige.toList()..sort())),
-          erklaerung: Value(f.erklaerung),
-          herkunft: Value(Fragenherkunft.mitgeliefert.schluessel),
-          stand: Value(Fragenstand.freigegeben.schluessel),
-          quelleWerk: Value(f.quelle?.werk),
-          quelleFundstelle: Value(f.quelle?.fundstelle),
-          quelleStand: Value(f.quelle?.stand),
-          quelleUrl: Value(f.quelle?.url),
-          geltung: Value(f.geltung.schluessel),
-          land: Value(f.land),
-          kapitel: Value(f.kapitel),
-          bildPfad: Value(f.bildPfad),
-        ));
+        await _db.wissenDao.insertFrage(
+          WissensfragenCompanion.insert(
+            gebiet: f.gebiet.schluessel,
+            frage: f.frage,
+            antwortenJson: Value(stringListToJson(f.antworten)),
+            richtigeJson: Value(jsonEncode(f.richtige.toList()..sort())),
+            erklaerung: Value(f.erklaerung),
+            herkunft: Value(Fragenherkunft.mitgeliefert.schluessel),
+            stand: Value(Fragenstand.freigegeben.schluessel),
+            quelleWerk: Value(f.quelle?.werk),
+            quelleFundstelle: Value(f.quelle?.fundstelle),
+            quelleStand: Value(f.quelle?.stand),
+            quelleUrl: Value(f.quelle?.url),
+            geltung: Value(f.geltung.schluessel),
+            land: Value(f.land),
+            kapitel: Value(f.kapitel),
+            bildPfad: Value(f.bildPfad),
+          ),
+        );
         angelegt++;
       }
       if (angelegt > 0) {

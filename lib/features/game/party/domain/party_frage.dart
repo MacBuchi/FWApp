@@ -44,11 +44,11 @@ enum PartyFrageArt {
 /// Kategorie" (Issue #172) sichtbar ist und nicht nur im Code gilt.
 extension PartyFrageArtName on PartyFrageArt {
   String get bezeichnung => switch (this) {
-        PartyFrageArt.fach => 'Wo liegt was?',
-        PartyFrageArt.bild => 'Was ist das?',
-        PartyFrageArt.fahrzeug => 'Welcher Wagen?',
-        PartyFrageArt.unerwartet => 'Unerwartetes',
-      };
+    PartyFrageArt.fach => 'Wo liegt was?',
+    PartyFrageArt.bild => 'Was ist das?',
+    PartyFrageArt.fahrzeug => 'Welcher Wagen?',
+    PartyFrageArt.unerwartet => 'Unerwartetes',
+  };
 }
 
 /// Eine Antwortmöglichkeit.
@@ -61,8 +61,7 @@ class PartyAntwort {
 
   const PartyAntwort(this.text, {this.fach});
 
-  factory PartyAntwort.ausFach(FachAntwort f) =>
-      PartyAntwort(f.label, fach: f);
+  factory PartyAntwort.ausFach(FachAntwort f) => PartyAntwort(f.label, fach: f);
 }
 
 /// Eine gestellte Frage.
@@ -241,8 +240,7 @@ List<PartyFrage> mischePartie({
   final partie = [for (final runde in runden) ...runde];
 
   if (partie.length < anzahl) {
-    final uebrig = [for (final topf in vorrat.values) ...topf]
-      ..shuffle(zufall);
+    final uebrig = [for (final topf in vorrat.values) ...topf]..shuffle(zufall);
     partie.addAll(uebrig.take(anzahl - partie.length));
   }
 

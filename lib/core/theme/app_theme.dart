@@ -7,6 +7,7 @@
 /// Flächen, Abstände — bleibt für jede Palette gleich, damit die Auswahl das
 /// Erscheinungsbild färbt und nicht umbaut.
 library;
+
 import 'package:flutter/material.dart';
 import 'package:fwapp/core/theme/app_palette.dart';
 
@@ -48,9 +49,10 @@ ColorScheme schemeFor(AppPalette palette, Brightness brightness) {
   final calm = of(palette.seed, DynamicSchemeVariant.neutral);
   // Zweitakzent gedämpfter als der Hauptakzent (tonalSpot statt fidelity):
   // Zwei Vollton-Farben nebeneinander konkurrieren, eine muss führen.
-  final second = palette.secondarySeed == null
-      ? null
-      : of(palette.secondarySeed!, DynamicSchemeVariant.tonalSpot);
+  final second =
+      palette.secondarySeed == null
+          ? null
+          : of(palette.secondarySeed!, DynamicSchemeVariant.tonalSpot);
 
   return tinted.copyWith(
     // Akzentpaare: kräftig.
@@ -109,8 +111,7 @@ class AppTheme {
       ),
       // Kräftigere Hierarchie: Zahlen und Titel dürfen tragen, Nebentext
       // tritt zurück. Tabellenziffern, damit XP/Zähler nicht tanzen.
-      textTheme: Typography.material2021(colorScheme: scheme)
-          .englishLike
+      textTheme: Typography.material2021(colorScheme: scheme).englishLike
           .apply(bodyColor: scheme.onSurface, displayColor: scheme.onSurface)
           .copyWith(
             headlineMedium: TextStyle(
@@ -137,9 +138,7 @@ class AppTheme {
       cardTheme: CardThemeData(
         elevation: 0,
         color: scheme.surfaceContainerLow,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(22),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
         margin: const EdgeInsets.symmetric(vertical: 5),
       ),
       listTileTheme: ListTileThemeData(
@@ -155,16 +154,18 @@ class AppTheme {
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           textStyle: const TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           textStyle: const TextStyle(fontWeight: FontWeight.w600),
         ),
@@ -185,15 +186,19 @@ class AppTheme {
         indicatorColor: scheme.primary,
         iconTheme: WidgetStateProperty.resolveWith(
           (states) => IconThemeData(
-            color: states.contains(WidgetState.selected)
-                ? scheme.onPrimary
-                : scheme.onSurfaceVariant,
+            color:
+                states.contains(WidgetState.selected)
+                    ? scheme.onPrimary
+                    : scheme.onSurfaceVariant,
           ),
         ),
-        labelTextStyle: WidgetStatePropertyAll(TextStyle(
+        labelTextStyle: WidgetStatePropertyAll(
+          TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,
-            color: scheme.onSurface)),
+            color: scheme.onSurface,
+          ),
+        ),
       ),
       // year2023: false schaltet auf die aktualisierte M3-Optik um:
       // abgerundete Enden, Lücke zwischen Wert und Spur, Stopp-Punkt —

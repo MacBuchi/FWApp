@@ -27,9 +27,10 @@ class AbzeichenZeile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final stufe = abzeichenFuerLevel(level);
-    final name = stufe == null
-        ? (kompakt ? 'Kein Abzeichen' : 'Noch kein Leistungsabzeichen')
-        : (kompakt ? kAbzeichenNamen[stufe]! : abzeichenText(stufe));
+    final name =
+        stufe == null
+            ? (kompakt ? 'Kein Abzeichen' : 'Noch kein Leistungsabzeichen')
+            : (kompakt ? kAbzeichenNamen[stufe]! : abzeichenText(stufe));
 
     return Column(
       crossAxisAlignment:
@@ -43,17 +44,19 @@ class AbzeichenZeile extends StatelessWidget {
               size: kompakt ? 16 : 20,
               // Ohne Stufe die gedämpfte Farbe: Ein bronzefarbenes Symbol
               // neben „Kein Abzeichen" liest sich wie ein Widerspruch.
-              color: stufe == null
-                  ? theme.colorScheme.outline
-                  : kAbzeichenFarben[stufe],
+              color:
+                  stufe == null
+                      ? theme.colorScheme.outline
+                      : kAbzeichenFarben[stufe],
             ),
             const SizedBox(width: 6),
             Flexible(
               child: Text(
                 name,
-                style: kompakt
-                    ? theme.textTheme.labelLarge
-                    : theme.textTheme.titleSmall,
+                style:
+                    kompakt
+                        ? theme.textTheme.labelLarge
+                        : theme.textTheme.titleSmall,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -61,8 +64,9 @@ class AbzeichenZeile extends StatelessWidget {
         ),
         Text(
           abzeichenFortschrittText(level),
-          style: theme.textTheme.bodySmall
-              ?.copyWith(color: theme.colorScheme.outline),
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.outline,
+          ),
           textAlign: kompakt ? TextAlign.start : TextAlign.center,
         ),
       ],

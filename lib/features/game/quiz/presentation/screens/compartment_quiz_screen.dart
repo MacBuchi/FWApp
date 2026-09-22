@@ -1,5 +1,6 @@
 /// compartment_quiz_screen.dart – Multiple-choice: which compartment for this equipment?
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/database/database_providers.dart';
@@ -18,8 +19,7 @@ class CompartmentQuizScreen extends ConsumerStatefulWidget {
       _CompartmentQuizScreenState();
 }
 
-class _CompartmentQuizScreenState
-    extends ConsumerState<CompartmentQuizScreen> {
+class _CompartmentQuizScreenState extends ConsumerState<CompartmentQuizScreen> {
   Vehicle? _selectedVehicle;
   bool _quizStarted = false;
 
@@ -46,24 +46,31 @@ class _CompartmentQuizScreenState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text('Wähle ein Fahrzeug oder starte mit allen:',
-                style: TextStyle(fontSize: 16)),
+            const Text(
+              'Wähle ein Fahrzeug oder starte mit allen:',
+              style: TextStyle(fontSize: 16),
+            ),
             const SizedBox(height: 16),
             vehiclesAsync.when(
               loading: () => const CircularProgressIndicator(),
               error: (e, _) => Text('Fehler: $e'),
-              data: (vehicles) => DropdownButtonFormField<Vehicle?>(
-                initialValue: _selectedVehicle,
-                decoration:
-                    const InputDecoration(labelText: 'Fahrzeug (optional)'),
-                items: [
-                  const DropdownMenuItem(
-                      value: null, child: Text('Alle Fahrzeuge')),
-                  ...vehicles.map((v) =>
-                      DropdownMenuItem(value: v, child: Text(v.name))),
-                ],
-                onChanged: (v) => setState(() => _selectedVehicle = v),
-              ),
+              data:
+                  (vehicles) => DropdownButtonFormField<Vehicle?>(
+                    initialValue: _selectedVehicle,
+                    decoration: const InputDecoration(
+                      labelText: 'Fahrzeug (optional)',
+                    ),
+                    items: [
+                      const DropdownMenuItem(
+                        value: null,
+                        child: Text('Alle Fahrzeuge'),
+                      ),
+                      ...vehicles.map(
+                        (v) => DropdownMenuItem(value: v, child: Text(v.name)),
+                      ),
+                    ],
+                    onChanged: (v) => setState(() => _selectedVehicle = v),
+                  ),
             ),
             const SizedBox(height: 24),
             FilledButton.icon(
@@ -80,9 +87,10 @@ class _CompartmentQuizScreenState
   Future<void> _startQuiz() async {
     final db = ref.read(appDatabaseProvider);
     final vehicleRepo = ref.read(vehicleRepositoryProvider);
-    final allVehicles = _selectedVehicle != null
-        ? [_selectedVehicle!]
-        : await vehicleRepo.getAll();
+    final allVehicles =
+        _selectedVehicle != null
+            ? [_selectedVehicle!]
+            : await vehicleRepo.getAll();
 
     final questions = <_QuizQuestion>[];
     for (final v in allVehicles) {
@@ -98,22 +106,24 @@ class _CompartmentQuizScreenState
           // Die Antworten tragen die Verortung mit (Issue #167): Alle vier
           // zeigen Seite und Längsposition, verraten also nichts — aber wer
           // das Quiz spielt, lernt die Konvention nebenbei mit.
-          final wrong = compartments
-              .where((x) => x.id != c.id)
-              .map(FachAntwort.ausFach)
-              .toList();
+          final wrong =
+              compartments
+                  .where((x) => x.id != c.id)
+                  .map(FachAntwort.ausFach)
+                  .toList();
           if (wrong.length < 3) continue;
           wrong.shuffle();
-          final options = [FachAntwort.ausFach(c), ...wrong.take(3)]
-            ..shuffle();
-          questions.add(_QuizQuestion(
-            equipmentId: eq.id,
-            equipmentName: eq.name,
-            imagePath: eq.imagePath,
-            functions: jsonToStringList(eq.equipmentFunctionsJson),
-            correctAnswer: c.label,
-            options: options,
-          ));
+          final options = [FachAntwort.ausFach(c), ...wrong.take(3)]..shuffle();
+          questions.add(
+            _QuizQuestion(
+              equipmentId: eq.id,
+              equipmentName: eq.name,
+              imagePath: eq.imagePath,
+              functions: jsonToStringList(eq.equipmentFunctionsJson),
+              correctAnswer: c.label,
+              options: options,
+            ),
+          );
         }
       }
     }
@@ -121,9 +131,13 @@ class _CompartmentQuizScreenState
     questions.shuffle();
     if (questions.isEmpty) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
             content: Text(
-                'Nicht genug Daten für ein Quiz. Bitte zuerst Fahrzeuge und Beladungen anlegen.')));
+              'Nicht genug Daten für ein Quiz. Bitte zuerst Fahrzeuge und Beladungen anlegen.',
+            ),
+          ),
+        );
       }
       return;
     }
@@ -149,8 +163,7 @@ class _CompartmentQuizScreenState
         child: Column(
           children: [
             // Progress
-            LinearProgressIndicator(
-                value: _currentIndex / _questions.length),
+            LinearProgressIndicator(value: _currentIndex / _questions.length),
             const SizedBox(height: 16),
             // Equipment photo or category pictogram
             EquipmentAvatar(
@@ -160,58 +173,66 @@ class _CompartmentQuizScreenState
               width: double.infinity,
             ),
             const SizedBox(height: 12),
-            Text(q.equipmentName,
-                style: const TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center),
+            Text(
+              q.equipmentName,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 8),
-            const Text('In welchem Fach befindet sich dieses Gerät?',
-                style: TextStyle(color: Colors.grey)),
+            const Text(
+              'In welchem Fach befindet sich dieses Gerät?',
+              style: TextStyle(color: Colors.grey),
+            ),
             const SizedBox(height: 20),
             // Options
-            ...q.options.map((opt) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: _answered
-                            ? opt.label == q.correctAnswer
-                                ? Colors.green.withValues(alpha: 0.15)
-                                : opt.label == _selectedAnswer
-                                    ? Colors.red.withValues(alpha: 0.15)
-                                    : null
-                            : null,
-                        side: BorderSide(
-                          color: _answered
+            ...q.options.map(
+              (opt) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      backgroundColor:
+                          _answered
                               ? opt.label == q.correctAnswer
-                                  ? Colors.green
+                                  ? Colors.green.withValues(alpha: 0.15)
                                   : opt.label == _selectedAnswer
-                                      ? Colors.red
-                                      : Colors.grey
-                              : Colors.grey,
-                          width:
-                              _answered && opt.label == q.correctAnswer ? 2 : 1,
-                        ),
-                        // Waagerecht ausdrücklich: `symmetric(vertical:)`
-                        // setzt die Seiten auf 0, und der Farbpunkt klebte
-                        // am Rand.
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 12, horizontal: 16),
+                                  ? Colors.red.withValues(alpha: 0.15)
+                                  : null
+                              : null,
+                      side: BorderSide(
+                        color:
+                            _answered
+                                ? opt.label == q.correctAnswer
+                                    ? Colors.green
+                                    : opt.label == _selectedAnswer
+                                    ? Colors.red
+                                    : Colors.grey
+                                : Colors.grey,
+                        width:
+                            _answered && opt.label == q.correctAnswer ? 2 : 1,
                       ),
-                      onPressed:
-                          _answered ? null : () => _answer(opt.label, q),
-                      child: FachAntwortInhalt(antwort: opt),
+                      // Waagerecht ausdrücklich: `symmetric(vertical:)`
+                      // setzt die Seiten auf 0, und der Farbpunkt klebte
+                      // am Rand.
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 12,
+                        horizontal: 16,
+                      ),
                     ),
+                    onPressed: _answered ? null : () => _answer(opt.label, q),
+                    child: FachAntwortInhalt(antwort: opt),
                   ),
-                )),
+                ),
+              ),
+            ),
             if (_answered) ...[
               const SizedBox(height: 16),
               FilledButton(
                 onPressed: _next,
-                child: Text(_currentIndex + 1 < _questions.length
-                    ? 'Weiter'
-                    : 'Ergebnis'),
+                child: Text(
+                  _currentIndex + 1 < _questions.length ? 'Weiter' : 'Ergebnis',
+                ),
               ),
             ],
           ],
@@ -246,17 +267,18 @@ class _CompartmentQuizScreenState
 
   Future<void> _saveResult() async {
     final db = ref.read(appDatabaseProvider);
-    await db.quizDao.insertResult(QuizResultsCompanion.insert(
-      quizType: 'compartment',
-      score: _score,
-      total: _questions.length,
-    ));
+    await db.quizDao.insertResult(
+      QuizResultsCompanion.insert(
+        quizType: 'compartment',
+        score: _score,
+        total: _questions.length,
+      ),
+    );
   }
 
   Widget _buildResults() {
-    final pct = _questions.isNotEmpty
-        ? (_score / _questions.length * 100).round()
-        : 0;
+    final pct =
+        _questions.isNotEmpty ? (_score / _questions.length * 100).round() : 0;
     return Scaffold(
       appBar: AppBar(title: const Text('Ergebnis')),
       body: Center(
@@ -267,28 +289,35 @@ class _CompartmentQuizScreenState
             children: [
               CircleAvatar(
                 radius: 60,
-                backgroundColor: pct >= 80
-                    ? Colors.green
-                    : pct >= 50
+                backgroundColor:
+                    pct >= 80
+                        ? Colors.green
+                        : pct >= 50
                         ? Colors.orange
                         : Colors.red,
-                child: Text('$pct%',
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold)),
+                child: Text(
+                  '$pct%',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
               const SizedBox(height: 20),
-              Text('$_score von ${_questions.length} richtig',
-                  style: const TextStyle(fontSize: 20)),
+              Text(
+                '$_score von ${_questions.length} richtig',
+                style: const TextStyle(fontSize: 20),
+              ),
               const SizedBox(height: 30),
               FilledButton.icon(
                 icon: const Icon(Icons.replay),
                 label: const Text('Nochmal spielen'),
-                onPressed: () => setState(() {
-                  _quizStarted = false;
-                  _questions = [];
-                }),
+                onPressed:
+                    () => setState(() {
+                      _quizStarted = false;
+                      _questions = [];
+                    }),
               ),
             ],
           ),

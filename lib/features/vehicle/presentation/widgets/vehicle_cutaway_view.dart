@@ -9,6 +9,7 @@
 /// vorher — ein Fahrzeug, das noch niemand zugeordnet hat, soll sich nicht
 /// plötzlich anders anfühlen.
 library;
+
 import 'package:flutter/material.dart';
 import 'package:fwapp/features/compartment/domain/entities/compartment.dart';
 import 'package:fwapp/features/compartment/domain/fahrzeug_seiten.dart';
@@ -35,34 +36,36 @@ enum CutawayTileStatus { normal, selected, correct, wrong }
 }) {
   final farbe = seitenFarbe(seite);
   return switch (status) {
-    CutawayTileStatus.normal => farbe == null
-        ? (
+    CutawayTileStatus.normal =>
+      farbe == null
+          ? (
             fill: scheme.surfaceContainerHighest,
             border: scheme.outlineVariant,
             fg: scheme.onSurface,
           )
-        : (
+          : (
             fill: farbe.flaeche(brightness),
             border: farbe.rand(brightness),
             fg: farbe.text(brightness),
           ),
-    CutawayTileStatus.selected => farbe == null
-        ? (
+    CutawayTileStatus.selected =>
+      farbe == null
+          ? (
             fill: scheme.primaryContainer,
             border: scheme.primary,
             fg: scheme.onPrimaryContainer,
           )
-        : (fill: farbe.akzent, border: farbe.akzent, fg: Colors.white),
+          : (fill: farbe.akzent, border: farbe.akzent, fg: Colors.white),
     CutawayTileStatus.correct => (
-        fill: Colors.green.shade100,
-        border: Colors.green.shade700,
-        fg: Colors.green.shade900,
-      ),
+      fill: Colors.green.shade100,
+      border: Colors.green.shade700,
+      fg: Colors.green.shade900,
+    ),
     CutawayTileStatus.wrong => (
-        fill: Colors.red.shade100,
-        border: Colors.red.shade700,
-        fg: Colors.red.shade900,
-      ),
+      fill: Colors.red.shade100,
+      border: Colors.red.shade700,
+      fg: Colors.red.shade900,
+    ),
   };
 }
 
@@ -88,11 +91,14 @@ class FachStatusZeichen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => switch (status) {
-        CutawayTileStatus.correct =>
-          Icon(Icons.check_circle, size: size, color: farbe),
-        CutawayTileStatus.wrong => Icon(Icons.cancel, size: size, color: farbe),
-        _ => const SizedBox.shrink(),
-      };
+    CutawayTileStatus.correct => Icon(
+      Icons.check_circle,
+      size: size,
+      color: farbe,
+    ),
+    CutawayTileStatus.wrong => Icon(Icons.cancel, size: size, color: farbe),
+    _ => const SizedBox.shrink(),
+  };
 }
 
 class CutawayTileState {
@@ -126,7 +132,7 @@ class VehicleCutawayView extends StatelessWidget {
 
   /// Optional wrapper around each tile (e.g. a DragTarget in Drag&Drop mode).
   final Widget Function(Compartment compartment, Widget tile)?
-      tileWrapperBuilder;
+  tileWrapperBuilder;
   final double tileHeight;
 
   const VehicleCutawayView({
@@ -141,13 +147,15 @@ class VehicleCutawayView extends StatelessWidget {
   /// Rows of tiles: explicit grid placement if any compartment has grid
   /// coordinates, otherwise auto-flow by position into rows of 3.
   static List<List<Compartment>> layoutRows(List<Compartment> compartments) {
-    final placed = compartments
-        .where((c) => c.gridRow != null && c.gridCol != null)
-        .toList();
-    final unplaced = compartments
-        .where((c) => c.gridRow == null || c.gridCol == null)
-        .toList()
-      ..sort((a, b) => a.position.compareTo(b.position));
+    final placed =
+        compartments
+            .where((c) => c.gridRow != null && c.gridCol != null)
+            .toList();
+    final unplaced =
+        compartments
+            .where((c) => c.gridRow == null || c.gridCol == null)
+            .toList()
+          ..sort((a, b) => a.position.compareTo(b.position));
 
     final rows = <List<Compartment>>[];
     if (placed.isNotEmpty) {
@@ -162,8 +170,9 @@ class VehicleCutawayView extends StatelessWidget {
     }
     // Unplaced compartments flow into trailing rows of 3.
     for (var i = 0; i < unplaced.length; i += 3) {
-      rows.add(unplaced.sublist(
-          i, i + 3 > unplaced.length ? unplaced.length : i + 3));
+      rows.add(
+        unplaced.sublist(i, i + 3 > unplaced.length ? unplaced.length : i + 3),
+      );
     }
     return rows;
   }
@@ -177,9 +186,11 @@ class VehicleCutawayView extends StatelessWidget {
   /// Ohne jede Seitenangabe liefert die Funktion GENAU EINEN Bereich ohne
   /// Überschrift; daran hängt die Rückwärtskompatibilität.
   static List<({String? seite, List<List<Compartment>> reihen})> layoutBereiche(
-      List<Compartment> compartments) {
-    final mitSeite =
-        compartments.where((c) => c.seite != null).toList(growable: false);
+    List<Compartment> compartments,
+  ) {
+    final mitSeite = compartments
+        .where((c) => c.seite != null)
+        .toList(growable: false);
     if (mitSeite.isEmpty) {
       return [(seite: null, reihen: layoutRows(compartments))];
     }
@@ -192,9 +203,10 @@ class VehicleCutawayView extends StatelessWidget {
     // Unbekannte Werte (Server neuer als die App) landen bewusst hier statt
     // zu verschwinden — ein Fach, das man nicht mehr sieht, ist schlimmer
     // als eines unter der falschen Überschrift.
-    final ohne = compartments
-        .where((c) => c.seite == null || !kFahrzeugSeiten.contains(c.seite))
-        .toList();
+    final ohne =
+        compartments
+            .where((c) => c.seite == null || !kFahrzeugSeiten.contains(c.seite))
+            .toList();
     if (ohne.isNotEmpty) {
       bereiche.add((seite: null, reihen: layoutRows(ohne)));
     }
@@ -247,8 +259,7 @@ class VehicleCutawayView extends StatelessWidget {
       compartment: c,
       state: state,
       height: tileHeight,
-      onTap:
-          onTapCompartment == null ? null : () => onTapCompartment!(c),
+      onTap: onTapCompartment == null ? null : () => onTapCompartment!(c),
     );
     return tileWrapperBuilder?.call(c, tile) ?? tile;
   }
@@ -303,20 +314,28 @@ class _CutawayTile extends StatelessWidget {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                            color: fg),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          color: fg,
+                        ),
                       ),
                       if (state.statusText != null)
-                        Text(state.statusText!,
-                            style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: fg.withValues(alpha: 0.85)))
+                        Text(
+                          state.statusText!,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: fg.withValues(alpha: 0.85),
+                          ),
+                        )
                       else if (state.itemCount != null)
-                        Text('${state.itemCount} Geräte',
-                            style: TextStyle(
-                                fontSize: 11, color: fg.withValues(alpha: 0.7))),
+                        Text(
+                          '${state.itemCount} Geräte',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: fg.withValues(alpha: 0.7),
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -332,18 +351,24 @@ class _CutawayTile extends StatelessWidget {
                   right: 4,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 5, vertical: 1),
+                      horizontal: 5,
+                      vertical: 1,
+                    ),
                     decoration: BoxDecoration(
-                      color: state.dueBadgeIsOverdue
-                          ? Colors.red.shade700
-                          : Colors.orange.shade800,
+                      color:
+                          state.dueBadgeIsOverdue
+                              ? Colors.red.shade700
+                              : Colors.orange.shade800,
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Text('${state.dueBadgeCount}',
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold)),
+                    child: Text(
+                      '${state.dueBadgeCount}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ),
             ],

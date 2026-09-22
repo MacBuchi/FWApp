@@ -1,5 +1,6 @@
 /// equipment_item.dart – EquipmentItem domain entity.
 library;
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'equipment_item.freezed.dart';

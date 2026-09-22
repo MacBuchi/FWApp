@@ -1,6 +1,7 @@
 /// gesamtwehr_header_test.dart – Kopfbereich der Gesamtwehr auf der Startseite
 /// (#57 P5): Wann er erscheint, was er zeigt, und wer ihn antippen kann.
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/core/database/app_database.dart';
@@ -33,18 +34,17 @@ void main() {
     GesamtwehrBranding? branding,
     String? wehrName = 'Gesamtfeuerwehr Musterstadt',
     bool darfPflegen = false,
-  }) =>
-      buildTestApp(
-        db: db,
-        home: Scaffold(body: ListView(children: const [GesamtwehrHeader()])),
-        overrides: [
-          gesamtwehrBrandingProvider.overrideWith(() => _FesterKopf(branding)),
-          aktuelleGesamtwehrProvider.overrideWith(
-            (ref) async => GesamtwehrBezug(id: _gw, name: wehrName),
-          ),
-          darfBrandingPflegenProvider.overrideWith((ref) async => darfPflegen),
-        ],
-      );
+  }) => buildTestApp(
+    db: db,
+    home: Scaffold(body: ListView(children: const [GesamtwehrHeader()])),
+    overrides: [
+      gesamtwehrBrandingProvider.overrideWith(() => _FesterKopf(branding)),
+      aktuelleGesamtwehrProvider.overrideWith(
+        (ref) async => GesamtwehrBezug(id: _gw, name: wehrName),
+      ),
+      darfBrandingPflegenProvider.overrideWith((ref) async => darfPflegen),
+    ],
+  );
 
   testWidgets('ohne Gesamtwehr bleibt die Startseite kopflos', (tester) async {
     await tester.pumpWidget(app(branding: null));
@@ -55,42 +55,56 @@ void main() {
 
   testWidgets('ein ungepflegter Kopf beansprucht keinen Platz', (tester) async {
     await tester.pumpWidget(
-        app(branding: const GesamtwehrBranding(gesamtwehrId: _gw)));
+      app(branding: const GesamtwehrBranding(gesamtwehrId: _gw)),
+    );
     await tester.pumpAndSettle();
     expect(find.byType(GesamtwehrKopf), findsNothing);
     await endTestApp(tester);
   });
 
   testWidgets('Überschrift und Begrüßung stehen im Kopf', (tester) async {
-    await tester.pumpWidget(app(
-      branding: const GesamtwehrBranding(
-        gesamtwehrId: _gw,
-        titel: 'Freiwillige Feuerwehr Musterstadt',
-        willkommenstext: 'Übung am Dienstag, 19 Uhr im Gerätehaus.',
+    await tester.pumpWidget(
+      app(
+        branding: const GesamtwehrBranding(
+          gesamtwehrId: _gw,
+          titel: 'Freiwillige Feuerwehr Musterstadt',
+          willkommenstext: 'Übung am Dienstag, 19 Uhr im Gerätehaus.',
+        ),
       ),
-    ));
+    );
     await tester.pumpAndSettle();
     expect(find.text('Freiwillige Feuerwehr Musterstadt'), findsOneWidget);
-    expect(find.text('Übung am Dienstag, 19 Uhr im Gerätehaus.'), findsOneWidget);
+    expect(
+      find.text('Übung am Dienstag, 19 Uhr im Gerätehaus.'),
+      findsOneWidget,
+    );
     await endTestApp(tester);
   });
 
-  testWidgets('ohne eigene Überschrift steht der Name der Gesamtwehr da',
-      (tester) async {
-    await tester.pumpWidget(app(
-      branding: const GesamtwehrBranding(
-          gesamtwehrId: _gw, willkommenstext: 'Willkommen!'),
-    ));
+  testWidgets('ohne eigene Überschrift steht der Name der Gesamtwehr da', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      app(
+        branding: const GesamtwehrBranding(
+          gesamtwehrId: _gw,
+          willkommenstext: 'Willkommen!',
+        ),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(find.text('Gesamtfeuerwehr Musterstadt'), findsOneWidget);
     await endTestApp(tester);
   });
 
-  testWidgets('nur ein Bild reicht — der Kopf erscheint auch ohne Text',
-      (tester) async {
-    await tester.pumpWidget(app(
-      branding: const GesamtwehrBranding(gesamtwehrId: _gw, bildPfad: _bild),
-    ));
+  testWidgets('nur ein Bild reicht — der Kopf erscheint auch ohne Text', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      app(
+        branding: const GesamtwehrBranding(gesamtwehrId: _gw, bildPfad: _bild),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(find.byType(GesamtwehrKopf), findsOneWidget);
     // Der Wehr-Name legt sich über das Bild, auch wenn nichts getippt wurde.
@@ -99,20 +113,24 @@ void main() {
   });
 
   testWidgets('wer pflegen darf, kann den Kopf antippen', (tester) async {
-    await tester.pumpWidget(app(
-      branding: const GesamtwehrBranding(gesamtwehrId: _gw, titel: 'Wehr'),
-      darfPflegen: true,
-    ));
+    await tester.pumpWidget(
+      app(
+        branding: const GesamtwehrBranding(gesamtwehrId: _gw, titel: 'Wehr'),
+        darfPflegen: true,
+      ),
+    );
     await tester.pumpAndSettle();
     expect(find.byType(InkWell), findsOneWidget);
     await endTestApp(tester);
   });
 
   testWidgets('für alle anderen ist der Kopf reine Anzeige', (tester) async {
-    await tester.pumpWidget(app(
-      branding: const GesamtwehrBranding(gesamtwehrId: _gw, titel: 'Wehr'),
-      darfPflegen: false,
-    ));
+    await tester.pumpWidget(
+      app(
+        branding: const GesamtwehrBranding(gesamtwehrId: _gw, titel: 'Wehr'),
+        darfPflegen: false,
+      ),
+    );
     await tester.pumpAndSettle();
     // Kein Tippbereich: Ein Truppmann soll nicht in eine Maske geraten, die
     // ihn ohnehin nur abweist.

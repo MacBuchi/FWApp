@@ -9,6 +9,7 @@
 /// mit aktiviertem Sync (angemeldet oder nicht) und ändert nichts am
 /// Datenbestand — reine Navigation + Sichtprüfungen.
 library;
+
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -29,11 +30,12 @@ Future<void> settle(WidgetTester tester) async =>
 /// gewinnt das Rennen meist der Provider, auf einem echten Pixel XL nicht.
 /// Alle gerade gebauten Text-Widgets — die einzige Sicht auf den Bildschirm,
 /// die man bei einem Geräte-Lauf hat.
-List<String> visibleTexts(WidgetTester tester) => tester
-    .widgetList<Text>(find.byType(Text))
-    .map((t) => t.data)
-    .whereType<String>()
-    .toList();
+List<String> visibleTexts(WidgetTester tester) =>
+    tester
+        .widgetList<Text>(find.byType(Text))
+        .map((t) => t.data)
+        .whereType<String>()
+        .toList();
 
 /// Trifft [finder] gerade etwas?
 ///
@@ -54,17 +56,21 @@ Future<void> waitFor(
   Finder finder, {
   Duration timeout = const Duration(seconds: 20),
 }) async {
-  for (var waited = Duration.zero;
-      waited < timeout;
-      waited += const Duration(milliseconds: 100)) {
+  for (
+    var waited = Duration.zero;
+    waited < timeout;
+    waited += const Duration(milliseconds: 100)
+  ) {
     if (matches(finder)) return;
     await tester.pump(const Duration(milliseconds: 100));
   }
   // Ohne die Liste des tatsächlich Sichtbaren ist ein Fehlschlag auf einem
   // Gerät kaum zu deuten — man sieht den Bildschirm ja nicht.
-  fail('Nach ${timeout.inSeconds}s nicht gefunden: '
-      '${finder.describeMatch(Plurality.one)}'
-      '\nSichtbar: ${visibleTexts(tester)}');
+  fail(
+    'Nach ${timeout.inSeconds}s nicht gefunden: '
+    '${finder.describeMatch(Plurality.one)}'
+    '\nSichtbar: ${visibleTexts(tester)}',
+  );
 }
 
 /// Wartet auf [finder] und scrollt das Ziel in den sichtbaren Bereich.
@@ -83,8 +89,9 @@ Future<void> ensureVisible(WidgetTester tester, Finder finder) async {
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('App startet, Navigation und Sync-Einstellungen erreichbar',
-      (tester) async {
+  testWidgets('App startet, Navigation und Sync-Einstellungen erreichbar', (
+    tester,
+  ) async {
     await app.main();
     await settle(tester);
 
@@ -115,8 +122,11 @@ void main() {
       await ensureVisible(tester, loginTile);
       await tester.tap(loginTile);
       await settle(tester);
-      expect(find.text('Nutzername'), findsOneWidget,
-          reason: 'Login fragt seit v1.3.0 nach dem Nutzernamen');
+      expect(
+        find.text('Nutzername'),
+        findsOneWidget,
+        reason: 'Login fragt seit v1.3.0 nach dem Nutzernamen',
+      );
       expect(find.textContaining('Keine Registrierung nötig'), findsOneWidget);
       await tester.tap(find.text('Abbrechen'));
       await settle(tester);
@@ -130,13 +140,15 @@ void main() {
   // ohne dass irgendwo ein Fehler auftaucht. Der Test prüft genau diese
   // Sichtbarkeit; auf Android ≤ 10 greift die Beschränkung nicht, dort ist
   // er nur eine Bestätigung, dass überhaupt ein Browser da ist.
-  testWidgets('Ein Browser ist für https-Links sichtbar (Package Visibility)',
-      (tester) async {
+  testWidgets('Ein Browser ist für https-Links sichtbar (Package Visibility)', (
+    tester,
+  ) async {
     if (!Platform.isAndroid) return;
     expect(
       await canLaunchUrl(Uri.parse('https://github.com/MacBuchi/FWApp')),
       isTrue,
-      reason: 'Kein Handler für https sichtbar — fehlt der VIEW/https-Intent '
+      reason:
+          'Kein Handler für https sichtbar — fehlt der VIEW/https-Intent '
           'im <queries>-Block von AndroidManifest.xml?',
     );
   });

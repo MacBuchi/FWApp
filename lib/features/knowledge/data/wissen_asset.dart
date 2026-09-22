@@ -93,9 +93,10 @@ List<AssetFrage> parseWissensAsset(String roh) {
     if (eintrag is! Map<String, dynamic>) continue;
 
     final frage = (eintrag['frage'] as String?)?.trim() ?? '';
-    final antworten = ((eintrag['antworten'] as List?) ?? const [])
-        .map((a) => a.toString().trim())
-        .toList();
+    final antworten =
+        ((eintrag['antworten'] as List?) ?? const [])
+            .map((a) => a.toString().trim())
+            .toList();
     final richtige = <int>{
       for (final r in (eintrag['richtige'] as List?) ?? const [])
         if (r is num) r.toInt(),
@@ -103,8 +104,11 @@ List<AssetFrage> parseWissensAsset(String roh) {
 
     // Dieselbe Prüfung wie im Formular und später im CSV-Import. Was hier
     // durchfällt, wäre auch von Hand nicht anlegbar gewesen.
-    final fehler =
-        pruefeFrage(frage: frage, antworten: antworten, richtige: richtige);
+    final fehler = pruefeFrage(
+      frage: frage,
+      antworten: antworten,
+      richtige: richtige,
+    );
     if (fehler != null) {
       appLog.w('Wissens-Frage übersprungen ($fehler): "$frage"');
       continue;
@@ -130,28 +134,34 @@ List<AssetFrage> parseWissensAsset(String roh) {
       }
     }
 
-    final geltung = Geltungsbereich.ausSchluessel(eintrag['geltung'] as String?);
+    final geltung = Geltungsbereich.ausSchluessel(
+      eintrag['geltung'] as String?,
+    );
     final land = (eintrag['land'] as String?)?.trim();
     // Landesrecht ohne Land wäre eine Angabe, die nichts sagt.
     if (geltung == Geltungsbereich.land &&
         (land == null || !kBundeslaender.containsKey(land))) {
-      appLog.w('Wissens-Frage mit Landesrecht ohne gültiges Land '
-          'übersprungen: "$frage"');
+      appLog.w(
+        'Wissens-Frage mit Landesrecht ohne gültiges Land '
+        'übersprungen: "$frage"',
+      );
       continue;
     }
 
-    ergebnis.add(AssetFrage(
-      gebiet: gebiet,
-      frage: frage,
-      antworten: antworten,
-      richtige: richtige,
-      erklaerung: (eintrag['erklaerung'] as String?)?.trim(),
-      quelle: quelle,
-      geltung: geltung,
-      land: geltung == Geltungsbereich.land ? land : null,
-      kapitel: leerZuNull(eintrag['kapitel'] as String?),
-      bildPfad: leerZuNull(eintrag['bild'] as String?),
-    ));
+    ergebnis.add(
+      AssetFrage(
+        gebiet: gebiet,
+        frage: frage,
+        antworten: antworten,
+        richtige: richtige,
+        erklaerung: (eintrag['erklaerung'] as String?)?.trim(),
+        quelle: quelle,
+        geltung: geltung,
+        land: geltung == Geltungsbereich.land ? land : null,
+        kapitel: leerZuNull(eintrag['kapitel'] as String?),
+        bildPfad: leerZuNull(eintrag['bild'] as String?),
+      ),
+    );
   }
   return ergebnis;
 }

@@ -11,6 +11,7 @@
 /// Voraussetzung: `supabase start` + `bash tool/setup_local_supabase.sh`.
 /// Ohne laufenden Stack überspringt sich die Datei selbst.
 library;
+
 import 'dart:convert';
 import 'dart:io';
 
@@ -23,7 +24,8 @@ const _url = 'http://127.0.0.1:54321';
 const _mailpit = 'http://127.0.0.1:54324';
 const _anonKey =
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
-final _serviceRoleKey = Platform.environment['SUPABASE_SERVICE_ROLE_KEY'] ??
+final _serviceRoleKey =
+    Platform.environment['SUPABASE_SERVICE_ROLE_KEY'] ??
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU';
 
 /// Eine Adresse, die es nur in diesem Test gibt.
@@ -68,8 +70,12 @@ class _SpeicherImArbeitsspeicher implements GotrueAsyncStorage {
   Future<void> removeItem({required String key}) async => _werte.remove(key);
 }
 
-Future<HttpResult> _json(String method, String url,
-    {Map<String, dynamic>? body, String? key}) async {
+Future<HttpResult> _json(
+  String method,
+  String url, {
+  Map<String, dynamic>? body,
+  String? key,
+}) async {
   final client = HttpClient();
   final request = await client.openUrl(method, Uri.parse(url));
   request.headers.set('apikey', key ?? _serviceRoleKey);
@@ -85,9 +91,13 @@ Future<HttpResult> _json(String method, String url,
 Future<void> main() async {
   if (!await _erreichbar('$_url/auth/v1/health') ||
       !await _erreichbar(_mailpit)) {
-    test('passwort-reset e2e', () {},
-        skip: 'Lokaler Supabase-Stack oder Mailpit läuft nicht '
-            '(supabase start).');
+    test(
+      'passwort-reset e2e',
+      () {},
+      skip:
+          'Lokaler Supabase-Stack oder Mailpit läuft nicht '
+          '(supabase start).',
+    );
     return;
   }
 
@@ -96,19 +106,22 @@ Future<void> main() async {
 
   setUpAll(() async {
     await stackSperreHolen();
-    client = SupabaseClient(_url, _anonKey,
-        authOptions: AuthClientOptions(
-          autoRefreshToken: false,
-          pkceAsyncStorage: _SpeicherImArbeitsspeicher(),
-        ));
+    client = SupabaseClient(
+      _url,
+      _anonKey,
+      authOptions: AuthClientOptions(
+        autoRefreshToken: false,
+        pkceAsyncStorage: _SpeicherImArbeitsspeicher(),
+      ),
+    );
 
     // Testkonto mit ECHTER Adresse anlegen — genau der Fall, den Etappe 2
     // ermöglicht. Ein @fw.local-Konto könnte die Mail nie empfangen.
-    final angelegt = await _json('POST', '$_url/auth/v1/admin/users', body: {
-      'email': _mail,
-      'password': _altesPasswort,
-      'email_confirm': true,
-    });
+    final angelegt = await _json(
+      'POST',
+      '$_url/auth/v1/admin/users',
+      body: {'email': _mail, 'password': _altesPasswort, 'email_confirm': true},
+    );
     userId = (jsonDecode(angelegt.text) as Map)['id'] as String?;
     expect(userId, isNotNull, reason: 'Testkonto ließ sich nicht anlegen');
 
@@ -150,29 +163,42 @@ Future<void> main() async {
       try {
         text = await letzteMail();
         break;
-      } catch (_) {/* noch nicht da */}
+      } catch (_) {
+        /* noch nicht da */
+      }
     }
 
     final treffer = RegExp(r'\b(\d{6})\b').firstMatch(text);
-    expect(treffer, isNotNull,
-        reason: 'ohne sechsstelligen Code ist der ganze Weg nutzlos');
+    expect(
+      treffer,
+      isNotNull,
+      reason: 'ohne sechsstelligen Code ist der ganze Weg nutzlos',
+    );
     // Der eigentliche Regressionsschutz: Ein Link würde auf einem fremden
     // Gerät still scheitern, weil dort die PKCE-Prüfsumme fehlt.
-    expect(text.contains('auth/v1/verify'), isFalse,
-        reason: 'die Vorlage darf keinen Bestätigungslink enthalten');
+    expect(
+      text.contains('auth/v1/verify'),
+      isFalse,
+      reason: 'die Vorlage darf keinen Bestätigungslink enthalten',
+    );
     expect(text, contains('Passwort'));
 
     // Genau die Reihenfolge aus dem Screen: erst einlösen, dann sofort das
     // Passwort setzen — dazwischen wäre jemand angemeldet, ohne sein
     // Passwort zu kennen.
     await client.auth.verifyOTP(
-        email: _mail, token: treffer!.group(1)!, type: OtpType.recovery);
+      email: _mail,
+      token: treffer!.group(1)!,
+      type: OtpType.recovery,
+    );
     await client.auth.updateUser(UserAttributes(password: _neuesPasswort));
     await client.auth.signOut();
 
     // Gegenprobe in beide Richtungen: neues Passwort trägt …
-    final neu = await client.auth
-        .signInWithPassword(email: _mail, password: _neuesPasswort);
+    final neu = await client.auth.signInWithPassword(
+      email: _mail,
+      password: _neuesPasswort,
+    );
     expect(neu.session, isNotNull);
     await client.auth.signOut();
 
@@ -185,14 +211,19 @@ Future<void> main() async {
 
   test('ein falscher Code ändert nichts', () async {
     await expectLater(
-      client.auth
-          .verifyOTP(email: _mail, token: '000000', type: OtpType.recovery),
+      client.auth.verifyOTP(
+        email: _mail,
+        token: '000000',
+        type: OtpType.recovery,
+      ),
       throwsA(isA<AuthException>()),
     );
     // Zweite Zusicherung: Der Zustand ist unverändert — das zuletzt
     // gesetzte Passwort gilt weiterhin.
-    final immerNoch = await client.auth
-        .signInWithPassword(email: _mail, password: _neuesPasswort);
+    final immerNoch = await client.auth.signInWithPassword(
+      email: _mail,
+      password: _neuesPasswort,
+    );
     expect(immerNoch.session, isNotNull);
     await client.auth.signOut();
   });

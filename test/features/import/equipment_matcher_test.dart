@@ -1,37 +1,48 @@
 /// equipment_matcher_test.dart – Exact/alias/fuzzy matching behaviour.
 library;
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/features/import/data/equipment_matcher.dart';
 import 'package:fwapp/features/import/domain/import_models.dart';
 
-EquipmentItemData _item(int id, String name,
-        {String? libraryId, String? shortName}) =>
-    EquipmentItemData(
-      id: id,
-      name: name,
-      shortName: shortName,
-      equipmentFunctionsJson: '[]',
-      deploymentScenariosJson: '[]',
-      description: '',
-      isCustom: false,
-      extraAttributesJson: '{}',
-      trainingQuestionsJson: '[]',
-      typicalUseJson: '[]',
-      libraryEquipmentId: libraryId,
-      updatedAt: DateTime(2026),
-      typeDirty: false,
-      dirty: false,
-    );
+EquipmentItemData _item(
+  int id,
+  String name, {
+  String? libraryId,
+  String? shortName,
+}) => EquipmentItemData(
+  id: id,
+  name: name,
+  shortName: shortName,
+  equipmentFunctionsJson: '[]',
+  deploymentScenariosJson: '[]',
+  description: '',
+  isCustom: false,
+  extraAttributesJson: '{}',
+  trainingQuestionsJson: '[]',
+  typicalUseJson: '[]',
+  libraryEquipmentId: libraryId,
+  updatedAt: DateTime(2026),
+  typeDirty: false,
+  dirty: false,
+);
 
 void main() {
   final matcher = EquipmentMatcher(
     equipment: [
       _item(1, 'Kübelspritze', libraryId: 'kuebelspritze'),
-      _item(2, 'Chemikalienanzug Typ 1a-ET Modell OneSuit Pro in Tasche',
-          libraryId: 'chemikalienanzug', shortName: 'Chemikalienanzug OneSuit'),
-      _item(3, 'Feuerwehr-Werkzeugkasten nach DIN 14881',
-          libraryId: 'werkzeugkasten'),
+      _item(
+        2,
+        'Chemikalienanzug Typ 1a-ET Modell OneSuit Pro in Tasche',
+        libraryId: 'chemikalienanzug',
+        shortName: 'Chemikalienanzug OneSuit',
+      ),
+      _item(
+        3,
+        'Feuerwehr-Werkzeugkasten nach DIN 14881',
+        libraryId: 'werkzeugkasten',
+      ),
       _item(4, 'Spineboard'),
     ],
     bundledAliases: const {
@@ -39,16 +50,19 @@ void main() {
     },
     userAliases: [
       UserAliasData(
-          id: 1,
-          alias: 'CSA Anzug',
-          equipmentId: 2,
-          updatedAt: DateTime(2026)),
+        id: 1,
+        alias: 'CSA Anzug',
+        equipmentId: 2,
+        updatedAt: DateTime(2026),
+      ),
     ],
   );
 
   test('normalize folds umlauts and punctuation', () {
-    expect(EquipmentMatcher.normalize('Kübelspritze,  Größe-2!'),
-        'kuebelspritze groesse 2');
+    expect(
+      EquipmentMatcher.normalize('Kübelspritze,  Größe-2!'),
+      'kuebelspritze groesse 2',
+    );
   });
 
   test('exact match is case- and umlaut-insensitive', () {

@@ -1,5 +1,6 @@
 /// image_quiz_screen.dart – Image recognition quiz: identify equipment from photo.
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/database/database_providers.dart';
@@ -11,8 +12,7 @@ class ImageRecognitionQuizScreen extends ConsumerStatefulWidget {
   const ImageRecognitionQuizScreen({super.key});
 
   @override
-  ConsumerState<ImageRecognitionQuizScreen> createState() =>
-      _ImageQuizState();
+  ConsumerState<ImageRecognitionQuizScreen> createState() => _ImageQuizState();
 }
 
 class _ImageQuizState extends ConsumerState<ImageRecognitionQuizScreen> {
@@ -30,8 +30,7 @@ class _ImageQuizState extends ConsumerState<ImageRecognitionQuizScreen> {
       return _buildResults();
     }
     if (_questions.isEmpty) {
-      return const Scaffold(
-          body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     return _buildQuestion();
   }
@@ -69,14 +68,19 @@ class _ImageQuizState extends ConsumerState<ImageRecognitionQuizScreen> {
   Future<void> _startQuiz() async {
     final all = await ref.read(equipmentListProvider.future);
     // Bild-Erkennung ergibt nur mit echten Fotos Sinn.
-    final withImage = all
-        .where((e) => e.imagePath != null && e.imagePath!.isNotEmpty)
-        .toList();
+    final withImage =
+        all
+            .where((e) => e.imagePath != null && e.imagePath!.isNotEmpty)
+            .toList();
     if (withImage.length < 4) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
             content: Text(
-                'Mindestens 4 Geräte mit Foto notwendig für die Bild-Erkennung.')));
+              'Mindestens 4 Geräte mit Foto notwendig für die Bild-Erkennung.',
+            ),
+          ),
+        );
       }
       return;
     }
@@ -85,19 +89,22 @@ class _ImageQuizState extends ConsumerState<ImageRecognitionQuizScreen> {
     for (var i = 0; i < shuffled.length && questions.length < 10; i++) {
       final correct = shuffled[i];
       // Falsche Optionen dürfen aus dem Gesamtbestand kommen.
-      final wrong = ([...all]..shuffle())
-          .where((e) => e.id != correct.id)
-          .take(3)
-          .map((e) => e.name)
-          .toList();
+      final wrong =
+          ([...all]..shuffle())
+              .where((e) => e.id != correct.id)
+              .take(3)
+              .map((e) => e.name)
+              .toList();
       if (wrong.length < 3) continue;
       final options = [correct.name, ...wrong]..shuffle();
-      questions.add(_ImageQuestion(
-        equipmentId: correct.id,
-        imagePath: correct.imagePath,
-        correctAnswer: correct.name,
-        options: options,
-      ));
+      questions.add(
+        _ImageQuestion(
+          equipmentId: correct.id,
+          imagePath: correct.imagePath,
+          correctAnswer: correct.name,
+          options: options,
+        ),
+      );
     }
     setState(() {
       _questions = questions;
@@ -117,7 +124,8 @@ class _ImageQuizState extends ConsumerState<ImageRecognitionQuizScreen> {
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(4),
           child: LinearProgressIndicator(
-              value: _currentIndex / _questions.length),
+            value: _currentIndex / _questions.length,
+          ),
         ),
       ),
       body: Padding(
@@ -137,48 +145,55 @@ class _ImageQuizState extends ConsumerState<ImageRecognitionQuizScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            const Text('Welches Gerät ist das?',
-                style: TextStyle(fontSize: 16)),
+            const Text(
+              'Welches Gerät ist das?',
+              style: TextStyle(fontSize: 16),
+            ),
             const SizedBox(height: 12),
-            ...q.options.map((opt) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: _answered
-                            ? opt == q.correctAnswer
-                                ? Colors.green.withValues(alpha: 0.15)
-                                : opt == _selectedAnswer
-                                    ? Colors.red.withValues(alpha: 0.15)
-                                    : null
-                            : null,
-                        side: BorderSide(
-                          color: _answered
+            ...q.options.map(
+              (opt) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      backgroundColor:
+                          _answered
                               ? opt == q.correctAnswer
-                                  ? Colors.green
+                                  ? Colors.green.withValues(alpha: 0.15)
                                   : opt == _selectedAnswer
-                                      ? Colors.red
-                                      : Colors.grey
-                              : Colors.grey,
-                        ),
-                        padding:
-                            const EdgeInsets.symmetric(vertical: 13),
+                                  ? Colors.red.withValues(alpha: 0.15)
+                                  : null
+                              : null,
+                      side: BorderSide(
+                        color:
+                            _answered
+                                ? opt == q.correctAnswer
+                                    ? Colors.green
+                                    : opt == _selectedAnswer
+                                    ? Colors.red
+                                    : Colors.grey
+                                : Colors.grey,
                       ),
-                      onPressed: _answered ? null : () => _answer(opt, q),
-                      child: Text(opt,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 13)),
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                    ),
+                    onPressed: _answered ? null : () => _answer(opt, q),
+                    child: Text(
+                      opt,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 13),
                     ),
                   ),
-                )),
+                ),
+              ),
+            ),
             if (_answered) ...[
               const SizedBox(height: 12),
               FilledButton(
                 onPressed: _next,
-                child: Text(_currentIndex + 1 < _questions.length
-                    ? 'Weiter'
-                    : 'Ergebnis'),
+                child: Text(
+                  _currentIndex + 1 < _questions.length ? 'Weiter' : 'Ergebnis',
+                ),
               ),
             ],
           ],
@@ -211,17 +226,18 @@ class _ImageQuizState extends ConsumerState<ImageRecognitionQuizScreen> {
 
   Future<void> _saveResult() async {
     final db = ref.read(appDatabaseProvider);
-    await db.quizDao.insertResult(QuizResultsCompanion.insert(
-      quizType: 'image_recognition',
-      score: _score,
-      total: _questions.length,
-    ));
+    await db.quizDao.insertResult(
+      QuizResultsCompanion.insert(
+        quizType: 'image_recognition',
+        score: _score,
+        total: _questions.length,
+      ),
+    );
   }
 
   Widget _buildResults() {
-    final pct = _questions.isNotEmpty
-        ? (_score / _questions.length * 100).round()
-        : 0;
+    final pct =
+        _questions.isNotEmpty ? (_score / _questions.length * 100).round() : 0;
     return Scaffold(
       appBar: AppBar(title: const Text('Ergebnis')),
       body: Center(
@@ -230,28 +246,35 @@ class _ImageQuizState extends ConsumerState<ImageRecognitionQuizScreen> {
           children: [
             CircleAvatar(
               radius: 60,
-              backgroundColor: pct >= 80
-                  ? Colors.green
-                  : pct >= 50
+              backgroundColor:
+                  pct >= 80
+                      ? Colors.green
+                      : pct >= 50
                       ? Colors.orange
                       : Colors.red,
-              child: Text('$pct%',
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold)),
+              child: Text(
+                '$pct%',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
             const SizedBox(height: 16),
-            Text('$_score von ${_questions.length} richtig',
-                style: const TextStyle(fontSize: 20)),
+            Text(
+              '$_score von ${_questions.length} richtig',
+              style: const TextStyle(fontSize: 20),
+            ),
             const SizedBox(height: 24),
             FilledButton.icon(
               icon: const Icon(Icons.replay),
               label: const Text('Nochmal'),
-              onPressed: () => setState(() {
-                _started = false;
-                _questions = [];
-              }),
+              onPressed:
+                  () => setState(() {
+                    _started = false;
+                    _questions = [];
+                  }),
             ),
           ],
         ),

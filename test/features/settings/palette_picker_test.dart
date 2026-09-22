@@ -2,6 +2,7 @@
 /// (Issue #58): Wechsel per Tippen, eigenes Thema über die Regler und die
 /// Sperre für Nicht-Admins.
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/core/database/app_database.dart';
@@ -17,7 +18,9 @@ import '../../helpers/widget_harness.dart';
 
 /// PalettePicker braucht ein Material darüber (ListTile) und einen
 /// Scaffold-Kontext für das Bottom-Sheet — im Screen ist beides da.
-const _pickerHost = Scaffold(body: SingleChildScrollView(child: PalettePicker()));
+const _pickerHost = Scaffold(
+  body: SingleChildScrollView(child: PalettePicker()),
+);
 
 void main() {
   late AppDatabase db;
@@ -38,8 +41,7 @@ void main() {
     expect(find.text('Eigenes'), findsOneWidget);
   });
 
-  testWidgets('Tippen wechselt die Palette und merkt sie sich',
-      (tester) async {
+  testWidgets('Tippen wechselt die Palette und merkt sie sich', (tester) async {
     await tester.pumpWidget(buildTestApp(db: db, home: _pickerHost));
     await tester.pumpAndSettle();
 
@@ -56,8 +58,9 @@ void main() {
     expect(prefs.getString('theme_palette'), target.id);
   });
 
-  testWidgets('eigenes Farbthema: Regler übernehmen setzt custom',
-      (tester) async {
+  testWidgets('eigenes Farbthema: Regler übernehmen setzt custom', (
+    tester,
+  ) async {
     await tester.pumpWidget(buildTestApp(db: db, home: _pickerHost));
     await tester.pumpAndSettle();
 
@@ -90,16 +93,20 @@ void main() {
     await tester.tap(find.text('Abbrechen'));
     await tester.pumpAndSettle();
 
-    expect(containerOf(tester).read(appPaletteProvider).value?.id,
-        kDefaultPaletteId);
+    expect(
+      containerOf(tester).read(appPaletteProvider).value?.id,
+      kDefaultPaletteId,
+    );
   });
 
   testWidgets('ohne Admin-Rechte ist das Farbthema gesperrt', (tester) async {
-    await tester.pumpWidget(buildTestApp(
-      db: db,
-      home: const SettingsScreen(),
-      overrides: [isAdminProvider.overrideWithValue(false)],
-    ));
+    await tester.pumpWidget(
+      buildTestApp(
+        db: db,
+        home: const SettingsScreen(),
+        overrides: [isAdminProvider.overrideWithValue(false)],
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('Legt die Verwaltung der Wehr fest.'), findsOneWidget);

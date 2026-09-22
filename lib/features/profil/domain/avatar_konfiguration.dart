@@ -117,17 +117,16 @@ class AvatarKonfiguration {
     String? mouth,
     String? hair,
     Color? hairColor,
-  }) =>
-      AvatarKonfiguration(
-        bg: bg ?? this.bg,
-        skin: skin ?? this.skin,
-        gear: gear ?? this.gear,
-        gearColor: gearColor ?? this.gearColor,
-        eyes: eyes ?? this.eyes,
-        mouth: mouth ?? this.mouth,
-        hair: hair ?? this.hair,
-        hairColor: hairColor ?? this.hairColor,
-      );
+  }) => AvatarKonfiguration(
+    bg: bg ?? this.bg,
+    skin: skin ?? this.skin,
+    gear: gear ?? this.gear,
+    gearColor: gearColor ?? this.gearColor,
+    eyes: eyes ?? this.eyes,
+    mouth: mouth ?? this.mouth,
+    hair: hair ?? this.hair,
+    hairColor: hairColor ?? this.hairColor,
+  );
 
   /// Der Text, der in `profiles.avatar` landet.
   ///
@@ -135,15 +134,15 @@ class AvatarKonfiguration {
   /// später nur ein zusätzliches Paar ist und keine Migration: Alte Clients
   /// überlesen ihn, neue Server-Zeilen bleiben lesbar.
   String get kodiert => [
-        'bg=${_hex(bg)}',
-        'skin=${_hex(skin)}',
-        'gear=$gear',
-        'gc=${_hex(gearColor)}',
-        'eyes=$eyes',
-        'mouth=$mouth',
-        'hair=$hair',
-        'hc=${_hex(hairColor)}',
-      ].join(';');
+    'bg=${_hex(bg)}',
+    'skin=${_hex(skin)}',
+    'gear=$gear',
+    'gc=${_hex(gearColor)}',
+    'eyes=$eyes',
+    'mouth=$mouth',
+    'hair=$hair',
+    'hc=${_hex(hairColor)}',
+  ].join(';');
 
   /// Liest den gespeicherten Text.
   ///
@@ -233,24 +232,60 @@ class _Rolle {
 }
 
 const _rollen = [
-  _Rolle('Atemschutz', 'scba', 0,
-      ['Maskus Maximus', 'Flaschen-Franz', 'Luft-Lena', 'Tief-Atem-Toni']),
-  _Rolle('Maschinist', 'helmet', 1,
-      ['Pumpen-Peter', 'Druck-Doris', 'Kupplungs-Kurt', 'Saugkorb-Sabine']),
-  _Rolle('Gruppenführer', 'visor', 2,
-      ['Lage-Lotte', 'Chef vom Dienst', 'Melde-Meister', 'Einweis-Egon']),
-  _Rolle('Jugendfeuerwehr', 'cap', 0,
-      ['Mini-Löscher', 'Knoten-König', 'Schlauch-Sprinter', 'Jugend-Jette']),
-  _Rolle('Drehleiter', 'helmet', 3,
-      ['Höhen-Harry', 'Korb-Kalle', 'Leiter-Lisa', 'Aufstell-Achim']),
-  _Rolle('Funker', 'helmet', 1,
-      ['Kanal-Kai', 'Rausch-Rita', 'Melder-Momo', 'Antennen-Adi']),
-  _Rolle('Dalmatiner', 'dog', 0,
-      ['Flecki', 'Punkti', 'Waldi Wasserwerfer', 'Bello Blaulicht']),
-  _Rolle('Grill & Kaffee', 'cap', 3,
-      ['Grill-Gustav', 'Kaffee-Kalle', 'Bratwurst-Brigitte', 'Zwei-Zucker-Zenz']),
-  _Rolle('Kameradschaft', 'helmet', 2,
-      ['Immer-da-Ingo', 'Spätschicht-Sven', 'Übungs-Uschi', 'Ehren-Erwin']),
+  _Rolle('Atemschutz', 'scba', 0, [
+    'Maskus Maximus',
+    'Flaschen-Franz',
+    'Luft-Lena',
+    'Tief-Atem-Toni',
+  ]),
+  _Rolle('Maschinist', 'helmet', 1, [
+    'Pumpen-Peter',
+    'Druck-Doris',
+    'Kupplungs-Kurt',
+    'Saugkorb-Sabine',
+  ]),
+  _Rolle('Gruppenführer', 'visor', 2, [
+    'Lage-Lotte',
+    'Chef vom Dienst',
+    'Melde-Meister',
+    'Einweis-Egon',
+  ]),
+  _Rolle('Jugendfeuerwehr', 'cap', 0, [
+    'Mini-Löscher',
+    'Knoten-König',
+    'Schlauch-Sprinter',
+    'Jugend-Jette',
+  ]),
+  _Rolle('Drehleiter', 'helmet', 3, [
+    'Höhen-Harry',
+    'Korb-Kalle',
+    'Leiter-Lisa',
+    'Aufstell-Achim',
+  ]),
+  _Rolle('Funker', 'helmet', 1, [
+    'Kanal-Kai',
+    'Rausch-Rita',
+    'Melder-Momo',
+    'Antennen-Adi',
+  ]),
+  _Rolle('Dalmatiner', 'dog', 0, [
+    'Flecki',
+    'Punkti',
+    'Waldi Wasserwerfer',
+    'Bello Blaulicht',
+  ]),
+  _Rolle('Grill & Kaffee', 'cap', 3, [
+    'Grill-Gustav',
+    'Kaffee-Kalle',
+    'Bratwurst-Brigitte',
+    'Zwei-Zucker-Zenz',
+  ]),
+  _Rolle('Kameradschaft', 'helmet', 2, [
+    'Immer-da-Ingo',
+    'Spätschicht-Sven',
+    'Übungs-Uschi',
+    'Ehren-Erwin',
+  ]),
 ];
 
 /// Die 36 Köpfe der Mannschaft — neun Rollen mal vier.
@@ -267,27 +302,38 @@ final List<AvatarVorlage> kAvatarVorlagen = () {
     for (var vi = 0; vi < r.namen.length; vi++) {
       final k = ri * 4 + vi;
       final istHund = r.gear == 'dog';
-      out.add(AvatarVorlage(
-        r.namen[vi],
-        r.rolle,
-        AvatarKonfiguration(
-          gear: r.gear,
-          gearColor: kAvatarGearColors[(r.helm + vi) % kAvatarGearColors.length],
-          bg: kAvatarBgs[(k * 5 + ri) % kAvatarBgs.length],
-          skin: istHund
-              ? const Color(0xFFFFFFFF)
-              : kAvatarSkins[(k + vi) % kAvatarSkins.length],
-          hairColor: istHund
-              ? const Color(0xFF2B2320)
-              : kAvatarHairColors[(k + ri) % kAvatarHairColors.length],
-          eyes: istHund ? 'dots' : kAvatarEyes[(k + 2 * vi) % kAvatarEyes.length],
-          mouth:
-              istHund ? 'tongue' : kAvatarMouths[(k + ri) % kAvatarMouths.length],
-          hair: istHund || r.gear == 'scba'
-              ? 'none'
-              : kAvatarHair[(k * 3 + vi) % kAvatarHair.length],
+      out.add(
+        AvatarVorlage(
+          r.namen[vi],
+          r.rolle,
+          AvatarKonfiguration(
+            gear: r.gear,
+            gearColor:
+                kAvatarGearColors[(r.helm + vi) % kAvatarGearColors.length],
+            bg: kAvatarBgs[(k * 5 + ri) % kAvatarBgs.length],
+            skin:
+                istHund
+                    ? const Color(0xFFFFFFFF)
+                    : kAvatarSkins[(k + vi) % kAvatarSkins.length],
+            hairColor:
+                istHund
+                    ? const Color(0xFF2B2320)
+                    : kAvatarHairColors[(k + ri) % kAvatarHairColors.length],
+            eyes:
+                istHund
+                    ? 'dots'
+                    : kAvatarEyes[(k + 2 * vi) % kAvatarEyes.length],
+            mouth:
+                istHund
+                    ? 'tongue'
+                    : kAvatarMouths[(k + ri) % kAvatarMouths.length],
+            hair:
+                istHund || r.gear == 'scba'
+                    ? 'none'
+                    : kAvatarHair[(k * 3 + vi) % kAvatarHair.length],
+          ),
         ),
-      ));
+      );
     }
   }
   return List<AvatarVorlage>.unmodifiable(out);
@@ -306,11 +352,14 @@ AvatarKonfiguration wuerfleAvatar(int Function(int) naechste) {
     gearColor: kAvatarGearColors[naechste(kAvatarGearColors.length)],
     skin: istHund ? k.skin : kAvatarSkins[naechste(kAvatarSkins.length)],
     hairColor:
-        istHund ? k.hairColor : kAvatarHairColors[naechste(kAvatarHairColors.length)],
+        istHund
+            ? k.hairColor
+            : kAvatarHairColors[naechste(kAvatarHairColors.length)],
     eyes: istHund ? k.eyes : kAvatarEyes[naechste(kAvatarEyes.length)],
     mouth: istHund ? k.mouth : kAvatarMouths[naechste(kAvatarMouths.length)],
-    hair: istHund || k.gear == 'scba'
-        ? 'none'
-        : kAvatarHair[naechste(kAvatarHair.length)],
+    hair:
+        istHund || k.gear == 'scba'
+            ? 'none'
+            : kAvatarHair[naechste(kAvatarHair.length)],
   );
 }

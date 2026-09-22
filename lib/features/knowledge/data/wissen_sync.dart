@@ -37,10 +37,9 @@ class WissenSync {
     final c = client;
     if (c == null) return 0;
 
-    final zeilen = List<Map<String, dynamic>>.from(await c
-        .from('quiz_questions')
-        .select()
-        .eq('gesamtwehr_id', gesamtwehrId));
+    final zeilen = List<Map<String, dynamic>>.from(
+      await c.from('quiz_questions').select().eq('gesamtwehr_id', gesamtwehrId),
+    );
 
     for (final r in zeilen) {
       final remoteId = r['id'] as String;
@@ -58,32 +57,36 @@ class WissenSync {
       // er zwischendurch synchronisiert.
       if (vorhanden != null && vorhanden.dirty) continue;
 
-      await db.wissenDao.upsert(WissensfragenCompanion(
-        id: vorhanden == null ? const Value.absent() : Value(vorhanden.id),
-        gebiet: Value(r['gebiet'] as String),
-        frage: Value(r['frage'] as String),
-        antwortenJson: Value(r['antworten_json'] as String),
-        richtigeJson: Value(r['richtige_json'] as String? ??
-            // Alt-Server ohne die Spalte: Der Einzel-Index wird zur
-            // einelementigen Menge, statt den Zug scheitern zu lassen.
-            '[${(r['richtig'] as num?)?.toInt() ?? 0}]'),
-        quelleWerk: Value(r['quelle_werk'] as String?),
-        quelleFundstelle: Value(r['quelle_fundstelle'] as String?),
-        quelleStand: Value(r['quelle_stand'] as String?),
-        quelleUrl: Value(r['quelle_url'] as String?),
-        geltung: Value(r['geltung'] as String? ?? 'bund'),
-        land: Value(r['land'] as String?),
-        kapitel: Value(r['kapitel'] as String?),
-        bildPfad: Value(r['bild_pfad'] as String?),
-        geraet: Value(r['geraet'] as String?),
-        erklaerung: Value(r['erklaerung'] as String?),
-        herkunft: Value(r['herkunft'] as String),
-        stand: Value(r['stand'] as String),
-        eingereichtVon: Value(r['eingereicht_von'] as String?),
-        remoteId: Value(remoteId),
-        remoteUpdatedAt: Value(DateTime.tryParse(r['updated_at'] as String)),
-        dirty: const Value(false),
-      ));
+      await db.wissenDao.upsert(
+        WissensfragenCompanion(
+          id: vorhanden == null ? const Value.absent() : Value(vorhanden.id),
+          gebiet: Value(r['gebiet'] as String),
+          frage: Value(r['frage'] as String),
+          antwortenJson: Value(r['antworten_json'] as String),
+          richtigeJson: Value(
+            r['richtige_json'] as String? ??
+                // Alt-Server ohne die Spalte: Der Einzel-Index wird zur
+                // einelementigen Menge, statt den Zug scheitern zu lassen.
+                '[${(r['richtig'] as num?)?.toInt() ?? 0}]',
+          ),
+          quelleWerk: Value(r['quelle_werk'] as String?),
+          quelleFundstelle: Value(r['quelle_fundstelle'] as String?),
+          quelleStand: Value(r['quelle_stand'] as String?),
+          quelleUrl: Value(r['quelle_url'] as String?),
+          geltung: Value(r['geltung'] as String? ?? 'bund'),
+          land: Value(r['land'] as String?),
+          kapitel: Value(r['kapitel'] as String?),
+          bildPfad: Value(r['bild_pfad'] as String?),
+          geraet: Value(r['geraet'] as String?),
+          erklaerung: Value(r['erklaerung'] as String?),
+          herkunft: Value(r['herkunft'] as String),
+          stand: Value(r['stand'] as String),
+          eingereichtVon: Value(r['eingereicht_von'] as String?),
+          remoteId: Value(remoteId),
+          remoteUpdatedAt: Value(DateTime.tryParse(r['updated_at'] as String)),
+          dirty: const Value(false),
+        ),
+      );
     }
     return zeilen.length;
   }
@@ -104,45 +107,49 @@ class WissenSync {
       if (!f.dirty) continue;
       // Mitgeliefertes bleibt lokal, siehe Kopf.
       if (f.herkunft == Fragenherkunft.mitgeliefert.schluessel) {
-        await db.wissenDao
-            .aendere(f.id, const WissensfragenCompanion(dirty: Value(false)));
+        await db.wissenDao.aendere(
+          f.id,
+          const WissensfragenCompanion(dirty: Value(false)),
+        );
         continue;
       }
 
       try {
         if (f.remoteId == null) {
-          final angelegt = await c
-              .from('quiz_questions')
-              .insert({
-                'gesamtwehr_id': gesamtwehrId,
-                'gebiet': f.gebiet,
-                'frage': f.frage,
-                'antworten_json': f.antwortenJson,
-                'richtige_json': f.richtigeJson,
-                'quelle_werk': f.quelleWerk,
-                'quelle_fundstelle': f.quelleFundstelle,
-                'quelle_stand': f.quelleStand,
-                'quelle_url': f.quelleUrl,
-                'geltung': f.geltung,
-                'land': f.land,
-                'kapitel': f.kapitel,
-                'bild_pfad': f.bildPfad,
-                'geraet': f.geraet,
-                'erklaerung': f.erklaerung,
-                'herkunft': f.herkunft,
-                'stand': Fragenstand.eingereicht.schluessel,
-                'eingereicht_von': anzeigename ?? f.eingereichtVon,
-                'created_by': nutzer.id,
-              })
-              .select()
-              .single();
+          final angelegt =
+              await c
+                  .from('quiz_questions')
+                  .insert({
+                    'gesamtwehr_id': gesamtwehrId,
+                    'gebiet': f.gebiet,
+                    'frage': f.frage,
+                    'antworten_json': f.antwortenJson,
+                    'richtige_json': f.richtigeJson,
+                    'quelle_werk': f.quelleWerk,
+                    'quelle_fundstelle': f.quelleFundstelle,
+                    'quelle_stand': f.quelleStand,
+                    'quelle_url': f.quelleUrl,
+                    'geltung': f.geltung,
+                    'land': f.land,
+                    'kapitel': f.kapitel,
+                    'bild_pfad': f.bildPfad,
+                    'geraet': f.geraet,
+                    'erklaerung': f.erklaerung,
+                    'herkunft': f.herkunft,
+                    'stand': Fragenstand.eingereicht.schluessel,
+                    'eingereicht_von': anzeigename ?? f.eingereichtVon,
+                    'created_by': nutzer.id,
+                  })
+                  .select()
+                  .single();
 
           await db.wissenDao.aendere(
             f.id,
             WissensfragenCompanion(
               remoteId: Value(angelegt['id'] as String),
-              remoteUpdatedAt:
-                  Value(DateTime.tryParse(angelegt['updated_at'] as String)),
+              remoteUpdatedAt: Value(
+                DateTime.tryParse(angelegt['updated_at'] as String),
+              ),
               // Der Server hat das letzte Wort über den Stand.
               stand: Value(angelegt['stand'] as String),
               dirty: const Value(false),
@@ -193,20 +200,24 @@ class WissenSync {
         'erklaerung': ganzeZeile.erklaerung,
       });
     }
-    final aktualisiert = await c
-        .from('quiz_questions')
-        .update(nutzlast)
-        .eq('id', remoteId)
-        .select()
-        .maybeSingle();
+    final aktualisiert =
+        await c
+            .from('quiz_questions')
+            .update(nutzlast)
+            .eq('id', remoteId)
+            .select()
+            .maybeSingle();
 
     await db.wissenDao.aendere(
       lokalId,
       WissensfragenCompanion(
         remoteId: Value(remoteId),
-        remoteUpdatedAt: aktualisiert == null
-            ? const Value.absent()
-            : Value(DateTime.tryParse(aktualisiert['updated_at'] as String)),
+        remoteUpdatedAt:
+            aktualisiert == null
+                ? const Value.absent()
+                : Value(
+                  DateTime.tryParse(aktualisiert['updated_at'] as String),
+                ),
         dirty: const Value(false),
       ),
     );
@@ -226,10 +237,12 @@ class WissenSync {
     final c = client;
     if (c == null) return 0;
 
-    final zeilen = List<Map<String, dynamic>>.from(await c
-        .from('abgeschaltete_lernbereiche')
-        .select()
-        .eq('gesamtwehr_id', gesamtwehrId));
+    final zeilen = List<Map<String, dynamic>>.from(
+      await c
+          .from('abgeschaltete_lernbereiche')
+          .select()
+          .eq('gesamtwehr_id', gesamtwehrId),
+    );
 
     await db.wissenDao.ersetzeAbgeschaltet([
       for (final r in zeilen)
@@ -259,12 +272,15 @@ class WissenSync {
     if (c == null) {
       throw StateError('Dafür braucht es eine Verbindung zur Wehr.');
     }
-    await c.rpc('setze_lernbereich', params: {
-      'gw': gesamtwehrId,
-      'p_gebiet': gebiet,
-      'p_kapitel': kapitel,
-      'aus': aus,
-    });
+    await c.rpc(
+      'setze_lernbereich',
+      params: {
+        'gw': gesamtwehrId,
+        'p_gebiet': gebiet,
+        'p_kapitel': kapitel,
+        'aus': aus,
+      },
+    );
     await zieheLernbereiche(gesamtwehrId);
   }
 
@@ -275,10 +291,9 @@ class WissenSync {
     final c = client;
     if (c == null) return 0;
 
-    final zeilen = List<Map<String, dynamic>>.from(await c
-        .from('frage_hinweise')
-        .select()
-        .eq('gesamtwehr_id', gesamtwehrId));
+    final zeilen = List<Map<String, dynamic>>.from(
+      await c.from('frage_hinweise').select().eq('gesamtwehr_id', gesamtwehrId),
+    );
 
     await db.wissenDao.ersetzeHinweise([
       for (final r in zeilen)
@@ -287,11 +302,14 @@ class WissenSync {
           hinweis: r['hinweis'] as String,
           vonName: Value(r['von_name'] as String?),
           createdAt: Value(
-              DateTime.tryParse(r['created_at'] as String? ?? '') ??
-                  DateTime.now()),
-          erledigtAm: Value(r['erledigt_am'] == null
-              ? null
-              : DateTime.tryParse(r['erledigt_am'] as String)),
+            DateTime.tryParse(r['created_at'] as String? ?? '') ??
+                DateTime.now(),
+          ),
+          erledigtAm: Value(
+            r['erledigt_am'] == null
+                ? null
+                : DateTime.tryParse(r['erledigt_am'] as String),
+          ),
           remoteId: Value(r['id'] as String?),
         ),
     ]);
@@ -313,12 +331,15 @@ class WissenSync {
     if (c == null) {
       throw StateError('Dafür braucht es eine Verbindung zur Wehr.');
     }
-    await c.rpc('melde_frage_hinweis', params: {
-      'gw': gesamtwehrId,
-      'p_frage': frageRemoteId,
-      'text_hinweis': text,
-      'melder_name': melderName,
-    });
+    await c.rpc(
+      'melde_frage_hinweis',
+      params: {
+        'gw': gesamtwehrId,
+        'p_frage': frageRemoteId,
+        'text_hinweis': text,
+        'melder_name': melderName,
+      },
+    );
     await zieheHinweise(gesamtwehrId);
   }
 
@@ -332,10 +353,10 @@ class WissenSync {
     if (c == null) {
       throw StateError('Dafür braucht es eine Verbindung zur Wehr.');
     }
-    await c.rpc('erledige_frage_hinweis', params: {
-      'hinweis_id': hinweisRemoteId,
-      'erledigt': erledigt,
-    });
+    await c.rpc(
+      'erledige_frage_hinweis',
+      params: {'hinweis_id': hinweisRemoteId, 'erledigt': erledigt},
+    );
     await zieheHinweise(gesamtwehrId);
   }
 

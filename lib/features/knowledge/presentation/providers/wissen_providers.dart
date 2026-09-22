@@ -21,10 +21,12 @@ import 'package:fwapp/core/utils/json_utils.dart';
 import 'package:fwapp/features/game/party/domain/party_frage.dart';
 import 'package:fwapp/features/knowledge/domain/wissensfrage.dart';
 
-final wissenSyncProvider = Provider<WissenSync>((ref) => WissenSync(
-      db: ref.watch(appDatabaseProvider),
-      client: ref.watch(supabaseClientProvider),
-    ));
+final wissenSyncProvider = Provider<WissenSync>(
+  (ref) => WissenSync(
+    db: ref.watch(appDatabaseProvider),
+    client: ref.watch(supabaseClientProvider),
+  ),
+);
 
 /// Die Gesamtwehr, der die Fragen gehören. `null` = Lokalbetrieb oder eine
 /// Abteilung ohne Wehr — dann bleibt alles auf diesem Gerät, und das ist ein
@@ -36,7 +38,8 @@ final wissenSyncProvider = Provider<WissenSync>((ref) => WissenSync(
 final wissenGesamtwehrProvider = Provider<String?>((ref) {
   final abteilungen = ref.watch(abteilungenProvider).value ?? const [];
   if (abteilungen.isEmpty) return null;
-  final gewaehlt = ref.watch(selectedAbteilungIdProvider) ??
+  final gewaehlt =
+      ref.watch(selectedAbteilungIdProvider) ??
       ref.watch(myAbteilungIdProvider).value;
   for (final a in abteilungen) {
     if (a.id == gewaehlt) return a.gesamtwehrId;
@@ -46,23 +49,23 @@ final wissenGesamtwehrProvider = Provider<String?>((ref) {
 
 /// Alle Fragen, live. Auch die noch nicht freigegebenen — die Übersicht soll
 /// zeigen, was aussteht, sonst merkt niemand, dass etwas auf ihn wartet.
-final wissensfragenProvider =
-    StreamProvider<List<WissensfrageData>>((ref) =>
-        ref.watch(wissenDaoProvider).watchAll());
+final wissensfragenProvider = StreamProvider<List<WissensfrageData>>(
+  (ref) => ref.watch(wissenDaoProvider).watchAll(),
+);
 
 /// Was auf Freigabe wartet — Grundlage des Hinweises für den Gerätewart.
-final offeneFragenProvider =
-    StreamProvider<List<WissensfrageData>>((ref) =>
-        ref.watch(wissenDaoProvider).watchOffen());
+final offeneFragenProvider = StreamProvider<List<WissensfrageData>>(
+  (ref) => ref.watch(wissenDaoProvider).watchOffen(),
+);
 
 /// Nur, was gestellt werden darf.
 ///
 /// ⚠️ Ein StreamProvider, KEIN `FutureProvider`, der den Strom beobachtet:
 /// Letzterer wird bei der ersten Emission verworfen, und ein `await` auf
 /// sein `.future` kehrt nie zurück. Der Party-Start hing genau daran.
-final spielbareFragenProvider =
-    StreamProvider<List<WissensfrageData>>((ref) =>
-        ref.watch(wissenDaoProvider).watchSpielbare());
+final spielbareFragenProvider = StreamProvider<List<WissensfrageData>>(
+  (ref) => ref.watch(wissenDaoProvider).watchSpielbare(),
+);
 
 /// Wie viele freigegebene Fragen je Gebiet — aus demselben Strom gerechnet,
 /// nicht mit einer zweiten Abfrage.
@@ -77,8 +80,9 @@ final fragenJeGebietProvider = Provider<Map<String, int>>((ref) {
 
 /// Was diese Wehr abgewählt hat (Marcus, 2026-08-28).
 final abgeschalteteLernbereicheProvider =
-    StreamProvider<List<AbgeschalteterLernbereich>>((ref) =>
-        ref.watch(wissenDaoProvider).watchAbgeschaltet());
+    StreamProvider<List<AbgeschalteterLernbereich>>(
+      (ref) => ref.watch(wissenDaoProvider).watchAbgeschaltet(),
+    );
 
 /// Ist dieser Bereich abgeschaltet?
 ///
@@ -89,19 +93,23 @@ bool istAbgeschaltet(
   List<AbgeschalteterLernbereich> bereiche,
   String gebiet, {
   String? kapitel,
-}) =>
-    bereiche.any((b) =>
-        b.gebiet == gebiet &&
-        (b.kapitel == null || (kapitel != null && b.kapitel == kapitel)));
+}) => bereiche.any(
+  (b) =>
+      b.gebiet == gebiet &&
+      (b.kapitel == null || (kapitel != null && b.kapitel == kapitel)),
+);
 
 /// Hinweise, die noch niemand abgehakt hat (Issue #194).
-final offeneHinweiseProvider = StreamProvider<List<Fragenhinweis>>((ref) =>
-    ref.watch(wissenDaoProvider).watchOffeneHinweise());
+final offeneHinweiseProvider = StreamProvider<List<Fragenhinweis>>(
+  (ref) => ref.watch(wissenDaoProvider).watchOffeneHinweise(),
+);
 
 /// Die Hinweise zu genau einer Frage.
 final hinweiseZuFrageProvider =
-    StreamProvider.family<List<Fragenhinweis>, String>((ref, frageRemoteId) =>
-        ref.watch(wissenDaoProvider).watchHinweise(frageRemoteId));
+    StreamProvider.family<List<Fragenhinweis>, String>(
+      (ref, frageRemoteId) =>
+          ref.watch(wissenDaoProvider).watchHinweise(frageRemoteId),
+    );
 
 /// Schaltet ein Gebiet ([kapitel] `null`) oder ein Kapitel ab oder wieder ein.
 ///
@@ -118,15 +126,13 @@ Future<void> schalteLernbereich(
   final wehr = ref.read(wissenGesamtwehrProvider);
   if (wehr == null) {
     throw StateError(
-        'Ohne Gesamtwehr gibt es nichts abzuschalten — die Fragen bleiben '
-        'auf diesem Gerät.');
+      'Ohne Gesamtwehr gibt es nichts abzuschalten — die Fragen bleiben '
+      'auf diesem Gerät.',
+    );
   }
-  await ref.read(wissenSyncProvider).setzeLernbereich(
-        wehr,
-        gebiet: gebiet,
-        kapitel: kapitel,
-        aus: aus,
-      );
+  await ref
+      .read(wissenSyncProvider)
+      .setzeLernbereich(wehr, gebiet: gebiet, kapitel: kapitel, aus: aus);
 }
 
 /// Meldet einen Hinweis zu einer EIGENEN Frage (Issue #194).
@@ -141,10 +147,14 @@ Future<void> meldeFragenhinweis(
 }) async {
   final wehr = ref.read(wissenGesamtwehrProvider);
   if (wehr == null) {
-    throw StateError('Ohne Gesamtwehr gibt es niemanden, der den Hinweis '
-        'bekommt.');
+    throw StateError(
+      'Ohne Gesamtwehr gibt es niemanden, der den Hinweis '
+      'bekommt.',
+    );
   }
-  await ref.read(wissenSyncProvider).meldeHinweis(
+  await ref
+      .read(wissenSyncProvider)
+      .meldeHinweis(
         wehr,
         frageRemoteId: frageRemoteId,
         text: text,
@@ -160,11 +170,9 @@ Future<void> erledigeFragenhinweis(
 }) async {
   final wehr = ref.read(wissenGesamtwehrProvider);
   if (wehr == null || h.remoteId == null) return;
-  await ref.read(wissenSyncProvider).erledigeHinweis(
-        wehr,
-        hinweisRemoteId: h.remoteId!,
-        erledigt: erledigt,
-      );
+  await ref
+      .read(wissenSyncProvider)
+      .erledigeHinweis(wehr, hinweisRemoteId: h.remoteId!, erledigt: erledigt);
 }
 
 /// Wohin ein Hinweis zu dieser Frage geht.
@@ -198,29 +206,31 @@ Hinweisweg hinweisWegFuer(WissensfrageData f, {required bool hatWehr}) {
 
 /// Übersetzt eine Datenbankzeile in das Modell der Oberfläche.
 Wissensfrage zuWissensfrage(WissensfrageData z) => Wissensfrage(
-      id: z.id,
-      gebiet: Wissensgebiet.ausSchluessel(z.gebiet) ??
-          Wissensgebiet.rechtUndOrganisation,
-      frage: z.frage,
-      antworten: jsonToStringList(z.antwortenJson),
-      richtige: indizesAusJson(z.richtigeJson),
-      erklaerung: z.erklaerung,
-      herkunft: Fragenherkunft.ausSchluessel(z.herkunft),
-      stand: Fragenstand.ausSchluessel(z.stand),
-      quelle: (z.quelleWerk ?? '').trim().isEmpty
+  id: z.id,
+  gebiet:
+      Wissensgebiet.ausSchluessel(z.gebiet) ??
+      Wissensgebiet.rechtUndOrganisation,
+  frage: z.frage,
+  antworten: jsonToStringList(z.antwortenJson),
+  richtige: indizesAusJson(z.richtigeJson),
+  erklaerung: z.erklaerung,
+  herkunft: Fragenherkunft.ausSchluessel(z.herkunft),
+  stand: Fragenstand.ausSchluessel(z.stand),
+  quelle:
+      (z.quelleWerk ?? '').trim().isEmpty
           ? null
           : Fragenquelle(
-              werk: z.quelleWerk!,
-              fundstelle: z.quelleFundstelle,
-              stand: z.quelleStand,
-              url: z.quelleUrl,
-            ),
-      geltung: Geltungsbereich.ausSchluessel(z.geltung),
-      land: z.land,
-      kapitel: z.kapitel,
-      bildPfad: z.bildPfad,
-      eingereichtVon: z.eingereichtVon,
-    );
+            werk: z.quelleWerk!,
+            fundstelle: z.quelleFundstelle,
+            stand: z.quelleStand,
+            url: z.quelleUrl,
+          ),
+  geltung: Geltungsbereich.ausSchluessel(z.geltung),
+  land: z.land,
+  kapitel: z.kapitel,
+  bildPfad: z.bildPfad,
+  eingereichtVon: z.eingereichtVon,
+);
 
 /// Liest die Indizes der richtigen Antworten aus der JSON-Spalte.
 ///
@@ -325,9 +335,8 @@ PartyFrage wissensfrageAlsPartyFrage(WissensfrageData z, Random zufall) {
   // fielen hier anfangs still heraus, und ausgerechnet am Tisch fehlten
   // sie: Dort wird über eine Antwort gestritten, nicht in der Übersicht.
   final frage = zuWissensfrage(z);
-  final hinweis = frage.geltung == Geltungsbereich.land
-      ? frage.geltungAnzeige
-      : null;
+  final hinweis =
+      frage.geltung == Geltungsbereich.land ? frage.geltungAnzeige : null;
   // Verteidigung gegen eine kaputte Zeile, nicht gegen Mehrfachantworten —
   // die sind vorher heraus (siehe [nurEinfachauswahl]).
   if (antworten.isEmpty) {
@@ -343,8 +352,10 @@ PartyFrage wissensfrageAlsPartyFrage(WissensfrageData z, Random zufall) {
     );
   }
   final richtigerText =
-      antworten[(richtige.isEmpty ? 0 : richtige.first)
-          .clamp(0, antworten.length - 1)];
+      antworten[(richtige.isEmpty ? 0 : richtige.first).clamp(
+        0,
+        antworten.length - 1,
+      )];
   final gemischt = [...antworten]..shuffle(zufall);
   return PartyFrage(
     art: PartyFrageArt.unerwartet,
@@ -380,12 +391,15 @@ Future<int> reicheFrageEin(
   String? eingereichtVon,
   bool sofortFreigeben = false,
 }) async {
-  final id = await ref.read(wissenDaoProvider).insertFrage(
+  final id = await ref
+      .read(wissenDaoProvider)
+      .insertFrage(
         WissensfragenCompanion.insert(
           gebiet: gebiet.schluessel,
           frage: frage.trim(),
-          antwortenJson:
-              Value(stringListToJson(antworten.map((a) => a.trim()).toList())),
+          antwortenJson: Value(
+            stringListToJson(antworten.map((a) => a.trim()).toList()),
+          ),
           richtigeJson: Value(indizesZuJson(richtige)),
           quelleWerk: Value(quelle?.werk),
           quelleFundstelle: Value(quelle?.fundstelle),
@@ -393,16 +407,18 @@ Future<int> reicheFrageEin(
           quelleUrl: Value(quelle?.url),
           geltung: Value(geltung.schluessel),
           land: Value(geltung == Geltungsbereich.land ? land : null),
-          kapitel: Value(kapitel?.trim().isEmpty ?? true
-              ? null
-              : kapitel!.trim()),
-          erklaerung: Value(erklaerung?.trim().isEmpty ?? true
-              ? null
-              : erklaerung!.trim()),
+          kapitel: Value(
+            kapitel?.trim().isEmpty ?? true ? null : kapitel!.trim(),
+          ),
+          erklaerung: Value(
+            erklaerung?.trim().isEmpty ?? true ? null : erklaerung!.trim(),
+          ),
           herkunft: Value(Fragenherkunft.eigen.schluessel),
-          stand: Value(sofortFreigeben
-              ? Fragenstand.freigegeben.schluessel
-              : Fragenstand.eingereicht.schluessel),
+          stand: Value(
+            sofortFreigeben
+                ? Fragenstand.freigegeben.schluessel
+                : Fragenstand.eingereicht.schluessel,
+          ),
           eingereichtVon: Value(eingereichtVon),
           dirty: const Value(true),
         ),
@@ -430,25 +446,27 @@ Future<int> uebernehmeImport(
   final dao = ref.read(wissenDaoProvider);
   var angelegt = 0;
   for (final f in fragen) {
-    await dao.insertFrage(WissensfragenCompanion.insert(
-      gebiet: f.gebiet.schluessel,
-      frage: f.frage,
-      antwortenJson: Value(stringListToJson(f.antworten)),
-      richtigeJson: Value(indizesZuJson(f.richtige)),
-      erklaerung: Value(f.erklaerung),
-      kapitel: Value(f.kapitel),
-      quelleWerk: Value(f.quelle?.werk),
-      quelleFundstelle: Value(f.quelle?.fundstelle),
-      quelleStand: Value(f.quelle?.stand),
-      quelleUrl: Value(f.quelle?.url),
-      geltung: Value(f.geltung.schluessel),
-      land: Value(f.land),
-      geraet: Value(f.geraet),
-      herkunft: Value(Fragenherkunft.eigen.schluessel),
-      stand: Value(Fragenstand.freigegeben.schluessel),
-      eingereichtVon: Value(eingereichtVon),
-      dirty: const Value(true),
-    ));
+    await dao.insertFrage(
+      WissensfragenCompanion.insert(
+        gebiet: f.gebiet.schluessel,
+        frage: f.frage,
+        antwortenJson: Value(stringListToJson(f.antworten)),
+        richtigeJson: Value(indizesZuJson(f.richtige)),
+        erklaerung: Value(f.erklaerung),
+        kapitel: Value(f.kapitel),
+        quelleWerk: Value(f.quelle?.werk),
+        quelleFundstelle: Value(f.quelle?.fundstelle),
+        quelleStand: Value(f.quelle?.stand),
+        quelleUrl: Value(f.quelle?.url),
+        geltung: Value(f.geltung.schluessel),
+        land: Value(f.land),
+        geraet: Value(f.geraet),
+        herkunft: Value(Fragenherkunft.eigen.schluessel),
+        stand: Value(Fragenstand.freigegeben.schluessel),
+        eingereichtVon: Value(eingereichtVon),
+        dirty: const Value(true),
+      ),
+    );
     angelegt++;
   }
   await _abgleichen(ref);
@@ -458,14 +476,19 @@ Future<int> uebernehmeImport(
 /// Die Wortlaute, die es schon gibt — Grundlage der Doppelten-Erkennung beim
 /// Import.
 Future<Set<String>> vorhandeneFragenSchluessel(WidgetRef ref) async => {
-      for (final f in await ref.read(wissenDaoProvider).getAll())
-        schluesselFuer(f.frage),
-    };
+  for (final f in await ref.read(wissenDaoProvider).getAll())
+    schluesselFuer(f.frage),
+};
 
 /// Setzt den Stand einer Frage — freigeben oder ablehnen.
 Future<void> setzeStand(
-    WidgetRef ref, WissensfrageData f, Fragenstand stand) async {
-  await ref.read(wissenDaoProvider).aendere(
+  WidgetRef ref,
+  WissensfrageData f,
+  Fragenstand stand,
+) async {
+  await ref
+      .read(wissenDaoProvider)
+      .aendere(
         f.id,
         WissensfragenCompanion(
           stand: Value(stand.schluessel),

@@ -78,8 +78,10 @@ class TagSync {
         // Bescheid, und der Code ist hier wieder frei.
         await db.tagDao.deleteTag(t.id);
       } else {
-        await db.tagDao
-            .aendere(t.id, const EquipmentTagsCompanion(dirty: Value(false)));
+        await db.tagDao.aendere(
+          t.id,
+          const EquipmentTagsCompanion(dirty: Value(false)),
+        );
       }
       geschoben++;
     }
@@ -95,7 +97,8 @@ class TagSync {
     if (c == null) return 0;
 
     final zeilen = List<Map<String, dynamic>>.from(
-        await c.from('equipment_tags').select().eq('abteilung_id', abteilungId));
+      await c.from('equipment_tags').select().eq('abteilung_id', abteilungId),
+    );
 
     var gezogen = 0;
     for (final r in zeilen) {
@@ -128,14 +131,16 @@ class TagSync {
       final kind = r['kind'] as String? ?? EquipmentTags.kindQr;
       final selfIssued = r['self_issued'] as bool? ?? false;
       if (lokal == null) {
-        await db.tagDao.insertTag(EquipmentTagsCompanion.insert(
-          instanceId: instanceId,
-          code: code,
-          kind: Value(kind),
-          selfIssued: Value(selfIssued),
-          createdAt: Value(_zeit(r['created_at'])),
-          dirty: const Value(false),
-        ));
+        await db.tagDao.insertTag(
+          EquipmentTagsCompanion.insert(
+            instanceId: instanceId,
+            code: code,
+            kind: Value(kind),
+            selfIssued: Value(selfIssued),
+            createdAt: Value(_zeit(r['created_at'])),
+            dirty: const Value(false),
+          ),
+        );
       } else {
         // Derselbe Code an einer anderen Einheit: Der Server hat recht. Er
         // ist die einzige Stelle, die beide Geräte gesehen hat.

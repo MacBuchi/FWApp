@@ -25,10 +25,12 @@ String ohneKommentare(String yaml) => yaml
     .join('\n');
 
 void main() {
-  final release =
-      ohneKommentare(File('.github/workflows/release.yml').readAsStringSync());
-  final promote =
-      ohneKommentare(File('.github/workflows/promote.yml').readAsStringSync());
+  final release = ohneKommentare(
+    File('.github/workflows/release.yml').readAsStringSync(),
+  );
+  final promote = ohneKommentare(
+    File('.github/workflows/promote.yml').readAsStringSync(),
+  );
 
   group('Release-Kanäle (#154)', () {
     test('jeder Merge veröffentlicht als Prerelease, nie als latest', () {
@@ -99,30 +101,32 @@ void main() {
       );
     });
 
-    test('der Web-Deploy bleibt bewusst beim Merge, nicht bei der Beförderung',
-        () {
-      // Die bewusste Abweichung von MitFahrBar (dort deployt die Beförderung
-      // GitHub Pages). FWApp liefert das Web über den web-dist-Branch aus,
-      // und im Web gibt es keine Update-Hinweise — die Kanaltrennung löst
-      // ein Android-Problem. Der Test steht hier, damit die Abweichung als
-      // Entscheidung erkennbar bleibt und niemand sie als Versehen
-      // „nachzieht".
-      expect(
-        release,
-        contains('git push --force origin web-dist'),
-        reason:
-            'Das Web-Bündel gehört weiterhin in den Merge-Lauf: Die PWA hat '
-            'keinen Update-Hinweis, den man bündeln müsste, und der '
-            'Autodeploy der VM zieht es vom web-dist-Branch.',
-      );
-      expect(
-        promote,
-        isNot(contains('web-dist')),
-        reason:
-            'Wandert der Web-Deploy in die Beförderung, steht zwischen zwei '
-            'Beförderungen der alte Stand im Browser — entschieden am '
-            '2026-08-21 dagegen.',
-      );
-    });
+    test(
+      'der Web-Deploy bleibt bewusst beim Merge, nicht bei der Beförderung',
+      () {
+        // Die bewusste Abweichung von MitFahrBar (dort deployt die Beförderung
+        // GitHub Pages). FWApp liefert das Web über den web-dist-Branch aus,
+        // und im Web gibt es keine Update-Hinweise — die Kanaltrennung löst
+        // ein Android-Problem. Der Test steht hier, damit die Abweichung als
+        // Entscheidung erkennbar bleibt und niemand sie als Versehen
+        // „nachzieht".
+        expect(
+          release,
+          contains('git push --force origin web-dist'),
+          reason:
+              'Das Web-Bündel gehört weiterhin in den Merge-Lauf: Die PWA hat '
+              'keinen Update-Hinweis, den man bündeln müsste, und der '
+              'Autodeploy der VM zieht es vom web-dist-Branch.',
+        );
+        expect(
+          promote,
+          isNot(contains('web-dist')),
+          reason:
+              'Wandert der Web-Deploy in die Beförderung, steht zwischen zwei '
+              'Beförderungen der alte Stand im Browser — entschieden am '
+              '2026-08-21 dagegen.',
+        );
+      },
+    );
   });
 }

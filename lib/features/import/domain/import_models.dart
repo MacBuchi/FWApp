@@ -48,17 +48,15 @@ class ColumnMapping {
     int? equipmentColumn,
     int? Function()? quantityColumn,
     bool? firstRowIsHeader,
-  }) =>
-      ColumnMapping(
-        vehicleColumn:
-            vehicleColumn != null ? vehicleColumn() : this.vehicleColumn,
-        fixedVehicleName: fixedVehicleName ?? this.fixedVehicleName,
-        compartmentColumn: compartmentColumn ?? this.compartmentColumn,
-        equipmentColumn: equipmentColumn ?? this.equipmentColumn,
-        quantityColumn:
-            quantityColumn != null ? quantityColumn() : this.quantityColumn,
-        firstRowIsHeader: firstRowIsHeader ?? this.firstRowIsHeader,
-      );
+  }) => ColumnMapping(
+    vehicleColumn: vehicleColumn != null ? vehicleColumn() : this.vehicleColumn,
+    fixedVehicleName: fixedVehicleName ?? this.fixedVehicleName,
+    compartmentColumn: compartmentColumn ?? this.compartmentColumn,
+    equipmentColumn: equipmentColumn ?? this.equipmentColumn,
+    quantityColumn:
+        quantityColumn != null ? quantityColumn() : this.quantityColumn,
+    firstRowIsHeader: firstRowIsHeader ?? this.firstRowIsHeader,
+  );
 }
 
 /// One data row after applying the column mapping.

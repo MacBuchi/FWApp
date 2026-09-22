@@ -80,8 +80,9 @@ class _FragenImportState extends ConsumerState<FragenImportScreen> {
             Text(
               'Importierte Fragen sind sofort freigegeben. Du kannst sie '
               'danach wie jede andere bearbeiten oder entfernen.',
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
@@ -90,48 +91,49 @@ class _FragenImportState extends ConsumerState<FragenImportScreen> {
   }
 
   Widget _knoepfe() => Row(
-        children: [
-          Expanded(
-            child: OutlinedButton.icon(
-              onPressed: _laeuft ? null : _vorlageTeilen,
-              icon: const Icon(Icons.description_outlined),
-              label: const Text('Vorlage'),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: FilledButton.icon(
-              onPressed: _laeuft ? null : _dateiWaehlen,
-              icon: const Icon(Icons.upload_file),
-              label: const Text('Datei wählen'),
-            ),
-          ),
-        ],
-      );
+    children: [
+      Expanded(
+        child: OutlinedButton.icon(
+          onPressed: _laeuft ? null : _vorlageTeilen,
+          icon: const Icon(Icons.description_outlined),
+          label: const Text('Vorlage'),
+        ),
+      ),
+      const SizedBox(width: 12),
+      Expanded(
+        child: FilledButton.icon(
+          onPressed: _laeuft ? null : _dateiWaehlen,
+          icon: const Icon(Icons.upload_file),
+          label: const Text('Datei wählen'),
+        ),
+      ),
+    ],
+  );
 
   Widget _fehlerkarte(String text) => Card(
-        color: Theme.of(context).colorScheme.errorContainer,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Text(text,
-              style: TextStyle(
-                  color: Theme.of(context).colorScheme.onErrorContainer)),
-        ),
-      );
+    color: Theme.of(context).colorScheme.errorContainer,
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Text(
+        text,
+        style: TextStyle(color: Theme.of(context).colorScheme.onErrorContainer),
+      ),
+    ),
+  );
 
   Widget _befundAnzeige(FrageImportErgebnis e) => FragenImportBefund(
-        ergebnis: e,
-        dateiname: _dateiname ?? '',
-        aktiv: !_laeuft,
-        aufUebernehmen: _uebernehmen,
-      );
+    ergebnis: e,
+    dateiname: _dateiname ?? '',
+    aktiv: !_laeuft,
+    aufUebernehmen: _uebernehmen,
+  );
 
   Future<void> _vorlageTeilen() => teile(
-        context,
-        vorlageCsv(),
-        dateiname: 'fragen-vorlage.csv',
-        sacheImRueckfall: 'die Vorlage',
-      );
+    context,
+    vorlageCsv(),
+    dateiname: 'fragen-vorlage.csv',
+    sacheImRueckfall: 'die Vorlage',
+  );
 
   Future<void> _dateiWaehlen() async {
     final gewaehlt = await FilePicker.pickFiles(
@@ -156,8 +158,10 @@ class _FragenImportState extends ConsumerState<FragenImportScreen> {
       final vorhanden = await vorhandeneFragenSchluessel(ref);
       // Die erste Tabelle: Eine Excel-Mappe kann mehrere Blätter haben, und
       // ein Blattwähler wäre hier Zierde — die Vorlage hat genau eines.
-      final ergebnis = leseFragen(geparst.tables.first,
-          vorhandeneFragen: vorhanden);
+      final ergebnis = leseFragen(
+        geparst.tables.first,
+        vorhandeneFragen: vorhanden,
+      );
       if (!mounted) return;
       setState(() {
         _ergebnis = ergebnis;
@@ -179,14 +183,17 @@ class _FragenImportState extends ConsumerState<FragenImportScreen> {
     final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
     try {
-      final anzahl = await uebernehmeImport(
-        ref,
-        [for (final z in zeilen) z.frage!],
-        eingereichtVon: ref.read(meinProfilProvider).value?.name,
+      final anzahl = await uebernehmeImport(ref, [
+        for (final z in zeilen) z.frage!,
+      ], eingereichtVon: ref.read(meinProfilProvider).value?.name);
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            '$anzahl ${anzahl == 1 ? "Frage" : "Fragen"} '
+            'übernommen.',
+          ),
+        ),
       );
-      messenger.showSnackBar(SnackBar(
-          content: Text('$anzahl ${anzahl == 1 ? "Frage" : "Fragen"} '
-              'übernommen.')));
       navigator.pop();
     } catch (e) {
       if (!mounted) return;
@@ -197,7 +204,6 @@ class _FragenImportState extends ConsumerState<FragenImportScreen> {
     }
   }
 }
-
 
 /// Was in einer Datei stand — als eigenes Widget, damit es ohne Dateiauswahl
 /// prüfbar ist.
@@ -234,8 +240,7 @@ class FragenImportBefund extends StatelessWidget {
           [
             '${gut.length} ${gut.length == 1 ? "Frage" : "Fragen"} bereit',
             if (e.doppelte.isNotEmpty) '${e.doppelte.length} schon vorhanden',
-            if (e.fehlerhafte.isNotEmpty)
-              '${e.fehlerhafte.length} mit Fehlern',
+            if (e.fehlerhafte.isNotEmpty) '${e.fehlerhafte.length} mit Fehlern',
           ].join(' · '),
           style: theme.textTheme.bodyMedium,
         ),
@@ -246,8 +251,9 @@ class FragenImportBefund extends StatelessWidget {
           Text(
             'Diese Spalten kenne ich nicht und habe sie übergangen: '
             '${e.unbekannteSpalten.join(", ")}',
-            style: theme.textTheme.bodySmall
-                ?.copyWith(color: theme.colorScheme.tertiary),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.tertiary,
+            ),
           ),
         ],
         const SizedBox(height: 16),

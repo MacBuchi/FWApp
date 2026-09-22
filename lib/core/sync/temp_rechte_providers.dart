@@ -50,16 +50,17 @@ class TemporaeresRecht {
       zurueckgezogenAm == null && laeuftAb.isAfter(DateTime.now());
 
   static TemporaeresRecht ausZeile(Map<String, dynamic> r) => TemporaeresRecht(
-        id: r['id'] as String,
-        userId: r['user_id'] as String,
-        abteilungId: r['abteilung_id'] as String,
-        laeuftAb: DateTime.parse(r['laeuft_ab'] as String).toLocal(),
-        erteiltAm: DateTime.parse(r['erteilt_am'] as String).toLocal(),
-        erteiltVon: r['erteilt_von'] as String?,
-        zurueckgezogenAm: r['zurueckgezogen_am'] == null
+    id: r['id'] as String,
+    userId: r['user_id'] as String,
+    abteilungId: r['abteilung_id'] as String,
+    laeuftAb: DateTime.parse(r['laeuft_ab'] as String).toLocal(),
+    erteiltAm: DateTime.parse(r['erteilt_am'] as String).toLocal(),
+    erteiltVon: r['erteilt_von'] as String?,
+    zurueckgezogenAm:
+        r['zurueckgezogen_am'] == null
             ? null
             : DateTime.parse(r['zurueckgezogen_am'] as String).toLocal(),
-      );
+  );
 }
 
 const _spalten =
@@ -71,8 +72,9 @@ const _spalten =
 /// `null` heißt „nicht beantwortbar" (Lokalmodus, nicht angemeldet, oder ein
 /// Server ohne diese Tabelle). Der Aufrufer muss dann so tun, als gäbe es
 /// keine — ein angenommenes Recht wäre schlimmer als ein fehlendes.
-final meineTemporaerenRechteProvider =
-    FutureProvider<Map<String, DateTime>?>((ref) async {
+final meineTemporaerenRechteProvider = FutureProvider<Map<String, DateTime>?>((
+  ref,
+) async {
   final client = ref.watch(supabaseClientProvider);
   final session = ref.watch(sessionStreamProvider).value;
   if (client == null || session == null) return null;
@@ -98,25 +100,25 @@ final meineTemporaerenRechteProvider =
 /// Nutzerverwaltung. Die Lese-Policy gibt nur her, wer dort erteilen darf.
 final temporaereRechteDerAbteilungProvider = FutureProvider.autoDispose
     .family<List<TemporaeresRecht>, String>((ref, abteilungId) async {
-  final client = ref.watch(supabaseClientProvider);
-  final session = ref.watch(sessionStreamProvider).value;
-  if (client == null || session == null) return const [];
-  try {
-    final rows = await client
-        .from('temporaere_rechte')
-        .select(_spalten)
-        .eq('abteilung_id', abteilungId)
-        .order('erteilt_am', ascending: false)
-        .limit(50);
-    return [
-      for (final r in rows.cast<Map<String, dynamic>>())
-        TemporaeresRecht.ausZeile(r),
-    ];
-  } catch (e) {
-    appLog.i('Protokoll der temporären Rechte nicht ladbar', error: e);
-    return const [];
-  }
-});
+      final client = ref.watch(supabaseClientProvider);
+      final session = ref.watch(sessionStreamProvider).value;
+      if (client == null || session == null) return const [];
+      try {
+        final rows = await client
+            .from('temporaere_rechte')
+            .select(_spalten)
+            .eq('abteilung_id', abteilungId)
+            .order('erteilt_am', ascending: false)
+            .limit(50);
+        return [
+          for (final r in rows.cast<Map<String, dynamic>>())
+            TemporaeresRecht.ausZeile(r),
+        ];
+      } catch (e) {
+        appLog.i('Protokoll der temporären Rechte nicht ladbar', error: e);
+        return const [];
+      }
+    });
 
 /// Der voreingestellte Ablauf: Tagesende auf DIESEM Gerät.
 ///
@@ -152,13 +154,16 @@ class TempRechteService {
   }
 
   Future<void> erteile(String userId, String abteilungId, DateTime bis) async {
-    await _client.rpc('temp_recht_erteilen', params: {
-      'ziel_user': userId,
-      'ziel_abteilung': abteilungId,
-      // Immer in UTC übergeben: Der Server rechnet in timestamptz, ein
-      // lokaler Zeitstempel ohne Zone käme dort um Stunden verschoben an.
-      'bis': bis.toUtc().toIso8601String(),
-    });
+    await _client.rpc(
+      'temp_recht_erteilen',
+      params: {
+        'ziel_user': userId,
+        'ziel_abteilung': abteilungId,
+        // Immer in UTC übergeben: Der Server rechnet in timestamptz, ein
+        // lokaler Zeitstempel ohne Zone käme dort um Stunden verschoben an.
+        'bis': bis.toUtc().toIso8601String(),
+      },
+    );
     _aktualisiere(abteilungId);
   }
 

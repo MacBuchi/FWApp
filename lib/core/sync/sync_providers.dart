@@ -2,6 +2,7 @@
 /// role (admin/member), and the SyncService. Written as manual providers
 /// (riverpod_generator cannot emit code for supabase_flutter's types).
 library;
+
 import 'dart:async' show TimeoutException;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,8 +25,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// Changing the sync settings requires an app restart to take effect.
 final supabaseReadyProvider = Provider<bool>((ref) => false);
 
-final supabaseClientProvider = Provider<SupabaseClient?>((ref) =>
-    ref.watch(supabaseReadyProvider) ? Supabase.instance.client : null);
+final supabaseClientProvider = Provider<SupabaseClient?>(
+  (ref) => ref.watch(supabaseReadyProvider) ? Supabase.instance.client : null,
+);
 
 /// Auth session, updating on sign-in/sign-out.
 final sessionStreamProvider = StreamProvider<Session?>((ref) {
@@ -71,11 +73,12 @@ final currentUserRoleProvider = FutureProvider<String?>((ref) async {
   final client = ref.watch(supabaseClientProvider);
   final session = ref.watch(sessionStreamProvider).value;
   if (client == null || session == null) return null;
-  final row = await client
-      .from('profiles')
-      .select('role')
-      .eq('id', session.user.id)
-      .maybeSingle();
+  final row =
+      await client
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .maybeSingle();
   return row?['role'] as String?;
 });
 
@@ -102,14 +105,16 @@ final canEditProvider = Provider<bool>((ref) {
     return role == 'admin' || role == 'geraetewart';
   }
 
-  final selected = ref.watch(selectedAbteilungIdProvider) ??
+  final selected =
+      ref.watch(selectedAbteilungIdProvider) ??
       ref.watch(myAbteilungIdProvider).value;
   if (selected == null) {
     // Heimat (noch) unbekannt — direkt nach dem Anmelden, bevor das
     // Profil da ist. Eine Schreibrolle irgendwo genügt hier: Die Sicht
     // IST in dem Moment die Heimat.
-    return mitgliedschaften.values
-        .any((r) => r == 'admin' || r == 'geraetewart');
+    return mitgliedschaften.values.any(
+      (r) => r == 'admin' || r == 'geraetewart',
+    );
   }
   final rolle = mitgliedschaften[selected];
   if (rolle == 'admin' || rolle == 'geraetewart') return true;
@@ -156,11 +161,12 @@ final mustChangePasswordProvider = FutureProvider<bool>((ref) async {
   final client = ref.watch(supabaseClientProvider);
   final session = ref.watch(sessionStreamProvider).value;
   if (client == null || session == null) return false;
-  final row = await client
-      .from('profiles')
-      .select('must_change_password')
-      .eq('id', session.user.id)
-      .maybeSingle();
+  final row =
+      await client
+          .from('profiles')
+          .select('must_change_password')
+          .eq('id', session.user.id)
+          .maybeSingle();
   return (row?['must_change_password'] as bool?) ?? false;
 });
 
@@ -209,8 +215,10 @@ final serverHealthProvider = FutureProvider.autoDispose<bool>((ref) async {
   if (base == null) return false;
   try {
     final resp = await http
-        .get(Uri.parse('$base/auth/v1/health'),
-            headers: supabaseStorageHeaders?.call())
+        .get(
+          Uri.parse('$base/auth/v1/health'),
+          headers: supabaseStorageHeaders?.call(),
+        )
         .timeout(const Duration(seconds: 4));
     return resp.statusCode == 200;
   } on TimeoutException {

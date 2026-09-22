@@ -1,6 +1,7 @@
 /// image_sync_service_test.dart – Pfad-/Marker-Logik des Bild-Uploads (M2).
 /// Die Kompression selbst liegt jetzt in core/images und wird dort getestet.
 library;
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/core/utils/image_utils.dart';
 
@@ -10,8 +11,10 @@ void main() {
       expect(isLocalImagePath('/var/mobile/media/IMG_1.jpg'), isTrue);
       expect(isLocalImagePath('C:/photos/a.png'), isTrue);
       expect(isLocalImagePath('assets/images/equipment/haligan.png'), isFalse);
-      expect(isLocalImagePath('supabase://equipment-images/eq_1_2.jpg'),
-          isFalse);
+      expect(
+        isLocalImagePath('supabase://equipment-images/eq_1_2.jpg'),
+        isFalse,
+      );
       expect(isLocalImagePath('http://server/img.jpg'), isFalse);
       expect(isLocalImagePath('https://server/img.jpg'), isFalse);
       expect(isLocalImagePath(null), isFalse);

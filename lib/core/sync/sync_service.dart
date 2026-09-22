@@ -3,6 +3,7 @@
 /// snapshot; the admin publishes the full local dataset via the
 /// publish_snapshot RPC (optimistic version check, no conflict resolution).
 library;
+
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -88,8 +89,12 @@ class SyncService {
   /// die App darf dem Server-Rollout vorauseilen, nicht umgekehrt.
   bool _legacyServer = false;
 
-  SyncService(this.db, this.client, {String? appVersion, this.abteilungOverride})
-      : appVersion = appVersion ?? currentAppVersion;
+  SyncService(
+    this.db,
+    this.client, {
+    String? appVersion,
+    this.abteilungOverride,
+  }) : appVersion = appVersion ?? currentAppVersion;
 
   /// Abteilung, auf der Pull und Publish arbeiten: die ausgewählte, sonst
   /// die eigene (mit Legacy-Fallback).
@@ -102,10 +107,8 @@ class SyncService {
     if (_legacyServer) return null;
     if (_abteilungId != null) return _abteilungId;
     try {
-      final row = await client
-          .from('profiles')
-          .select('abteilung_id')
-          .maybeSingle();
+      final row =
+          await client.from('profiles').select('abteilung_id').maybeSingle();
       _abteilungId = row?['abteilung_id'] as String?;
       if (_abteilungId == null) {
         // Spalte da, aber leer (Abteilung gelöscht): wie Legacy behandeln,
@@ -122,34 +125,37 @@ class SyncService {
   // ── SyncMeta helpers ──
 
   Future<SyncMetaData> getMeta() async {
-    final row = await (db.select(db.syncMeta)
-          ..where((t) => t.id.equals(1)))
-        .getSingleOrNull();
+    final row =
+        await (db.select(db.syncMeta)
+          ..where((t) => t.id.equals(1))).getSingleOrNull();
     if (row != null) return row;
     await db.into(db.syncMeta).insert(const SyncMetaCompanion());
     return (db.select(db.syncMeta)..where((t) => t.id.equals(1))).getSingle();
   }
 
-  Stream<SyncMetaData?> watchMeta() => (db.select(db.syncMeta)
-        ..where((t) => t.id.equals(1)))
-      .watchSingleOrNull();
+  Stream<SyncMetaData?> watchMeta() =>
+      (db.select(db.syncMeta)
+        ..where((t) => t.id.equals(1))).watchSingleOrNull();
 
   Future<void> _setMeta({int? version, bool? dirty}) async {
     await getMeta(); // ensure row exists
-    await (db.update(db.syncMeta)..where((t) => t.id.equals(1)))
-        .write(SyncMetaCompanion(
-      lastPulledVersion: version != null ? Value(version) : const Value.absent(),
-      lastPulledAt:
-          version != null ? Value(DateTime.now()) : const Value.absent(),
-      localDirty: dirty != null ? Value(dirty) : const Value.absent(),
-    ));
+    await (db.update(db.syncMeta)..where((t) => t.id.equals(1))).write(
+      SyncMetaCompanion(
+        lastPulledVersion:
+            version != null ? Value(version) : const Value.absent(),
+        lastPulledAt:
+            version != null ? Value(DateTime.now()) : const Value.absent(),
+        localDirty: dirty != null ? Value(dirty) : const Value.absent(),
+      ),
+    );
   }
 
   /// Marks the local dataset dirty whenever a synced table changes outside
   /// of a sync operation (drives the "unveröffentlichte Änderungen" hint).
   void startDirtyTracking() {
-    _dirtySub ??=
-        db.tableUpdates(TableUpdateQuery.any()).listen((updates) async {
+    _dirtySub ??= db.tableUpdates(TableUpdateQuery.any()).listen((
+      updates,
+    ) async {
       if (_suppressDirty) return;
       if (updates.any((u) => kSyncedTables.contains(u.table))) {
         _suppressDirty = true; // _setMeta itself must not re-trigger
@@ -184,13 +190,14 @@ class SyncService {
     final meta = await getMeta();
     final abteilung = await _effectiveAbteilung();
     // Versionszähler: je Abteilung (neu) oder dataset_meta (Legacy-Server).
-    final remote = abteilung != null
-        ? await client
-            .from('abteilungen')
-            .select('version')
-            .eq('id', abteilung)
-            .single()
-        : await client.from('dataset_meta').select('version').single();
+    final remote =
+        abteilung != null
+            ? await client
+                .from('abteilungen')
+                .select('version')
+                .eq('id', abteilung)
+                .single()
+            : await client.from('dataset_meta').select('version').single();
     final remoteVersion = (remote['version'] as num).toInt();
     if (!force && remoteVersion <= meta.lastPulledVersion) return null;
 
@@ -231,8 +238,10 @@ class SyncService {
     } finally {
       _suppressDirty = false;
     }
-    appLog.i('Pulled dataset version $remoteVersion '
-        '(${data.values.fold<int>(0, (n, rows) => n + rows.length)} rows).');
+    appLog.i(
+      'Pulled dataset version $remoteVersion '
+      '(${data.values.fold<int>(0, (n, rows) => n + rows.length)} rows).',
+    );
     return remoteVersion;
   }
 
@@ -243,7 +252,8 @@ class SyncService {
   /// einen laufenden Server prüfbar.
   @visibleForTesting
   Future<void> wendeSnapshotAn(
-      Map<String, List<Map<String, dynamic>>> data) async {
+    Map<String, List<Map<String, dynamic>>> data,
+  ) async {
     await _weicheKollisionenAus(data);
     await db.transaction(() => _applySnapshot(data));
   }
@@ -299,31 +309,37 @@ class SyncService {
   /// Ergebnis. Die Änderungen laufen dabei in einer Transaktion, also ganz
   /// oder gar nicht.
   Future<void> _weicheKollisionenAus(
-      Map<String, List<Map<String, dynamic>>> data) async {
+    Map<String, List<Map<String, dynamic>>> data,
+  ) async {
     final umzug = <String, List<(int, int)>>{};
 
     // Erst rechnen, dann anfassen: Ohne Kollision wird die PRAGMA gar nicht
     // erst angerührt.
     for (final tabelle in kSyncedTables) {
-      final eingehend = (data[tabelle] ?? const [])
-          .map((r) => (r['id'] as num).toInt())
-          .toList();
+      final eingehend =
+          (data[tabelle] ?? const [])
+              .map((r) => (r['id'] as num).toInt())
+              .toList();
       if (eingehend.isEmpty) continue;
       final liste = eingehend.join(',');
-      final kollidierend = await db
-          .customSelect('SELECT id FROM $tabelle '
-              'WHERE dirty = 1 AND id IN ($liste) ORDER BY id')
-          .map((r) => r.read<int>('id'))
-          .get();
+      final kollidierend =
+          await db
+              .customSelect(
+                'SELECT id FROM $tabelle '
+                'WHERE dirty = 1 AND id IN ($liste) ORDER BY id',
+              )
+              .map((r) => r.read<int>('id'))
+              .get();
       if (kollidierend.isEmpty) continue;
 
       // Über BEIDE Stände hinaus: Die nächste freie Nummer muss auch an
       // den eingehenden Zeilen vorbei, sonst kollidiert das Ausweichen mit
       // dem, wovor es ausweicht.
-      final hoechsteLokal = await db
-          .customSelect('SELECT COALESCE(MAX(id), 0) AS m FROM $tabelle')
-          .map((r) => r.read<int>('m'))
-          .getSingle();
+      final hoechsteLokal =
+          await db
+              .customSelect('SELECT COALESCE(MAX(id), 0) AS m FROM $tabelle')
+              .map((r) => r.read<int>('m'))
+              .getSingle();
       var naechste = math.max(hoechsteLokal, eingehend.reduce(math.max)) + 1;
       umzug[tabelle] = [for (final alt in kollidierend) (alt, naechste++)];
     }
@@ -335,11 +351,14 @@ class SyncService {
         for (final eintrag in umzug.entries) {
           for (final (alt, neu) in eintrag.value) {
             await db.customStatement(
-                'UPDATE ${eintrag.key} SET id = ? WHERE id = ?', [neu, alt]);
+              'UPDATE ${eintrag.key} SET id = ? WHERE id = ?',
+              [neu, alt],
+            );
             for (final (kind, spalte) in _verweiseAuf[eintrag.key]!) {
               await db.customStatement(
-                  'UPDATE $kind SET $spalte = ? WHERE $spalte = ?',
-                  [neu, alt]);
+                'UPDATE $kind SET $spalte = ? WHERE $spalte = ?',
+                [neu, alt],
+              );
             }
           }
         }
@@ -354,7 +373,9 @@ class SyncService {
   /// Upserts incoming rows and deletes local rows that are no longer in the
   /// snapshot. Upserting (instead of wipe+insert) keeps row identities stable
   /// so local-only references (QuizResults.vehicleId) survive the pull.
-  Future<void> _applySnapshot(Map<String, List<Map<String, dynamic>>> data) async {
+  Future<void> _applySnapshot(
+    Map<String, List<Map<String, dynamic>>> data,
+  ) async {
     // Delete stale rows children-first.
     //
     // ⚠️ Gelöscht wird nur, was schon einmal oben WAR (#67). Eine Zeile,
@@ -366,30 +387,25 @@ class SyncService {
       switch (table) {
         case 'inspection_log':
           await (db.delete(db.inspectionLog)
-                ..where((t) => t.id.isNotIn(ids) & t.dirty.equals(false)))
-              .go();
+            ..where((t) => t.id.isNotIn(ids) & t.dirty.equals(false))).go();
         case 'inspection_schedules':
           await (db.delete(db.inspectionSchedules)
-                ..where((t) => t.id.isNotIn(ids) & t.dirty.equals(false)))
-              .go();
+            ..where((t) => t.id.isNotIn(ids) & t.dirty.equals(false))).go();
         case 'equipment_instances':
           await (db.delete(db.equipmentInstances)
-                ..where((t) => t.id.isNotIn(ids) & t.dirty.equals(false)))
-              .go();
+            ..where((t) => t.id.isNotIn(ids) & t.dirty.equals(false))).go();
         case 'equipment_assignments':
           await (db.delete(db.equipmentAssignments)
-                ..where((t) => t.id.isNotIn(ids) & t.dirty.equals(false)))
-              .go();
+            ..where((t) => t.id.isNotIn(ids) & t.dirty.equals(false))).go();
         case 'compartments':
           await (db.delete(db.compartments)
-                ..where((t) => t.id.isNotIn(ids) & t.dirty.equals(false)))
-              .go();
+            ..where((t) => t.id.isNotIn(ids) & t.dirty.equals(false))).go();
         case 'equipment_items':
           await (db.delete(db.equipmentItems)
-                ..where((t) => t.id.isNotIn(ids) & t.dirty.equals(false)))
-              .go();
+            ..where((t) => t.id.isNotIn(ids) & t.dirty.equals(false))).go();
         case 'vehicles':
-          await (db.delete(db.vehicles)..where((t) => t.id.isNotIn(ids) & t.dirty.equals(false))).go();
+          await (db.delete(db.vehicles)
+            ..where((t) => t.id.isNotIn(ids) & t.dirty.equals(false))).go();
       }
     }
 
@@ -399,116 +415,135 @@ class SyncService {
     // eine lokale Zeile, die der Snapshot kennt und hier überschrieben
     // wird: Ihr Inhalt kommt jetzt vom Server.
     for (final r in data['vehicles']!) {
-      await db.into(db.vehicles).insertOnConflictUpdate(VehiclesCompanion(
-            id: Value(_int(r['id'])),
-            name: Value(r['name'] as String),
-            type: Value(r['type'] as String),
-            licensePlate: Value(r['license_plate'] as String?),
-            imagePath: Value(r['image_path'] as String?),
-            createdAt: Value(_dt(r['created_at'])),
-            updatedAt: Value(_dt(r['updated_at'])),
-            dirty: const Value(false),
-          ));
+      await db
+          .into(db.vehicles)
+          .insertOnConflictUpdate(
+            VehiclesCompanion(
+              id: Value(_int(r['id'])),
+              name: Value(r['name'] as String),
+              type: Value(r['type'] as String),
+              licensePlate: Value(r['license_plate'] as String?),
+              imagePath: Value(r['image_path'] as String?),
+              createdAt: Value(_dt(r['created_at'])),
+              updatedAt: Value(_dt(r['updated_at'])),
+              dirty: const Value(false),
+            ),
+          );
     }
     for (final r in data['equipment_items']!) {
       await db
           .into(db.equipmentItems)
-          .insertOnConflictUpdate(EquipmentItemsCompanion(
-            id: Value(_int(r['id'])),
-            name: Value(r['name'] as String),
-            shortName: Value(r['short_name'] as String?),
-            equipmentFunctionsJson:
-                Value(r['equipment_functions_json'] as String),
-            deploymentScenariosJson:
-                Value(r['deployment_scenarios_json'] as String),
-            description: Value(r['description'] as String),
-            imagePath: Value(r['image_path'] as String?),
-            trainingUrl: Value(r['training_url'] as String?),
-            libraryEquipmentId: Value(r['library_equipment_id'] as String?),
-            isCustom: Value(r['is_custom'] as bool),
-            extraAttributesJson: Value(r['extra_attributes_json'] as String),
-            trainingQuestionsJson:
-                Value(r['training_questions_json'] as String),
-            typicalUseJson: Value(r['typical_use_json'] as String),
-            updatedAt: Value(_dt(r['updated_at'])),
-            dirty: const Value(false),
-          ));
+          .insertOnConflictUpdate(
+            EquipmentItemsCompanion(
+              id: Value(_int(r['id'])),
+              name: Value(r['name'] as String),
+              shortName: Value(r['short_name'] as String?),
+              equipmentFunctionsJson: Value(
+                r['equipment_functions_json'] as String,
+              ),
+              deploymentScenariosJson: Value(
+                r['deployment_scenarios_json'] as String,
+              ),
+              description: Value(r['description'] as String),
+              imagePath: Value(r['image_path'] as String?),
+              trainingUrl: Value(r['training_url'] as String?),
+              libraryEquipmentId: Value(r['library_equipment_id'] as String?),
+              isCustom: Value(r['is_custom'] as bool),
+              extraAttributesJson: Value(r['extra_attributes_json'] as String),
+              trainingQuestionsJson: Value(
+                r['training_questions_json'] as String,
+              ),
+              typicalUseJson: Value(r['typical_use_json'] as String),
+              updatedAt: Value(_dt(r['updated_at'])),
+              dirty: const Value(false),
+            ),
+          );
     }
     for (final r in data['compartments']!) {
       await db
           .into(db.compartments)
-          .insertOnConflictUpdate(CompartmentsCompanion(
-            id: Value(_int(r['id'])),
-            vehicleId: Value(_int(r['vehicle_id'])),
-            label: Value(r['label'] as String),
-            position: Value(_int(r['position'])),
-            gridRow: Value(_intOrNull(r['grid_row'])),
-            gridCol: Value(_intOrNull(r['grid_col'])),
-            gridColSpan: Value(_int(r['grid_col_span'])),
-            // Alt-Server ohne die Spalten liefert die Schlüssel gar nicht —
-            // dann bleiben Seite, Längsposition und Foto leer statt den Pull
-            // scheitern zu lassen.
-            seite: Value(r['seite'] as String?),
-            laengsposition: Value(r['laengsposition'] as String?),
-            imagePath: Value(r['image_path'] as String?),
-            updatedAt: Value(_dt(r['updated_at'])),
-            dirty: const Value(false),
-          ));
+          .insertOnConflictUpdate(
+            CompartmentsCompanion(
+              id: Value(_int(r['id'])),
+              vehicleId: Value(_int(r['vehicle_id'])),
+              label: Value(r['label'] as String),
+              position: Value(_int(r['position'])),
+              gridRow: Value(_intOrNull(r['grid_row'])),
+              gridCol: Value(_intOrNull(r['grid_col'])),
+              gridColSpan: Value(_int(r['grid_col_span'])),
+              // Alt-Server ohne die Spalten liefert die Schlüssel gar nicht —
+              // dann bleiben Seite, Längsposition und Foto leer statt den Pull
+              // scheitern zu lassen.
+              seite: Value(r['seite'] as String?),
+              laengsposition: Value(r['laengsposition'] as String?),
+              imagePath: Value(r['image_path'] as String?),
+              updatedAt: Value(_dt(r['updated_at'])),
+              dirty: const Value(false),
+            ),
+          );
     }
     for (final r in data['equipment_assignments']!) {
       await db
           .into(db.equipmentAssignments)
-          .insertOnConflictUpdate(EquipmentAssignmentsCompanion(
-            id: Value(_int(r['id'])),
-            compartmentId: Value(_int(r['compartment_id'])),
-            equipmentId: Value(_int(r['equipment_id'])),
-            quantity: Value(_int(r['quantity'])),
-            updatedAt: Value(_dt(r['updated_at'])),
-            dirty: const Value(false),
-          ));
+          .insertOnConflictUpdate(
+            EquipmentAssignmentsCompanion(
+              id: Value(_int(r['id'])),
+              compartmentId: Value(_int(r['compartment_id'])),
+              equipmentId: Value(_int(r['equipment_id'])),
+              quantity: Value(_int(r['quantity'])),
+              updatedAt: Value(_dt(r['updated_at'])),
+              dirty: const Value(false),
+            ),
+          );
     }
     for (final r in data['equipment_instances']!) {
       await db
           .into(db.equipmentInstances)
-          .insertOnConflictUpdate(EquipmentInstancesCompanion(
-            id: Value(_int(r['id'])),
-            equipmentId: Value(_int(r['equipment_id'])),
-            vehicleId: Value(_intOrNull(r['vehicle_id'])),
-            compartmentId: Value(_intOrNull(r['compartment_id'])),
-            identifier: Value(r['identifier'] as String?),
-            notes: Value(r['notes'] as String),
-            isActive: Value(r['is_active'] as bool),
-            updatedAt: Value(_dt(r['updated_at'])),
-            dirty: const Value(false),
-          ));
+          .insertOnConflictUpdate(
+            EquipmentInstancesCompanion(
+              id: Value(_int(r['id'])),
+              equipmentId: Value(_int(r['equipment_id'])),
+              vehicleId: Value(_intOrNull(r['vehicle_id'])),
+              compartmentId: Value(_intOrNull(r['compartment_id'])),
+              identifier: Value(r['identifier'] as String?),
+              notes: Value(r['notes'] as String),
+              isActive: Value(r['is_active'] as bool),
+              updatedAt: Value(_dt(r['updated_at'])),
+              dirty: const Value(false),
+            ),
+          );
     }
     for (final r in data['inspection_schedules']!) {
       await db
           .into(db.inspectionSchedules)
-          .insertOnConflictUpdate(InspectionSchedulesCompanion(
-            id: Value(_int(r['id'])),
-            instanceId: Value(_int(r['instance_id'])),
-            kind: Value(r['kind'] as String),
-            title: Value(r['title'] as String),
-            intervalMonths: Value(_intOrNull(r['interval_months'])),
-            lastDoneAt: Value(_dtOrNull(r['last_done_at'])),
-            dueAt: Value(_dt(r['due_at'])),
-            notes: Value(r['notes'] as String),
-            updatedAt: Value(_dt(r['updated_at'])),
-            dirty: const Value(false),
-          ));
+          .insertOnConflictUpdate(
+            InspectionSchedulesCompanion(
+              id: Value(_int(r['id'])),
+              instanceId: Value(_int(r['instance_id'])),
+              kind: Value(r['kind'] as String),
+              title: Value(r['title'] as String),
+              intervalMonths: Value(_intOrNull(r['interval_months'])),
+              lastDoneAt: Value(_dtOrNull(r['last_done_at'])),
+              dueAt: Value(_dt(r['due_at'])),
+              notes: Value(r['notes'] as String),
+              updatedAt: Value(_dt(r['updated_at'])),
+              dirty: const Value(false),
+            ),
+          );
     }
     for (final r in data['inspection_log']!) {
       await db
           .into(db.inspectionLog)
-          .insertOnConflictUpdate(InspectionLogCompanion(
-            id: Value(_int(r['id'])),
-            scheduleId: Value(_int(r['schedule_id'])),
-            doneAt: Value(_dt(r['done_at'])),
-            doneBy: Value(r['done_by'] as String),
-            note: Value(r['note'] as String),
-            dirty: const Value(false),
-          ));
+          .insertOnConflictUpdate(
+            InspectionLogCompanion(
+              id: Value(_int(r['id'])),
+              scheduleId: Value(_int(r['schedule_id'])),
+              doneAt: Value(_dt(r['done_at'])),
+              doneBy: Value(r['done_by'] as String),
+              note: Value(r['note'] as String),
+              dirty: const Value(false),
+            ),
+          );
     }
   }
 
@@ -535,12 +570,15 @@ class SyncService {
     try {
       // Mit Abteilung: mandantenscharfe v2-Signatur. Ohne (Legacy-Server):
       // die alte Signatur, die serverseitig als Weiche erhalten bleibt.
-      result = await client.rpc('publish_snapshot', params: {
-        if (abteilung != null) 'abteilung': abteilung,
-        'expected_version': meta.lastPulledVersion,
-        'payload': payload,
-        'client_version': appVersion,
-      });
+      result = await client.rpc(
+        'publish_snapshot',
+        params: {
+          if (abteilung != null) 'abteilung': abteilung,
+          'expected_version': meta.lastPulledVersion,
+          'payload': payload,
+          'client_version': appVersion,
+        },
+      );
     } on PostgrestException catch (e) {
       if (isOutdatedClientError(e.message)) {
         appLog.w('Veröffentlichen abgelehnt: App zu alt (${e.message})');
@@ -586,7 +624,7 @@ class SyncService {
             'image_path': v.imagePath,
             'created_at': _ts(v.createdAt),
             'updated_at': _ts(v.updatedAt),
-          }
+          },
       ],
       'equipment_items': [
         for (final e in equipment)
@@ -605,7 +643,7 @@ class SyncService {
             'training_questions_json': e.trainingQuestionsJson,
             'typical_use_json': e.typicalUseJson,
             'updated_at': _ts(e.updatedAt),
-          }
+          },
       ],
       'compartments': [
         for (final c in compartments)
@@ -621,7 +659,7 @@ class SyncService {
             'laengsposition': c.laengsposition,
             'image_path': c.imagePath,
             'updated_at': _ts(c.updatedAt),
-          }
+          },
       ],
       'equipment_assignments': [
         for (final a in assignments)
@@ -631,7 +669,7 @@ class SyncService {
             'equipment_id': a.equipmentId,
             'quantity': a.quantity,
             'updated_at': _ts(a.updatedAt),
-          }
+          },
       ],
       'equipment_instances': [
         for (final i in instances)
@@ -644,7 +682,7 @@ class SyncService {
             'notes': i.notes,
             'is_active': i.isActive,
             'updated_at': _ts(i.updatedAt),
-          }
+          },
       ],
       'inspection_schedules': [
         for (final s in schedules)
@@ -658,7 +696,7 @@ class SyncService {
             'due_at': _ts(s.dueAt),
             'notes': s.notes,
             'updated_at': _ts(s.updatedAt),
-          }
+          },
       ],
       'inspection_log': [
         for (final l in log)
@@ -668,7 +706,7 @@ class SyncService {
             'done_at': _ts(l.doneAt),
             'done_by': l.doneBy,
             'note': l.note,
-          }
+          },
       ],
     };
   }

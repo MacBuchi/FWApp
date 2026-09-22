@@ -39,8 +39,7 @@ class SplashGate extends StatefulWidget {
 /// per `assert` — im Release-Build wäre es stillschweigend falsch, und genau
 /// deshalb hat es der Durchklick im Browser nicht gezeigt, der Widget-Test
 /// aber sofort.
-class _SplashGateState extends State<SplashGate>
-    with TickerProviderStateMixin {
+class _SplashGateState extends State<SplashGate> with TickerProviderStateMixin {
   late final AnimationController _lauf;
   late final AnimationController _blende;
 
@@ -102,16 +101,17 @@ class _SplashGateState extends State<SplashGate>
             behavior: HitTestBehavior.opaque,
             child: AnimatedBuilder(
               animation: Listenable.merge([_lauf, _blende]),
-              builder: (_, _) => Opacity(
-                opacity: 1 - _blende.value,
-                child: CustomPaint(
-                  painter: SplashPainter(
-                    fortschritt: _lauf.value,
-                    voll: _voll ?? widget.voll,
+              builder:
+                  (_, _) => Opacity(
+                    opacity: 1 - _blende.value,
+                    child: CustomPaint(
+                      painter: SplashPainter(
+                        fortschritt: _lauf.value,
+                        voll: _voll ?? widget.voll,
+                      ),
+                      size: Size.infinite,
+                    ),
                   ),
-                  size: Size.infinite,
-                ),
-              ),
             ),
           ),
         ),

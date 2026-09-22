@@ -24,10 +24,7 @@ const _kanteD = 120.0;
 /// Zeichnet [k] und liefert die Bildpunkte.
 Future<String> _bild(AvatarKonfiguration k) async {
   final recorder = ui.PictureRecorder();
-  AvatarPainter(k).paint(
-    Canvas(recorder),
-    const Size(_kanteD, _kanteD),
-  );
+  AvatarPainter(k).paint(Canvas(recorder), const Size(_kanteD, _kanteD));
   final bild = await recorder.endRecording().toImage(_kante, _kante);
   final daten = await bild.toByteData(format: ui.ImageByteFormat.rawRgba);
   bild.dispose();
@@ -79,74 +76,63 @@ void main() {
   });
 
   test('jede Kopfbedeckung sieht anders aus', () async {
-    await _alleVerschieden(
-      'Kopfbedeckung',
-      [for (final g in kAvatarGears) standard.copyWith(gear: g)],
-    );
+    await _alleVerschieden('Kopfbedeckung', [
+      for (final g in kAvatarGears) standard.copyWith(gear: g),
+    ]);
   });
 
   test('jedes Augenpaar sieht anders aus', () async {
-    await _alleVerschieden(
-      'Augen',
-      [for (final e in kAvatarEyes) standard.copyWith(eyes: e)],
-    );
+    await _alleVerschieden('Augen', [
+      for (final e in kAvatarEyes) standard.copyWith(eyes: e),
+    ]);
   });
 
   test('jeder Mund sieht anders aus', () async {
-    await _alleVerschieden(
-      'Mund',
-      [for (final m in kAvatarMouths) standard.copyWith(mouth: m)],
-    );
+    await _alleVerschieden('Mund', [
+      for (final m in kAvatarMouths) standard.copyWith(mouth: m),
+    ]);
   });
 
   test('jeder Bart sieht anders aus', () async {
-    await _alleVerschieden(
-      'Bart',
-      [for (final h in kAvatarHair) standard.copyWith(hair: h)],
-    );
+    await _alleVerschieden('Bart', [
+      for (final h in kAvatarHair) standard.copyWith(hair: h),
+    ]);
   });
 
   test('jede Farbe des Baukastens wirkt', () async {
-    await _alleVerschieden(
-      'Hintergrund',
-      [for (final c in kAvatarBgs) standard.copyWith(bg: c)],
-    );
-    await _alleVerschieden(
-      'Hautton',
-      [for (final c in kAvatarSkins) standard.copyWith(skin: c)],
-    );
-    await _alleVerschieden(
-      'Helmfarbe',
-      [for (final c in kAvatarGearColors) standard.copyWith(gearColor: c)],
-    );
+    await _alleVerschieden('Hintergrund', [
+      for (final c in kAvatarBgs) standard.copyWith(bg: c),
+    ]);
+    await _alleVerschieden('Hautton', [
+      for (final c in kAvatarSkins) standard.copyWith(skin: c),
+    ]);
+    await _alleVerschieden('Helmfarbe', [
+      for (final c in kAvatarGearColors) standard.copyWith(gearColor: c),
+    ]);
     // Haarfarbe nur mit Haaren: Ohne Bart hat sie nichts zu färben, und ein
     // Test, der das nicht berücksichtigt, verlangt Unsinn.
-    await _alleVerschieden(
-      'Haarfarbe',
-      [
-        for (final c in kAvatarHairColors)
-          standard.copyWith(hair: 'beard', hairColor: c),
-      ],
-    );
+    await _alleVerschieden('Haarfarbe', [
+      for (final c in kAvatarHairColors)
+        standard.copyWith(hair: 'beard', hairColor: c),
+    ]);
   });
 
   test('die 36 Köpfe der Mannschaft sehen alle verschieden aus', () async {
-    await _alleVerschieden(
-      'Vorlage',
-      kAvatarVorlagen.map((v) => v.kopf),
-    );
+    await _alleVerschieden('Vorlage', kAvatarVorlagen.map((v) => v.kopf));
   });
 
-  testWidgets('ohne Beschriftung bleibt der Kopf für Screenreader stumm',
-      (tester) async {
+  testWidgets('ohne Beschriftung bleibt der Kopf für Screenreader stumm', (
+    tester,
+  ) async {
     // Der Kopf steht überall NEBEN dem Namen — „Avatar, Marcus B." wäre
     // eine Wiederholung, die beim Vorlesen nur aufhält.
-    await tester.pumpWidget(const MaterialApp(
-      home: Row(children: [
-        FwAvatar(konfiguration: standard),
-        Text('Marcus B.'),
-      ]),
-    ));
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Row(
+          children: [FwAvatar(konfiguration: standard), Text('Marcus B.')],
+        ),
+      ),
+    );
     final handle = tester.ensureSemantics();
     expect(find.bySemanticsLabel('Marcus B.'), findsOneWidget);
     expect(
@@ -161,9 +147,14 @@ void main() {
   });
 
   testWidgets('mit Beschriftung ist er auffindbar', (tester) async {
-    await tester.pumpWidget(const MaterialApp(
-      home: FwAvatar(konfiguration: standard, semantikLabel: 'Flecki, Dalmatiner'),
-    ));
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: FwAvatar(
+          konfiguration: standard,
+          semantikLabel: 'Flecki, Dalmatiner',
+        ),
+      ),
+    );
     final handle = tester.ensureSemantics();
     expect(find.bySemanticsLabel('Flecki, Dalmatiner'), findsOneWidget);
     handle.dispose();

@@ -73,14 +73,14 @@ class GeraetTreffer {
   bool get istVerlastet => fundorte.isNotEmpty;
 
   GeraetTreffer mitFundorten(List<Fundort> neue) => GeraetTreffer(
-        equipmentId: equipmentId,
-        name: name,
-        kurzname: kurzname,
-        bildPfad: bildPfad,
-        funktionen: funktionen,
-        fundorte: neue,
-        codes: codes,
-      );
+    equipmentId: equipmentId,
+    name: name,
+    kurzname: kurzname,
+    bildPfad: bildPfad,
+    funktionen: funktionen,
+    fundorte: neue,
+    codes: codes,
+  );
 }
 
 /// Ein Code, der auf einer geführten Einheit dieses Geräts klebt.
@@ -95,11 +95,7 @@ class Geraetecode {
   /// — dann gilt der Fundort des Geräts.
   final int? compartmentId;
 
-  const Geraetecode({
-    required this.code,
-    this.kennung,
-    this.compartmentId,
-  });
+  const Geraetecode({required this.code, this.kennung, this.compartmentId});
 }
 
 /// Das Ergebnis einer Suche, in drei Töpfe getrennt.
@@ -132,8 +128,7 @@ class SucheErgebnis {
     this.codeTreffer,
   });
 
-  bool get istLeer =>
-      treffer.isEmpty && woanders.isEmpty && nirgends.isEmpty;
+  bool get istLeer => treffer.isEmpty && woanders.isEmpty && nirgends.isEmpty;
 
   static const leer = SucheErgebnis();
 }
@@ -144,15 +139,16 @@ class SucheErgebnis {
 /// „Schläuche" — und „schlauch" ist in „Schläuche" **keine** Teilzeichenkette,
 /// die Suche fände sonst nichts. Bindestriche und Schrägstriche werden zu
 /// Leerzeichen, damit „hd schlauch" den „HD-Schlauch" trifft.
-String suchform(String text) => text
-    .toLowerCase()
-    .replaceAll('ä', 'a')
-    .replaceAll('ö', 'o')
-    .replaceAll('ü', 'u')
-    .replaceAll('ß', 'ss')
-    .replaceAll(RegExp(r'[-/_.,]'), ' ')
-    .replaceAll(RegExp(r'\s+'), ' ')
-    .trim();
+String suchform(String text) =>
+    text
+        .toLowerCase()
+        .replaceAll('ä', 'a')
+        .replaceAll('ö', 'o')
+        .replaceAll('ü', 'u')
+        .replaceAll('ß', 'ss')
+        .replaceAll(RegExp(r'[-/_.,]'), ' ')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
 
 /// Zerlegt die Eingabe in einzelne Begriffe.
 ///
@@ -239,7 +235,10 @@ SucheErgebnis sucheGeraete({
 /// Sucht die Eingabe als Code. `null` heißt „war keiner (oder traf nicht)" —
 /// dann übernimmt die Namenssuche.
 SucheErgebnis? _codeSuche(
-    List<GeraetTreffer> bestand, String eingabe, int? vehicleId) {
+  List<GeraetTreffer> bestand,
+  String eingabe,
+  int? vehicleId,
+) {
   final gesucht = normalisiereTagCode(eingabe);
   if (gesucht == null) return null;
 
@@ -250,11 +249,12 @@ SucheErgebnis? _codeSuche(
       // Die Einheit ist die genauere Angabe: Dasselbe Gerät kann in zwei
       // Fächern liegen, und der Aufkleber klebt auf EINEM Gegenstand.
       // Dieselbe Regel wie beim Abhaken (`hakeCodeAb`).
-      final genau = code.compartmentId == null
-          ? geraet.fundorte
-          : geraet.fundorte
-              .where((f) => f.compartmentId == code.compartmentId)
-              .toList();
+      final genau =
+          code.compartmentId == null
+              ? geraet.fundorte
+              : geraet.fundorte
+                  .where((f) => f.compartmentId == code.compartmentId)
+                  .toList();
       final passend = genau.isEmpty ? geraet.fundorte : genau;
       final gefunden = geraet.mitFundorten(passend);
 
@@ -269,9 +269,9 @@ SucheErgebnis? _codeSuche(
           treffer: [
             vehicleId == null
                 ? gefunden
-                : gefunden.mitFundorten(passend
-                    .where((f) => f.vehicleId == vehicleId)
-                    .toList()),
+                : gefunden.mitFundorten(
+                  passend.where((f) => f.vehicleId == vehicleId).toList(),
+                ),
           ],
           codeTreffer: code,
         );

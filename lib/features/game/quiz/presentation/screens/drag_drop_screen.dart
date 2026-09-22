@@ -1,6 +1,7 @@
 /// drag_drop_screen.dart – Drag equipment cards onto the correct compartment
 /// in the vehicle cutaway (Schnittdarstellung).
 library;
+
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -48,28 +49,32 @@ class _DragDropScreenState extends ConsumerState<DragDropScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text('Wähle ein Fahrzeug:',
-                style: TextStyle(fontSize: 16)),
+            const Text('Wähle ein Fahrzeug:', style: TextStyle(fontSize: 16)),
             const SizedBox(height: 16),
             vehiclesAsync.when(
               loading: () => const CircularProgressIndicator(),
               error: (e, _) => Text('Fehler: $e'),
-              data: (vehicles) => DropdownButtonFormField<Vehicle>(
-                initialValue: _selectedVehicle,
-                decoration: const InputDecoration(labelText: 'Fahrzeug'),
-                items: vehicles
-                    .map((v) => DropdownMenuItem(
-                        value: v, child: Text(v.name)))
-                    .toList(),
-                onChanged: (v) => setState(() => _selectedVehicle = v),
-              ),
+              data:
+                  (vehicles) => DropdownButtonFormField<Vehicle>(
+                    initialValue: _selectedVehicle,
+                    decoration: const InputDecoration(labelText: 'Fahrzeug'),
+                    items:
+                        vehicles
+                            .map(
+                              (v) => DropdownMenuItem(
+                                value: v,
+                                child: Text(v.name),
+                              ),
+                            )
+                            .toList(),
+                    onChanged: (v) => setState(() => _selectedVehicle = v),
+                  ),
             ),
             const SizedBox(height: 24),
             FilledButton.icon(
               icon: const Icon(Icons.play_arrow),
               label: const Text('Spiel starten'),
-              onPressed:
-                  _selectedVehicle == null ? null : () => _startGame(),
+              onPressed: _selectedVehicle == null ? null : () => _startGame(),
             ),
           ],
         ),
@@ -80,46 +85,53 @@ class _DragDropScreenState extends ConsumerState<DragDropScreen> {
   Future<void> _startGame() async {
     if (_selectedVehicle == null) return;
     final db = ref.read(appDatabaseProvider);
-    final compartmentRows =
-        await db.compartmentDao.getByVehicle(_selectedVehicle!.id);
+    final compartmentRows = await db.compartmentDao.getByVehicle(
+      _selectedVehicle!.id,
+    );
     final items = <_DragItem>[];
-    final zones = compartmentRows
-        .map((c) => Compartment(
-              id: c.id,
-              vehicleId: c.vehicleId,
-              label: c.label,
-              position: c.position,
-              gridRow: c.gridRow,
-              gridCol: c.gridCol,
-              gridColSpan: c.gridColSpan,
-              // Ohne die Seite fiele das Aufklappbild hier in die Ansicht
-              // ohne Bereiche zurück — anders als überall sonst (#126/#141).
-              seite: c.seite,
-              laengsposition: c.laengsposition,
-              updatedAt: c.updatedAt,
-            ))
-        .toList();
+    final zones =
+        compartmentRows
+            .map(
+              (c) => Compartment(
+                id: c.id,
+                vehicleId: c.vehicleId,
+                label: c.label,
+                position: c.position,
+                gridRow: c.gridRow,
+                gridCol: c.gridCol,
+                gridColSpan: c.gridColSpan,
+                // Ohne die Seite fiele das Aufklappbild hier in die Ansicht
+                // ohne Bereiche zurück — anders als überall sonst (#126/#141).
+                seite: c.seite,
+                laengsposition: c.laengsposition,
+                updatedAt: c.updatedAt,
+              ),
+            )
+            .toList();
 
     for (final c in compartmentRows) {
       final assignments = await db.assignmentDao.getByCompartment(c.id);
       for (final a in assignments) {
         final eq = await db.equipmentDao.getById(a.equipmentId);
         if (eq == null) continue;
-        items.add(_DragItem(
-          equipmentId: eq.id,
-          equipmentName: eq.name,
-          imagePath: eq.imagePath,
-          functions: jsonToStringList(eq.equipmentFunctionsJson),
-          correctCompartmentId: c.id,
-        ));
+        items.add(
+          _DragItem(
+            equipmentId: eq.id,
+            equipmentName: eq.name,
+            imagePath: eq.imagePath,
+            functions: jsonToStringList(eq.equipmentFunctionsJson),
+            correctCompartmentId: c.id,
+          ),
+        );
       }
     }
     items.shuffle();
 
     if (items.isEmpty || zones.isEmpty) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Keine Daten vorhanden.')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Keine Daten vorhanden.')));
       }
       return;
     }
@@ -143,8 +155,7 @@ class _DragDropScreenState extends ConsumerState<DragDropScreen> {
         title: Text('Drag & Drop  $_score / $_total'),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(4),
-          child: LinearProgressIndicator(
-              value: 1 - _remaining.length / _total),
+          child: LinearProgressIndicator(value: 1 - _remaining.length / _total),
         ),
       ),
       body: Column(
@@ -152,8 +163,10 @@ class _DragDropScreenState extends ConsumerState<DragDropScreen> {
           // Current equipment card to drag
           Padding(
             padding: const EdgeInsets.all(16),
-            child: const Text('Ziehe das Gerät in das richtige Fach:',
-                style: TextStyle(fontSize: 15)),
+            child: const Text(
+              'Ziehe das Gerät in das richtige Fach:',
+              style: TextStyle(fontSize: 15),
+            ),
           ),
           Draggable<_DragItem>(
             data: current,
@@ -167,11 +180,9 @@ class _DragDropScreenState extends ConsumerState<DragDropScreen> {
             ),
             childWhenDragging: Opacity(
               opacity: 0.3,
-              child: SizedBox(
-                  width: 130, child: _EquipmentCard(item: current)),
+              child: SizedBox(width: 130, child: _EquipmentCard(item: current)),
             ),
-            child: SizedBox(
-                width: 130, child: _EquipmentCard(item: current)),
+            child: SizedBox(width: 130, child: _EquipmentCard(item: current)),
           ),
           const SizedBox(height: 12),
           // Cutaway as drop surface
@@ -184,17 +195,18 @@ class _DragDropScreenState extends ConsumerState<DragDropScreen> {
                   for (final e in _flash.entries)
                     e.key: CutawayTileState(status: e.value),
                 },
-                tileWrapperBuilder: (compartment, tile) =>
-                    DragTarget<_DragItem>(
-                  onWillAcceptWithDetails: (_) => true,
-                  onAcceptWithDetails: (details) =>
-                      _onDrop(details.data, compartment),
-                  builder: (ctx, candidates, rejected) => AnimatedScale(
-                    scale: candidates.isNotEmpty ? 1.05 : 1,
-                    duration: const Duration(milliseconds: 150),
-                    child: tile,
-                  ),
-                ),
+                tileWrapperBuilder:
+                    (compartment, tile) => DragTarget<_DragItem>(
+                      onWillAcceptWithDetails: (_) => true,
+                      onAcceptWithDetails:
+                          (details) => _onDrop(details.data, compartment),
+                      builder:
+                          (ctx, candidates, rejected) => AnimatedScale(
+                            scale: candidates.isNotEmpty ? 1.05 : 1,
+                            duration: const Duration(milliseconds: 150),
+                            child: tile,
+                          ),
+                    ),
               ),
             ),
           ),
@@ -232,17 +244,18 @@ class _DragDropScreenState extends ConsumerState<DragDropScreen> {
 
   Future<void> _saveResult() async {
     final db = ref.read(appDatabaseProvider);
-    await db.quizDao.insertResult(QuizResultsCompanion.insert(
-      quizType: 'dragdrop',
-      score: _score,
-      total: _total,
-      vehicleId: Value(_selectedVehicle?.id),
-    ));
+    await db.quizDao.insertResult(
+      QuizResultsCompanion.insert(
+        quizType: 'dragdrop',
+        score: _score,
+        total: _total,
+        vehicleId: Value(_selectedVehicle?.id),
+      ),
+    );
   }
 
   Widget _buildResults() {
-    final pct =
-        _total > 0 ? (_score / _total * 100).round() : 0;
+    final pct = _total > 0 ? (_score / _total * 100).round() : 0;
     return Scaffold(
       appBar: AppBar(title: const Text('Ergebnis')),
       body: Center(
@@ -251,29 +264,36 @@ class _DragDropScreenState extends ConsumerState<DragDropScreen> {
           children: [
             CircleAvatar(
               radius: 60,
-              backgroundColor: pct >= 80
-                  ? Colors.green
-                  : pct >= 50
+              backgroundColor:
+                  pct >= 80
+                      ? Colors.green
+                      : pct >= 50
                       ? Colors.orange
                       : Colors.red,
-              child: Text('$pct%',
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold)),
+              child: Text(
+                '$pct%',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
             const SizedBox(height: 16),
-            Text('$_score von $_total richtig',
-                style: const TextStyle(fontSize: 20)),
+            Text(
+              '$_score von $_total richtig',
+              style: const TextStyle(fontSize: 20),
+            ),
             const SizedBox(height: 24),
             FilledButton.icon(
               icon: const Icon(Icons.replay),
               label: const Text('Nochmal'),
-              onPressed: () => setState(() {
-                _started = false;
-                _remaining = [];
-                _total = 0;
-              }),
+              onPressed:
+                  () => setState(() {
+                    _started = false;
+                    _remaining = [];
+                    _total = 0;
+                  }),
             ),
           ],
         ),
@@ -302,11 +322,13 @@ class _EquipmentCard extends StatelessWidget {
               size: 64,
             ),
             const SizedBox(height: 4),
-            Text(item.equipmentName,
-                style: const TextStyle(fontSize: 11),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis),
+            Text(
+              item.equipmentName,
+              style: const TextStyle(fontSize: 11),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
           ],
         ),
       ),
@@ -329,4 +351,3 @@ class _DragItem {
     required this.correctCompartmentId,
   });
 }
-

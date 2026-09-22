@@ -65,14 +65,16 @@ const kAppPalettes = <AppPalette>[
   AppPalette(
     id: kDefaultPaletteId,
     name: 'Florian',
-    description: 'Feuerrot auf ruhigem Grund — der Ton des App-Icons, '
+    description:
+        'Feuerrot auf ruhigem Grund — der Ton des App-Icons, '
         'benannt nach dem Funkrufnamen der Löschfahrzeuge.',
     seed: Color(0xFFC62828),
   ),
   AppPalette(
     id: 'blaulicht',
     name: 'Blaulicht',
-    description: 'Signalblau mit rotem Zweitakzent — die Farbpaarung des '
+    description:
+        'Signalblau mit rotem Zweitakzent — die Farbpaarung des '
         'Einsatzfahrzeugs, ruhig für lange Lerneinheiten.',
     seed: Color(0xFF005387),
     secondarySeed: Color(0xFFC62828),
@@ -80,7 +82,8 @@ const kAppPalettes = <AppPalette>[
   AppPalette(
     id: 'glut',
     name: 'Glut',
-    description: 'Warnorange wie Einsatzjacke und Helm — der warme, '
+    description:
+        'Warnorange wie Einsatzjacke und Helm — der warme, '
         'energische Look.',
     seed: Color(0xFFE65100),
   ),

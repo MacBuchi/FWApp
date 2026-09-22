@@ -2,6 +2,7 @@
 /// Persistenz der Wahl und der eigentliche Punkt des Issues — dass die Farbe
 /// nicht mehr entsättigt wird.
 library;
+
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -65,8 +66,9 @@ void main() {
     test('jede Palette ergibt eine eigene Primärfarbe', () {
       // Zwei Paletten, die auf dieselbe Farbe hinauslaufen, wären in der
       // Auswahl nicht unterscheidbar — der Nutzer tippt und nichts passiert.
-      final primaries =
-          kAppPalettes.map((p) => AppTheme.light(p).colorScheme.primary);
+      final primaries = kAppPalettes.map(
+        (p) => AppTheme.light(p).colorScheme.primary,
+      );
       expect(primaries.toSet().length, kAppPalettes.length);
     });
 
@@ -81,37 +83,48 @@ void main() {
       expect(_chroma(ours.primary), greaterThan(_chroma(pastel.primary)));
     });
 
-    test('jedes Farbpaar bleibt lesbar — in jeder Palette, hell wie dunkel',
-        () {
-      // Das Schema mischt drei Material-Varianten (siehe schemeFor). Material
-      // garantiert Kontrast aber nur *innerhalb* eines Schemas: Beim ersten
-      // Versuch stammte `primaryContainer` aus `fidelity` und sein
-      // `onPrimaryContainer` aus einer anderen Quelle — die
-      // „Weiterlernen"-Karte wurde dunkelrot auf rot. Dieser Test hätte das
-      // gefangen, deshalb steht er hier.
-      for (final palette in [...kAppPalettes, paletteById(kCustomPaletteId)]) {
-        for (final brightness in Brightness.values) {
-          final s = schemeFor(palette, brightness);
-          final pairs = <String, (Color, Color)>{
-            'primary': (s.onPrimary, s.primary),
-            'primaryContainer': (s.onPrimaryContainer, s.primaryContainer),
-            'secondary': (s.onSecondary, s.secondary),
-            'secondaryContainer': (s.onSecondaryContainer, s.secondaryContainer),
-            'tertiaryContainer': (s.onTertiaryContainer, s.tertiaryContainer),
-            'error': (s.onError, s.error),
-            'errorContainer': (s.onErrorContainer, s.errorContainer),
-            'surface': (s.onSurface, s.surface),
-            'surfaceVariant': (s.onSurfaceVariant, s.surfaceContainerHighest),
-            'inverseSurface': (s.onInverseSurface, s.inverseSurface),
-          };
-          pairs.forEach((role, pair) {
-            // 4.5:1 ist die WCAG-AA-Schwelle für Fließtext.
-            expect(_contrast(pair.$1, pair.$2), greaterThanOrEqualTo(4.5),
-                reason: '$role in ${palette.name} (${brightness.name})');
-          });
+    test(
+      'jedes Farbpaar bleibt lesbar — in jeder Palette, hell wie dunkel',
+      () {
+        // Das Schema mischt drei Material-Varianten (siehe schemeFor). Material
+        // garantiert Kontrast aber nur *innerhalb* eines Schemas: Beim ersten
+        // Versuch stammte `primaryContainer` aus `fidelity` und sein
+        // `onPrimaryContainer` aus einer anderen Quelle — die
+        // „Weiterlernen"-Karte wurde dunkelrot auf rot. Dieser Test hätte das
+        // gefangen, deshalb steht er hier.
+        for (final palette in [
+          ...kAppPalettes,
+          paletteById(kCustomPaletteId),
+        ]) {
+          for (final brightness in Brightness.values) {
+            final s = schemeFor(palette, brightness);
+            final pairs = <String, (Color, Color)>{
+              'primary': (s.onPrimary, s.primary),
+              'primaryContainer': (s.onPrimaryContainer, s.primaryContainer),
+              'secondary': (s.onSecondary, s.secondary),
+              'secondaryContainer': (
+                s.onSecondaryContainer,
+                s.secondaryContainer,
+              ),
+              'tertiaryContainer': (s.onTertiaryContainer, s.tertiaryContainer),
+              'error': (s.onError, s.error),
+              'errorContainer': (s.onErrorContainer, s.errorContainer),
+              'surface': (s.onSurface, s.surface),
+              'surfaceVariant': (s.onSurfaceVariant, s.surfaceContainerHighest),
+              'inverseSurface': (s.onInverseSurface, s.inverseSurface),
+            };
+            pairs.forEach((role, pair) {
+              // 4.5:1 ist die WCAG-AA-Schwelle für Fließtext.
+              expect(
+                _contrast(pair.$1, pair.$2),
+                greaterThanOrEqualTo(4.5),
+                reason: '$role in ${palette.name} (${brightness.name})',
+              );
+            });
+          }
         }
-      }
-    });
+      },
+    );
 
     test('hell und dunkel unterscheiden sich in der Helligkeit', () {
       expect(AppTheme.light().brightness, Brightness.light);
@@ -125,12 +138,7 @@ void main() {
       final blaulicht = paletteById('blaulicht');
       final s = schemeFor(blaulicht, Brightness.light);
       final einfarbig = schemeFor(
-        AppPalette(
-          id: 'x',
-          name: 'x',
-          description: 'x',
-          seed: blaulicht.seed,
-        ),
+        AppPalette(id: 'x', name: 'x', description: 'x', seed: blaulicht.seed),
         Brightness.light,
       );
       expect(s.secondary, isNot(einfarbig.secondary));
@@ -139,8 +147,10 @@ void main() {
     });
 
     test('ohne Palette gilt der Standard', () {
-      expect(AppTheme.light().colorScheme.primary,
-          AppTheme.light(kAppPalettes.first).colorScheme.primary);
+      expect(
+        AppTheme.light().colorScheme.primary,
+        AppTheme.light(kAppPalettes.first).colorScheme.primary,
+      );
     });
   });
 
@@ -150,8 +160,10 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      expect((await container.read(appPaletteProvider.future)).id,
-          kDefaultPaletteId);
+      expect(
+        (await container.read(appPaletteProvider.future)).id,
+        kDefaultPaletteId,
+      );
     });
 
     test('gespeicherte Wahl überlebt den Neustart', () async {
@@ -164,8 +176,10 @@ void main() {
       // Neuer Container = neuer Start der App, gleiche Preferences.
       final second = ProviderContainer();
       addTearDown(second.dispose);
-      expect((await second.read(appPaletteProvider.future)).id,
-          kAppPalettes[2].id);
+      expect(
+        (await second.read(appPaletteProvider.future)).id,
+        kAppPalettes[2].id,
+      );
     });
 
     test('eigener Seed wird gespeichert und wieder gelesen', () async {

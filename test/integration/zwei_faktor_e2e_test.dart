@@ -11,6 +11,7 @@
 ///
 /// Voraussetzung: `supabase start`. Ohne Stack überspringt sich die Datei.
 library;
+
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -24,7 +25,8 @@ import 'stack_sperre.dart';
 const _url = 'http://127.0.0.1:54321';
 const _anonKey =
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
-final _serviceRoleKey = Platform.environment['SUPABASE_SERVICE_ROLE_KEY'] ??
+final _serviceRoleKey =
+    Platform.environment['SUPABASE_SERVICE_ROLE_KEY'] ??
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU';
 
 const _mail = 'totp.probe@example.org';
@@ -78,10 +80,14 @@ String _totp(String secret, {int? zeitschritt}) {
   final schritt =
       zeitschritt ?? (DateTime.now().millisecondsSinceEpoch ~/ 1000) ~/ 30;
   final zaehler = ByteData(8)..setUint64(0, schritt);
-  final hmac = Hmac(sha1, _base32(secret)).convert(zaehler.buffer.asUint8List());
+  final hmac = Hmac(
+    sha1,
+    _base32(secret),
+  ).convert(zaehler.buffer.asUint8List());
   final d = hmac.bytes;
   final offset = d[d.length - 1] & 0x0f;
-  final code = ((d[offset] & 0x7f) << 24) |
+  final code =
+      ((d[offset] & 0x7f) << 24) |
       ((d[offset + 1] & 0xff) << 16) |
       ((d[offset + 2] & 0xff) << 8) |
       (d[offset + 3] & 0xff);
@@ -90,8 +96,11 @@ String _totp(String secret, {int? zeitschritt}) {
 
 Future<void> main() async {
   if (!await _erreichbar('$_url/auth/v1/health')) {
-    test('zwei-faktor e2e', () {},
-        skip: 'Lokaler Supabase-Stack läuft nicht (supabase start).');
+    test(
+      'zwei-faktor e2e',
+      () {},
+      skip: 'Lokaler Supabase-Stack läuft nicht (supabase start).',
+    );
     return;
   }
 
@@ -100,13 +109,16 @@ Future<void> main() async {
 
   setUpAll(() async {
     await stackSperreHolen();
-    client = SupabaseClient(_url, _anonKey,
-        authOptions: const AuthClientOptions(autoRefreshToken: false));
-    final angelegt = await _admin('POST', '/auth/v1/admin/users', body: {
-      'email': _mail,
-      'password': _passwort,
-      'email_confirm': true,
-    });
+    client = SupabaseClient(
+      _url,
+      _anonKey,
+      authOptions: const AuthClientOptions(autoRefreshToken: false),
+    );
+    final angelegt = await _admin(
+      'POST',
+      '/auth/v1/admin/users',
+      body: {'email': _mail, 'password': _passwort, 'email_confirm': true},
+    );
     userId = (jsonDecode(angelegt) as Map)['id'] as String?;
     expect(userId, isNotNull);
   });
@@ -123,27 +135,39 @@ Future<void> main() async {
   test('Einrichten hebt die Sitzung erst nach dem Code auf aal2', () async {
     await client.auth.signInWithPassword(email: _mail, password: _passwort);
     // Ohne Faktor verlangt niemand etwas: nextLevel bleibt aal1.
-    expect(client.auth.mfa.getAuthenticatorAssuranceLevel().nextLevel,
-        AuthenticatorAssuranceLevels.aal1);
+    expect(
+      client.auth.mfa.getAuthenticatorAssuranceLevel().nextLevel,
+      AuthenticatorAssuranceLevels.aal1,
+    );
 
-    final angelegt = await client.auth.mfa
-        .enroll(factorType: FactorType.totp, friendlyName: 'Test');
+    final angelegt = await client.auth.mfa.enroll(
+      factorType: FactorType.totp,
+      friendlyName: 'Test',
+    );
     final secret = angelegt.totp!.secret;
 
     // Vor der Bestätigung zählt der Faktor nicht — sonst käme jemand mit
     // einem halben Einrichtungsversuch durch die Pflicht.
     final vorher = await client.auth.mfa.listFactors();
-    expect(vorher.totp.where((f) => f.status == FactorStatus.verified),
-        isEmpty);
+    expect(
+      vorher.totp.where((f) => f.status == FactorStatus.verified),
+      isEmpty,
+    );
 
-    await client.auth.mfa
-        .challengeAndVerify(factorId: angelegt.id, code: _totp(secret));
+    await client.auth.mfa.challengeAndVerify(
+      factorId: angelegt.id,
+      code: _totp(secret),
+    );
 
     final nachher = await client.auth.mfa.listFactors();
-    expect(nachher.totp.where((f) => f.status == FactorStatus.verified).length,
-        1);
-    expect(client.auth.mfa.getAuthenticatorAssuranceLevel().currentLevel,
-        AuthenticatorAssuranceLevels.aal2);
+    expect(
+      nachher.totp.where((f) => f.status == FactorStatus.verified).length,
+      1,
+    );
+    expect(
+      client.auth.mfa.getAuthenticatorAssuranceLevel().currentLevel,
+      AuthenticatorAssuranceLevels.aal2,
+    );
 
     // Der eigentliche Punkt: Nach einer frischen Passwort-Anmeldung steht
     // die Sitzung wieder auf aal1 und VERLANGT aal2. Genau daran hängt der
@@ -160,14 +184,20 @@ Future<void> main() async {
       client.auth.mfa.challengeAndVerify(factorId: faktorId, code: '000000'),
       throwsA(isA<AuthException>()),
     );
-    expect(client.auth.mfa.getAuthenticatorAssuranceLevel().currentLevel,
-        AuthenticatorAssuranceLevels.aal1);
+    expect(
+      client.auth.mfa.getAuthenticatorAssuranceLevel().currentLevel,
+      AuthenticatorAssuranceLevels.aal1,
+    );
 
     // Richtiger Code hebt sie.
-    await client.auth.mfa
-        .challengeAndVerify(factorId: faktorId, code: _totp(secret));
-    expect(client.auth.mfa.getAuthenticatorAssuranceLevel().currentLevel,
-        AuthenticatorAssuranceLevels.aal2);
+    await client.auth.mfa.challengeAndVerify(
+      factorId: faktorId,
+      code: _totp(secret),
+    );
+    expect(
+      client.auth.mfa.getAuthenticatorAssuranceLevel().currentLevel,
+      AuthenticatorAssuranceLevels.aal2,
+    );
   });
 
   test('ein Admin kann den Faktor zurücksetzen (Telefon verloren)', () async {
@@ -177,15 +207,19 @@ Future<void> main() async {
     expect(factors, isNotEmpty, reason: 'Vorbedingung aus dem ersten Test');
 
     for (final f in factors) {
-      await _admin('DELETE',
-          '/auth/v1/admin/users/$userId/factors/${(f as Map)['id']}');
+      await _admin(
+        'DELETE',
+        '/auth/v1/admin/users/$userId/factors/${(f as Map)['id']}',
+      );
     }
 
     // Zweite Zusicherung: Danach kommt man wieder allein mit dem Passwort
     // hinein — sonst wäre ein verlorenes Telefon ein verlorenes Konto.
     await client.auth.signOut();
     await client.auth.signInWithPassword(email: _mail, password: _passwort);
-    expect(client.auth.mfa.getAuthenticatorAssuranceLevel().nextLevel,
-        AuthenticatorAssuranceLevels.aal1);
+    expect(
+      client.auth.mfa.getAuthenticatorAssuranceLevel().nextLevel,
+      AuthenticatorAssuranceLevels.aal1,
+    );
   });
 }

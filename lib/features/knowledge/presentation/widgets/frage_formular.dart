@@ -55,15 +55,16 @@ class FrageFormular extends StatefulWidget {
 }
 
 class _FrageFormularState extends State<FrageFormular> {
-  late Wissensgebiet _gebiet =
-      widget.vorgabe ?? Wissensgebiet.geraetekunde;
+  late Wissensgebiet _gebiet = widget.vorgabe ?? Wissensgebiet.geraetekunde;
   final _frage = TextEditingController();
   final _erklaerung = TextEditingController();
 
   /// Vier Felder sind der Normalfall; zwei genügen, zehn sind die Grenze
   /// (siehe [pruefeFrage]) — so weit geht der amtliche Prüfungsstoff.
-  final List<TextEditingController> _antworten =
-      List.generate(4, (_) => TextEditingController());
+  final List<TextEditingController> _antworten = List.generate(
+    4,
+    (_) => TextEditingController(),
+  );
 
   /// Angehakte Antworten. Eine Menge, weil Mehrfachantworten der Normalfall
   /// sind — siehe Kopf.
@@ -100,13 +101,17 @@ class _FrageFormularState extends State<FrageFormular> {
               initialValue: _gebiet,
               isExpanded: true,
               decoration: const InputDecoration(
-                  labelText: 'Sachgebiet', border: OutlineInputBorder()),
+                labelText: 'Sachgebiet',
+                border: OutlineInputBorder(),
+              ),
               items: [
                 for (final g in Wissensgebiet.values)
                   DropdownMenuItem(
                     value: g,
-                    child: Text('${g.symbol}  ${g.label}',
-                        overflow: TextOverflow.ellipsis),
+                    child: Text(
+                      '${g.symbol}  ${g.label}',
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
               ],
               onChanged: (g) => setState(() => _gebiet = g ?? _gebiet),
@@ -124,13 +129,16 @@ class _FrageFormularState extends State<FrageFormular> {
               ),
             ),
             const SizedBox(height: 16),
-            Text('Antworten — alle richtigen anhaken',
-                style: theme.textTheme.labelLarge),
+            Text(
+              'Antworten — alle richtigen anhaken',
+              style: theme.textTheme.labelLarge,
+            ),
             Text(
               'Mehrere dürfen richtig sein. Im Prüfungsbogen ist das die '
               'Regel, nicht die Ausnahme.',
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 4),
             for (var i = 0; i < _antworten.length; i++)
@@ -140,13 +148,14 @@ class _FrageFormularState extends State<FrageFormular> {
                   children: [
                     Checkbox(
                       value: _richtige.contains(i),
-                      onChanged: (an) => setState(() {
-                        if (an == true) {
-                          _richtige.add(i);
-                        } else {
-                          _richtige.remove(i);
-                        }
-                      }),
+                      onChanged:
+                          (an) => setState(() {
+                            if (an == true) {
+                              _richtige.add(i);
+                            } else {
+                              _richtige.remove(i);
+                            }
+                          }),
                     ),
                     Expanded(
                       child: TextField(
@@ -166,21 +175,26 @@ class _FrageFormularState extends State<FrageFormular> {
               Align(
                 alignment: Alignment.centerLeft,
                 child: TextButton.icon(
-                  onPressed: () => setState(
-                      () => _antworten.add(TextEditingController())),
+                  onPressed:
+                      () => setState(
+                        () => _antworten.add(TextEditingController()),
+                      ),
                   icon: const Icon(Icons.add, size: 18),
                   label: const Text('Antwort hinzufügen'),
                 ),
               ),
             const SizedBox(height: 16),
-            Text('Woher stammt die Antwort?',
-                style: theme.textTheme.labelLarge),
+            Text(
+              'Woher stammt die Antwort?',
+              style: theme.textTheme.labelLarge,
+            ),
             Text(
               'Steht später unter der Frage. Ohne Fundstelle lässt sich eine '
               'Antwort nicht nachprüfen und bei einer Gesetzesänderung nicht '
               'wiederfinden.',
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 8),
             Row(
@@ -216,9 +230,13 @@ class _FrageFormularState extends State<FrageFormular> {
             SegmentedButton<Geltungsbereich>(
               segments: const [
                 ButtonSegment(
-                    value: Geltungsbereich.bund, label: Text('Bundesweit')),
+                  value: Geltungsbereich.bund,
+                  label: Text('Bundesweit'),
+                ),
                 ButtonSegment(
-                    value: Geltungsbereich.land, label: Text('Landesrecht')),
+                  value: Geltungsbereich.land,
+                  label: Text('Landesrecht'),
+                ),
               ],
               selected: {_geltung},
               onSelectionChanged: (a) => setState(() => _geltung = a.first),
@@ -229,14 +247,16 @@ class _FrageFormularState extends State<FrageFormular> {
                 initialValue: _land,
                 isExpanded: true,
                 decoration: const InputDecoration(
-                    labelText: 'Land', border: OutlineInputBorder(),
-                    isDense: true),
+                  labelText: 'Land',
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                ),
                 items: [
                   for (final e in kBundeslaender.entries)
                     DropdownMenuItem(
-                        value: e.key,
-                        child:
-                            Text(e.value, overflow: TextOverflow.ellipsis)),
+                      value: e.key,
+                      child: Text(e.value, overflow: TextOverflow.ellipsis),
+                    ),
                 ],
                 onChanged: (v) => setState(() => _land = v ?? _land),
               ),
@@ -260,10 +280,7 @@ class _FrageFormularState extends State<FrageFormular> {
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Abbrechen'),
         ),
-        FilledButton(
-          onPressed: _absenden,
-          child: const Text('Einreichen'),
-        ),
+        FilledButton(onPressed: _absenden, child: const Text('Einreichen')),
       ],
     );
   }
@@ -291,30 +308,34 @@ class _FrageFormularState extends State<FrageFormular> {
       richtige: richtige,
     );
     if (fehler != null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(fehler)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(fehler)));
       return;
     }
 
     final werk = _quelleWerk.text.trim();
-    Navigator.of(context).pop(FrageEingabe(
-      gebiet: _gebiet,
-      frage: _frage.text.trim(),
-      antworten: antworten,
-      richtige: richtige,
-      erklaerung: _erklaerung.text.trim().isEmpty
-          ? null
-          : _erklaerung.text.trim(),
-      quelle: werk.isEmpty
-          ? null
-          : Fragenquelle(
-              werk: werk,
-              fundstelle: _quelleFundstelle.text.trim().isEmpty
-                  ? null
-                  : _quelleFundstelle.text.trim(),
-            ),
-      geltung: _geltung,
-      land: _geltung == Geltungsbereich.land ? _land : null,
-    ));
+    Navigator.of(context).pop(
+      FrageEingabe(
+        gebiet: _gebiet,
+        frage: _frage.text.trim(),
+        antworten: antworten,
+        richtige: richtige,
+        erklaerung:
+            _erklaerung.text.trim().isEmpty ? null : _erklaerung.text.trim(),
+        quelle:
+            werk.isEmpty
+                ? null
+                : Fragenquelle(
+                  werk: werk,
+                  fundstelle:
+                      _quelleFundstelle.text.trim().isEmpty
+                          ? null
+                          : _quelleFundstelle.text.trim(),
+                ),
+        geltung: _geltung,
+        land: _geltung == Geltungsbereich.land ? _land : null,
+      ),
+    );
   }
 }

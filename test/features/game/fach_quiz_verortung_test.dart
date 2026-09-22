@@ -23,7 +23,8 @@ void main() {
   setUp(() async {
     db = createTestDatabase();
     final vehicleId = await db.vehicleDao.insertVehicle(
-        VehiclesCompanion.insert(name: 'HLF 20', type: 'HLF 20'));
+      VehiclesCompanion.insert(name: 'HLF 20', type: 'HLF 20'),
+    );
     // Vier Fächer, damit eine Frage überhaupt zustande kommt (eine richtige
     // plus drei falsche Antworten).
     final faecher = <String, int>{};
@@ -42,11 +43,15 @@ void main() {
         ),
       );
     }
-    final geraet = await db.equipmentDao
-        .insertEquipment(EquipmentItemsCompanion.insert(name: 'Strahlrohr'));
+    final geraet = await db.equipmentDao.insertEquipment(
+      EquipmentItemsCompanion.insert(name: 'Strahlrohr'),
+    );
     await db.assignmentDao.insertAssignment(
-        EquipmentAssignmentsCompanion.insert(
-            compartmentId: faecher['G5']!, equipmentId: geraet));
+      EquipmentAssignmentsCompanion.insert(
+        compartmentId: faecher['G5']!,
+        equipmentId: geraet,
+      ),
+    );
   });
 
   tearDown(() => db.close());
@@ -56,7 +61,8 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
-        buildTestApp(db: db, home: const CompartmentQuizScreen()));
+      buildTestApp(db: db, home: const CompartmentQuizScreen()),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.text('Quiz starten'));
     await tester.pumpAndSettle();
@@ -80,13 +86,19 @@ void main() {
     await starteQuiz(tester);
 
     Color punktFarbe(String label) {
-      final punkt = find
-          .descendant(
-            of: find.ancestor(
-                of: find.text(label), matching: find.byType(Row)).first,
-            matching: find.byType(Container),
-          )
-          .first;
+      final punkt =
+          find
+              .descendant(
+                of:
+                    find
+                        .ancestor(
+                          of: find.text(label),
+                          matching: find.byType(Row),
+                        )
+                        .first,
+                matching: find.byType(Container),
+              )
+              .first;
       return (tester.widget<Container>(punkt).decoration as BoxDecoration)
           .color!;
     }

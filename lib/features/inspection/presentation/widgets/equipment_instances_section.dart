@@ -2,6 +2,7 @@
 /// in EquipmentDetailScreen: manage physical instances of an equipment type
 /// and their inspection schedules.
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
@@ -24,8 +25,9 @@ class EquipmentInstancesSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final instancesAsync =
-        ref.watch(instancesByEquipmentStreamProvider(equipmentId));
+    final instancesAsync = ref.watch(
+      instancesByEquipmentStreamProvider(equipmentId),
+    );
     final vehiclesAsync = ref.watch(vehicleListStreamProvider);
     final vehicles = vehiclesAsync.value ?? const <Vehicle>[];
 
@@ -35,8 +37,10 @@ class EquipmentInstancesSection extends ConsumerWidget {
         Row(
           children: [
             Expanded(
-              child: Text('Instanzen & Prüfungen',
-                  style: Theme.of(context).textTheme.titleMedium),
+              child: Text(
+                'Instanzen & Prüfungen',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
             ),
             if (ref.watch(canEditProvider))
               IconButton(
@@ -47,10 +51,11 @@ class EquipmentInstancesSection extends ConsumerWidget {
           ],
         ),
         instancesAsync.when(
-          loading: () => const Padding(
-            padding: EdgeInsets.all(8),
-            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-          ),
+          loading:
+              () => const Padding(
+                padding: EdgeInsets.all(8),
+                child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+              ),
           error: (e, _) => Text('Fehler: $e'),
           data: (instances) {
             if (instances.isEmpty) {
@@ -64,12 +69,12 @@ class EquipmentInstancesSection extends ConsumerWidget {
               );
             }
             return Column(
-              children: instances
-                  .map((i) => _InstanceCard(
-                        instance: i,
-                        vehicles: vehicles,
-                      ))
-                  .toList(),
+              children:
+                  instances
+                      .map(
+                        (i) => _InstanceCard(instance: i, vehicles: vehicles),
+                      )
+                      .toList(),
             );
           },
         ),
@@ -78,11 +83,14 @@ class EquipmentInstancesSection extends ConsumerWidget {
   }
 
   Future<void> _addInstance(
-      BuildContext context, WidgetRef ref, List<Vehicle> vehicles) async {
+    BuildContext context,
+    WidgetRef ref,
+    List<Vehicle> vehicles,
+  ) async {
     final result = await showDialog<EquipmentInstance>(
       context: context,
-      builder: (_) =>
-          _InstanceDialog(equipmentId: equipmentId, vehicles: vehicles),
+      builder:
+          (_) => _InstanceDialog(equipmentId: equipmentId, vehicles: vehicles),
     );
     if (result == null) return;
     await ref.read(inspectionRepositoryProvider).insertInstance(result);
@@ -96,58 +104,75 @@ class _InstanceCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final schedulesAsync =
-        ref.watch(schedulesByInstanceStreamProvider(instance.id));
-    final vehicleName = vehicles
-        .where((v) => v.id == instance.vehicleId)
-        .map((v) => v.name)
-        .firstOrNull;
-    final title = instance.identifier?.isNotEmpty ?? false
-        ? instance.identifier!
-        : 'Instanz ${instance.id}';
+    final schedulesAsync = ref.watch(
+      schedulesByInstanceStreamProvider(instance.id),
+    );
+    final vehicleName =
+        vehicles
+            .where((v) => v.id == instance.vehicleId)
+            .map((v) => v.name)
+            .firstOrNull;
+    final title =
+        instance.identifier?.isNotEmpty ?? false
+            ? instance.identifier!
+            : 'Instanz ${instance.id}';
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4),
       child: ExpansionTile(
-        leading: Icon(Icons.qr_code_2,
-            color: instance.isActive ? null : Colors.grey),
-        title: Text(title,
-            style: instance.isActive
-                ? null
-                : const TextStyle(
+        leading: Icon(
+          Icons.qr_code_2,
+          color: instance.isActive ? null : Colors.grey,
+        ),
+        title: Text(
+          title,
+          style:
+              instance.isActive
+                  ? null
+                  : const TextStyle(
                     color: Colors.grey,
-                    decoration: TextDecoration.lineThrough)),
-        subtitle: Text([
-          if (vehicleName != null) vehicleName,
-          if (!instance.isActive) 'inaktiv',
-          if (instance.notes.isNotEmpty) instance.notes,
-        ].join(' · ')),
+                    decoration: TextDecoration.lineThrough,
+                  ),
+        ),
+        subtitle: Text(
+          [
+            if (vehicleName != null) vehicleName,
+            if (!instance.isActive) 'inaktiv',
+            if (instance.notes.isNotEmpty) instance.notes,
+          ].join(' · '),
+        ),
         children: [
           schedulesAsync.when(
-            loading: () => const Padding(
-              padding: EdgeInsets.all(8),
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
+            loading:
+                () => const Padding(
+                  padding: EdgeInsets.all(8),
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
             error: (e, _) => Text('Fehler: $e'),
-            data: (schedules) => Column(
-              children: [
-                if (schedules.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 4),
-                    child: Text('Keine Prüfungen hinterlegt.',
-                        style: TextStyle(color: Colors.grey)),
-                  ),
-                ...schedules.map((s) => _ScheduleTile(schedule: s)),
-              ],
-            ),
+            data:
+                (schedules) => Column(
+                  children: [
+                    if (schedules.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 4),
+                        child: Text(
+                          'Keine Prüfungen hinterlegt.',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ),
+                    ...schedules.map((s) => _ScheduleTile(schedule: s)),
+                  ],
+                ),
           ),
           const Divider(height: 1),
           const Padding(
             padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
             child: Align(
               alignment: Alignment.centerLeft,
-              child: Text('Codes',
-                  style: TextStyle(fontWeight: FontWeight.w600)),
+              child: Text(
+                'Codes',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
             ),
           ),
           TagAbschnitt(
@@ -186,20 +211,24 @@ class _InstanceCard extends ConsumerWidget {
   Future<void> _deleteInstance(BuildContext context, WidgetRef ref) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Instanz löschen?'),
-        content: const Text(
-            'Alle Prüfungen und die Prüfhistorie dieser Instanz werden '
-            'ebenfalls gelöscht.'),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Abbrechen')),
-          FilledButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Löschen')),
-        ],
-      ),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Instanz löschen?'),
+            content: const Text(
+              'Alle Prüfungen und die Prüfhistorie dieser Instanz werden '
+              'ebenfalls gelöscht.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Abbrechen'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('Löschen'),
+              ),
+            ],
+          ),
     );
     if (confirmed != true) return;
     await ref.read(inspectionRepositoryProvider).deleteInstance(instance.id);
@@ -214,9 +243,10 @@ class _ScheduleTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final now = DateTime.now();
     final dueSoonCutoff = now.add(const Duration(days: 30));
-    final Color? dueColor = schedule.isOverdue(now)
-        ? Colors.red.shade700
-        : schedule.dueAt.isBefore(dueSoonCutoff)
+    final Color? dueColor =
+        schedule.isOverdue(now)
+            ? Colors.red.shade700
+            : schedule.dueAt.isBefore(dueSoonCutoff)
             ? Colors.orange.shade800
             : null;
     return ListTile(
@@ -228,40 +258,50 @@ class _ScheduleTile extends ConsumerWidget {
         size: 20,
       ),
       title: Text(schedule.title),
-      subtitle: Text([
-        schedule.kind.label,
-        if (schedule.intervalMonths != null)
-          'alle ${schedule.intervalMonths} Monate',
-        if (schedule.lastDoneAt != null)
-          'zuletzt ${_formatDate(schedule.lastDoneAt!)}',
-      ].join(' · ')),
+      subtitle: Text(
+        [
+          schedule.kind.label,
+          if (schedule.intervalMonths != null)
+            'alle ${schedule.intervalMonths} Monate',
+          if (schedule.lastDoneAt != null)
+            'zuletzt ${_formatDate(schedule.lastDoneAt!)}',
+        ].join(' · '),
+      ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(_formatDate(schedule.dueAt),
-              style: TextStyle(color: dueColor, fontWeight: FontWeight.bold)),
+          Text(
+            _formatDate(schedule.dueAt),
+            style: TextStyle(color: dueColor, fontWeight: FontWeight.bold),
+          ),
           if (ref.watch(canEditProvider))
             PopupMenuButton<String>(
-            onSelected: (value) async {
-              switch (value) {
-                case 'done':
-                  await markScheduleDone(context, ref, schedule);
-                case 'delete':
-                  await ref
-                      .read(inspectionRepositoryProvider)
-                      .deleteSchedule(schedule.id);
-              }
-            },
-            itemBuilder: (_) => [
-              PopupMenuItem(
-                value: 'done',
-                child: Text(schedule.kind == InspectionKind.expiry
-                    ? 'Ersetzt'
-                    : 'Erledigt'),
-              ),
-              const PopupMenuItem(value: 'delete', child: Text('Löschen')),
-            ],
-          ),
+              onSelected: (value) async {
+                switch (value) {
+                  case 'done':
+                    await markScheduleDone(context, ref, schedule);
+                  case 'delete':
+                    await ref
+                        .read(inspectionRepositoryProvider)
+                        .deleteSchedule(schedule.id);
+                }
+              },
+              itemBuilder:
+                  (_) => [
+                    PopupMenuItem(
+                      value: 'done',
+                      child: Text(
+                        schedule.kind == InspectionKind.expiry
+                            ? 'Ersetzt'
+                            : 'Erledigt',
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'delete',
+                      child: Text('Löschen'),
+                    ),
+                  ],
+            ),
         ],
       ),
     );
@@ -299,16 +339,20 @@ class _InstanceDialogState extends State<_InstanceDialog> {
           TextField(
             controller: _identifierController,
             decoration: const InputDecoration(
-                labelText: 'Kennung (z.B. Seriennr., "Flasche 3")'),
+              labelText: 'Kennung (z.B. Seriennr., "Flasche 3")',
+            ),
           ),
           DropdownButtonFormField<int?>(
             initialValue: _vehicleId,
             decoration: const InputDecoration(labelText: 'Fahrzeug'),
             items: [
               const DropdownMenuItem<int?>(
-                  value: null, child: Text('Kein Fahrzeug / Lager')),
-              ...widget.vehicles.map((v) =>
-                  DropdownMenuItem<int?>(value: v.id, child: Text(v.name))),
+                value: null,
+                child: Text('Kein Fahrzeug / Lager'),
+              ),
+              ...widget.vehicles.map(
+                (v) => DropdownMenuItem<int?>(value: v.id, child: Text(v.name)),
+              ),
             ],
             onChanged: (v) => setState(() => _vehicleId = v),
           ),
@@ -324,16 +368,20 @@ class _InstanceDialogState extends State<_InstanceDialog> {
           child: const Text('Abbrechen'),
         ),
         FilledButton(
-          onPressed: () => Navigator.of(context).pop(EquipmentInstance(
-            id: 0,
-            equipmentId: widget.equipmentId,
-            vehicleId: _vehicleId,
-            identifier: _identifierController.text.trim().isEmpty
-                ? null
-                : _identifierController.text.trim(),
-            notes: _notesController.text.trim(),
-            updatedAt: DateTime.now(),
-          )),
+          onPressed:
+              () => Navigator.of(context).pop(
+                EquipmentInstance(
+                  id: 0,
+                  equipmentId: widget.equipmentId,
+                  vehicleId: _vehicleId,
+                  identifier:
+                      _identifierController.text.trim().isEmpty
+                          ? null
+                          : _identifierController.text.trim(),
+                  notes: _notesController.text.trim(),
+                  updatedAt: DateTime.now(),
+                ),
+              ),
           child: const Text('Anlegen'),
         ),
       ],
@@ -381,16 +429,20 @@ class _ScheduleDialogState extends State<_ScheduleDialog> {
             TextField(
               controller: _titleController,
               decoration: const InputDecoration(
-                  labelText: 'Titel (z.B. "Jährliche Sichtprüfung")'),
+                labelText: 'Titel (z.B. "Jährliche Sichtprüfung")',
+              ),
             ),
             const SizedBox(height: 12),
             SegmentedButton<InspectionKind>(
               segments: const [
                 ButtonSegment(
-                    value: InspectionKind.recurring,
-                    label: Text('Wiederkehrend')),
+                  value: InspectionKind.recurring,
+                  label: Text('Wiederkehrend'),
+                ),
                 ButtonSegment(
-                    value: InspectionKind.expiry, label: Text('Ablaufdatum')),
+                  value: InspectionKind.expiry,
+                  label: Text('Ablaufdatum'),
+                ),
               ],
               selected: {_kind},
               onSelectionChanged: (s) => setState(() => _kind = s.first),
@@ -399,8 +451,7 @@ class _ScheduleDialogState extends State<_ScheduleDialog> {
               const SizedBox(height: 12),
               DropdownButtonFormField<int>(
                 initialValue: _intervalMonths,
-                decoration:
-                    const InputDecoration(labelText: 'Intervall'),
+                decoration: const InputDecoration(labelText: 'Intervall'),
                 items: const [
                   DropdownMenuItem(value: 1, child: Text('Monatlich')),
                   DropdownMenuItem(value: 3, child: Text('Vierteljährlich')),
@@ -411,23 +462,26 @@ class _ScheduleDialogState extends State<_ScheduleDialog> {
                   DropdownMenuItem(value: 60, child: Text('Alle 5 Jahre')),
                   DropdownMenuItem(value: 120, child: Text('Alle 10 Jahre')),
                 ],
-                onChanged: (v) =>
-                    setState(() => _intervalMonths = v ?? 12),
+                onChanged: (v) => setState(() => _intervalMonths = v ?? 12),
               ),
             ],
             const SizedBox(height: 12),
             OutlinedButton.icon(
               icon: const Icon(Icons.event),
-              label: Text(_kind == InspectionKind.expiry
-                  ? (_dueAt == null
-                      ? 'Ablaufdatum wählen'
-                      : 'Ablaufdatum: ${_formatDate(_dueAt!)}')
-                  : 'Erste Fälligkeit: ${_formatDate(_effectiveDueAt)}'),
+              label: Text(
+                _kind == InspectionKind.expiry
+                    ? (_dueAt == null
+                        ? 'Ablaufdatum wählen'
+                        : 'Ablaufdatum: ${_formatDate(_dueAt!)}')
+                    : 'Erste Fälligkeit: ${_formatDate(_effectiveDueAt)}',
+              ),
               onPressed: () async {
                 final picked = await showDatePicker(
                   context: context,
                   initialDate: _effectiveDueAt,
-                  firstDate: DateTime.now().subtract(const Duration(days: 365 * 5)),
+                  firstDate: DateTime.now().subtract(
+                    const Duration(days: 365 * 5),
+                  ),
                   lastDate: DateTime.now().add(const Duration(days: 365 * 20)),
                 );
                 if (picked != null) setState(() => _dueAt = picked);
@@ -445,16 +499,18 @@ class _ScheduleDialogState extends State<_ScheduleDialog> {
           onPressed: () {
             if (_titleController.text.trim().isEmpty) return;
             if (_kind == InspectionKind.expiry && _dueAt == null) return;
-            Navigator.of(context).pop(InspectionSchedule(
-              id: 0,
-              instanceId: widget.instanceId,
-              kind: _kind,
-              title: _titleController.text.trim(),
-              intervalMonths:
-                  _kind == InspectionKind.recurring ? _intervalMonths : null,
-              dueAt: _effectiveDueAt,
-              updatedAt: DateTime.now(),
-            ));
+            Navigator.of(context).pop(
+              InspectionSchedule(
+                id: 0,
+                instanceId: widget.instanceId,
+                kind: _kind,
+                title: _titleController.text.trim(),
+                intervalMonths:
+                    _kind == InspectionKind.recurring ? _intervalMonths : null,
+                dueAt: _effectiveDueAt,
+                updatedAt: DateTime.now(),
+              ),
+            );
           },
           child: const Text('Anlegen'),
         ),

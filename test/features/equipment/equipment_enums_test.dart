@@ -2,6 +2,7 @@
 /// two-axis classification (EquipmentFunction / DeploymentScenario):
 /// jsonKey ↔ fromJson must be lossless, labels must be unique and non-empty.
 library;
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/features/equipment/domain/entities/equipment_enums.dart';
 
@@ -36,15 +37,18 @@ void main() {
     test('jsonKey converts camelCase to UPPER_SNAKE_CASE', () {
       expect(DeploymentScenario.brandInnen.jsonKey, 'BRAND_INNEN');
       expect(DeploymentScenario.vuPkw.jsonKey, 'VU_PKW');
-      expect(
-          DeploymentScenario.gefahrgutDekon.jsonKey, 'GEFAHRGUT_DEKON');
+      expect(DeploymentScenario.gefahrgutDekon.jsonKey, 'GEFAHRGUT_DEKON');
     });
 
     test('fromJson is case-insensitive and null for unknowns', () {
-      expect(DeploymentScenario.fromJson('brand_innen'),
-          DeploymentScenario.brandInnen);
-      expect(DeploymentScenario.fromJson('HOCHWASSER'),
-          DeploymentScenario.hochwasser);
+      expect(
+        DeploymentScenario.fromJson('brand_innen'),
+        DeploymentScenario.brandInnen,
+      );
+      expect(
+        DeploymentScenario.fromJson('HOCHWASSER'),
+        DeploymentScenario.hochwasser,
+      );
       expect(DeploymentScenario.fromJson('UNBEKANNT'), isNull);
     });
 

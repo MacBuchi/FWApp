@@ -31,19 +31,19 @@ const _stadt = AbteilungInfo(
 );
 
 ManagedUser _user({String? anzeigename, String? avatar}) => ManagedUser(
-      id: 'u1',
-      username: 'marcus.bucher',
-      email: 'marcus.bucher@example.org',
-      role: 'member',
-      mustChangePassword: false,
-      banned: false,
-      lastSignInAt: null,
-      abteilungId: 'A',
-      memberships: const {'A': 'member'},
-      hatMitgliedschaften: true,
-      anzeigename: anzeigename,
-      avatar: avatar,
-    );
+  id: 'u1',
+  username: 'marcus.bucher',
+  email: 'marcus.bucher@example.org',
+  role: 'member',
+  mustChangePassword: false,
+  banned: false,
+  lastSignInAt: null,
+  abteilungId: 'A',
+  memberships: const {'A': 'member'},
+  hatMitgliedschaften: true,
+  anzeigename: anzeigename,
+  avatar: avatar,
+);
 
 void main() {
   late AppDatabase db;
@@ -52,28 +52,32 @@ void main() {
   tearDown(() => db.close());
 
   Widget host(List<ManagedUser> users) => buildTestApp(
-        db: db,
-        home: const UserManagementScreen(),
-        overrides: [
-          managedUsersProvider.overrideWith((ref) async => users),
-          abteilungenProvider.overrideWith((ref) async => const [_stadt]),
-          myAbteilungIdProvider.overrideWith((ref) async => 'A'),
-          meineKommandoGesamtwehrenProvider.overrideWith(
-              (ref) async => const <String>{}),
-          supabaseClientProvider.overrideWithValue(null),
-        ],
-      );
+    db: db,
+    home: const UserManagementScreen(),
+    overrides: [
+      managedUsersProvider.overrideWith((ref) async => users),
+      abteilungenProvider.overrideWith((ref) async => const [_stadt]),
+      myAbteilungIdProvider.overrideWith((ref) async => 'A'),
+      meineKommandoGesamtwehrenProvider.overrideWith(
+        (ref) async => const <String>{},
+      ),
+      supabaseClientProvider.overrideWithValue(null),
+    ],
+  );
 
-  testWidgets('ohne Anzeigenamen bleibt es beim Nutzernamen — und zwar einmal',
-      (tester) async {
-    await tester.pumpWidget(host([_user()]));
-    await tester.pumpAndSettle();
+  testWidgets(
+    'ohne Anzeigenamen bleibt es beim Nutzernamen — und zwar einmal',
+    (tester) async {
+      await tester.pumpWidget(host([_user()]));
+      await tester.pumpAndSettle();
 
-    expect(find.text('marcus.bucher'), findsOneWidget);
-  });
+      expect(find.text('marcus.bucher'), findsOneWidget);
+    },
+  );
 
-  testWidgets('mit Anzeigenamen steht dieser oben und der Nutzername daneben',
-      (tester) async {
+  testWidgets('mit Anzeigenamen steht dieser oben und der Nutzername daneben', (
+    tester,
+  ) async {
     await tester.pumpWidget(host([_user(anzeigename: 'Marcus B.')]));
     await tester.pumpAndSettle();
 
@@ -81,8 +85,9 @@ void main() {
     expect(find.textContaining('marcus.bucher'), findsOneWidget);
   });
 
-  testWidgets('der gespeicherte Kopf wird gezeichnet, nicht der Standardkopf',
-      (tester) async {
+  testWidgets('der gespeicherte Kopf wird gezeichnet, nicht der Standardkopf', (
+    tester,
+  ) async {
     const kopf = AvatarKonfiguration(gear: 'dog', eyes: 'dots');
     await tester.pumpWidget(host([_user(avatar: kopf.kodiert)]));
     await tester.pumpAndSettle();
@@ -91,17 +96,21 @@ void main() {
     expect(avatar.konfiguration, kopf);
   });
 
-  testWidgets('ohne gespeicherten Kopf steht der Standardkopf da',
-      (tester) async {
+  testWidgets('ohne gespeicherten Kopf steht der Standardkopf da', (
+    tester,
+  ) async {
     await tester.pumpWidget(host([_user()]));
     await tester.pumpAndSettle();
 
-    expect(tester.widget<FwAvatar>(find.byType(FwAvatar)).konfiguration,
-        const AvatarKonfiguration());
+    expect(
+      tester.widget<FwAvatar>(find.byType(FwAvatar)).konfiguration,
+      const AvatarKonfiguration(),
+    );
   });
 
-  testWidgets('die Liste ist nach dem ANGEZEIGTEN Namen sortiert',
-      (tester) async {
+  testWidgets('die Liste ist nach dem ANGEZEIGTEN Namen sortiert', (
+    tester,
+  ) async {
     // Sonst steht sie in einer Reihenfolge, die auf dem Bildschirm niemand
     // nachvollziehen kann: „zeus" vor „Anton", weil der Nutzername anders
     // heisst als der Anzeigename.
@@ -134,7 +143,8 @@ void main() {
     // Der Provider sortiert; hier wird die Regel selbst geprüft, weil der
     // überschriebene Provider im Widget-Test nicht durch ihn läuft.
     final sortiert = [...users]..sort(
-        (a, b) => a.anzeige.toLowerCase().compareTo(b.anzeige.toLowerCase()));
+      (a, b) => a.anzeige.toLowerCase().compareTo(b.anzeige.toLowerCase()),
+    );
     expect(sortiert.map((u) => u.anzeige), ['Anton', 'Zacharias']);
 
     await tester.pumpWidget(host(sortiert));

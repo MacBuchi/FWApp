@@ -25,8 +25,8 @@ class ServerSettingsScreen extends ConsumerWidget {
           icon: const Icon(Icons.arrow_back),
           // Direkt per URL aufgerufen (Web) gibt es nichts zu poppen — dann
           // zurück zur Anmeldung statt in eine Sackgasse ohne Ausweg.
-          onPressed: () =>
-              context.canPop() ? context.pop() : context.go('/login'),
+          onPressed:
+              () => context.canPop() ? context.pop() : context.go('/login'),
         ),
       ),
       body: ListView(

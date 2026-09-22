@@ -14,15 +14,19 @@ import 'package:fwapp/core/database/database_providers.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/features/vehicle/data/anhang_speicher.dart';
 
-final anhangSpeicherProvider = Provider<AnhangSpeicher>((ref) => AnhangSpeicher(
-      db: ref.watch(appDatabaseProvider),
-      client: ref.watch(supabaseClientProvider),
-    ));
+final anhangSpeicherProvider = Provider<AnhangSpeicher>(
+  (ref) => AnhangSpeicher(
+    db: ref.watch(appDatabaseProvider),
+    client: ref.watch(supabaseClientProvider),
+  ),
+);
 
 /// Die Anhänge eines Fahrzeugs, live aus der **lokalen** Datenbank.
 ///
 /// Lokal und nicht vom Server: Was hier steht, ist auch ohne Netz da — und
 /// genau das ist die Zusage dieses Features.
 final fahrzeugAnhaengeProvider =
-    StreamProvider.family<List<VehicleAttachmentData>, int>((ref, vehicleId) =>
-        ref.watch(attachmentDaoProvider).watchByVehicle(vehicleId));
+    StreamProvider.family<List<VehicleAttachmentData>, int>(
+      (ref, vehicleId) =>
+          ref.watch(attachmentDaoProvider).watchByVehicle(vehicleId),
+    );

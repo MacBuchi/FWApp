@@ -72,9 +72,10 @@ class VehicleTemplateService {
   }) async {
     // Katalog VOR der Transaktion laden: rootBundle ist ein async-Spalt,
     // der nicht in eine DB-Transaktion gehört.
-    final katalog = withLoading && template.hasLoading
-        ? await catalogLoader()
-        : StandardCatalog.empty();
+    final katalog =
+        withLoading && template.hasLoading
+            ? await catalogLoader()
+            : StandardCatalog.empty();
     return db.transaction(() async {
       final vehicleId = await db.vehicleDao.insertVehicle(
         VehiclesCompanion.insert(
@@ -125,15 +126,14 @@ class VehicleTemplateService {
       var placed = 0;
       var unassigned = 0;
       for (final item in template.loading!.items) {
-        final existing =
-            await db.equipmentDao.getByLibraryId(item.equipmentId);
+        final existing = await db.equipmentDao.getByLibraryId(item.equipmentId);
         // Nachlegen aus dem gebündelten Katalog: Auf Geräten, die schon
         // einmal zentral gezogen haben, überspringt der Seeder den Katalog
         // dauerhaft (der Pull ersetzt den lokalen Bestand). Ohne diesen
         // Rückgriff entstand ein Fahrzeug ohne ein einziges Gerät — still,
         // denn das Log liest im Gerätehaus niemand (Issue #86).
-        final equipmentId = existing?.id ??
-            await katalog.createEquipment(db, item.equipmentId);
+        final equipmentId =
+            existing?.id ?? await katalog.createEquipment(db, item.equipmentId);
         if (equipmentId == null) {
           missing.add(item.equipmentId);
           continue;
@@ -141,9 +141,10 @@ class VehicleTemplateService {
         // Verteilen nur auf Wunsch; ein unbekanntes Label fällt ins
         // Sammelfach statt Position zu verlieren (der Parser lässt so etwas
         // gar nicht erst durch, der Vorlagen-Test benennt es).
-        final zielFachId = withPlacement && item.compartment != null
-            ? fachIdNachLabel[item.compartment]
-            : null;
+        final zielFachId =
+            withPlacement && item.compartment != null
+                ? fachIdNachLabel[item.compartment]
+                : null;
         if (zielFachId == null) unassigned++;
         await db.assignmentDao.insertAssignment(
           EquipmentAssignmentsCompanion.insert(
@@ -156,9 +157,11 @@ class VehicleTemplateService {
       }
 
       if (missing.isNotEmpty) {
-        appLog.w('Vorlage ${template.id}: ${missing.length} Positionen weder '
-            'lokal noch im gebündelten Katalog — Vorlage und Katalog '
-            'auseinandergelaufen?');
+        appLog.w(
+          'Vorlage ${template.id}: ${missing.length} Positionen weder '
+          'lokal noch im gebündelten Katalog — Vorlage und Katalog '
+          'auseinandergelaufen?',
+        );
       }
 
       return TemplateApplyResult(

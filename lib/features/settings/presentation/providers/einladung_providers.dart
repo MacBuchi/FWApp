@@ -11,6 +11,7 @@
 /// Manuelle Provider wie der Rest der Supabase-Anbindung (Supabase-Typen
 /// vertragen keinen riverpod-Codegen, siehe sync_providers.dart).
 library;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/logging/app_logger.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
@@ -41,16 +42,17 @@ class Einladung {
   });
 
   factory Einladung.fromJson(Map<String, dynamic> json) => Einladung(
-        id: json['id'] as String,
-        email: json['email'] as String? ?? '',
-        anzeigename: json['anzeigename'] as String?,
-        abteilungId: json['abteilung_id'] as String? ?? '',
-        role: json['role'] as String? ?? 'member',
-        alsKommandant: json['als_kommandant'] as bool? ?? false,
-        createdAt: json['created_at'] == null
+    id: json['id'] as String,
+    email: json['email'] as String? ?? '',
+    anzeigename: json['anzeigename'] as String?,
+    abteilungId: json['abteilung_id'] as String? ?? '',
+    role: json['role'] as String? ?? 'member',
+    alsKommandant: json['als_kommandant'] as bool? ?? false,
+    createdAt:
+        json['created_at'] == null
             ? null
             : DateTime.tryParse(json['created_at'] as String),
-      );
+  );
 }
 
 /// Alle offenen Einladungen im Verwaltungsbereich des Angemeldeten.
@@ -58,16 +60,19 @@ class Einladung {
 /// Leere Liste statt Fehler, wenn der Server die Tabelle nicht kennt: Genau
 /// so verhält sich ein Server, der die Stufe-3-Migration noch nicht hat —
 /// und die Nutzerverwaltung soll dort weiter benutzbar bleiben.
-final offeneEinladungenProvider =
-    FutureProvider.autoDispose<List<Einladung>>((ref) async {
+final offeneEinladungenProvider = FutureProvider.autoDispose<List<Einladung>>((
+  ref,
+) async {
   final client = ref.watch(supabaseClientProvider);
   final session = ref.watch(sessionStreamProvider).value;
   if (client == null || session == null) return const [];
   try {
     final rows = await client
         .from('einladungen')
-        .select('id, email, anzeigename, abteilung_id, role, als_kommandant, '
-            'created_at')
+        .select(
+          'id, email, anzeigename, abteilung_id, role, als_kommandant, '
+          'created_at',
+        )
         .isFilter('angenommen_am', null)
         .isFilter('zurueckgezogen_am', null)
         .order('created_at');
@@ -103,8 +108,11 @@ class Zustellstand {
     this.grund,
   });
 
-  static const leer =
-      Zustellstand(verfuegbar: false, gekuerzt: 0, proEinladung: {});
+  static const leer = Zustellstand(
+    verfuegbar: false,
+    gekuerzt: 0,
+    proEinladung: {},
+  );
 
   Zustellung fuer(String einladungId) =>
       proEinladung[einladungId] ?? Zustellung.unbekannt;
@@ -117,8 +125,9 @@ class Zustellstand {
 /// sofort da ist und der Umweg über Brevo Sekunden dauern kann: Die
 /// Einladungen sollen nicht auf die Zustellung warten. Solange nichts
 /// geladen ist, steht schlicht keine Zustellzeile da.
-final einladungZustellungProvider =
-    FutureProvider.autoDispose<Zustellstand>((ref) async {
+final einladungZustellungProvider = FutureProvider.autoDispose<Zustellstand>((
+  ref,
+) async {
   final client = ref.watch(supabaseClientProvider);
   final session = ref.watch(sessionStreamProvider).value;
   // Hängt an der Liste: Nach jedem Einladen, Zurückziehen oder erneuten
@@ -128,8 +137,7 @@ final einladungZustellungProvider =
     return Zustellstand.leer;
   }
   try {
-    final daten =
-        await invokeAdminUsers(client, {'action': 'invite_status'});
+    final daten = await invokeAdminUsers(client, {'action': 'invite_status'});
     final roh = (daten['zustellungen'] as Map?) ?? const {};
     return Zustellstand(
       verfuegbar: daten['verfuegbar'] == true,
@@ -139,8 +147,7 @@ final einladungZustellungProvider =
         for (final eintrag in roh.entries)
           eintrag.key as String: zustellungAus([
             for (final e in (eintrag.value as List? ?? const []))
-              if (DateTime.tryParse(
-                      (e as Map)['zeit'] as String? ?? '') !=
+              if (DateTime.tryParse((e as Map)['zeit'] as String? ?? '') !=
                   null)
                 Zustellereignis(
                   art: e['art'] as String? ?? '',

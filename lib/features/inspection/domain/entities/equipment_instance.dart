@@ -1,6 +1,7 @@
 /// equipment_instance.dart – Physical, trackable instance of an equipment type
 /// (pure Dart, no Flutter/Drift dependencies).
 library;
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'equipment_instance.freezed.dart';

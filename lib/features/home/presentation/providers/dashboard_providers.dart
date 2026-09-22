@@ -4,6 +4,7 @@
 /// Schichtung: bewusst ohne data/domain-Schicht, direkter DAO-Zugriff
 /// (rein lokales Feature, siehe CONTRIBUTING.md „Schichtung je Feature").
 library;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/database/database_providers.dart';
@@ -78,11 +79,13 @@ final lernLevelProvider = Provider<int?>((ref) {
 });
 
 final quizResultsStreamProvider = StreamProvider<List<QuizResultData>>(
-    (ref) => ref.watch(quizDaoProvider).watchAll());
+  (ref) => ref.watch(quizDaoProvider).watchAll(),
+);
 
 final learningProgressStreamProvider =
     StreamProvider<List<LearningProgressData>>(
-        (ref) => ref.watch(learningDaoProvider).watchAll());
+      (ref) => ref.watch(learningDaoProvider).watchAll(),
+    );
 
 /// Weekly goal (sessions per week), persisted on the device.
 class WeekGoalNotifier extends Notifier<int> {
@@ -90,8 +93,9 @@ class WeekGoalNotifier extends Notifier<int> {
 
   @override
   int build() {
-    SharedPreferences.getInstance()
-        .then((prefs) => state = prefs.getInt(_key) ?? 5);
+    SharedPreferences.getInstance().then(
+      (prefs) => state = prefs.getInt(_key) ?? 5,
+    );
     return 5;
   }
 
@@ -102,8 +106,9 @@ class WeekGoalNotifier extends Notifier<int> {
   }
 }
 
-final weekGoalProvider =
-    NotifierProvider<WeekGoalNotifier, int>(WeekGoalNotifier.new);
+final weekGoalProvider = NotifierProvider<WeekGoalNotifier, int>(
+  WeekGoalNotifier.new,
+);
 
 final dashboardStatsProvider = FutureProvider<DashboardStats>((ref) async {
   final results = ref.watch(quizResultsStreamProvider).value ?? const [];
@@ -113,16 +118,18 @@ final dashboardStatsProvider = FutureProvider<DashboardStats>((ref) async {
 
   // ── Streak: consecutive days with at least one session, counting back
   // from today (an unbroken run ending yesterday still counts). ──
-  final days = results
-      .map((r) => DateTime(r.playedAt.year, r.playedAt.month, r.playedAt.day))
-      .toSet();
+  final days =
+      results
+          .map(
+            (r) => DateTime(r.playedAt.year, r.playedAt.month, r.playedAt.day),
+          )
+          .toSet();
   final today = DateTime.now();
   final todayDate = DateTime(today.year, today.month, today.day);
   final trainedToday = days.contains(todayDate);
   var streak = 0;
-  var cursor = trainedToday
-      ? todayDate
-      : todayDate.subtract(const Duration(days: 1));
+  var cursor =
+      trainedToday ? todayDate : todayDate.subtract(const Duration(days: 1));
   while (days.contains(cursor)) {
     streak++;
     cursor = cursor.subtract(const Duration(days: 1));
@@ -134,8 +141,7 @@ final dashboardStatsProvider = FutureProvider<DashboardStats>((ref) async {
   final levelProgress = (xp % kXpPerLevel) / kXpPerLevel;
 
   // ── Weekly goal (week starts Monday) ──
-  final weekStart =
-      todayDate.subtract(Duration(days: todayDate.weekday - 1));
+  final weekStart = todayDate.subtract(Duration(days: todayDate.weekday - 1));
   final weekSessions =
       results.where((r) => !r.playedAt.isBefore(weekStart)).length;
 
@@ -144,14 +150,15 @@ final dashboardStatsProvider = FutureProvider<DashboardStats>((ref) async {
   final vehicles = await db.vehicleDao.getAll();
   final practiced = {
     for (final p in progress)
-      if (p.correctCount + p.wrongCount > 0) p.equipmentId
+      if (p.correctCount + p.wrongCount > 0) p.equipmentId,
   };
   double bestScore = double.infinity;
   for (final vehicle in vehicles) {
     final compartments = await db.compartmentDao.getByVehicle(vehicle.id);
     for (final compartment in compartments) {
-      final assignments =
-          await db.assignmentDao.getByCompartment(compartment.id);
+      final assignments = await db.assignmentDao.getByCompartment(
+        compartment.id,
+      );
       if (assignments.length < 3) continue; // zu klein für eine Empfehlung
       final covered =
           assignments.where((a) => practiced.contains(a.equipmentId)).length;

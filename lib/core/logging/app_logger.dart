@@ -49,9 +49,11 @@ class LogRingBuffer {
     // trüge der Bericht knapp 17 — auf dem Emulator nachgemessen.
     final trimmed = _stripBox(line);
     if (trimmed.isEmpty) return;
-    _lines.add(trimmed.length > kLogRingMaxLineChars
-        ? '${trimmed.substring(0, kLogRingMaxLineChars)}…'
-        : trimmed);
+    _lines.add(
+      trimmed.length > kLogRingMaxLineChars
+          ? '${trimmed.substring(0, kLogRingMaxLineChars)}…'
+          : trimmed,
+    );
     if (_lines.length > kLogRingSize) {
       _lines.removeRange(0, _lines.length - kLogRingSize);
     }

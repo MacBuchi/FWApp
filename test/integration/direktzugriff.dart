@@ -38,7 +38,8 @@ Future<void> erwarteKeinenDurchgriff(Future<void> Function() versuch) async {
     expect(
       fehler.code,
       '42501',
-      reason: 'Erwartet war die Abwehr (42501 permission denied bzw. '
+      reason:
+          'Erwartet war die Abwehr (42501 permission denied bzw. '
           'row-level security), nicht: ${fehler.message}',
     );
   }

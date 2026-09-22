@@ -25,17 +25,20 @@ void main() {
         dirty: false,
       );
 
-  CompartmentData fach(int id, int fahrzeugId, String label,
-          {int position = 0}) =>
-      CompartmentData(
-        id: id,
-        vehicleId: fahrzeugId,
-        label: label,
-        position: position,
-        gridColSpan: 1,
-        updatedAt: jetzt,
-        dirty: false,
-      );
+  CompartmentData fach(
+    int id,
+    int fahrzeugId,
+    String label, {
+    int position = 0,
+  }) => CompartmentData(
+    id: id,
+    vehicleId: fahrzeugId,
+    label: label,
+    position: position,
+    gridColSpan: 1,
+    updatedAt: jetzt,
+    dirty: false,
+  );
 
   AssignmentData zuordnung(int id, int fachId, int geraetId, int anzahl) =>
       AssignmentData(
@@ -64,41 +67,48 @@ void main() {
         dirty: false,
       );
 
-  EquipmentInstanceData einheit(int id, int geraetId,
-          {int? fachId, String? kennung, String notiz = ''}) =>
-      EquipmentInstanceData(
-        id: id,
-        equipmentId: geraetId,
-        compartmentId: fachId,
-        identifier: kennung,
-        notes: notiz,
-        isActive: true,
-        updatedAt: jetzt,
-        dirty: false,
-      );
+  EquipmentInstanceData einheit(
+    int id,
+    int geraetId, {
+    int? fachId,
+    String? kennung,
+    String notiz = '',
+  }) => EquipmentInstanceData(
+    id: id,
+    equipmentId: geraetId,
+    compartmentId: fachId,
+    identifier: kennung,
+    notes: notiz,
+    isActive: true,
+    updatedAt: jetzt,
+    dirty: false,
+  );
 
   EquipmentTagData code(int id, int einheitId, String wert) => EquipmentTagData(
-        id: id,
-        instanceId: einheitId,
-        code: wert,
-        kind: EquipmentTags.kindQr,
-        selfIssued: true,
-        createdAt: jetzt,
-        dirty: false,
-      );
+    id: id,
+    instanceId: einheitId,
+    code: wert,
+    kind: EquipmentTags.kindQr,
+    selfIssued: true,
+    createdAt: jetzt,
+    dirty: false,
+  );
 
-  InspectionScheduleData pruefung(int id, int einheitId, String titel,
-          DateTime faellig) =>
-      InspectionScheduleData(
-        id: id,
-        instanceId: einheitId,
-        kind: InspectionSchedules.kindRecurring,
-        title: titel,
-        dueAt: faellig,
-        notes: '',
-        updatedAt: jetzt,
-        dirty: false,
-      );
+  InspectionScheduleData pruefung(
+    int id,
+    int einheitId,
+    String titel,
+    DateTime faellig,
+  ) => InspectionScheduleData(
+    id: id,
+    instanceId: einheitId,
+    kind: InspectionSchedules.kindRecurring,
+    title: titel,
+    dueAt: faellig,
+    notes: '',
+    updatedAt: jetzt,
+    dirty: false,
+  );
 
   String csv({
     List<VehicleData> fahrzeuge = const [],
@@ -108,26 +118,26 @@ void main() {
     List<EquipmentInstanceData> einheiten = const [],
     List<EquipmentTagData> codes = const [],
     List<InspectionScheduleData> pruefungen = const [],
-  }) =>
-      bestandCsv(
-        fahrzeuge: fahrzeuge,
-        faecher: faecher,
-        zuordnungen: zuordnungen,
-        geraete: geraete,
-        einheiten: einheiten,
-        codes: codes,
-        pruefungen: pruefungen,
-      );
+  }) => bestandCsv(
+    fahrzeuge: fahrzeuge,
+    faecher: faecher,
+    zuordnungen: zuordnungen,
+    geraete: geraete,
+    einheiten: einheiten,
+    codes: codes,
+    pruefungen: pruefungen,
+  );
 
   /// Die Datenzeilen, ohne BOM und ohne Kopfzeile, je Zelle zerlegt.
-  List<List<String>> datenzeilen(String datei) => datei
-      .replaceFirst('﻿', '')
-      .trim()
-      .split('\r\n')
-      .skip(1)
-      .where((z) => z.isNotEmpty)
-      .map((z) => z.split(kCsvTrenner))
-      .toList();
+  List<List<String>> datenzeilen(String datei) =>
+      datei
+          .replaceFirst('﻿', '')
+          .trim()
+          .split('\r\n')
+          .skip(1)
+          .where((z) => z.isNotEmpty)
+          .map((z) => z.split(kCsvTrenner))
+          .toList();
 
   test('die Kopfzeile ist die erste Zeile — kein Vorspann', () {
     // Ein Vorspann macht die Datei für jeden Importer kaputt.
@@ -190,8 +200,7 @@ void main() {
 
     final zeilen = datenzeilen(datei);
     expect(zeilen, hasLength(3));
-    final summe =
-        zeilen.map((z) => int.parse(z[5])).reduce((a, b) => a + b);
+    final summe = zeilen.map((z) => int.parse(z[5])).reduce((a, b) => a + b);
     expect(summe, 4);
     expect(zeilen.last[6], '', reason: 'Die Restzeile führt keine Einheit.');
     expect(zeilen.last[5], '2');
@@ -264,8 +273,11 @@ void main() {
       expect(zeilen.last[0], kOhneFahrzeug);
       expect(zeilen.last[2], '');
       expect(zeilen.last[6], 'Reserve 1');
-      expect(zeilen.last[3], 'Pressluftatmer',
-          reason: 'Ohne Fahrzeug, aber nicht ohne Gerätenamen.');
+      expect(
+        zeilen.last[3],
+        'Pressluftatmer',
+        reason: 'Ohne Fahrzeug, aber nicht ohne Gerätenamen.',
+      );
     });
 
     test('auch ganz ohne Fuhrpark kommt der Bestand heraus', () {
@@ -306,8 +318,10 @@ void main() {
         ],
       );
 
-      expect(datenzeilen(datei).single[8],
-          'Sichtprüfung: 01.03.2027 | Druckprüfung: 24.12.2029');
+      expect(
+        datenzeilen(datei).single[8],
+        'Sichtprüfung: 01.03.2027 | Druckprüfung: 24.12.2029',
+      );
     });
 
     test('eine Notiz mit Semikolon zerlegt die Zeile nicht', () {
@@ -318,13 +332,15 @@ void main() {
         zuordnungen: [zuordnung(1, 1, 7, 1)],
         geraete: [geraet(7, 'Pressluftatmer')],
         einheiten: [
-          einheit(1, 7, fachId: 1, kennung: 'F 3', notiz: 'Ventil; tauschen')
+          einheit(1, 7, fachId: 1, kennung: 'F 3', notiz: 'Ventil; tauschen'),
         ],
       );
 
       expect(datei, contains('"Ventil; tauschen"'));
-      expect(datenzeilen(datei).single.length,
-          greaterThan(kBestandCsvKopf.length - 1));
+      expect(
+        datenzeilen(datei).single.length,
+        greaterThan(kBestandCsvKopf.length - 1),
+      );
     });
   });
 

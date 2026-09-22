@@ -5,6 +5,7 @@
 /// müssen dieselbe Abbildung benutzen, und der Punkt unter den Fingern muss
 /// dort bleiben.
 library;
+
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
@@ -14,23 +15,31 @@ import 'package:fwapp/core/images/crop_render.dart';
 
 /// Bildet einen Bildpunkt so ab, wie es der Painter zeichnet — die Umkehrung
 /// dessen, was [imagePointAt] leistet.
-Offset _project(Offset p, Offset center, Offset offset, double scale,
-    double rotation) {
+Offset _project(
+  Offset p,
+  Offset center,
+  Offset offset,
+  double scale,
+  double rotation,
+) {
   final c = math.cos(rotation);
   final s = math.sin(rotation);
   return center +
       offset +
-      Offset(
-        scale * (p.dx * c - p.dy * s),
-        scale * (p.dx * s + p.dy * c),
-      );
+      Offset(scale * (p.dx * c - p.dy * s), scale * (p.dx * s + p.dy * c));
 }
 
 void _expectNear(Offset actual, Offset expected, {double tolerance = 0.001}) {
-  expect((actual.dx - expected.dx).abs(), lessThan(tolerance),
-      reason: 'dx: $actual statt $expected');
-  expect((actual.dy - expected.dy).abs(), lessThan(tolerance),
-      reason: 'dy: $actual statt $expected');
+  expect(
+    (actual.dx - expected.dx).abs(),
+    lessThan(tolerance),
+    reason: 'dx: $actual statt $expected',
+  );
+  expect(
+    (actual.dy - expected.dy).abs(),
+    lessThan(tolerance),
+    reason: 'dy: $actual statt $expected',
+  );
 }
 
 void main() {
@@ -85,7 +94,9 @@ void main() {
       );
 
       _expectNear(
-          _project(imagePoint, center, offset, newScale, rotation), finger);
+        _project(imagePoint, center, offset, newScale, rotation),
+        finger,
+      );
     });
 
     test('hält ihn auch beim gleichzeitigen Drehen', () {
@@ -103,7 +114,9 @@ void main() {
       );
 
       _expectNear(
-          _project(imagePoint, center, offset, newScale, rotation), finger);
+        _project(imagePoint, center, offset, newScale, rotation),
+        finger,
+      );
     });
 
     test('reines Verschieben verschiebt genau um die Fingerstrecke', () {
@@ -167,16 +180,19 @@ void main() {
     Future<ui.Image> solid(int w, int h, Color color) async {
       final recorder = ui.PictureRecorder();
       final canvas = ui.Canvas(recorder);
-      canvas.drawRect(ui.Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()),
-          ui.Paint()..color = color);
+      canvas.drawRect(
+        ui.Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()),
+        ui.Paint()..color = color,
+      );
       final picture = recorder.endRecording();
       final image = await picture.toImage(w, h);
       picture.dispose();
       return image;
     }
 
-    testWidgets('liefert ein Bild in der Zielgröße des Rahmens',
-        (tester) async {
+    testWidgets('liefert ein Bild in der Zielgröße des Rahmens', (
+      tester,
+    ) async {
       // runAsync: toImage() ist echte GPU-/Engine-Arbeit und läuft nicht in
       // der simulierten Testzeit ab.
       await tester.runAsync(() async {
@@ -197,8 +213,9 @@ void main() {
       });
     });
 
-    testWidgets('schneidet den sichtbaren Ausschnitt aus, nicht das Original',
-        (tester) async {
+    testWidgets('schneidet den sichtbaren Ausschnitt aus, nicht das Original', (
+      tester,
+    ) async {
       await tester.runAsync(() async {
         final image = await solid(100, 100, const Color(0xFFFF0000));
         final bytes = await renderCrop(
@@ -214,9 +231,8 @@ void main() {
         final decoded = await decodeUiImage(bytes);
         final data = await decoded.toByteData();
         // Mitte muss die Bildfarbe tragen, nicht den schwarzen Grund.
-        final middle = ((decoded.height ~/ 2) * decoded.width +
-                decoded.width ~/ 2) *
-            4;
+        final middle =
+            ((decoded.height ~/ 2) * decoded.width + decoded.width ~/ 2) * 4;
         expect(data!.getUint8(middle), greaterThan(200), reason: 'Rot-Kanal');
         expect(data.getUint8(middle + 1), lessThan(60), reason: 'Grün-Kanal');
         decoded.dispose();

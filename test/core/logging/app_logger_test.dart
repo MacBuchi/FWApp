@@ -18,14 +18,19 @@ void main() {
     // Trägt appLogFilter das Debug-Level der App, ist es derselbe Filter –
     // ein loser ProductionFilter fiele auf Logger.level (trace) zurück.
     expect(appLog, isA<Logger>()); // erzwingt die lazy Initialisierung
-    expect(appLogFilter.level, Level.debug,
-        reason: 'flutter test läuft im Debug-Modus');
+    expect(
+      appLogFilter.level,
+      Level.debug,
+      reason: 'flutter test läuft im Debug-Modus',
+    );
   });
 
-  test('appLogFilter ist ein ProductionFilter – sonst schweigt das Release',
-      () {
-    expect(appLogFilter, isA<ProductionFilter>());
-  });
+  test(
+    'appLogFilter ist ein ProductionFilter – sonst schweigt das Release',
+    () {
+      expect(appLogFilter, isA<ProductionFilter>());
+    },
+  );
 
   test('ProductionFilter wertet das Level ohne assert aus', () {
     final filter = ProductionFilter()..level = Level.info;

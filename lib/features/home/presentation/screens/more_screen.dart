@@ -1,6 +1,7 @@
 /// more_screen.dart – "Mehr" tab: lookup, settings, and (admins only) the
 /// Verwaltung section. Normal members never see editing entry points.
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -33,7 +34,8 @@ Future<void> _bestandTeilen(BuildContext context, WidgetRef ref) async {
     );
   } catch (e) {
     messenger.showSnackBar(
-        SnackBar(content: Text('Export fehlgeschlagen: $e')));
+      SnackBar(content: Text('Export fehlgeschlagen: $e')),
+    );
   }
 }
 
@@ -44,12 +46,13 @@ class MoreScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final canEdit = ref.watch(canEditProvider);
     // Feedback landet in Supabase — braucht Server + Login.
-    final showFeedback = ref.watch(supabaseReadyProvider) &&
+    final showFeedback =
+        ref.watch(supabaseReadyProvider) &&
         ref.watch(sessionStreamProvider).value != null;
     // Nutzerverwaltung: nur echter Admin UND verbundener Server (im reinen
     // Lokalmodus gibt es keine zentralen Konten).
-    final showUserManagement = ref.watch(isAdminProvider) &&
-        ref.watch(supabaseReadyProvider);
+    final showUserManagement =
+        ref.watch(isAdminProvider) && ref.watch(supabaseReadyProvider);
     // Abteilung & Gesamtwehr (#57 Phase 3): auch der Gerätewart kommt hier
     // rein — er darf einen Anschluss beantragen, nur nicht entscheiden.
     final showGesamtwehr = canEdit && ref.watch(supabaseReadyProvider);
@@ -79,8 +82,9 @@ class MoreScreen extends ConsumerWidget {
                 ListTile(
                   leading: const Icon(Icons.image_search),
                   title: const Text('Bildbibliothek'),
-                  subtitle:
-                      const Text('Symbolbilder aller Normgeräte durchsuchen'),
+                  subtitle: const Text(
+                    'Symbolbilder aller Normgeräte durchsuchen',
+                  ),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.push('/image-library'),
                 ),
@@ -103,8 +107,9 @@ class MoreScreen extends ConsumerWidget {
                   ListTile(
                     leading: const Icon(Icons.lightbulb_outline),
                     title: const Text('Feedback senden'),
-                    subtitle:
-                        const Text('Wunsch oder Fehler an den Entwickler'),
+                    subtitle: const Text(
+                      'Wunsch oder Fehler an den Entwickler',
+                    ),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => showFeedbackDialog(context, ref),
                   ),
@@ -120,8 +125,7 @@ class MoreScreen extends ConsumerWidget {
                   ListTile(
                     leading: const Icon(Icons.fact_check),
                     title: const Text('Prüftermine'),
-                    subtitle:
-                        const Text('Fällige Prüfungen und Ablaufdaten'),
+                    subtitle: const Text('Fällige Prüfungen und Ablaufdaten'),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => context.push('/inspections'),
                   ),
@@ -147,7 +151,8 @@ class MoreScreen extends ConsumerWidget {
                     leading: const Icon(Icons.download),
                     title: const Text('Bestand exportieren'),
                     subtitle: const Text(
-                        'CSV zum Archivieren oder für andere Programme'),
+                      'CSV zum Archivieren oder für andere Programme',
+                    ),
                     onTap: () => _bestandTeilen(context, ref),
                   ),
                   if (showUserManagement) ...[
@@ -156,7 +161,8 @@ class MoreScreen extends ConsumerWidget {
                       leading: const Icon(Icons.manage_accounts),
                       title: const Text('Nutzerverwaltung'),
                       subtitle: const Text(
-                          'Einladen, Konten anlegen, Passwörter zurücksetzen'),
+                        'Einladen, Konten anlegen, Passwörter zurücksetzen',
+                      ),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => context.push('/user-management'),
                     ),
@@ -167,7 +173,8 @@ class MoreScreen extends ConsumerWidget {
                       leading: const Icon(Icons.account_tree),
                       title: const Text('Abteilung & Gesamtwehr'),
                       subtitle: const Text(
-                          'Abteilungen anlegen und verbinden (#57)'),
+                        'Abteilungen anlegen und verbinden (#57)',
+                      ),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => context.push('/gesamtwehr'),
                     ),
@@ -175,11 +182,14 @@ class MoreScreen extends ConsumerWidget {
                   if (dirty) ...[
                     const Divider(indent: 16, endIndent: 16),
                     ListTile(
-                      leading: Icon(Icons.cloud_upload,
-                          color: Colors.orange.shade800),
+                      leading: Icon(
+                        Icons.cloud_upload,
+                        color: Colors.orange.shade800,
+                      ),
                       title: const Text('Unveröffentlichte Änderungen'),
                       subtitle: const Text(
-                          'In den Einstellungen veröffentlichen'),
+                        'In den Einstellungen veröffentlichen',
+                      ),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => context.push('/settings'),
                     ),
@@ -200,12 +210,15 @@ class _Section extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.fromLTRB(8, 16, 8, 6),
-        child: Text(title,
-            style: TextStyle(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.w700,
-                fontSize: 12,
-                letterSpacing: 0.4)),
-      );
+    padding: const EdgeInsets.fromLTRB(8, 16, 8, 6),
+    child: Text(
+      title,
+      style: TextStyle(
+        color: Theme.of(context).colorScheme.primary,
+        fontWeight: FontWeight.w700,
+        fontSize: 12,
+        letterSpacing: 0.4,
+      ),
+    ),
+  );
 }

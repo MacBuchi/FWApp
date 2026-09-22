@@ -28,13 +28,20 @@ void main() {
     db = createTestDatabase();
     dienst = TagDienst(db);
     final geraet = await db.equipmentDao.insertEquipment(
-        EquipmentItemsCompanion.insert(name: 'Pressluftatmer'));
+      EquipmentItemsCompanion.insert(name: 'Pressluftatmer'),
+    );
     einheitA = await db.inspectionDao.insertInstance(
-        EquipmentInstancesCompanion.insert(
-            equipmentId: geraet, identifier: const Value('Flasche 3')));
+      EquipmentInstancesCompanion.insert(
+        equipmentId: geraet,
+        identifier: const Value('Flasche 3'),
+      ),
+    );
     einheitB = await db.inspectionDao.insertInstance(
-        EquipmentInstancesCompanion.insert(
-            equipmentId: geraet, identifier: const Value('Flasche 4')));
+      EquipmentInstancesCompanion.insert(
+        equipmentId: geraet,
+        identifier: const Value('Flasche 4'),
+      ),
+    );
   });
 
   tearDown(() => db.close());
@@ -42,16 +49,22 @@ void main() {
   test('ein neuer Code wartet aufs Hochladen', () async {
     final code = await dienst.vergebeCode(einheitA);
     final tag = await db.tagDao.findByCode(code);
-    expect(tag!.dirty, isTrue,
-        reason: 'Sonst bliebe der Aufkleber für immer auf diesem Gerät.');
+    expect(
+      tag!.dirty,
+      isTrue,
+      reason: 'Sonst bliebe der Aufkleber für immer auf diesem Gerät.',
+    );
   });
 
   test('ein nie geschobener Code fällt beim Entfernen ganz weg', () async {
     final code = await dienst.vergebeCode(einheitA);
     await dienst.entferne((await db.tagDao.findByCode(code))!);
 
-    expect(await db.tagDao.findByCodeAuchEntfernt(code), isNull,
-        reason: 'Er stand nie oben — es gibt nichts mitzuteilen.');
+    expect(
+      await db.tagDao.findByCodeAuchEntfernt(code),
+      isNull,
+      reason: 'Er stand nie oben — es gibt nichts mitzuteilen.',
+    );
     expect(await db.tagDao.offeneTags(), isEmpty);
   });
 
@@ -77,8 +90,11 @@ void main() {
     await _alsGeschoben(db, code);
     await dienst.entferne((await db.tagDao.findByCode(code))!);
 
-    expect(await dienst.schlageNach(code), isNull,
-        reason: 'Der Aufkleber ist ab — er darf nicht mehr abhaken.');
+    expect(
+      await dienst.schlageNach(code),
+      isNull,
+      reason: 'Der Aufkleber ist ab — er darf nicht mehr abhaken.',
+    );
   });
 
   test('ein Grabstein belegt den Code weiterhin gegen Neuvergabe', () async {
@@ -86,9 +102,13 @@ void main() {
     await _alsGeschoben(db, code);
     await dienst.entferne((await db.tagDao.findByCode(code))!);
 
-    expect(await db.tagDao.alleCodes(), contains(code),
-        reason: 'Solange er oben steht, würde ein zweiter Griff darauf den '
-            'fremden Eintrag überschreiben.');
+    expect(
+      await db.tagDao.alleCodes(),
+      contains(code),
+      reason:
+          'Solange er oben steht, würde ein zweiter Griff darauf den '
+          'fremden Eintrag überschreiben.',
+    );
   });
 
   test('derselbe Aufkleber lässt sich sofort neu verkleben', () async {
@@ -104,9 +124,13 @@ void main() {
     final tag = await db.tagDao.findByCode(code);
     expect(tag, isNotNull, reason: 'Er klebt wieder — auf dem neuen Gerät.');
     expect(tag!.instanceId, einheitB);
-    expect(tag.deletedAt, isNull,
-        reason: 'Sonst schöbe der Abgleich die Löschung hinterher und der '
-            'frisch verklebte Code wäre oben tot.');
+    expect(
+      tag.deletedAt,
+      isNull,
+      reason:
+          'Sonst schöbe der Abgleich die Löschung hinterher und der '
+          'frisch verklebte Code wäre oben tot.',
+    );
     expect(tag.dirty, isTrue);
     // Und nur EINE Zeile, sonst bräche das Einfügen an `unique` ab.
     expect((await db.tagDao.alleCodes()).length, 1);
@@ -124,6 +148,8 @@ void main() {
 /// `TagSync.schiebe`, und dafür bräuchte es einen Server.
 Future<void> _alsGeschoben(AppDatabase db, String code) async {
   final tag = await db.tagDao.findByCode(code);
-  await db.tagDao
-      .aendere(tag!.id, const EquipmentTagsCompanion(dirty: Value(false)));
+  await db.tagDao.aendere(
+    tag!.id,
+    const EquipmentTagsCompanion(dirty: Value(false)),
+  );
 }

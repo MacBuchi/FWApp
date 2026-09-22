@@ -223,11 +223,11 @@ void main() {
     );
 
     test('Schreibrolle wird beim Namen genannt', () {
+      expect(rolle('B', mitgliedschaften: {'B': 'geraetewart'}), 'Gerätewart');
       expect(
-        rolle('B', mitgliedschaften: {'B': 'geraetewart'}),
-        'Gerätewart',
+        rolle('B', mitgliedschaften: {'B': 'admin'}),
+        'Abteilungskommandant',
       );
-      expect(rolle('B', mitgliedschaften: {'B': 'admin'}), 'Abteilungskommandant');
     });
 
     test('member und Fremd-Abteilung ergeben Lesezugriff (null)', () {
@@ -279,13 +279,15 @@ void main() {
       temporaereRechte: temporaer,
     );
 
-    test('ein befristetes Recht ergibt eine Schreibrolle — sichtbar befristet',
-        () {
-      expect(
-        rolle('A', mitgliedschaften: {'A': 'member'}, temporaer: {'A'}),
-        'Gerätewart (befristet)',
-      );
-    });
+    test(
+      'ein befristetes Recht ergibt eine Schreibrolle — sichtbar befristet',
+      () {
+        expect(
+          rolle('A', mitgliedschaften: {'A': 'member'}, temporaer: {'A'}),
+          'Gerätewart (befristet)',
+        );
+      },
+    );
 
     test('eine dauerhafte Rolle gewinnt gegen die befristete Anzeige', () {
       // Sonst stünde beim Gerätewart „befristet", und er würde auf einen
@@ -332,10 +334,12 @@ void main() {
 
       test('der Feuerwehrkommandant in jeder Abteilung seiner Wehr', () {
         expect(
-          darf('B',
-              gesamtwehr: 'GW',
-              mitgliedschaften: const {},
-              kommandiert: {'GW'}),
+          darf(
+            'B',
+            gesamtwehr: 'GW',
+            mitgliedschaften: const {},
+            kommandiert: {'GW'},
+          ),
           isTrue,
         );
       });
@@ -366,10 +370,14 @@ void main() {
     });
 
     test('die Grenze liegt bei einer Stunde Restlaufzeit', () {
-      expect(tagesendeAblauf(DateTime(2026, 8, 4, 22, 59)),
-          DateTime(2026, 8, 4, 23, 59));
-      expect(tagesendeAblauf(DateTime(2026, 8, 4, 23, 0)),
-          DateTime(2026, 8, 5, 3, 0));
+      expect(
+        tagesendeAblauf(DateTime(2026, 8, 4, 22, 59)),
+        DateTime(2026, 8, 4, 23, 59),
+      );
+      expect(
+        tagesendeAblauf(DateTime(2026, 8, 4, 23, 0)),
+        DateTime(2026, 8, 5, 3, 0),
+      );
     });
 
     test('bleibt immer unter den 24 Stunden, die der Server zulässt', () {
@@ -377,8 +385,11 @@ void main() {
       for (final stunde in List.generate(24, (i) => i)) {
         final jetzt = DateTime(2026, 8, 4, stunde, 17);
         final ende = tagesendeAblauf(jetzt);
-        expect(ende.difference(jetzt).inHours, lessThan(24),
-            reason: 'um $stunde Uhr');
+        expect(
+          ende.difference(jetzt).inHours,
+          lessThan(24),
+          reason: 'um $stunde Uhr',
+        );
         expect(ende.isAfter(jetzt), isTrue, reason: 'um $stunde Uhr');
       }
     });
@@ -415,20 +426,24 @@ void main() {
 
     test('der Feuerwehrkommandant darf jede Abteilung seiner Wehr', () {
       expect(
-        darf('B',
-            gesamtwehr: 'GW',
-            mitgliedschaften: const {},
-            kommandiert: {'GW'}),
+        darf(
+          'B',
+          gesamtwehr: 'GW',
+          mitgliedschaften: const {},
+          kommandiert: {'GW'},
+        ),
         isTrue,
       );
     });
 
     test('seine Stellung trägt nicht in eine fremde Gesamtwehr', () {
       expect(
-        darf('B',
-            gesamtwehr: 'GW',
-            mitgliedschaften: const {},
-            kommandiert: {'ANDERE'}),
+        darf(
+          'B',
+          gesamtwehr: 'GW',
+          mitgliedschaften: const {},
+          kommandiert: {'ANDERE'},
+        ),
         isFalse,
       );
     });
@@ -446,10 +461,14 @@ void main() {
     test('ohne Gesamtwehr zählt allein die Mitgliedschaft', () {
       // Eine eigenständige Abteilung hat keinen Feuerwehrkommandanten über
       // sich — sonst käme eine frische Installation nie an ihren Namen.
-      expect(darf('A', mitgliedschaften: {'A': 'admin'}, kommandiert: {'GW'}),
-          isTrue);
-      expect(darf('A', mitgliedschaften: {'A': 'member'}, kommandiert: {'GW'}),
-          isFalse);
+      expect(
+        darf('A', mitgliedschaften: {'A': 'admin'}, kommandiert: {'GW'}),
+        isTrue,
+      );
+      expect(
+        darf('A', mitgliedschaften: {'A': 'member'}, kommandiert: {'GW'}),
+        isFalse,
+      );
     });
   });
 }

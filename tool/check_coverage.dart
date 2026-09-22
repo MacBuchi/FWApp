@@ -3,6 +3,7 @@
 /// and UI (presentation/). Usage:
 ///   dart run tool/check_coverage.dart [--min 65] [--lcov coverage/lcov.info]
 library;
+
 import 'dart:io';
 
 void main(List<String> args) {
@@ -15,8 +16,10 @@ void main(List<String> args) {
 
   final lcov = File(lcovPath);
   if (!lcov.existsSync()) {
-    stderr.writeln('FEHLER: $lcovPath nicht gefunden. '
-        'Vorher `flutter test --coverage` ausführen.');
+    stderr.writeln(
+      'FEHLER: $lcovPath nicht gefunden. '
+      'Vorher `flutter test --coverage` ausführen.',
+    );
     exit(2);
   }
 
@@ -59,12 +62,15 @@ void main(List<String> args) {
   }
 
   final percent = 100.0 * hit / found;
-  final sorted = perFile.entries.toList()
-    ..sort((a, b) =>
-        (a.value.$1 / a.value.$2).compareTo(b.value.$1 / b.value.$2));
+  final sorted =
+      perFile.entries.toList()..sort(
+        (a, b) => (a.value.$1 / a.value.$2).compareTo(b.value.$1 / b.value.$2),
+      );
 
-  stdout.writeln('Logik-Schichten-Coverage: $hit/$found Zeilen = '
-      '${percent.toStringAsFixed(1)}% (Schwellwert: $minPercent%)');
+  stdout.writeln(
+    'Logik-Schichten-Coverage: $hit/$found Zeilen = '
+    '${percent.toStringAsFixed(1)}% (Schwellwert: $minPercent%)',
+  );
   stdout.writeln('Schwächste Dateien:');
   for (final e in sorted.take(5)) {
     final p = 100.0 * e.value.$1 / e.value.$2;
@@ -72,8 +78,10 @@ void main(List<String> args) {
   }
 
   if (percent < minPercent) {
-    stderr.writeln('FEHLGESCHLAGEN: Coverage ${percent.toStringAsFixed(1)}% '
-        'liegt unter dem Schwellwert von $minPercent%.');
+    stderr.writeln(
+      'FEHLGESCHLAGEN: Coverage ${percent.toStringAsFixed(1)}% '
+      'liegt unter dem Schwellwert von $minPercent%.',
+    );
     exit(1);
   }
   stdout.writeln('OK.');

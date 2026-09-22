@@ -66,11 +66,11 @@ class GesamtwehrBranding {
       (titel != null && titel!.isNotEmpty) ? titel : wehrName;
 
   Map<String, dynamic> toJson() => {
-        'gesamtwehr_id': gesamtwehrId,
-        'title': titel,
-        'welcome_text': willkommenstext,
-        'image_path': bildPfad,
-      };
+    'gesamtwehr_id': gesamtwehrId,
+    'title': titel,
+    'welcome_text': willkommenstext,
+    'image_path': bildPfad,
+  };
 
   static GesamtwehrBranding? fromJson(Map<String, dynamic> json) {
     final id = json['gesamtwehr_id'] as String?;
@@ -87,8 +87,9 @@ class GesamtwehrBranding {
 /// Gesamtwehr der aktuell angezeigten Abteilung. Rein abgeleitet — die Liste
 /// aus [abteilungenProvider] trägt die Zuordnung bereits, eine eigene Abfrage
 /// wäre eine zweite Wahrheit.
-final aktuelleGesamtwehrProvider =
-    FutureProvider<GesamtwehrBezug?>((ref) async {
+final aktuelleGesamtwehrProvider = FutureProvider<GesamtwehrBezug?>((
+  ref,
+) async {
   final gewaehlt = ref.watch(selectedAbteilungIdProvider);
   final abteilung = gewaehlt ?? await ref.watch(myAbteilungIdProvider.future);
   if (abteilung == null) return null;
@@ -116,8 +117,8 @@ final darfBrandingPflegenProvider = FutureProvider<bool>((ref) async {
 
 final gesamtwehrBrandingProvider =
     AsyncNotifierProvider<GesamtwehrBrandingNotifier, GesamtwehrBranding?>(
-  GesamtwehrBrandingNotifier.new,
-);
+      GesamtwehrBrandingNotifier.new,
+    );
 
 class GesamtwehrBrandingNotifier extends AsyncNotifier<GesamtwehrBranding?> {
   @override
@@ -141,14 +142,16 @@ class GesamtwehrBrandingNotifier extends AsyncNotifier<GesamtwehrBranding?> {
     final session = ref.read(sessionStreamProvider).value;
     if (client == null || session == null) return;
     try {
-      final row = await client
-          .from('gesamtwehr_branding')
-          .select('gesamtwehr_id, title, welcome_text, image_path')
-          .eq('gesamtwehr_id', gesamtwehrId)
-          .maybeSingle();
-      final frisch = row == null
-          ? GesamtwehrBranding(gesamtwehrId: gesamtwehrId)
-          : GesamtwehrBranding.fromJson(row);
+      final row =
+          await client
+              .from('gesamtwehr_branding')
+              .select('gesamtwehr_id, title, welcome_text, image_path')
+              .eq('gesamtwehr_id', gesamtwehrId)
+              .maybeSingle();
+      final frisch =
+          row == null
+              ? GesamtwehrBranding(gesamtwehrId: gesamtwehrId)
+              : GesamtwehrBranding.fromJson(row);
       await _inSpeicher(gesamtwehrId, frisch);
       if (!entsorgt()) state = AsyncData(frisch);
     } catch (e) {
@@ -164,7 +167,8 @@ class GesamtwehrBrandingNotifier extends AsyncNotifier<GesamtwehrBranding?> {
       final roh = prefs.getString(brandingPrefsKey(gesamtwehrId));
       if (roh == null) return null;
       return GesamtwehrBranding.fromJson(
-          jsonDecode(roh) as Map<String, dynamic>);
+        jsonDecode(roh) as Map<String, dynamic>,
+      );
     } catch (e) {
       appLog.w('Zwischengespeicherter Kopfbereich unlesbar', error: e);
       return null;
@@ -172,7 +176,9 @@ class GesamtwehrBrandingNotifier extends AsyncNotifier<GesamtwehrBranding?> {
   }
 
   Future<void> _inSpeicher(
-      String gesamtwehrId, GesamtwehrBranding? branding) async {
+    String gesamtwehrId,
+    GesamtwehrBranding? branding,
+  ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final key = brandingPrefsKey(gesamtwehrId);
@@ -205,12 +211,11 @@ class BrandingService {
     required String gesamtwehrId,
     required Uint8List bytes,
     String? bisher,
-  }) =>
-      ImageSyncService(_client).uploadBrandingImage(
-        gesamtwehrId: gesamtwehrId,
-        bytes: bytes,
-        previousPath: bisher,
-      );
+  }) => ImageSyncService(_client).uploadBrandingImage(
+    gesamtwehrId: gesamtwehrId,
+    bytes: bytes,
+    previousPath: bisher,
+  );
 
   /// ⚠️ Schreibt IMMER alle drei Felder. `null` heißt „gelöscht", nicht
   /// „unverändert" — die Maske schickt deshalb stets ihren vollen Stand. Beim
@@ -222,12 +227,15 @@ class BrandingService {
     String? willkommenstext,
     String? bildPfad,
   }) async {
-    await _client.rpc('set_gesamtwehr_branding', params: {
-      'gw': gesamtwehrId,
-      'neuer_titel': titel,
-      'neuer_text': willkommenstext,
-      'neues_bild': bildPfad,
-    });
+    await _client.rpc(
+      'set_gesamtwehr_branding',
+      params: {
+        'gw': gesamtwehrId,
+        'neuer_titel': titel,
+        'neuer_text': willkommenstext,
+        'neues_bild': bildPfad,
+      },
+    );
     _ref.invalidate(gesamtwehrBrandingProvider);
   }
 }

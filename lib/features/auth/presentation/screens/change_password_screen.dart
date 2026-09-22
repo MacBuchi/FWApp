@@ -59,8 +59,11 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
       // Der Guard hört auf diesen Provider und gibt danach den Weg frei.
       ref.invalidate(mustChangePasswordProvider);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Passwort geändert – Zugangszettel wegwerfen.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Passwort geändert – Zugangszettel wegwerfen.'),
+        ),
+      );
     } on AuthException catch (e) {
       if (!mounted) return;
       setState(() => _error = authErrorText(e.message, code: e.code));
@@ -68,8 +71,12 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
       // Kein Passwort ins Protokoll — der Ring-Puffer geht in Issues.
       appLog.w('Passwortwechsel fehlgeschlagen', error: e, stackTrace: s);
       if (!mounted) return;
-      setState(() => _error = 'Der Server ist nicht erreichbar. '
-          'Bitte Internetverbindung prüfen.');
+      setState(
+        () =>
+            _error =
+                'Der Server ist nicht erreichbar. '
+                'Bitte Internetverbindung prüfen.',
+      );
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -121,30 +128,35 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                       if (_error != null)
                         Padding(
                           padding: const EdgeInsets.only(top: 12),
-                          child: Text(_error!,
-                              style:
-                                  TextStyle(color: theme.colorScheme.error)),
+                          child: Text(
+                            _error!,
+                            style: TextStyle(color: theme.colorScheme.error),
+                          ),
                         ),
                       const SizedBox(height: 16),
                       FilledButton(
                         onPressed: _busy ? null : _save,
-                        child: _busy
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2))
-                            : const Text('Passwort setzen'),
+                        child:
+                            _busy
+                                ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                                : const Text('Passwort setzen'),
                       ),
                       TextButton(
-                        onPressed: _busy
-                            ? null
-                            : () async {
-                                await ref
-                                    .read(supabaseClientProvider)
-                                    ?.auth
-                                    .signOut();
-                              },
+                        onPressed:
+                            _busy
+                                ? null
+                                : () async {
+                                  await ref
+                                      .read(supabaseClientProvider)
+                                      ?.auth
+                                      .signOut();
+                                },
                         child: const Text('Abmelden'),
                       ),
                     ],

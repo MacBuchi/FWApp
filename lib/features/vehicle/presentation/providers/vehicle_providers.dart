@@ -1,5 +1,6 @@
 /// vehicle_providers.dart – Riverpod providers for the vehicle feature.
 library;
+
 import 'package:fwapp/core/database/database_providers.dart';
 import 'package:fwapp/features/vehicle/data/repositories/vehicle_repository_impl.dart';
 import 'package:fwapp/features/vehicle/domain/entities/vehicle.dart';
@@ -56,15 +57,14 @@ class VehicleFormState {
     bool? isSubmitting,
     String? error,
     bool clearError = false,
-  }) =>
-      VehicleFormState(
-        name: name ?? this.name,
-        type: type ?? this.type,
-        licensePlate: licensePlate ?? this.licensePlate,
-        imagePath: clearImage ? null : (imagePath ?? this.imagePath),
-        isSubmitting: isSubmitting ?? this.isSubmitting,
-        error: clearError ? null : (error ?? this.error),
-      );
+  }) => VehicleFormState(
+    name: name ?? this.name,
+    type: type ?? this.type,
+    licensePlate: licensePlate ?? this.licensePlate,
+    imagePath: clearImage ? null : (imagePath ?? this.imagePath),
+    isSubmitting: isSubmitting ?? this.isSubmitting,
+    error: clearError ? null : (error ?? this.error),
+  );
 }
 
 @riverpod
@@ -96,33 +96,43 @@ class VehicleFormNotifier extends _$VehicleFormNotifier {
     try {
       final repo = ref.read(vehicleRepositoryProvider);
       if (editId == null) {
-        await repo.insert(Vehicle(
-          id: 0,
-          name: state.name.trim(),
-          type: state.type.trim(),
-          licensePlate:
-              state.licensePlate.trim().isEmpty ? null : state.licensePlate.trim(),
-          imagePath: state.imagePath,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-        ));
+        await repo.insert(
+          Vehicle(
+            id: 0,
+            name: state.name.trim(),
+            type: state.type.trim(),
+            licensePlate:
+                state.licensePlate.trim().isEmpty
+                    ? null
+                    : state.licensePlate.trim(),
+            imagePath: state.imagePath,
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          ),
+        );
       } else {
         final existing = await repo.getById(editId);
         if (existing == null) return false;
-        await repo.update(existing.copyWith(
-          name: state.name.trim(),
-          type: state.type.trim(),
-          licensePlate:
-              state.licensePlate.trim().isEmpty ? null : state.licensePlate.trim(),
-          imagePath: state.imagePath,
-        ));
+        await repo.update(
+          existing.copyWith(
+            name: state.name.trim(),
+            type: state.type.trim(),
+            licensePlate:
+                state.licensePlate.trim().isEmpty
+                    ? null
+                    : state.licensePlate.trim(),
+            imagePath: state.imagePath,
+          ),
+        );
       }
       ref.invalidate(vehicleListProvider);
       ref.invalidate(vehicleListStreamProvider);
       return true;
     } catch (e) {
       state = state.copyWith(
-          isSubmitting: false, error: 'Fehler beim Speichern: $e');
+        isSubmitting: false,
+        error: 'Fehler beim Speichern: $e',
+      );
       return false;
     }
   }

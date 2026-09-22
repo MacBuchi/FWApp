@@ -1,5 +1,6 @@
 /// migration_test.dart – Verifies the v1→v2 schema migration keeps data intact.
 library;
+
 import 'package:drift/drift.dart' show Value;
 import 'package:drift_dev/api/migrations_native.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -26,18 +27,22 @@ void main() {
 
     schema.rawDatabase
       ..execute(
-          "INSERT INTO vehicles (id, name, type, created_at, updated_at) "
-          "VALUES (1, 'AB-G', 'AB-G', 0, 0)")
+        "INSERT INTO vehicles (id, name, type, created_at, updated_at) "
+        "VALUES (1, 'AB-G', 'AB-G', 0, 0)",
+      )
       ..execute(
-          "INSERT INTO compartments (id, vehicle_id, label, position, grid_col_span, updated_at) "
-          "VALUES (1, 1, 'G1', 0, 1, 0)")
+        "INSERT INTO compartments (id, vehicle_id, label, position, grid_col_span, updated_at) "
+        "VALUES (1, 1, 'G1', 0, 1, 0)",
+      )
       ..execute(
-          "INSERT INTO equipment_items (id, name, equipment_functions_json, "
-          "deployment_scenarios_json, description, is_custom, extra_attributes_json, updated_at) "
-          "VALUES (1, 'Testgerät', '[\"PSA\"]', '[]', 'Beschreibung', 0, '{}', 0)")
+        "INSERT INTO equipment_items (id, name, equipment_functions_json, "
+        "deployment_scenarios_json, description, is_custom, extra_attributes_json, updated_at) "
+        "VALUES (1, 'Testgerät', '[\"PSA\"]', '[]', 'Beschreibung', 0, '{}', 0)",
+      )
       ..execute(
-          "INSERT INTO equipment_assignments (id, compartment_id, equipment_id, quantity, updated_at) "
-          "VALUES (1, 1, 1, 2, 0)");
+        "INSERT INTO equipment_assignments (id, compartment_id, equipment_id, quantity, updated_at) "
+        "VALUES (1, 1, 1, 2, 0)",
+      );
 
     final db = AppDatabase(schema.newConnection());
     await verifier.migrateAndValidate(db, 17);
@@ -59,24 +64,27 @@ void main() {
     await db.close();
   });
 
-  test('migrates from v2 to v3 and learning progress upserts correctly',
-      () async {
-    final connection = await verifier.startAt(2);
-    final db = AppDatabase(connection);
-    await verifier.migrateAndValidate(db, 17);
+  test(
+    'migrates from v2 to v3 and learning progress upserts correctly',
+    () async {
+      final connection = await verifier.startAt(2);
+      final db = AppDatabase(connection);
+      await verifier.migrateAndValidate(db, 17);
 
-    final equipmentId = await db.equipmentDao
-        .insertEquipment(EquipmentItemsCompanion.insert(name: 'Spineboard'));
-    await db.learningDao.recordAnswer(equipmentId, correct: true);
-    await db.learningDao.recordAnswer(equipmentId, correct: true);
-    await db.learningDao.recordAnswer(equipmentId, correct: false);
+      final equipmentId = await db.equipmentDao.insertEquipment(
+        EquipmentItemsCompanion.insert(name: 'Spineboard'),
+      );
+      await db.learningDao.recordAnswer(equipmentId, correct: true);
+      await db.learningDao.recordAnswer(equipmentId, correct: true);
+      await db.learningDao.recordAnswer(equipmentId, correct: false);
 
-    final progress = await db.learningDao.watchAll().first;
-    expect(progress.single.correctCount, 2);
-    expect(progress.single.wrongCount, 1);
+      final progress = await db.learningDao.watchAll().first;
+      expect(progress.single.correctCount, 2);
+      expect(progress.single.wrongCount, 1);
 
-    await db.close();
-  });
+      await db.close();
+    },
+  );
 
   test('new v2 tables are usable after migration', () async {
     final connection = await verifier.startAt(1);
@@ -84,9 +92,11 @@ void main() {
     await verifier.migrateAndValidate(db, 17);
 
     final vehicleId = await db.vehicleDao.insertVehicle(
-        VehiclesCompanion.insert(name: 'LF 10', type: 'LF'));
-    final equipmentId = await db.equipmentDao
-        .insertEquipment(EquipmentItemsCompanion.insert(name: 'Pressluftatmer'));
+      VehiclesCompanion.insert(name: 'LF 10', type: 'LF'),
+    );
+    final equipmentId = await db.equipmentDao.insertEquipment(
+      EquipmentItemsCompanion.insert(name: 'Pressluftatmer'),
+    );
 
     final instanceId = await db.inspectionDao.insertInstance(
       EquipmentInstancesCompanion.insert(
@@ -117,67 +127,76 @@ void main() {
     await db.close();
   });
 
-  test('v4→v5: bestehende Geräte überstehen den Typ-Anschluss unverbunden',
-      () async {
-    // Nutzerkonzept Stufe ② (Issue #99). Der Anschluss an den geteilten
-    // Typ-Bestand darf einen Bestandsdatensatz NICHT verändern: Er läuft
-    // unverbunden weiter und findet seinen Typ beim ersten Typ-Sync. Ein
-    // Gerät im Feld ohne Gesamtwehr bleibt für immer so.
-    final schema = await verifier.schemaAt(4);
-    schema.rawDatabase.execute(
+  test(
+    'v4→v5: bestehende Geräte überstehen den Typ-Anschluss unverbunden',
+    () async {
+      // Nutzerkonzept Stufe ② (Issue #99). Der Anschluss an den geteilten
+      // Typ-Bestand darf einen Bestandsdatensatz NICHT verändern: Er läuft
+      // unverbunden weiter und findet seinen Typ beim ersten Typ-Sync. Ein
+      // Gerät im Feld ohne Gesamtwehr bleibt für immer so.
+      final schema = await verifier.schemaAt(4);
+      schema.rawDatabase.execute(
         "INSERT INTO equipment_items (id, name, equipment_functions_json, "
         "deployment_scenarios_json, description, is_custom, "
         "extra_attributes_json, training_questions_json, typical_use_json, "
         "updated_at) VALUES (1, 'Feuerwehraxt', '[]', '[]', 'Bestand', 0, "
-        "'{}', '[]', '[]', 0)");
+        "'{}', '[]', '[]', 0)",
+      );
 
-    final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 17);
+      final db = AppDatabase(schema.newConnection());
+      await verifier.migrateAndValidate(db, 17);
 
-    final geraet = await db.equipmentDao.getById(1);
-    expect(geraet?.name, 'Feuerwehraxt');
-    expect(geraet?.description, 'Bestand');
-    expect(geraet?.remoteTypeId, isNull);
-    expect(geraet?.typeDirty, isFalse);
+      final geraet = await db.equipmentDao.getById(1);
+      expect(geraet?.name, 'Feuerwehraxt');
+      expect(geraet?.description, 'Bestand');
+      expect(geraet?.remoteTypeId, isNull);
+      expect(geraet?.typeDirty, isFalse);
 
-    final meta = await (db.select(db.syncMeta)
-          ..where((t) => t.id.equals(1)))
-        .getSingleOrNull();
-    // Kein Fenster gezogen: Der erste Typ-Sync holt alles.
-    expect(meta?.lastTypeCursor, isNull);
+      final meta =
+          await (db.select(db.syncMeta)
+            ..where((t) => t.id.equals(1))).getSingleOrNull();
+      // Kein Fenster gezogen: Der erste Typ-Sync holt alles.
+      expect(meta?.lastTypeCursor, isNull);
 
-    await db.close();
-  });
+      await db.close();
+    },
+  );
 
-  test('v5→v6: bestehende Fächer behalten alles und bekommen KEINE Seite',
-      () async {
-    // Issue #126. Die Seite eines vorhandenen Fachs kennt die Migration
-    // nicht — sie kennt nur seinen Namen. Aus „G1" auf „Fahrerseite" zu
-    // schließen ist eine Konvention, keine Tatsache; still gesetzt wäre sie
-    // im Einsatz ein Griff ins falsche Fach. Die App schlägt sie stattdessen
-    // sichtbar vor.
-    final schema = await verifier.schemaAt(5);
-    schema.rawDatabase
-      ..execute("INSERT INTO vehicles (id, name, type, created_at, updated_at) "
-          "VALUES (1, 'HLF 20', 'HLF 20', 0, 0)")
-      ..execute("INSERT INTO compartments (id, vehicle_id, label, position, "
+  test(
+    'v5→v6: bestehende Fächer behalten alles und bekommen KEINE Seite',
+    () async {
+      // Issue #126. Die Seite eines vorhandenen Fachs kennt die Migration
+      // nicht — sie kennt nur seinen Namen. Aus „G1" auf „Fahrerseite" zu
+      // schließen ist eine Konvention, keine Tatsache; still gesetzt wäre sie
+      // im Einsatz ein Griff ins falsche Fach. Die App schlägt sie stattdessen
+      // sichtbar vor.
+      final schema = await verifier.schemaAt(5);
+      schema.rawDatabase
+        ..execute(
+          "INSERT INTO vehicles (id, name, type, created_at, updated_at) "
+          "VALUES (1, 'HLF 20', 'HLF 20', 0, 0)",
+        )
+        ..execute(
+          "INSERT INTO compartments (id, vehicle_id, label, position, "
           "grid_row, grid_col, grid_col_span, updated_at) "
-          "VALUES (1, 1, 'G1', 0, 2, 1, 3, 0)");
+          "VALUES (1, 1, 'G1', 0, 2, 1, 3, 0)",
+        );
 
-    final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 17);
+      final db = AppDatabase(schema.newConnection());
+      await verifier.migrateAndValidate(db, 17);
 
-    final fach = await db.compartmentDao.getById(1);
-    expect(fach?.label, 'G1');
-    expect(fach?.seite, isNull, reason: 'kein stiller Backfill');
-    // Die Rasterangaben sind der eigentliche Bestand dieser Tabelle — geht
-    // dabei etwas verloren, steht der halbe Beladeplan durcheinander.
-    expect(fach?.gridRow, 2);
-    expect(fach?.gridCol, 1);
-    expect(fach?.gridColSpan, 3);
+      final fach = await db.compartmentDao.getById(1);
+      expect(fach?.label, 'G1');
+      expect(fach?.seite, isNull, reason: 'kein stiller Backfill');
+      // Die Rasterangaben sind der eigentliche Bestand dieser Tabelle — geht
+      // dabei etwas verloren, steht der halbe Beladeplan durcheinander.
+      expect(fach?.gridRow, 2);
+      expect(fach?.gridCol, 1);
+      expect(fach?.gridColSpan, 3);
 
-    await db.close();
-  });
+      await db.close();
+    },
+  );
 
   test('v6→v7: bestehende Fächer behalten die Seite und bekommen KEINE '
       'Längsposition', () async {
@@ -186,11 +205,15 @@ void main() {
     // setzt nichts; die App schlägt vor, ein Mensch bestätigt.
     final schema = await verifier.schemaAt(6);
     schema.rawDatabase
-      ..execute("INSERT INTO vehicles (id, name, type, created_at, updated_at) "
-          "VALUES (1, 'HLF 20', 'HLF 20', 0, 0)")
-      ..execute("INSERT INTO compartments (id, vehicle_id, label, position, "
-          "grid_col_span, seite, updated_at) "
-          "VALUES (1, 1, 'G1', 0, 1, 'fahrerseite', 0)");
+      ..execute(
+        "INSERT INTO vehicles (id, name, type, created_at, updated_at) "
+        "VALUES (1, 'HLF 20', 'HLF 20', 0, 0)",
+      )
+      ..execute(
+        "INSERT INTO compartments (id, vehicle_id, label, position, "
+        "grid_col_span, seite, updated_at) "
+        "VALUES (1, 1, 'G1', 0, 1, 'fahrerseite', 0)",
+      );
 
     final db = AppDatabase(schema.newConnection());
     await verifier.migrateAndValidate(db, 17);
@@ -212,11 +235,15 @@ void main() {
     // ihren eigenen Sync, nicht aus Altbestand.
     final schema = await verifier.schemaAt(7);
     schema.rawDatabase
-      ..execute("INSERT INTO vehicles (id, name, type, created_at, updated_at) "
-          "VALUES (1, 'HLF 20', 'HLF 20', 0, 0)")
-      ..execute("INSERT INTO compartments (id, vehicle_id, label, position, "
-          "grid_col_span, seite, laengsposition, updated_at) "
-          "VALUES (1, 1, 'G1', 0, 1, 'fahrerseite', 'vorne', 0)");
+      ..execute(
+        "INSERT INTO vehicles (id, name, type, created_at, updated_at) "
+        "VALUES (1, 'HLF 20', 'HLF 20', 0, 0)",
+      )
+      ..execute(
+        "INSERT INTO compartments (id, vehicle_id, label, position, "
+        "grid_col_span, seite, laengsposition, updated_at) "
+        "VALUES (1, 1, 'G1', 0, 1, 'fahrerseite', 'vorne', 0)",
+      );
 
     final db = AppDatabase(schema.newConnection());
     await verifier.migrateAndValidate(db, 17);
@@ -229,8 +256,12 @@ void main() {
 
     expect(await db.attachmentDao.getAll(), isEmpty);
     // Und sie ist benutzbar, nicht nur vorhanden.
-    await db.attachmentDao.insertAttachment(VehicleAttachmentsCompanion.insert(
-        vehicleId: 1, title: 'Betriebsanleitung'));
+    await db.attachmentDao.insertAttachment(
+      VehicleAttachmentsCompanion.insert(
+        vehicleId: 1,
+        title: 'Betriebsanleitung',
+      ),
+    );
     expect(await db.attachmentDao.getByVehicle(1), hasLength(1));
 
     await db.close();
@@ -242,20 +273,23 @@ void main() {
     // einer Migration fest und ließe sich nie korrigieren.
     final schema = await verifier.schemaAt(8);
     schema.rawDatabase.execute(
-        "INSERT INTO vehicles (id, name, type, created_at, updated_at) "
-        "VALUES (1, 'HLF 20', 'HLF 20', 0, 0)");
+      "INSERT INTO vehicles (id, name, type, created_at, updated_at) "
+      "VALUES (1, 'HLF 20', 'HLF 20', 0, 0)",
+    );
 
     final db = AppDatabase(schema.newConnection());
     await verifier.migrateAndValidate(db, 17);
 
     expect(await db.wissenDao.getAll(), isEmpty);
-    await db.wissenDao.insertFrage(WissensfragenCompanion.insert(
-      gebiet: 'geraetekunde',
-      frage: 'Wie lang ist ein C-Schlauch?',
-      antwortenJson: const Value('["15 m","20 m"]'),
-      richtigeJson: const Value('[0]'),
-      stand: const Value('freigegeben'),
-    ));
+    await db.wissenDao.insertFrage(
+      WissensfragenCompanion.insert(
+        gebiet: 'geraetekunde',
+        frage: 'Wie lang ist ein C-Schlauch?',
+        antwortenJson: const Value('["15 m","20 m"]'),
+        richtigeJson: const Value('[0]'),
+        stand: const Value('freigegeben'),
+      ),
+    );
     expect(await db.wissenDao.getSpielbare(), hasLength(1));
     // Das Fahrzeug von vorher steht unangetastet da.
     expect((await db.vehicleDao.getById(1))?.name, 'HLF 20');
@@ -269,15 +303,18 @@ void main() {
     // und niemand merkt es, weil das oft zufällig stimmt.
     final schema = await verifier.schemaAt(9);
     schema.rawDatabase
-      ..execute("INSERT INTO wissensfragen (id, gebiet, frage, "
-          "antworten_json, richtig, herkunft, stand, dirty, updated_at) "
-          "VALUES (1, 'geraetekunde', 'Wie lang ist ein C-Schlauch?', "
-          "'[\"15 m\",\"20 m\",\"30 m\"]', 2, 'eigen', 'freigegeben', 0, 0)")
-      ..execute("INSERT INTO wissensfragen (id, gebiet, frage, "
-          "antworten_json, richtig, herkunft, stand, dirty, updated_at) "
-          "VALUES (2, 'klischee', 'Was ist heilig?', "
-          "'[\"Kaffee\",\"Spind\"]', 0, 'mitgeliefert', 'freigegeben', 0, 0)")
-      ;
+      ..execute(
+        "INSERT INTO wissensfragen (id, gebiet, frage, "
+        "antworten_json, richtig, herkunft, stand, dirty, updated_at) "
+        "VALUES (1, 'geraetekunde', 'Wie lang ist ein C-Schlauch?', "
+        "'[\"15 m\",\"20 m\",\"30 m\"]', 2, 'eigen', 'freigegeben', 0, 0)",
+      )
+      ..execute(
+        "INSERT INTO wissensfragen (id, gebiet, frage, "
+        "antworten_json, richtig, herkunft, stand, dirty, updated_at) "
+        "VALUES (2, 'klischee', 'Was ist heilig?', "
+        "'[\"Kaffee\",\"Spind\"]', 0, 'mitgeliefert', 'freigegeben', 0, 0)",
+      );
 
     final db = AppDatabase(schema.newConnection());
     await verifier.migrateAndValidate(db, 17);
@@ -288,8 +325,10 @@ void main() {
     expect(fragen.firstWhere((f) => f.id == 1).richtigeJson, '[2]');
     expect(fragen.firstWhere((f) => f.id == 2).richtigeJson, '[0]');
     // Der übrige Bestand ist unangetastet.
-    expect(fragen.firstWhere((f) => f.id == 1).frage,
-        'Wie lang ist ein C-Schlauch?');
+    expect(
+      fragen.firstWhere((f) => f.id == 1).frage,
+      'Wie lang ist ein C-Schlauch?',
+    );
     expect(fragen.firstWhere((f) => f.id == 2).herkunft, 'mitgeliefert');
     // Die neuen Felder stehen leer bereit.
     expect(fragen.first.quelleWerk, isNull);
@@ -305,11 +344,12 @@ void main() {
     // aktualisiert hat.
     final schema = await verifier.schemaAt(10);
     schema.rawDatabase.execute(
-        "INSERT INTO wissensfragen (id, gebiet, frage, antworten_json, "
-        "richtige_json, herkunft, stand, geltung, dirty, updated_at) "
-        "VALUES (1, 'gefahrgut', 'Wofür steht die Ziffer 3?', "
-        "'[\"Entzündbarkeit\",\"Ätzwirkung\"]', '[0]', 'eigen', "
-        "'freigegeben', 'bund', 0, 0)");
+      "INSERT INTO wissensfragen (id, gebiet, frage, antworten_json, "
+      "richtige_json, herkunft, stand, geltung, dirty, updated_at) "
+      "VALUES (1, 'gefahrgut', 'Wofür steht die Ziffer 3?', "
+      "'[\"Entzündbarkeit\",\"Ätzwirkung\"]', '[0]', 'eigen', "
+      "'freigegeben', 'bund', 0, 0)",
+    );
 
     final db = AppDatabase(schema.newConnection());
     await verifier.migrateAndValidate(db, 17);
@@ -322,121 +362,161 @@ void main() {
     await db.close();
   });
 
-  test('v11→v12: die Fragen bleiben, nichts ist abgeschaltet, keine Hinweise',
-      () async {
-    // Der Ausgangszustand ist die halbe Zusicherung: Wer aktualisiert, darf
-    // nicht plötzlich ein abgeschaltetes Gebiet vorfinden. Vor v12 gab es
-    // die Entscheidung nicht — „alles wird abgefragt" ist deshalb der
-    // einzige richtige Startwert, und ein Backfill wäre hier ein Fehler.
-    final schema = await verifier.schemaAt(11);
-    schema.rawDatabase.execute(
+  test(
+    'v11→v12: die Fragen bleiben, nichts ist abgeschaltet, keine Hinweise',
+    () async {
+      // Der Ausgangszustand ist die halbe Zusicherung: Wer aktualisiert, darf
+      // nicht plötzlich ein abgeschaltetes Gebiet vorfinden. Vor v12 gab es
+      // die Entscheidung nicht — „alles wird abgefragt" ist deshalb der
+      // einzige richtige Startwert, und ein Backfill wäre hier ein Fehler.
+      final schema = await verifier.schemaAt(11);
+      schema.rawDatabase.execute(
         "INSERT INTO wissensfragen (id, gebiet, frage, antworten_json, "
         "richtige_json, herkunft, stand, geltung, kapitel, dirty, updated_at) "
         "VALUES (1, 'gefahrgut', 'Was zeigt der Gefahrzettel?', "
         "'[\"Explosiv\",\"Ätzend\"]', '[0]', 'eigen', 'freigegeben', "
-        "'bund', 'Gefahrzettel und Kennzeichnung', 0, 0)");
+        "'bund', 'Gefahrzettel und Kennzeichnung', 0, 0)",
+      );
 
-    final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 17);
+      final db = AppDatabase(schema.newConnection());
+      await verifier.migrateAndValidate(db, 17);
 
-    final frage = (await db.wissenDao.getAll()).single;
-    expect(frage.frage, 'Was zeigt der Gefahrzettel?');
-    expect(frage.kapitel, 'Gefahrzettel und Kennzeichnung');
+      final frage = (await db.wissenDao.getAll()).single;
+      expect(frage.frage, 'Was zeigt der Gefahrzettel?');
+      expect(frage.kapitel, 'Gefahrzettel und Kennzeichnung');
 
-    expect(await db.wissenDao.getAbgeschaltet(), isEmpty,
-        reason: 'Nach dem Update darf nichts abgeschaltet sein.');
-    // Und die Frage ist weiterhin spielbar — der neue Filter darf sie ohne
-    // Abschaltung nicht wegnehmen.
-    expect((await db.wissenDao.getSpielbare()).length, 1);
+      expect(
+        await db.wissenDao.getAbgeschaltet(),
+        isEmpty,
+        reason: 'Nach dem Update darf nichts abgeschaltet sein.',
+      );
+      // Und die Frage ist weiterhin spielbar — der neue Filter darf sie ohne
+      // Abschaltung nicht wegnehmen.
+      expect((await db.wissenDao.getSpielbare()).length, 1);
 
-    await db.close();
-  });
+      await db.close();
+    },
+  );
 
-  test('v14→v15: die gezählten Einheiten kommen leer dazu, die Stückzahl bleibt',
-      () async {
-    // Eine LAUFENDE Inventur darf den Sprung nicht verlieren: Die bereits
-    // erfasste Stückzahl bleibt stehen, nur die Einheiten-Menge beginnt leer.
-    final schema = await verifier.schemaAt(14);
-    schema.rawDatabase
-      ..execute("INSERT INTO vehicles (id, name, type, created_at, updated_at) "
-          "VALUES (1, 'HLF 20', 'HLF', 0, 0)")
-      ..execute("INSERT INTO inventory_sessions (id, vehicle_id, started_at, "
-          "done_by) VALUES (1, 1, 0, '')")
-      ..execute("INSERT INTO inventory_checks (id, session_id, "
+  test(
+    'v14→v15: die gezählten Einheiten kommen leer dazu, die Stückzahl bleibt',
+    () async {
+      // Eine LAUFENDE Inventur darf den Sprung nicht verlieren: Die bereits
+      // erfasste Stückzahl bleibt stehen, nur die Einheiten-Menge beginnt leer.
+      final schema = await verifier.schemaAt(14);
+      schema.rawDatabase
+        ..execute(
+          "INSERT INTO vehicles (id, name, type, created_at, updated_at) "
+          "VALUES (1, 'HLF 20', 'HLF', 0, 0)",
+        )
+        ..execute(
+          "INSERT INTO inventory_sessions (id, vehicle_id, started_at, "
+          "done_by) VALUES (1, 1, 0, '')",
+        )
+        ..execute(
+          "INSERT INTO inventory_checks (id, session_id, "
           "equipment_name, compartment_label, target_quantity, "
           "actual_quantity, status, note) "
-          "VALUES (1, 1, 'Feuerlöscher', 'G1', 2, 1, 'open', '')");
+          "VALUES (1, 1, 'Feuerlöscher', 'G1', 2, 1, 'open', '')",
+        );
 
-    final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 17);
+      final db = AppDatabase(schema.newConnection());
+      await verifier.migrateAndValidate(db, 17);
 
-    final check = (await db.inventoryDao.getChecks(1)).single;
-    expect(check.actualQuantity, 1,
-        reason: 'Was schon gezählt war, bleibt gezählt.');
-    expect(check.countedInstancesJson, '[]',
-        reason: 'Vor v15 wurde nicht über Einheiten gezählt.');
+      final check = (await db.inventoryDao.getChecks(1)).single;
+      expect(
+        check.actualQuantity,
+        1,
+        reason: 'Was schon gezählt war, bleibt gezählt.',
+      );
+      expect(
+        check.countedInstancesJson,
+        '[]',
+        reason: 'Vor v15 wurde nicht über Einheiten gezählt.',
+      );
 
-    await db.close();
-  });
+      await db.close();
+    },
+  );
 
-  test('v13→v14: die Tag-Tabelle kommt leer dazu, der Bestand bleibt', () async {
-    // Ein Gerät mit Einheit aus v13 muss den Sprung überstehen, und die
-    // neue Tabelle muss benutzbar sein — nicht nur vorhanden. Der Fremd-
-    // schlüssel auf die Einheit ist der Teil, der bei einer falsch
-    // geschriebenen `createTable` erst beim ersten Einfügen auffällt.
-    final schema = await verifier.schemaAt(13);
-    schema.rawDatabase
-      ..execute("INSERT INTO equipment_items (id, name, "
+  test(
+    'v13→v14: die Tag-Tabelle kommt leer dazu, der Bestand bleibt',
+    () async {
+      // Ein Gerät mit Einheit aus v13 muss den Sprung überstehen, und die
+      // neue Tabelle muss benutzbar sein — nicht nur vorhanden. Der Fremd-
+      // schlüssel auf die Einheit ist der Teil, der bei einer falsch
+      // geschriebenen `createTable` erst beim ersten Einfügen auffällt.
+      final schema = await verifier.schemaAt(13);
+      schema.rawDatabase
+        ..execute(
+          "INSERT INTO equipment_items (id, name, "
           "equipment_functions_json, deployment_scenarios_json, description, "
           "is_custom, extra_attributes_json, updated_at) "
-          "VALUES (1, 'Pressluftatmer', '[]', '[]', '', 0, '{}', 0)")
-      ..execute("INSERT INTO equipment_instances (id, equipment_id, "
+          "VALUES (1, 'Pressluftatmer', '[]', '[]', '', 0, '{}', 0)",
+        )
+        ..execute(
+          "INSERT INTO equipment_instances (id, equipment_id, "
           "identifier, notes, is_active, updated_at) "
-          "VALUES (1, 1, 'Flasche 3', '', 1, 0)");
+          "VALUES (1, 1, 'Flasche 3', '', 1, 0)",
+        );
 
-    final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 17);
+      final db = AppDatabase(schema.newConnection());
+      await verifier.migrateAndValidate(db, 17);
 
-    expect(await db.tagDao.getByInstance(1), isEmpty,
-        reason: 'Vor v14 klebte kein Code auf irgendetwas.');
+      expect(
+        await db.tagDao.getByInstance(1),
+        isEmpty,
+        reason: 'Vor v14 klebte kein Code auf irgendetwas.',
+      );
 
-    await db.tagDao.insertTag(EquipmentTagsCompanion.insert(
-        instanceId: 1, code: 'FW-7K2M9Q'));
-    final tag = await db.tagDao.findByCode('FW-7K2M9Q');
-    expect(tag, isNotNull);
-    expect(tag!.instanceId, 1);
-    expect(tag.kind, EquipmentTags.kindQr,
-        reason: 'Der Vorgabewert steht im Schema, nicht im Aufrufer.');
-    expect(tag.selfIssued, isFalse);
+      await db.tagDao.insertTag(
+        EquipmentTagsCompanion.insert(instanceId: 1, code: 'FW-7K2M9Q'),
+      );
+      final tag = await db.tagDao.findByCode('FW-7K2M9Q');
+      expect(tag, isNotNull);
+      expect(tag!.instanceId, 1);
+      expect(
+        tag.kind,
+        EquipmentTags.kindQr,
+        reason: 'Der Vorgabewert steht im Schema, nicht im Aufrufer.',
+      );
+      expect(tag.selfIssued, isFalse);
 
-    await db.close();
-  });
+      await db.close();
+    },
+  );
 
-  test('v12→v13: der Gerätebezug kommt leer dazu, die Frage bleibt spielbar',
-      () async {
-    // Der eigene Test, weil v10 die Tabelle per `alterTable` NEU baut: Wer
-    // eine Spalte dort nicht in `newColumns` nachträgt, bricht den Sprung von
-    // v9 ab — und zwar mit „no such column", also erst auf einem Gerät, das
-    // lange nicht aktualisiert hat.
-    final schema = await verifier.schemaAt(12);
-    schema.rawDatabase.execute(
+  test(
+    'v12→v13: der Gerätebezug kommt leer dazu, die Frage bleibt spielbar',
+    () async {
+      // Der eigene Test, weil v10 die Tabelle per `alterTable` NEU baut: Wer
+      // eine Spalte dort nicht in `newColumns` nachträgt, bricht den Sprung von
+      // v9 ab — und zwar mit „no such column", also erst auf einem Gerät, das
+      // lange nicht aktualisiert hat.
+      final schema = await verifier.schemaAt(12);
+      schema.rawDatabase.execute(
         "INSERT INTO wissensfragen (id, gebiet, frage, antworten_json, "
         "richtige_json, herkunft, stand, geltung, dirty, updated_at) "
         "VALUES (1, 'geraetekunde', 'Welchen Nenndurchmesser hat B?', "
         "'[\"75 mm\",\"52 mm\"]', '[0]', 'mitgeliefert', 'freigegeben', "
-        "'bund', 0, 0)");
+        "'bund', 0, 0)",
+      );
 
-    final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 17);
+      final db = AppDatabase(schema.newConnection());
+      await verifier.migrateAndValidate(db, 17);
 
-    final frage = (await db.wissenDao.getAll()).single;
-    expect(frage.frage, 'Welchen Nenndurchmesser hat B?');
-    expect(frage.geraet, isNull,
-        reason: 'Bestandsfragen haengen an keinem Geraet.');
-    expect((await db.wissenDao.getSpielbare()).length, 1);
+      final frage = (await db.wissenDao.getAll()).single;
+      expect(frage.frage, 'Welchen Nenndurchmesser hat B?');
+      expect(
+        frage.geraet,
+        isNull,
+        reason: 'Bestandsfragen haengen an keinem Geraet.',
+      );
+      expect((await db.wissenDao.getSpielbare()).length, 1);
 
-    await db.close();
-  });
+      await db.close();
+    },
+  );
 
   test('v15→v16: bestehende Codes gelten als ungeschoben', () async {
     // ⚠️ Der Punkt dieses Tests ist der Vorgabewert. Ein Code aus v1.49/v1.50
@@ -447,16 +527,22 @@ void main() {
     // die kein Bildschirm zeigt.
     final schema = await verifier.schemaAt(15);
     schema.rawDatabase
-      ..execute("INSERT INTO equipment_items (id, name, "
-          "equipment_functions_json, deployment_scenarios_json, description, "
-          "is_custom, extra_attributes_json, updated_at) "
-          "VALUES (1, 'Pressluftatmer', '[]', '[]', '', 0, '{}', 0)")
-      ..execute("INSERT INTO equipment_instances (id, equipment_id, "
-          "identifier, notes, is_active, updated_at) "
-          "VALUES (1, 1, 'Flasche 3', '', 1, 0)")
-      ..execute("INSERT INTO equipment_tags (id, instance_id, code, kind, "
-          "self_issued, created_at) "
-          "VALUES (1, 1, 'FW-7K2M9Q', 'qr', 1, 0)");
+      ..execute(
+        "INSERT INTO equipment_items (id, name, "
+        "equipment_functions_json, deployment_scenarios_json, description, "
+        "is_custom, extra_attributes_json, updated_at) "
+        "VALUES (1, 'Pressluftatmer', '[]', '[]', '', 0, '{}', 0)",
+      )
+      ..execute(
+        "INSERT INTO equipment_instances (id, equipment_id, "
+        "identifier, notes, is_active, updated_at) "
+        "VALUES (1, 1, 'Flasche 3', '', 1, 0)",
+      )
+      ..execute(
+        "INSERT INTO equipment_tags (id, instance_id, code, kind, "
+        "self_issued, created_at) "
+        "VALUES (1, 1, 'FW-7K2M9Q', 'qr', 1, 0)",
+      );
 
     final db = AppDatabase(schema.newConnection());
     await verifier.migrateAndValidate(db, 17);
@@ -464,9 +550,13 @@ void main() {
     final tag = await db.tagDao.findByCode('FW-7K2M9Q');
     expect(tag, isNotNull);
     expect(tag!.instanceId, 1, reason: 'Der Aufkleber klebt weiter dort.');
-    expect(tag.dirty, isTrue,
-        reason: 'Vor v16 gab es keinen Weg nach oben — also steht er dort '
-            'nicht und muss beim ersten Abgleich hoch.');
+    expect(
+      tag.dirty,
+      isTrue,
+      reason:
+          'Vor v16 gab es keinen Weg nach oben — also steht er dort '
+          'nicht und muss beim ersten Abgleich hoch.',
+    );
     expect(tag.deletedAt, isNull);
     expect((await db.tagDao.offeneTags()).map((t) => t.code), ['FW-7K2M9Q']);
 
@@ -481,12 +571,16 @@ void main() {
     // nach dem Update Dinge wieder auf, die jemand anders gelöscht hat.
     final schema = await verifier.schemaAt(16);
     schema.rawDatabase
-      ..execute("INSERT INTO vehicles (id, name, type, created_at, "
-          "updated_at) VALUES (1, 'HLF 20', 'HLF', 0, 0)")
-      ..execute("INSERT INTO equipment_items (id, name, "
-          "equipment_functions_json, deployment_scenarios_json, description, "
-          "is_custom, extra_attributes_json, updated_at) "
-          "VALUES (1, 'Strahlrohr', '[]', '[]', '', 0, '{}', 0)");
+      ..execute(
+        "INSERT INTO vehicles (id, name, type, created_at, "
+        "updated_at) VALUES (1, 'HLF 20', 'HLF', 0, 0)",
+      )
+      ..execute(
+        "INSERT INTO equipment_items (id, name, "
+        "equipment_functions_json, deployment_scenarios_json, description, "
+        "is_custom, extra_attributes_json, updated_at) "
+        "VALUES (1, 'Strahlrohr', '[]', '[]', '', 0, '{}', 0)",
+      );
 
     final db = AppDatabase(schema.newConnection());
     await verifier.migrateAndValidate(db, 17);
@@ -495,10 +589,14 @@ void main() {
     expect((await db.equipmentDao.getAll()).single.dirty, isFalse);
 
     // Und was danach entsteht, traegt die Vorbelegung.
-    final neu = await db.vehicleDao
-        .insertVehicle(VehiclesCompanion.insert(name: 'MTW', type: 'MTW'));
-    expect((await db.vehicleDao.getById(neu))!.dirty, isTrue,
-        reason: 'Sonst raeumte der naechste Zug die frische Erfassung ab.');
+    final neu = await db.vehicleDao.insertVehicle(
+      VehiclesCompanion.insert(name: 'MTW', type: 'MTW'),
+    );
+    expect(
+      (await db.vehicleDao.getById(neu))!.dirty,
+      isTrue,
+      reason: 'Sonst raeumte der naechste Zug die frische Erfassung ab.',
+    );
 
     await db.close();
   });

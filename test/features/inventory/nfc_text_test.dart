@@ -65,10 +65,22 @@ void main() {
     });
 
     test('UTF-16 mit BOM in beiden Richtungen', () {
-      final grossZuerst = Uint8List.fromList(
-          [0x82, ...ascii.encode('de'), 0xFE, 0xFF, 0x00, 0x41]);
-      final kleinZuerst = Uint8List.fromList(
-          [0x82, ...ascii.encode('de'), 0xFF, 0xFE, 0x41, 0x00]);
+      final grossZuerst = Uint8List.fromList([
+        0x82,
+        ...ascii.encode('de'),
+        0xFE,
+        0xFF,
+        0x00,
+        0x41,
+      ]);
+      final kleinZuerst = Uint8List.fromList([
+        0x82,
+        ...ascii.encode('de'),
+        0xFF,
+        0xFE,
+        0x41,
+        0x00,
+      ]);
       expect(nfcTextAusNutzlast(grossZuerst), 'A');
       expect(nfcTextAusNutzlast(kleinZuerst), 'A');
     });
@@ -95,8 +107,7 @@ void main() {
     });
 
     test('ungültiges UTF-8 wirft nicht, sondern gilt als nichts', () {
-      final murks =
-          Uint8List.fromList([2, ...ascii.encode('de'), 0xC3, 0x28]);
+      final murks = Uint8List.fromList([2, ...ascii.encode('de'), 0xC3, 0x28]);
       expect(nfcTextAusNutzlast(murks), isNull);
     });
   });
@@ -111,17 +122,19 @@ void main() {
     test('führende Null geht nicht verloren', () {
       // `toRadixString` liefert „4" statt „04" — damit wären zwei
       // verschiedene Tags plötzlich derselbe Code.
-      expect(nfcSeriennummerCode(Uint8List.fromList([0x04, 0x00])),
-          'NFC-0400');
-      expect(nfcSeriennummerCode(Uint8List.fromList([0x40, 0x00])),
-          'NFC-4000');
+      expect(nfcSeriennummerCode(Uint8List.fromList([0x04, 0x00])), 'NFC-0400');
+      expect(nfcSeriennummerCode(Uint8List.fromList([0x40, 0x00])), 'NFC-4000');
     });
 
     test('ist von einem vergebenen Code zu unterscheiden', () {
       final code = nfcSeriennummerCode(Uint8List.fromList([1, 2, 3, 4]));
-      expect(istEigenerCode(code), isFalse,
-          reason: 'Übernommen, nicht vergeben — die App hat ihn nicht '
-              'gewürfelt und kann ihn nicht ausdrucken.');
+      expect(
+        istEigenerCode(code),
+        isFalse,
+        reason:
+            'Übernommen, nicht vergeben — die App hat ihn nicht '
+            'gewürfelt und kann ihn nicht ausdrucken.',
+      );
       expect(normalisiereTagCode(code), code);
     });
   });

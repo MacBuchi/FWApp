@@ -42,9 +42,11 @@ final mfaFaktorenProvider = FutureProvider<List<Factor>>((ref) async {
 ///
 /// Ein angefangener, nie bestätigter Faktor zählt nicht — sonst käme jemand
 /// mit einem halben Einrichtungsversuch durch die Pflicht.
-final hatZweitenFaktorProvider = Provider<bool>((ref) =>
-    (ref.watch(mfaFaktorenProvider).value ?? const [])
-        .any((f) => f.status == FactorStatus.verified));
+final hatZweitenFaktorProvider = Provider<bool>(
+  (ref) => (ref.watch(mfaFaktorenProvider).value ?? const []).any(
+    (f) => f.status == FactorStatus.verified,
+  ),
+);
 
 /// Steht die Anmeldung noch offen, weil der zweite Faktor fehlt?
 ///

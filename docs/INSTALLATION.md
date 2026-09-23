@@ -256,6 +256,7 @@ $U                            # jetzt aktualisieren
 $U --sichern                  # vollständige Sicherung jetzt
 $U --sicherungen              # vorhandene Sicherungen
 $U --zuruecksetzen <name>     # diesen Stand zurückholen (hält danach die Updates an)
+$U --woche                    # wöchentliche Sicherung jetzt (sonst sonntags 2:30)
 ```
 
 ### Vollständige Sicherung vor jedem Update (Marcus, 2026-09-23)
@@ -271,51 +272,94 @@ $U --zuruecksetzen <name>     # diesen Stand zurückholen (hält danach die Upda
 | A/B-Partitionen: neues System in die zweite Partition, bei Fehlstart zurück | RAUC, Mender, Rugix ([Bootlin zum Pi 5](https://bootlin.com/blog/safe-updates-using-rauc-on-raspberry-pi-5/), [Vergleich](https://rugix.org/blog/2026-02-28-ota-update-engines-compared/)) | Nein: tauscht das **Betriebssystem**; unsere Updates fassen nur den Stack an. Setzte ein eigenes OS-Abbild voraus. |
 | Dateisystem-Schnappschuss (btrfs, ZFS, LVM) | Snapper, [buttervolume](https://github.com/ccomb/buttervolume) | Nein: Pi OS ist ext4, und [Postgres auf Copy-on-Write](https://helmundwalter.de/en/blog/next-gen-backup-with-btrfs-snapshots-for-root-fs-and-databases) gilt als Fehlerquelle. |
 
-**Was gesichert wird** (`tool/installer/fwapp_sicherung.py`): alles, was ein
-Container beschreiben kann — die Liste kommt aus `docker inspect`, nicht
-aus einer Aufzählung, ein neuer Dienst mit Volume ist also automatisch
-dabei. Heute: Postgres-Dateien, `db-config` (pgsodium-Schlüssel!), Fotos,
-Functions, bei Caddy die Zertifikate. Dazu `server/` (Schlüssel,
-Compose-Dateien), `web/`, `kopplung/` und die Images samt Digest.
-Aufbewahrt werden die letzten **zwei** Sicherungen; ihre Images löscht der
-Updater nicht, sonst ließe sich eine Sicherung nicht mehr starten.
+**Werkzeug: BorgBackup** (Marcus, 2026-09-23, #248, nach Vergleich mit
+rsync und restic). Borg zerlegt die Daten in Stücke und legt jedes nur
+einmal ab: Vier Wochensicherungen kosten etwa einmal die Daten plus die
+Änderungen — im Nachweis belegten vier zusammen **28 MB**. Verschlüsselt
+(`repokey-blake2`) und komprimiert (zstd). Borg läuft im Image von
+Nextcloud AIO (`nextcloud/aio-borgbackup`, Borg 1.4, amd64 + arm64,
+datierter Tag), als Dienst mit Profil in `docker-compose.yml` gepinnt — auf
+dem Rechner wird nichts installiert.
+
+**Zwei Anlässe, ein Werkzeug** (`tool/installer/fwapp_sicherung.py`):
+
+| | Vor jedem Update | Wöchentlich (optional) |
+|---|---|---|
+| Wohin | immer lokal, `DATA_DIR/sicherungen/borg` — ohne Sicherung kein Update | `SICHERUNG_ZIEL`: leer = aus, `lokal`, oder Pfad einer externen Platte (`…/fwapp-borg`) |
+| Wann | vor dem Einspielen | sonntags 2:30 (systemd-Timer, holt verpasste Läufe nach) |
+| Bleiben | 2 | **4** |
+| Fehlt die Platte | — | Mail an den KreisDatenMeister, nichts blockiert |
+
+**Passwort:** erzeugt der Installer einmal, zeigt es an und schickt es an
+`KDM_EMAIL` (Marcus: „erzeugt + angezeigt"). Es wird nie neu erzeugt — ein
+neues machte jede Sicherung im Archiv unlesbar. ⚠️ Ohne dieses Passwort
+ist nach einem Totalausfall auch die Platte wertlos.
+
+**Die externe Platte** wird einmalig per `/etc/fstab` eingehängt (UUID aus
+`lsblk -f`, Option `nofail`, Vorlage in `fwapp.conf.example`). ⚠️ Sie gilt
+nur als da, wenn `SICHERUNG_ZIEL` auf einem **anderen Datenträger** liegt als
+`DATA_DIR`: Ist sie nicht eingehängt, ist der Einhängepunkt ein leerer
+Ordner auf der SSD — eine Sicherung dorthin schützte vor nichts. Die
+Vorab-Prüfung (`fwapp_check.py`) warnt vorher, der Updater mailt.
+
+**Was gesichert wird:** alles, was ein Container beschreiben kann — die
+Liste kommt aus `docker inspect`, ein neuer Dienst mit Volume ist also
+automatisch dabei. Heute: Postgres-Dateien, `db-config`
+(pgsodium-Schlüssel!), Fotos, Functions, bei Caddy die Zertifikate. Dazu
+`server/` (Schlüssel, Compose-Dateien), `web/`, `kopplung/`; Stand und
+Images stehen im Kommentar des Archivs. Die Images der verbliebenen
+Sicherungen löscht der Updater nicht.
 
 - **Bei angehaltenem Stack:** eine Datei-Kopie einer laufenden Datenbank
-  ist keine. Gemessen: ≈ 6 Sekunden Stillstand für die Sicherung, das ganze
-  Update ≈ 20 Sekunden.
-- ⚠️ **Mit erweiterten Dateiattributen:** Storage legt den Inhaltstyp jedes
-  Fotos als xattr an der Datei ab, nicht in der Datenbank (so auch die
+  ist keine. Gemessen im Nachweis (kleine Datenmenge): ein Wochenlauf ≈ 20
+  Sekunden samt Neustart und Gesundheitsprüfung. Die App arbeitet in der
+  Zeit offline weiter.
+- ⚠️ **Erweiterte Dateiattribute:** Storage legt den Inhaltstyp jedes Fotos
+  als xattr an der Datei ab, nicht in der Datenbank (so auch die
   [Anleitung für selbst gehostetes Supabase](https://simplebackups.com/blog/backup-self-hosted-supabase)).
-  Das busybox-tar der meisten Images verliert ihn; GNU tar steckt im
-  edge-runtime-Image, das ohnehin auf jedem Server liegt.
+  Borg sichert sie; der Nachweis prüft es an einem echten PNG.
 - ⚠️ **Über `--volumes-from`, nie über den Pfad aus `docker inspect`:**
   Docker Desktop meldet dort `/host_mnt/…`. Die erste Fassung übersprang
-  deshalb die Datenbank STILL — gefunden hat es erst das Zurückspielen im
-  Nachweis. Seitdem gilt eine Pflichtliste: ohne Datenbank und Fotos keine
-  Sicherung.
-- **Integrität:** Jede Datei der Sicherung hat eine Prüfsumme im Manifest;
-  vor dem Einspielen wird geprüft — eine halbe Sicherung über die Daten zu
-  legen wäre schlimmer als keine.
+  deshalb die Datenbank STILL. Seitdem gilt eine Pflichtliste: ohne
+  Datenbank und Fotos keine Sicherung.
+- ⚠️ **Borg setzt im Kommentar Platzhalter ein** (`{now}`) — der
+  JSON-Kommentar braucht verdoppelte Klammern (`borg_kommentar`).
+- **Erst lesen, dann löschen:** Vor dem Zurückspielen liest
+  `borg extract --dry-run` das ganze Archiv und prüft jedes Stück.
 - **Gesundheitsprüfung** nach dem Update, von innen über das Docker-Netz:
   Datenbank/Anmeldung/Storage gesund, Kong → Anmeldung, Kong → PostgREST →
   Datenbank mit einem echten RPC, Edge Functions nicht 502/503, Web-App und
   Einrichtungs-Datei. „Container läuft" allein beweist nichts.
 
-**Nachgewiesen am 2026-09-23:** `v0.0.1` installiert, eine Kontaktzeile in
-die Datenbank und ein PNG in Storage gelegt. Update auf `v0.0.2`, dessen
-Migration im Probelauf UND echt durchläuft, aber den RPC der
-Gesundheitsprüfung löscht und die Kontaktzeile überschreibt. Ergebnis:
-Gesundheitsprüfung schlägt an, Sicherung automatisch eingespielt — RPC
-wieder da, Kontaktzeile wieder „vor dem Update", die Migration auch aus der
-Buchführung verschwunden, das Foto byte-gleich und weiter `image/png`,
-Mail in Mailpit. Danach Update auf `v0.0.3` erfolgreich, von Hand auf die
-Sicherung davor zurückgesetzt, von Hand gesichert, und **alle 191
-E2E-Tests grün** gegen diesen Server.
+**Totalausfall — neuer Rechner, nur die Platte und das Passwort:**
 
-⚠️ **Die Sicherung liegt auf demselben Datenträger wie die Daten.** Sie
-schützt vor einem missglückten Update, nicht vor einer toten SSD, Diebstahl
-oder Brand im Gerätehaus. Dafür braucht es eine Kopie außer Haus (siehe
-„Offen").
+```bash
+# 1. Neu installieren wie oben, dieselbe fwapp.conf (SICHERUNG_ZIEL = die Platte)
+# 2. Platte einhängen, dann mit dem ALTEN Passwort (aus der Mail / vom Ausdruck):
+SICHERUNG_PASSWORT=<altes Passwort> $U --sicherungen
+SICHERUNG_PASSWORT=<altes Passwort> $U --zuruecksetzen <name>
+# 3. Updates wieder freigeben, wenn alles stimmt:
+sudo rm /srv/fwapp/update.blocked
+```
+
+Die zurückgespielte `server/.env` trägt die ALTEN Schlüssel — gekoppelte
+Handys und der Einrichtungs-QR bleiben gültig.
+
+**Nachgewiesen am 2026-09-23** (#248, echte Bündel, nachgebaute
+Release-API, „externe Platte" = ein anderes Laufwerk am Mac):
+
+1. Installation mit `SICHERUNG_ZIEL`: Passwort angezeigt und per Mail.
+2. Wochensicherung auf die Platte.
+3. Update, dessen Migration im Probelauf UND echt durchläuft, aber den RPC
+   der Gesundheitsprüfung löscht und Daten überschreibt: automatisch
+   zurückgespielt — RPC und Daten wieder da, Migration aus der Buchführung
+   verschwunden, Foto byte-gleich und `image/png`, Mail.
+4. Normales Update.
+5. Sechs Wochensicherungen: genau vier bleiben, zusammen 28 MB.
+6. Platte fehlt: Mail, nichts blockiert.
+7. **Totalausfall:** Server samt Daten gelöscht, neu installiert (neues
+   Passwort), ohne altes Passwort abgewiesen, mit ihm zurückgespielt —
+   Daten, Foto und Schlüssel wieder da; danach **alle 191 E2E-Tests grün**.
 
 ⚠️ Der Updater braucht **IPv4 zu GitHub** (api.github.com und die
 Download-Server sind IPv4-only). Ein Anschluss im Gerätehaus hat das in der
@@ -342,12 +386,10 @@ Konfiguration zeigt auf einen lokalen Webserver):
 
 - Zahlen von der Produktions-VM nachtragen (echte Daten, Laufzeit).
 - Speicherbedarf des Autodeploy-Probelaufs messen.
-- **Kopie außer Haus** (3-2-1-Regel): Die Sicherung liegt heute auf
-  demselben Datenträger. Denkbar: USB-Platte, zweiter Rechner, oder ein
-  verschlüsseltes Borg-Repository wie bei Nextcloud AIO. Braucht eine
-  Entscheidung (wohin, wer hält den Schlüssel).
-- **Tägliche Sicherung** unabhängig vom Update (Nextcloud AIO macht beides):
-  Heute entsteht eine vollständige Sicherung nur vor einem Update oder von
-  Hand.
+- **Kopie außer Haus im engeren Sinn:** Die externe Platte (#248) steht
+  meist im selben Gerätehaus — gegen Brand oder Diebstahl hilft nur eine
+  Platte, die wechselt, oder ein entferntes Borg-Repository.
+- **Einrichtungs-Dokument** mit allen Angaben und Passwörtern an den
+  KreisDatenMeister (#249).
 - Das erste echte Release mit Bündeln (nächster Merge mit Versions-Bump)
   einmal von Hand herunterladen und prüfen.

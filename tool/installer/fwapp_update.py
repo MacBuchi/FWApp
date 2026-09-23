@@ -65,9 +65,9 @@ from pathlib import Path, PurePosixPath
 from typing import Callable, Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from fwapp_check import _smtp_oeffnen, lies_conf  # noqa: E402
-from fwapp_install import Abbruch, Server, lies_env, offene_migrationen  # noqa: E402
-from fwapp_sicherung import Sicherung, gesund  # noqa: E402
+from fwapp_check import lies_conf  # noqa: E402
+from fwapp_install import Abbruch, Server, lies_env, offene_migrationen, sende_mail  # noqa: E402
+from fwapp_sicherung import Sicherung, externes_ziel, gesund  # noqa: E402
 
 API = "https://api.github.com/repos/MacBuchi/FWApp"
 USER_AGENT = "fwapp-update/1.0"
@@ -162,6 +162,18 @@ def aelteste(namen: list[str], behalten: int) -> list[str]:
     """Was weg kann: alles außer den `behalten` neuesten (Namen beginnen mit
     einem sortierbaren Zeitstempel)."""
     return sorted(namen)[:-behalten] if behalten else sorted(namen)
+
+
+def hinweis_mail(conf: dict[str, str], betreff: str, text: str) -> EmailMessage:
+    m = EmailMessage()
+    m["From"] = conf.get("MAIL_ABSENDER", "")
+    m["To"] = conf.get("KDM_EMAIL", "")
+    m["Subject"] = f"FWApp: {betreff}"
+    m.set_content(
+        f"{conf.get('NAME') or 'FWApp'} ({conf.get('DOMAIN', '')})\n\n{text}\n\n"
+        f"Protokoll: {conf.get('DATA_DIR', '/srv/fwapp')}/update.log\n"
+    )
+    return m
 
 
 def fehler_mail(conf: dict[str, str], von: str, nach: str, schritt: str, text: str) -> EmailMessage:
@@ -373,16 +385,16 @@ class Update:
         if fehler is None:
             return
 
-        self.log(f"Neuer Stand scheitert ({fehler}) — spiele {stand.name} ein")
+        self.log(f"Neuer Stand scheitert ({fehler}) — spiele {stand} ein")
         try:
             sicherung.einspielen(stand)
             zurueck = gesund(self.server)
         except Exception as e:  # noqa: BLE001 — jeder Fehler hier gehört in die Mail
             zurueck = str(e)
         if zurueck is None:
-            raise Abbruch(f"{fehler} — Sicherung {stand.name} automatisch eingespielt, "
+            raise Abbruch(f"{fehler} — Sicherung {stand} automatisch eingespielt, "
                           f"{self.installiert} läuft wieder mit den Daten von vor dem Update")
-        raise Abbruch(f"{fehler} — und das Einspielen der Sicherung {stand.name} scheiterte "
+        raise Abbruch(f"{fehler} — und das Einspielen der Sicherung {stand} scheiterte "
                       f"auch ({zurueck}). Server braucht Hilfe von Hand.")
 
     def aufraeumen(self, alte_images: list[str], neue_images: list[str], sicherung: Sicherung,
@@ -401,21 +413,15 @@ class Update:
                 shutil.rmtree(alt, ignore_errors=True)
 
     def melden(self, nach: str, schritt: str, text: str) -> None:
-        mail = fehler_mail(self.conf, self.installiert, nach, schritt, text)
-        host = self.conf.get("SMTP_HOST", "")
-        port = int(self.conf.get("SMTP_PORT") or 587)
-        if self.testmodus:
-            # Mailpit sitzt im Docker-Netz; von hier aus über den Testport.
-            host, port = "127.0.0.1", 54325
-        try:
-            s = _smtp_oeffnen(host, port)
-            if self.conf.get("SMTP_USER") and not self.testmodus:
-                s.login(self.conf["SMTP_USER"], self.conf.get("SMTP_PASS", ""))
-            s.send_message(mail)
-            s.quit()
-            self.log(f"Mail an {mail['To']} verschickt.")
-        except Exception as e:  # noqa: BLE001 — die Mail ist die Meldung; scheitert sie, bleibt das Log
-            self.log(f"Mail an {mail['To']} NICHT verschickt: {e}")
+        self.mail(fehler_mail(self.conf, self.installiert, nach, schritt, text))
+
+    def mail(self, nachricht: EmailMessage) -> None:
+        grund = sende_mail(self.conf, self.testmodus, nachricht)
+        if grund is None:
+            self.log(f"Mail an {nachricht['To']} verschickt.")
+        else:
+            # Die Mail ist die Meldung; scheitert sie, bleibt das Protokoll.
+            self.log(f"Mail an {nachricht['To']} NICHT verschickt: {grund}")
 
 
 def main(argv: Optional[list[str]] = None) -> int:
@@ -425,6 +431,8 @@ def main(argv: Optional[list[str]] = None) -> int:
     p.add_argument("--sichern", action="store_true", help="vollständige Sicherung jetzt")
     p.add_argument("--sicherungen", action="store_true", help="vorhandene Sicherungen zeigen")
     p.add_argument("--zuruecksetzen", metavar="NAME", help="diese Sicherung einspielen")
+    p.add_argument("--woche", action="store_true",
+                   help="wöchentliche Sicherung nach SICHERUNG_ZIEL (Timer, sonntags)")
     a = p.parse_args(argv)
     conf_pfad = Path(a.conf).resolve()
     conf = lies_conf(conf_pfad.read_text(encoding="utf-8"), dict(os.environ))
@@ -432,10 +440,13 @@ def main(argv: Optional[list[str]] = None) -> int:
 
     sicherung = Sicherung(u.server)
     if a.sicherungen:
-        for s in sicherung.liste():
-            m = json.loads((s / "manifest.json").read_text())
-            print(f"{s.name}   Stand {m['version']}   {m['erstellt']}")
+        for titel, s in archive(u):
+            print(f"{titel} ({s.repo}):")
+            for arch in s.liste():
+                print(f"   {arch['name']}   Stand {arch.get('version', '?')}")
         return 0
+    if a.woche:
+        return woche(u)
     if a.sichern or a.zuruecksetzen:
         return von_hand(u, sicherung, a.sichern, a.zuruecksetzen)
 
@@ -495,11 +506,81 @@ def main(argv: Optional[list[str]] = None) -> int:
     return 0
 
 
-def von_hand(u: Update, sicherung: Sicherung, sichern: bool, name: Optional[str]) -> int:
+def externe_sicherung(u: Update) -> tuple[Optional[Sicherung], Optional[str]]:
+    """Das Archiv auf der Platte aus SICHERUNG_ZIEL — oder der Grund, warum
+    es gerade keins gibt. `lokal` ist kein externes Ziel."""
+    ziel = (u.conf.get("SICHERUNG_ZIEL") or "").strip()
+    if not ziel or ziel == "lokal":
+        return None, None
+    grund = externes_ziel(ziel, str(u.data))
+    if grund:
+        return None, grund
+    return Sicherung(u.server, Path(ziel) / "fwapp-borg"), None
+
+
+def archive(u: Update) -> list[tuple[str, Sicherung]]:
+    liste = [("Auf diesem Rechner", Sicherung(u.server))]
+    extern, _ = externe_sicherung(u)
+    if extern:
+        liste.append(("Auf der Sicherungsplatte", extern))
+    return liste
+
+
+def _sperre(u: Update, warten: bool):
     sperre = (u.data / "update.lock").open("w")
     try:
-        fcntl.flock(sperre, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        fcntl.flock(sperre, fcntl.LOCK_EX | (0 if warten else fcntl.LOCK_NB))
     except OSError:
+        return None
+    return sperre
+
+
+def woche(u: Update) -> int:
+    """Die wöchentliche Sicherung (#248). Optional: ohne SICHERUNG_ZIEL tut
+    sie nichts. Fehlt die Platte, gibt es eine Mail — blockiert wird nichts,
+    die Sicherung vor jedem Update liegt ohnehin lokal."""
+    ziel = (u.conf.get("SICHERUNG_ZIEL") or "").strip()
+    if not ziel:
+        print("Wöchentliche Sicherung ist aus (SICHERUNG_ZIEL leer).")
+        return 0
+    if ziel == "lokal":
+        s = Sicherung(u.server)
+    else:
+        s, grund = externe_sicherung(u)
+        if s is None:
+            u.log(f"Wöchentliche Sicherung ausgefallen: {grund}")
+            u.mail(hinweis_mail(u.conf, "wöchentliche Sicherung ausgefallen",
+                                f"{grund}\n\nDie Platte anschließen und einhängen; die nächste "
+                                "Sicherung läuft am kommenden Sonntag, oder sofort mit:\n"
+                                f"  sudo python3 {u.server_dir}/fwapp_update.py "
+                                f"--conf {u.server_dir}/fwapp.conf --woche"))
+            return 0
+    # Ein Update, das gerade läuft, darf fertig werden — dann sichern.
+    sperre = _sperre(u, warten=True)  # noqa: F841 — hält die Sperre bis zum Ende
+    try:
+        name = s.erstellen("woche", u.installiert)
+    except Exception as e:  # noqa: BLE001 — jeder Fehler gehört in die Mail
+        s.starten()
+        u.log(f"Wöchentliche Sicherung gescheitert: {e}")
+        u.mail(hinweis_mail(u.conf, "wöchentliche Sicherung gescheitert", str(e)))
+        return 1
+    s.starten()
+    fehler = gesund(u.server)
+    try:
+        s.aufraeumen()
+    except Abbruch as e:
+        u.log(f"Aufräumen der Sicherungen: {e}")
+    u.log(f"Wöchentliche Sicherung: {name} in {s.repo}")
+    if fehler:
+        u.mail(hinweis_mail(u.conf, "Server nach der Sicherung nicht benutzbar",
+                            f"Die Sicherung {name} ist fertig, aber danach meldet der Server: {fehler}"))
+        return 1
+    return 0
+
+
+def von_hand(u: Update, sicherung: Sicherung, sichern: bool, name: Optional[str]) -> int:
+    sperre = _sperre(u, warten=False)
+    if sperre is None:
         print("Ein Update läuft gerade — später noch einmal.")
         return 1
     try:
@@ -507,30 +588,33 @@ def von_hand(u: Update, sicherung: Sicherung, sichern: bool, name: Optional[str]
             stand = sicherung.erstellen("von-hand", u.installiert)
             sicherung.starten()
             fehler = gesund(u.server)
+            sicherung.aufraeumen()
             u.log(f"Vollständige Sicherung von Hand: {stand}")
             if fehler:
                 print(f"⚠️ Gesichert, aber der Server meldet danach: {fehler}")
                 return 1
             print(f"✅ {stand}")
             return 0
-        ordner = sicherung.ordner / name
-        if not (ordner / "manifest.json").exists():
-            print(f"❌ Keine Sicherung {name} — vorhanden: "
-                  f"{', '.join(s.name for s in sicherung.liste()) or 'keine'}")
+        # Zuerst das lokale Archiv, dann die Platte — derselbe Name kommt
+        # nicht zweimal vor (Zeitstempel).
+        treffer = [s for _, s in archive(u) if any(a["name"] == name for a in s.liste())]
+        if not treffer:
+            vorhanden = [a["name"] for _, s in archive(u) for a in s.liste()]
+            print(f"❌ Keine Sicherung {name} — vorhanden: {', '.join(vorhanden) or 'keine'}")
             return 1
-        manifest = sicherung.einspielen(ordner)
+        info = treffer[0].einspielen(name)
         fehler = gesund(u.server)
         # Sonst holte das nächste nächtliche Update genau den Stand zurück,
         # von dem man gerade weggegangen ist.
         u.blockiert.write_text(
             f"{time.strftime('%Y-%m-%d %H:%M:%S')}\nVon Hand auf {name} zurückgesetzt "
-            f"(Stand {manifest['version']}). Updates erst nach rm {u.blockiert}.\n"
+            f"(Stand {info.get('version', '?')}). Updates erst nach rm {u.blockiert}.\n"
         )
-        u.log(f"Von Hand zurückgesetzt auf {name} (Stand {manifest['version']})")
+        u.log(f"Von Hand zurückgesetzt auf {name} (Stand {info.get('version', '?')})")
         if fehler:
             print(f"❌ Eingespielt, aber der Server meldet: {fehler}")
             return 1
-        print(f"✅ {name} läuft (Stand {manifest['version']}). Nächtliche Updates sind "
+        print(f"✅ {name} läuft (Stand {info.get('version', '?')}). Nächtliche Updates sind "
               f"angehalten, bis {u.blockiert} gelöscht ist.")
         return 0
     except Abbruch as e:

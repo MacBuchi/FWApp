@@ -130,6 +130,33 @@ def pruefe_platte(frei_bytes: Optional[int], pfad: str) -> Ergebnis:
     return Ergebnis(OK, text)
 
 
+def pruefe_sicherungsziel(ziel: str, data_dir: str, geraet: Callable[[str], int],
+                          frei: Callable[[str], Optional[int]]) -> Ergebnis:
+    """Die wöchentliche Sicherung (#248) ist optional — deshalb blockiert
+    hier nichts, es warnt nur. Dieselbe Regel wie im Updater: Die Platte
+    zählt nur, wenn sie ein ANDERER Datenträger ist als DATA_DIR; ein nicht
+    eingehängter Einhängepunkt ist ein leerer Ordner auf der SSD."""
+    ziel = ziel.strip()
+    if not ziel:
+        return Ergebnis(HINWEIS, "Wöchentliche Sicherung: aus",
+                        "Empfohlen: SICHERUNG_ZIEL auf eine externe Platte setzen.")
+    if ziel == "lokal":
+        return Ergebnis(HINWEIS, "Wöchentliche Sicherung: auf diesem Rechner",
+                        "Schützt vor Fehlbedienung, nicht vor einer kaputten SSD.")
+    if not os.path.isdir(ziel):
+        return Ergebnis(WARNUNG, f"Sicherungsplatte: {ziel} gibt es nicht",
+                        "Platte anschließen und einhängen (Eintrag in /etc/fstab mit nofail).")
+    if geraet(ziel) == geraet(data_dir):
+        return Ergebnis(WARNUNG, f"Sicherungsplatte: {ziel} liegt auf derselben Platte wie die Daten",
+                        "Die Platte ist nicht eingehängt — sonst schützte die Sicherung vor nichts.")
+    f = frei(ziel)
+    text = f"Sicherungsplatte: {ziel}" + (f", {f / GIB:.0f} GB frei" if f is not None else "")
+    if f is not None and f < 16 * GIB:
+        return Ergebnis(WARNUNG, text, "Vier Wochensicherungen brauchen etwa einmal die Daten "
+                        "plus die Änderungen; 16 GB frei sind das Mindeste.")
+    return Ergebnis(OK, text)
+
+
 def pruefe_sd_karte(wurzel_geraet: Optional[str]) -> Optional[Ergebnis]:
     """Postgres auf einer SD-Karte verschleißt sie und übersteht einen
     Stromausfall schlechter als eine SSD (#239)."""
@@ -425,6 +452,14 @@ def _smtp_oeffnen(host: str, port: int):
     return s
 
 
+def _vorhanden(pfad: str) -> str:
+    """DATA_DIR gibt es vor der Installation oft noch nicht — dann zählt der
+    Datenträger des nächsten vorhandenen Elternordners."""
+    while pfad and not os.path.exists(pfad):
+        pfad = os.path.dirname(pfad.rstrip("/")) or "/"
+    return pfad or "/"
+
+
 def _speicher() -> Optional[int]:
     try:
         with open("/proc/meminfo") as f:
@@ -482,6 +517,10 @@ def alle_pruefungen(conf: dict[str, str], vorher: bool, mit_code: bool) -> list[
     sd = pruefe_sd_karte(_wurzel_geraet())
     if sd:
         rechner.append(sd)
+    rechner.append(pruefe_sicherungsziel(
+        conf.get("SICHERUNG_ZIEL", ""), conf.get("DATA_DIR", "/"),
+        lambda pfad: os.stat(_vorhanden(pfad)).st_dev, _frei,
+    ))
 
     netz = [pruefe_dns(domain, _aufloesen)]
     if not vorher and netz[0].stufe != FEHLER:

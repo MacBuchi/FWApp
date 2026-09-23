@@ -91,6 +91,33 @@ class Rechner(unittest.TestCase):
         self.assertEqual(c.pruefe_uhr(None).stufe, c.HINWEIS)
 
 
+class Sicherungsziel(unittest.TestCase):
+    def pruefe(self, ziel, geraete=(1, 2), frei=100 * GIB):
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as d:
+            pfad = d if ziel == "DIR" else ziel
+            return c.pruefe_sicherungsziel(
+                pfad, "/srv/fwapp", lambda p: geraete[0] if p == pfad else geraete[1], lambda p: frei
+            )
+
+    def test_optional_also_nie_ein_fehler(self):
+        for e in (self.pruefe(""), self.pruefe("lokal"), self.pruefe("/gibt/es/nicht"),
+                  self.pruefe("DIR", geraete=(1, 1)), self.pruefe("DIR", frei=GIB)):
+            self.assertNotEqual(e.stufe, c.FEHLER)
+
+    def test_nicht_eingehaengt_warnt(self):
+        e = self.pruefe("DIR", geraete=(1, 1))
+        self.assertEqual(e.stufe, c.WARNUNG)
+        self.assertIn("nicht eingehängt", e.hinweis)
+
+    def test_eigene_platte_mit_platz(self):
+        self.assertEqual(self.pruefe("DIR").stufe, c.OK)
+
+    def test_lokal_sagt_die_grenze(self):
+        self.assertIn("kaputten SSD", self.pruefe("lokal").hinweis)
+
+
 class DomainUndHttps(unittest.TestCase):
     def test_dns(self):
         self.assertEqual(c.pruefe_dns("a.de", lambda d: ["1.2.3.4"]).stufe, c.OK)

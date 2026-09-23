@@ -54,3 +54,15 @@ DKIM_SELECTOR=
 #   vorab  – auch Vorabversionen; sie sind neuer, aber noch nicht erprobt
 #   aus    – keine automatischen Updates
 UPDATE_KANAL=stabil
+
+# ── Wöchentliche Sicherung (#248, optional) ───────────────────────────────
+# Sonntags 2:30, BorgBackup, verschlüsselt, vier Sicherungen bleiben. Vor
+# jedem Update wird unabhängig davon immer lokal gesichert.
+#   (leer)               – keine wöchentliche Sicherung
+#   lokal                – auf diesem Rechner (schützt nicht vor kaputter SSD)
+#   /mnt/fwapp-sicherung – externe Platte; sie muss dort EINGEHÄNGT sein.
+#     Einmalig in /etc/fstab (UUID aus `lsblk -f`), nofail = Start ohne Platte geht:
+#     UUID=<uuid>  /mnt/fwapp-sicherung  ext4  defaults,nofail  0  2
+# Das Passwort der Sicherungen erzeugt der Installer; es kommt per Mail an
+# KDM_EMAIL und muss außerhalb des Servers aufbewahrt werden.
+SICHERUNG_ZIEL=

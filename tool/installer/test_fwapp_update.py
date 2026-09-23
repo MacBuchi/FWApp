@@ -135,7 +135,7 @@ class Mail(unittest.TestCase):
         self.assertIn("v1.65.0", m["Subject"])
         text = m.get_content()
         for erwartet in ("42P01", "läuft unverändert weiter auf v1.64.0",
-                         "rm /srv/fwapp/update.blocked", "/srv/fwapp/backups/"):
+                         "rm /srv/fwapp/update.blocked", "--zuruecksetzen <name>"):
             self.assertIn(erwartet, text)
 
     def test_nach_dem_einspielen_kein_versprechen(self):

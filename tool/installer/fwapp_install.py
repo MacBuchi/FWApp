@@ -279,6 +279,11 @@ class Server:
             raise Abbruch(f"{' '.join(befehl[:4])} …: {r.stderr.strip() or r.stdout.strip()}")
         return r.stdout
 
+    def versuch(self, *befehl: str) -> tuple[int, str]:
+        """Wie lauf, aber ohne Abbruch: Rückgabecode und alle Ausgaben."""
+        r = subprocess.run([*befehl], capture_output=True, text=True, cwd=self.server)
+        return r.returncode, r.stdout + r.stderr
+
     def psql(self, sql: str) -> str:
         return self.lauf(
             *self.docker, "exec", "-i", "supabase-db",
@@ -294,7 +299,7 @@ class Server:
         # Dort startet der Timer den Updater, und der braucht beide.
         for name in (
             "docker-compose.yml", "kong.yml", "Caddyfile",
-            "fwapp_check.py", "fwapp_install.py", "fwapp_update.py",
+            "fwapp_check.py", "fwapp_install.py", "fwapp_update.py", "fwapp_sicherung.py",
         ):
             shutil.copy2(HIER / name, self.server / name)
         for sub in ("compose", "db"):
@@ -326,14 +331,12 @@ class Server:
         pfad.write_text(conf_inhalt(self.conf))
         pfad.chmod(0o600)
 
-    def installation_merken(self, version: str, web: Path) -> None:
+    def installation_merken(self, version: str) -> None:
         """Erst ganz am Ende eines erfolgreichen Laufs: Der Updater hält den
-        hier eingetragenen Stand für eingerichtet — und fällt bei einem
-        gescheiterten Update auf genau dieses Bündel zurück."""
+        hier eingetragenen Stand für eingerichtet."""
         (self.server / "installation.json").write_text(
             json.dumps(
                 {"version": version, "testmodus": self.testmodus,
-                 "buendel": str(REPO), "web": str(web),
                  "eingerichtet": time.strftime("%Y-%m-%dT%H:%M:%S%z")},
                 indent=2,
             ) + "\n"
@@ -519,7 +522,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         passwort = server.kreisdatenmeister(geheim)
         schritt("Nächtliches Update")
         print(f"   {server.update_timer()}")
-        server.installation_merken(buendel_version(REPO), Path(a.web).resolve())
+        server.installation_merken(buendel_version(REPO))
     except Abbruch as e:
         print(f"\n❌ {e}")
         return 1

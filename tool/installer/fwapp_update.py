@@ -19,22 +19,28 @@ Ablauf, und was bei einem Fehler in welchem Schritt passiert:
     2. Bündel laden, Prüfsummen          Netz weg / Summe falsch → nächste Nacht
     3. Images des Release ziehen          Netz weg → nächste Nacht
     ──── ab hier ist ein Fehler kein Zufall mehr: BLOCKIEREN + Mail ────
-    4. Dump (Rückfallpunkt)
+    4. Dump der Datenbank (Grundlage des Probelaufs, portabel)
     5. Probelauf der neuen Migrationen in einer Wegwerf-Datenbank
-    6. Installer des NEUEN Bündels laufen lassen (derselbe idempotente Weg
-       wie beim Einrichten — zwei Wege, einen Server in einen Stand zu
-       bringen, liefen auseinander). Scheitert er, läuft der Installer des
-       ALTEN Bündels noch einmal (steht in installation.json) und holt
-       Compose-Dateien, Images, Web-App und Functions zurück.
+    6. VOLLSTÄNDIGE Sicherung bei angehaltenem Stack (fwapp_sicherung.py):
+       Datenbank-Dateien, Fotos samt Attributen, Schlüssel, Konfiguration,
+       Web-App, Functions, Image-Liste. Ohne sie kein Update.
+    7. Installer des NEUEN Bündels, danach die Gesundheitsprüfung
+       (`gesund`: ein echter Weg App → Kong → PostgREST → Datenbank, nicht
+       nur „Container läuft"). Scheitert eins von beiden, wird die
+       Sicherung aus Schritt 6 AUTOMATISCH eingespielt und erneut geprüft.
 
-Bis Schritt 5 ist am laufenden Server nichts verändert. Nach Schritt 6
-kann die Datenbank neuer sein als der zurückgeholte Stand, falls eine
-Migration trotz Probelauf auf den echten Daten scheiterte — dafür liegt der
-Dump aus Schritt 4 bereit, und die Mail nennt ihn. Blockiert heißt:
-`DATA_DIR/update.blocked` liegt da, und jeder weitere Lauf tut nichts, bis
-jemand sie löscht — lieber stehen bleiben, als dieselbe kaputte Migration
-jede Nacht gegen die Daten der Wehr zu werfen. Das Muster stammt aus
-`tool/vm/fwapp_autodeploy.sh`, der seit August auf unserem Server läuft.
+Bis Schritt 5 ist am laufenden Server nichts verändert; ab Schritt 6 gibt
+es einen vollständigen Stand, der sich ohne Zutun zurückholen lässt.
+Blockiert heißt: `DATA_DIR/update.blocked` liegt da, und jeder weitere Lauf
+tut nichts, bis jemand sie löscht — lieber stehen bleiben, als dieselbe
+kaputte Version jede Nacht gegen die Daten der Wehr zu werfen. Das Muster
+stammt aus `tool/vm/fwapp_autodeploy.sh`.
+
+Von Hand, jederzeit:
+
+    ./fwapp_update.py --conf … --sichern               # vollständige Sicherung jetzt
+    ./fwapp_update.py --conf … --sicherungen           # welche gibt es?
+    ./fwapp_update.py --conf … --zuruecksetzen <name>  # diesen Stand zurückholen
 
 Nur Python-Standardbibliothek. Die reine Logik steht in Funktionen ohne
 Netz und Docker und wird von test_fwapp_update.py geprüft.
@@ -61,11 +67,12 @@ from typing import Callable, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from fwapp_check import _smtp_oeffnen, lies_conf  # noqa: E402
 from fwapp_install import Abbruch, Server, lies_env, offene_migrationen  # noqa: E402
+from fwapp_sicherung import Sicherung, gesund  # noqa: E402
 
 API = "https://api.github.com/repos/MacBuchi/FWApp"
 USER_AGENT = "fwapp-update/1.0"
 KANAELE = ("stabil", "vorab", "aus")
-SICHERUNGEN_BEHALTEN = 7
+DUMPS_BEHALTEN = 7
 
 
 # Wo es ihn gibt (ab 3.12, teils zurückportiert), zusätzlich zur eigenen
@@ -179,7 +186,10 @@ def fehler_mail(conf: dict[str, str], von: str, nach: str, schritt: str, text: s
         "Wenn die Ursache behoben ist:\n"
         f"  sudo rm {data}/update.blocked\n"
         f"  sudo python3 {data}/server/fwapp_update.py --conf {data}/server/fwapp.conf\n\n"
-        f"Sicherungen der Datenbank: {data}/backups/\n"
+        "Vollständige Sicherungen anzeigen und bei Bedarf zurückholen:\n"
+        f"  sudo python3 {data}/server/fwapp_update.py --conf {data}/server/fwapp.conf --sicherungen\n"
+        f"  sudo python3 {data}/server/fwapp_update.py --conf {data}/server/fwapp.conf "
+        "--zuruecksetzen <name>\n\n"
         f"Protokoll: {data}/update.log\n"
     )
     return m
@@ -277,7 +287,7 @@ class Update:
         return images
 
     # 4
-    def sichern(self, tag: str) -> Path:
+    def dump(self, tag: str) -> Path:
         ordner = self.data / "backups"
         ordner.mkdir(exist_ok=True)
         dump = ordner / f"{time.strftime('%Y%m%d-%H%M%S')}-vor-{tag}.dump"
@@ -289,7 +299,7 @@ class Update:
             )
         if r.returncode != 0:
             raise Abbruch(f"pg_dump: {r.stderr.decode().strip()}")
-        for alt in aelteste([p.name for p in ordner.glob("*.dump")], SICHERUNGEN_BEHALTEN):
+        for alt in aelteste([p.name for p in ordner.glob("*.dump")], DUMPS_BEHALTEN):
             (ordner / alt).unlink()
         return dump
 
@@ -332,44 +342,59 @@ class Update:
             "-d", db, "-v", "ON_ERROR_STOP=1", "-q", eingabe=sql,
         )
 
-    # 6
-    def _installer(self, buendel: Path, web: Path, conf_pfad: Path) -> Optional[str]:
-        """Lässt den Installer eines Bündels laufen; None heißt: geklappt,
-        sonst seine letzte Meldung."""
+    # 6 + 7
+    def umstellen(self, ziel: Path, conf_pfad: Path, sicherung: Sicherung) -> None:
+        """Vollständig sichern, neuen Stand einrichten, prüfen — und bei
+        einem Fehler die Sicherung automatisch zurückspielen."""
+        try:
+            stand = sicherung.erstellen(f"vor-{ziel.name}", self.installiert)
+        except Exception as e:
+            # Der Stack steht womöglich; der alte Stand ist unverändert.
+            sicherung.starten()
+            raise Abbruch(f"Vollständige Sicherung gescheitert ({e}) — alter Stand läuft wieder, "
+                          "kein Update ohne Sicherung") from e
+        self.log(f"Vollständige Sicherung: {stand}")
+
         befehl = [
-            sys.executable, str(buendel / "tool/installer/fwapp_install.py"),
-            "--conf", str(conf_pfad), "--web", str(web), "--ohne-pruefung",
+            sys.executable, str(ziel / "server/tool/installer/fwapp_install.py"),
+            "--conf", str(conf_pfad), "--web", str(ziel / "web"), "--ohne-pruefung",
         ]
         if self.testmodus:
             befehl.append("--testmodus")
         r = subprocess.run(befehl, capture_output=True, text=True)
         with self.log_datei.open("a") as f:
             f.write(r.stdout + r.stderr)
-        if r.returncode == 0:
-            return None
-        return ([z for z in r.stdout.splitlines() if z.strip()][-1:] or [r.stderr.strip()])[0]
-
-    def einspielen(self, ziel: Path, conf_pfad: Path) -> None:
-        fehler = self._installer(ziel / "server", ziel / "web", conf_pfad)
+        if r.returncode != 0:
+            fehler = ([z for z in r.stdout.splitlines() if z.strip()][-1:] or [r.stderr.strip()])[0]
+        else:
+            fehler = gesund(self.server)
+            if fehler:
+                fehler = f"nach dem Einrichten nicht benutzbar: {fehler}"
         if fehler is None:
             return
-        buendel, web = Path(self.info.get("buendel", "")), Path(self.info.get("web", ""))
-        if not (buendel / "tool/installer/fwapp_install.py").exists() or not web.is_dir():
-            raise Abbruch(f"{fehler} — altes Bündel nicht mehr da, KEIN Rückweg versucht")
-        self.log(f"Neuer Stand scheitert ({fehler}) — hole {self.installiert} zurück")
-        zurueck = self._installer(buendel, web, conf_pfad)
-        if zurueck is None:
-            raise Abbruch(f"{fehler} — {self.installiert} ist zurückgeholt und läuft")
-        raise Abbruch(f"{fehler} — und der Rückweg auf {self.installiert} scheiterte auch: {zurueck}")
 
-    def aufraeumen(self, alte_images: list[str], neue_images: list[str], tag: str) -> None:
-        """Die Images, die nur der alte Stand brauchte, und alte Bündel. Auf
-        dem Pi ist die Platte der Engpass (#239: ≈ 5,2 GB Images)."""
+        self.log(f"Neuer Stand scheitert ({fehler}) — spiele {stand.name} ein")
+        try:
+            sicherung.einspielen(stand)
+            zurueck = gesund(self.server)
+        except Exception as e:  # noqa: BLE001 — jeder Fehler hier gehört in die Mail
+            zurueck = str(e)
+        if zurueck is None:
+            raise Abbruch(f"{fehler} — Sicherung {stand.name} automatisch eingespielt, "
+                          f"{self.installiert} läuft wieder mit den Daten von vor dem Update")
+        raise Abbruch(f"{fehler} — und das Einspielen der Sicherung {stand.name} scheiterte "
+                      f"auch ({zurueck}). Server braucht Hilfe von Hand.")
+
+    def aufraeumen(self, alte_images: list[str], neue_images: list[str], sicherung: Sicherung,
+                   tag: str) -> None:
+        """Alte Sicherungen, alte Bündel und die Images, die weder der neue
+        Stand noch eine verbliebene Sicherung braucht — eine Sicherung ohne
+        ihre Images ließe sich nicht mehr starten. Auf dem Pi ist die Platte
+        der Engpass (#239: ≈ 5,2 GB Images)."""
+        noetig = set(neue_images) | set(sicherung.aufraeumen())
         for image in alte_images:
-            if image not in neue_images:
+            if image not in noetig:
                 subprocess.run([*self.server.docker, "rmi", image], capture_output=True)
-        # Das Bündel des NEUEN Stands bleibt: Es ist der Rückweg des
-        # nächsten Updates.
         releases = self.data / "releases"
         for alt in releases.iterdir():
             if alt.name != tag:
@@ -397,10 +422,22 @@ def main(argv: Optional[list[str]] = None) -> int:
     p = argparse.ArgumentParser(description="FWApp-Server aktualisieren (#241)")
     p.add_argument("--conf", required=True)
     p.add_argument("--pruefen", action="store_true", help="nur nachsehen, nichts ändern")
+    p.add_argument("--sichern", action="store_true", help="vollständige Sicherung jetzt")
+    p.add_argument("--sicherungen", action="store_true", help="vorhandene Sicherungen zeigen")
+    p.add_argument("--zuruecksetzen", metavar="NAME", help="diese Sicherung einspielen")
     a = p.parse_args(argv)
     conf_pfad = Path(a.conf).resolve()
     conf = lies_conf(conf_pfad.read_text(encoding="utf-8"), dict(os.environ))
     u = Update(conf)
+
+    sicherung = Sicherung(u.server)
+    if a.sicherungen:
+        for s in sicherung.liste():
+            m = json.loads((s / "manifest.json").read_text())
+            print(f"{s.name}   Stand {m['version']}   {m['erstellt']}")
+        return 0
+    if a.sichern or a.zuruecksetzen:
+        return von_hand(u, sicherung, a.sichern, a.zuruecksetzen)
 
     if u.blockiert.exists():
         # Leise: Der Timer soll nicht jede Nacht rot werden, der Grund steht
@@ -438,14 +475,14 @@ def main(argv: Optional[list[str]] = None) -> int:
         schritt = "Images ziehen"
         alte_images = u._images(u.server_dir)
         neue_images = u.images_ziehen(installer)
-        schritt = "Sicherung"
-        dump = u.sichern(tag)
-        u.log(f"Rückfallpunkt: {dump}")
+        schritt = "Dump"
+        dump = u.dump(tag)
+        u.log(f"Dump: {dump}")
         schritt = "Probelauf der Migrationen"
         u.log(f"{u.probelauf(ziel / 'server/supabase/migrations', dump)} Migration(en) geprobt")
         schritt = "Einspielen"
-        u.einspielen(ziel, conf_pfad)
-        u.aufraeumen(alte_images, neue_images, tag)
+        u.umstellen(ziel, conf_pfad, sicherung)
+        u.aufraeumen(alte_images, neue_images, sicherung, tag)
     except Spaeter as e:
         u.log(f"{schritt}: vorübergehend gescheitert — nächste Nacht: {e}")
         return 0
@@ -456,6 +493,49 @@ def main(argv: Optional[list[str]] = None) -> int:
         return 1
     u.log(f"Fertig: {tag} läuft.")
     return 0
+
+
+def von_hand(u: Update, sicherung: Sicherung, sichern: bool, name: Optional[str]) -> int:
+    sperre = (u.data / "update.lock").open("w")
+    try:
+        fcntl.flock(sperre, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        print("Ein Update läuft gerade — später noch einmal.")
+        return 1
+    try:
+        if sichern:
+            stand = sicherung.erstellen("von-hand", u.installiert)
+            sicherung.starten()
+            fehler = gesund(u.server)
+            u.log(f"Vollständige Sicherung von Hand: {stand}")
+            if fehler:
+                print(f"⚠️ Gesichert, aber der Server meldet danach: {fehler}")
+                return 1
+            print(f"✅ {stand}")
+            return 0
+        ordner = sicherung.ordner / name
+        if not (ordner / "manifest.json").exists():
+            print(f"❌ Keine Sicherung {name} — vorhanden: "
+                  f"{', '.join(s.name for s in sicherung.liste()) or 'keine'}")
+            return 1
+        manifest = sicherung.einspielen(ordner)
+        fehler = gesund(u.server)
+        # Sonst holte das nächste nächtliche Update genau den Stand zurück,
+        # von dem man gerade weggegangen ist.
+        u.blockiert.write_text(
+            f"{time.strftime('%Y-%m-%d %H:%M:%S')}\nVon Hand auf {name} zurückgesetzt "
+            f"(Stand {manifest['version']}). Updates erst nach rm {u.blockiert}.\n"
+        )
+        u.log(f"Von Hand zurückgesetzt auf {name} (Stand {manifest['version']})")
+        if fehler:
+            print(f"❌ Eingespielt, aber der Server meldet: {fehler}")
+            return 1
+        print(f"✅ {name} läuft (Stand {manifest['version']}). Nächtliche Updates sind "
+              f"angehalten, bis {u.blockiert} gelöscht ist.")
+        return 0
+    except Abbruch as e:
+        print(f"❌ {e}")
+        return 1
 
 
 if __name__ == "__main__":

@@ -378,6 +378,27 @@ lange Cache-Zeiten für gehashte Assets; API-Gateway-Block siehe oben).
 selbst hoch. `rsync` muss in der VM installiert sein
 (`apt-get install rsync`).
 
+**Einrichtungs-Datei `/.well-known/fwapp.json`** (Issue #238): Adresse,
+Anon-Key und Name dieser Installation — alles öffentlich. Die Web-App liest
+sie beim Start von der eigenen Domain; in der Android-App reicht es damit,
+die Domain einzutippen oder den Einrichtungs-QR zu scannen (Einstellungen →
+„Weiteres Gerät verbinden"). Einmalig einrichten:
+
+```bash
+scp tool/vm/fwapp_kopplung.sh fwapp@<vm>:bin/
+ssh fwapp@<vm>
+bin/fwapp_kopplung.sh https://app.<domain> "<Name der Installation>"
+# in ~/fwapp-web/docker-compose.yml beim nginx-Dienst ergänzen:
+#   volumes: - ./kopplung:/etc/fwapp:ro
+cd ~/fwapp-web && docker compose up -d
+curl -s https://app.<domain>/.well-known/fwapp.json   # muss das JSON zeigen
+```
+
+Die Datei liegt bewusst **nicht** im Webroot — der Autodeploy rollt das
+Bündel mit `rsync --delete` hinein und löschte sie bei jedem Release. Fehlt
+sie, bleibt die App bei ihrer eingebauten Adresse; es geht also nichts
+kaputt, es fehlt nur der Komfort.
+
 **Deploy** (vom Admin-Rechner, LAN nötig):
 
 ```bash

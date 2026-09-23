@@ -585,6 +585,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             style: const TextStyle(fontSize: 12, color: Colors.grey),
           ),
         ),
+      // Plug and Play (#238): Die App aus dem Release kennt EINEN Server.
+      // Wer zu einer Wehr mit eigener Installation gehört, verbindet sich
+      // hier per QR-Code oder Domain. Die Servereinstellungen bleiben der
+      // Notausgang für Adresse und Schlüssel von Hand.
+      TextButton(
+        onPressed: () => context.push('/server-einrichten'),
+        child: const Text('Mit anderem Server verbinden'),
+      ),
       TextButton(
         onPressed: () => context.push('/server-settings'),
         child: const Text('Servereinstellungen'),

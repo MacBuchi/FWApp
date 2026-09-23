@@ -6,9 +6,12 @@ library;
 import 'dart:async' show unawaited;
 import 'dart:ui' show PlatformDispatcher;
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fwapp/features/kopplung/data/kopplung_quelle.dart';
+import 'package:fwapp/features/kopplung/domain/server_kopplung.dart';
 import 'package:fwapp/features/lerngruppe/presentation/providers/lerngruppe_providers.dart';
 import 'package:fwapp/features/inventory/presentation/providers/tag_providers.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/anhang_providers.dart';
@@ -88,11 +91,40 @@ Future<void> main() async {
   var supabaseReady = false;
   try {
     final prefs = await SharedPreferences.getInstance();
-    final enabled = prefs.getBool('sync_enabled') ?? false;
+    var enabled = prefs.getBool('sync_enabled') ?? false;
     // Same default fallback as SyncSettingsNotifier: unset/empty prefs mean
     // the preconfigured self-hosted server.
     var url = prefs.getString('supabase_url') ?? '';
     var key = prefs.getString('supabase_key') ?? '';
+    // Im Browser: die Installation, die diese Seite ausliefert (#238). Regel
+    // und Begründung in `waehleWebServer` — kurz: eigene Domain vor
+    // eingebauter Vorgabe, aber nie vor einer bewusst eingetragenen Adresse.
+    if (kIsWeb) {
+      final wahl = waehleWebServer(
+        eigeneInstallation: await _eigeneInstallation(),
+        gespeicherteUrl: url,
+        gespeicherteQuelle: prefs.getString(kServerQuellePref),
+        hatEingebauteVorgabe: kDefaultSupabaseUrl.isNotEmpty,
+      );
+      if (wahl != null) {
+        url = wahl.url;
+        key = wahl.key;
+        enabled = enabled || wahl.einschalten;
+        // Gemerkt, damit ein Start ohne Netz (PWA) dieselbe Adresse nimmt.
+        await prefs.setString('supabase_url', url);
+        await prefs.setString('supabase_key', key);
+        await prefs.setString(kServerQuellePref, ServerQuelle.web.name);
+        // Der Name gehört dazu, sonst zeigt der Einrichtungs-QR nur den Host
+        // (beim Durchklick von #238 gefunden).
+        final name = wahl.name;
+        if (name == null) {
+          await prefs.remove(kServerNamePref);
+        } else {
+          await prefs.setString(kServerNamePref, name);
+        }
+        if (wahl.einschalten) await prefs.setBool('sync_enabled', true);
+      }
+    }
     if (url.isEmpty) url = kDefaultSupabaseUrl;
     if (key.isEmpty) key = kDefaultSupabaseAnonKey;
     if (enabled && url.isNotEmpty && key.isNotEmpty) {
@@ -287,5 +319,20 @@ class _FWAppState extends ConsumerState<FWApp> {
       supportedLocales: const [Locale('de', 'DE'), Locale('en', 'US')],
       locale: const Locale('de', 'DE'),
     );
+  }
+}
+
+/// Die Beschreibung der Installation, die diese Web-App ausliefert — `null`,
+/// wenn es keine gibt (Entwicklung, fremder Webspace) oder das Netz fehlt.
+/// Kurzes Zeitlimit: Der Start darf auf eine Verzierung nicht warten.
+Future<ServerKopplung?> _eigeneInstallation() async {
+  try {
+    return await holeKopplung(
+      Uri.base.resolve(kKopplungPfad),
+      zeitlimit: const Duration(seconds: 3),
+    );
+  } catch (e) {
+    appLog.i('Keine eigene Installation unter $kKopplungPfad', error: e);
+    return null;
   }
 }

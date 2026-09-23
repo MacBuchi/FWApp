@@ -16,7 +16,7 @@ import 'package:fwapp/features/compartment/presentation/fach_antwort.dart';
 import 'package:fwapp/features/equipment/presentation/widgets/equipment_avatar.dart';
 import 'package:fwapp/features/inventory/data/nfc_dienst.dart';
 import 'package:fwapp/features/inventory/data/tag_code.dart';
-import 'package:fwapp/features/inventory/presentation/screens/code_scannen_screen.dart';
+import 'package:fwapp/core/scanner/code_scannen_screen.dart';
 import 'package:fwapp/features/inventory/presentation/screens/nfc_lesen_screen.dart';
 import 'package:fwapp/features/search/domain/geraete_suche.dart';
 import 'package:fwapp/features/search/presentation/providers/geraete_suche_providers.dart';

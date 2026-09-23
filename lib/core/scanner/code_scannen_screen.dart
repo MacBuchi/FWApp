@@ -1,5 +1,8 @@
 /// code_scannen_screen.dart – Codes mit der Kamera lesen (Issue #179).
 ///
+/// Seit #238 in `core/`: Neben der Inventur liest auch die Server-Kopplung
+/// ihren Einrichtungs-QR hiermit (AGENTS.md: Zweitverwendung = Extraktion).
+///
 /// **Was dieser Bildschirm NICHT tut: entscheiden, was der Code bedeutet.**
 /// Er liefert die gelesene Zeichenkette zurück, mehr nicht. Ob damit ein
 /// Gerät abgehakt oder ein Tag verknüpft wird, weiß der Aufrufer — und beide

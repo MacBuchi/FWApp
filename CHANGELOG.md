@@ -12,6 +12,29 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.63.0] – 2026-09-23
+
+### Neu
+
+- **Neue Handys per QR-Code verbinden.** Unter **Einstellungen → Weiteres
+  Gerät verbinden** zeigt die App einen Einrichtungs-Code. Wer die App neu
+  installiert, tippt auf der Anmeldeseite auf **„Mit anderem Server
+  verbinden"**, scannt den Code — und die App spricht mit dem Server der
+  eigenen Wehr. Kein Abtippen von Adresse und Schlüssel mehr. Den Code darf
+  jedes Mitglied zeigen: Er verbindet nur mit dem Server, anmelden kann sich
+  danach trotzdem nur, wer einen Zugang hat.
+
+- **Oder einfach die Adresse der Wehr eintippen.** Statt des Codes geht
+  auch die Domain, etwa `feuerwehr-musterstadt.de` — den Rest holt sich die
+  App von dort. Vor dem Umstellen prüft sie, ob der Server wirklich
+  antwortet; danach startet sie neu (im Browser lädt die Seite neu, auf dem
+  Handy bittet die App darum, sie einmal zu schließen und neu zu öffnen).
+
+- **Die Web-App findet ihren Server selbst**, wenn sie vom Server einer
+  Wehr ausgeliefert wird. Das ist die Grundlage dafür, dass eine Feuerwehr
+  künftig ihren eigenen Server betreiben kann, ohne eine eigene App zu
+  bauen. Für die bestehende Installation ändert sich nichts.
+
 ## [1.62.0] – 2026-09-23
 
 ### Neu

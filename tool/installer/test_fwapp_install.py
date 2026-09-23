@@ -138,6 +138,52 @@ class Ersetzen(unittest.TestCase):
             self.assertEqual((ziel / "admin-users/index.ts").read_text(), "neu")
 
 
+class ReleaseBuendel(unittest.TestCase):
+    """Das Server-Bündel, das release.yml an jedes Release hängt. Fehlt
+    darin eine Datei, merkt es erst das nächtliche Update einer fremden
+    Wehr — deshalb wird hier ein echtes gebaut und ausgepackt."""
+
+    def test_enthaelt_alles_was_der_installer_anfasst(self):
+        import tarfile
+        import tempfile
+        from pathlib import Path
+
+        import fwapp_buendel as b
+
+        with tempfile.TemporaryDirectory() as tmp:
+            archiv = b.baue(i.REPO, "v9.9.9", Path(tmp))
+            self.assertEqual(archiv.name, "fwapp-server-v9.9.9.tar.gz")
+            with tarfile.open(archiv) as tar:
+                tar.extractall(Path(tmp, "x"), filter="data")
+            wurzel = Path(tmp, "x")
+            self.assertEqual(i.buendel_version(wurzel), "v9.9.9")
+            installer = wurzel / "tool/installer"
+            for pfad in (
+                "docker-compose.yml", "kong.yml", "Caddyfile", "fwapp_check.py",
+                "fwapp_install.py", "fwapp_update.py", "db/roles.sql", "db/jwt.sql",
+                "compose/lan.yml", "compose/caddy.yml", "compose/tunnel.yml", "compose/test.yml",
+            ):
+                self.assertTrue((installer / pfad).is_file(), pfad)
+            for pfad in (
+                "tool/vm/fwapp-web-nginx.conf", "tool/vm/fwapp_kopplung.sh",
+                "tool/vm/fwapp_betreiber.sh", "supabase/functions/main/index.ts",
+                "supabase/functions/admin-users/index.ts",
+            ):
+                self.assertTrue((wurzel / pfad).is_file(), pfad)
+            self.assertEqual(
+                len(list((wurzel / "supabase/migrations").glob("*.sql"))),
+                len(list((i.REPO / "supabase/migrations").glob("*.sql"))),
+            )
+            # Nichts, was auf einem fremden Server nichts verloren hat.
+            namen = [p.name for p in wurzel.rglob("*")]
+            self.assertFalse([n for n in namen if n.startswith("test_")])
+            self.assertNotIn("fwapp_autodeploy.sh", namen)
+            self.assertNotIn("__pycache__", namen)
+
+    def test_aus_dem_repo_heisst_der_stand_entwicklung(self):
+        self.assertEqual(i.buendel_version(i.REPO), "entwicklung")
+
+
 class Buendel(unittest.TestCase):
     def test_images_sind_gepinnt(self):
         """Marcus 2026-09-23: Server-Images je Release fest — kein `latest`,

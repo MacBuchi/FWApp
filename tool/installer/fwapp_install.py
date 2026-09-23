@@ -49,6 +49,13 @@ from fwapp_check import lies_conf  # noqa: E402
 HIER = Path(__file__).resolve().parent
 REPO = HIER.parent.parent
 
+
+def buendel_version(repo: Path) -> str:
+    """Der Stand, den dieser Installer einrichtet: `VERSION` legt
+    fwapp_buendel.py ins Release-Bündel. Aus dem Repo heraus gibt es keins."""
+    datei = repo / "VERSION"
+    return datei.read_text().strip() if datei.exists() else "entwicklung"
+
 ERREICHBARKEITEN = ("lan", "caddy", "tunnel")
 
 # Die Demo-Werte des lokalen Supabase-Stacks. NUR für --testmodus: Dann
@@ -203,6 +210,46 @@ def geheimnisse_behalten(alte_env: Optional[str], testmodus: bool) -> dict[str, 
     return neue_geheimnisse(testmodus)
 
 
+def conf_inhalt(conf: dict[str, str]) -> str:
+    """Die wirksame Konfiguration für server/fwapp.conf — dort liest der
+    nächtliche Updater sie wieder. Wirksam heißt: samt der Werte, die beim
+    Installieren aus Umgebungsvariablen kamen (SMTP_PASS), sonst verlöre das
+    erste Update die Mail."""
+    zeilen = ["# fwapp.conf – vom Installer abgelegt (#241); enthält Passwörter: chmod 600."]
+    for k, v in conf.items():
+        if "\n" in v:
+            raise Abbruch(f"{k} enthält einen Zeilenumbruch.")
+        zeilen.append(f"{k}={v}")
+    return "\n".join(zeilen) + "\n"
+
+
+def update_units(server: Path) -> dict[str, str]:
+    """systemd-Einheiten für das nächtliche Update (Marcus, 2026-09-23:
+    automatisch nachts). Persistent: Ein Pi, der um 3 Uhr aus war, holt den
+    Lauf nach dem Einschalten nach."""
+    return {
+        "fwapp-update.service": (
+            "[Unit]\n"
+            "Description=FWApp: auf das nächste Release aktualisieren (#241)\n"
+            "After=network-online.target docker.service\n"
+            "Wants=network-online.target\n\n"
+            "[Service]\n"
+            "Type=oneshot\n"
+            f"ExecStart=/usr/bin/env python3 {server}/fwapp_update.py --conf {server}/fwapp.conf\n"
+        ),
+        "fwapp-update.timer": (
+            "[Unit]\n"
+            "Description=FWApp: nächtliches Update\n\n"
+            "[Timer]\n"
+            "OnCalendar=*-*-* 03:00\n"
+            "RandomizedDelaySec=45min\n"
+            "Persistent=true\n\n"
+            "[Install]\n"
+            "WantedBy=timers.target\n"
+        ),
+    }
+
+
 def offene_migrationen(dateien: list[str], angewandt: set[str]) -> list[str]:
     """In Namensreihenfolge (Zeitstempel vorn), ohne die schon angewandten —
     dieselbe Buchführung wie der Autodeploy (deploy.applied_migrations)."""
@@ -243,7 +290,12 @@ class Server:
     def dateien(self, web: Path) -> None:
         for sub in ("server", "db", "storage", "web", "functions", "kopplung", "backups"):
             (self.data / sub).mkdir(parents=True, exist_ok=True)
-        for name in ("docker-compose.yml", "kong.yml", "Caddyfile", "fwapp_check.py"):
+        # fwapp_install.py und fwapp_update.py liegen mit im Server-Ordner:
+        # Dort startet der Timer den Updater, und der braucht beide.
+        for name in (
+            "docker-compose.yml", "kong.yml", "Caddyfile",
+            "fwapp_check.py", "fwapp_install.py", "fwapp_update.py",
+        ):
             shutil.copy2(HIER / name, self.server / name)
         for sub in ("compose", "db"):
             shutil.copytree(HIER / sub, self.server / sub, dirs_exist_ok=True)
@@ -268,6 +320,24 @@ class Server:
             else:
                 alt.unlink()
         shutil.copytree(quelle, ziel, dirs_exist_ok=True)
+
+    def conf_ablegen(self) -> None:
+        pfad = self.server / "fwapp.conf"
+        pfad.write_text(conf_inhalt(self.conf))
+        pfad.chmod(0o600)
+
+    def installation_merken(self, version: str, web: Path) -> None:
+        """Erst ganz am Ende eines erfolgreichen Laufs: Der Updater hält den
+        hier eingetragenen Stand für eingerichtet — und fällt bei einem
+        gescheiterten Update auf genau dieses Bündel zurück."""
+        (self.server / "installation.json").write_text(
+            json.dumps(
+                {"version": version, "testmodus": self.testmodus,
+                 "buendel": str(REPO), "web": str(web),
+                 "eingerichtet": time.strftime("%Y-%m-%dT%H:%M:%S%z")},
+                indent=2,
+            ) + "\n"
+        )
 
     # Schritt 2: Schlüssel
     def env(self) -> dict[str, str]:
@@ -299,7 +369,7 @@ class Server:
         raise Abbruch(f"{container} wird nicht bereit — `docker logs {container}` ansehen.")
 
     # Schritt 4: Migrationen
-    def migrationen(self) -> int:
+    def migrationen(self, ordner: Optional[Path] = None) -> int:
         self.psql(
             "create schema if not exists deploy;"
             "create table if not exists deploy.applied_migrations ("
@@ -308,7 +378,7 @@ class Server:
             " source text not null default 'auto' check (source in ('seed','auto','manual')));"
         )
         angewandt = set(self.psql("select name from deploy.applied_migrations;").split())
-        ordner = REPO / "supabase/migrations"
+        ordner = ordner or REPO / "supabase/migrations"
         offen = offene_migrationen([p.name for p in ordner.glob("*.sql")], angewandt)
         for name in offen:
             pfad = ordner / name
@@ -379,6 +449,22 @@ class Server:
         return passwort
 
 
+    # Schritt 7: nächtliches Update
+    def update_timer(self) -> str:
+        """Richtet den Timer ein, wo das geht, und sagt sonst, wie."""
+        if self.testmodus:
+            return "Testmodus — kein Timer."
+        if not Path("/run/systemd/system").exists():
+            return "Kein systemd — Updates von Hand: fwapp_update.py (siehe INSTALLATION.md)."
+        if os.geteuid() != 0:
+            return "Timer braucht root — den Installer mit sudo wiederholen."
+        for name, inhalt in update_units(self.server).items():
+            Path("/etc/systemd/system", name).write_text(inhalt)
+        self.lauf("systemctl", "daemon-reload")
+        self.lauf("systemctl", "enable", "--now", "fwapp-update.timer")
+        return "Timer aktiv: jede Nacht gegen 3 Uhr."
+
+
 # ── Ablauf ────────────────────────────────────────────────────────────────
 
 
@@ -418,8 +504,9 @@ def main(argv: Optional[list[str]] = None) -> int:
             schritt("Vorab-Prüfung")
             if subprocess.run([sys.executable, str(HIER / "fwapp_check.py"), "--conf", a.conf, "--vorher"]).returncode:
                 raise Abbruch("Die Vorab-Prüfung blockiert — erst die ❌-Punkte beheben.")
-        schritt("Dateien")
+        schritt(f"Dateien ({buendel_version(REPO)})")
         server.dateien(Path(a.web).resolve())
+        server.conf_ablegen()
         schritt("Schlüssel")
         geheim = server.env()
         schritt("Dienste starten (beim ersten Mal werden die Images geladen)")
@@ -430,6 +517,9 @@ def main(argv: Optional[list[str]] = None) -> int:
         server.kopplung()
         schritt("KreisDatenMeister")
         passwort = server.kreisdatenmeister(geheim)
+        schritt("Nächtliches Update")
+        print(f"   {server.update_timer()}")
+        server.installation_merken(buendel_version(REPO), Path(a.web).resolve())
     except Abbruch as e:
         print(f"\n❌ {e}")
         return 1

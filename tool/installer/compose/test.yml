@@ -20,6 +20,9 @@ services:
     image: public.ecr.aws/supabase/mailpit:v1.30.2
     ports:
       - "54324:8025"
+      # SMTP für fwapp_update.py: Er läuft auf dem Rechner, nicht im
+      # Docker-Netz, und schickt dem KreisDatenMeister die Fehler-Mail.
+      - "54325:1025"
 
 volumes:
   storage-test:

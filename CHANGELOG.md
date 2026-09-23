@@ -12,6 +12,34 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.62.0] – 2026-09-23
+
+### Neu
+
+- **Eine neue Feuerwehr weiß, an wen sie sich wenden kann.** Auf der
+  Anmeldeseite steht jetzt „Deine Wehr ist noch nicht dabei?" mit der
+  Kontaktadresse des Betreibers — sofern er eine hinterlegt hat. Eine
+  Selbstanmeldung gibt es weiterhin nicht: Neue Wehren richtet der
+  Betreiber ein.
+
+- **Konsole für den Betreiber der Installation („KreisDatenMeister").** Wer
+  den Server betreibt, findet unter **Einstellungen → KreisDatenMeister**
+  alle Feuerwehren auf einen Blick: Abteilungen, Mitglieder, Kommandanten,
+  offene Einladungen und wann zuletzt veröffentlicht wurde. Von dort legt er
+  eine neue Wehr samt erster Abteilung an und lädt ihren
+  Feuerwehrkommandanten per Mail ein. Die Konsole warnt, wenn eine Wehr gar
+  keinen oder nur einen Kommandanten hat — fällt der aus, kann dort sonst
+  niemand mehr einladen. Für diesen Fall kann der Betreiber einen
+  Kommandanten hinzufügen: Hat die Person schon ein Konto, sofort, sonst per
+  Einladung. Alle anderen sehen den Eintrag nicht.
+
+- **Eine Feuerwehr kann stillgelegt werden** — etwa eine Probe-Wehr oder
+  eine, die die App nicht mehr nutzt. Dann sind Veröffentlichen, Einladen und
+  das Einreichen von Wissensfragen gesperrt; Nachschlagen und Lernen gehen
+  weiter, und **auf den Handys wird nichts gelöscht**. Wer betroffen ist,
+  sieht das auf der Startseite, samt Kontakt. Der Betreiber kann die Wehr
+  jederzeit wieder aktivieren.
+
 ## [1.61.0] – 2026-09-23
 
 ### Neu

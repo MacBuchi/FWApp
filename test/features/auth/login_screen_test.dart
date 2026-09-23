@@ -10,6 +10,7 @@ import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/widgets/password_field.dart';
 import 'package:fwapp/features/auth/presentation/screens/login_screen.dart';
+import 'package:fwapp/features/betrieb/presentation/providers/betrieb_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'
     show AuthClientOptions, SupabaseClient;
@@ -37,7 +38,11 @@ void main() {
     authOptions: const AuthClientOptions(autoRefreshToken: false),
   );
 
-  Future<void> pumpLogin(WidgetTester tester, {SupabaseClient? client}) async {
+  Future<void> pumpLogin(
+    WidgetTester tester, {
+    SupabaseClient? client,
+    String? kontakt,
+  }) async {
     await tester.pumpWidget(
       buildTestApp(
         db: db,
@@ -46,11 +51,31 @@ void main() {
           supabaseReadyProvider.overrideWithValue(true),
           supabaseClientProvider.overrideWithValue(client),
           serverHealthProvider.overrideWith((ref) async => true),
+          // Kein Netz im Widget-Test: Die Kontaktzeile (#101) käme sonst
+          // vom Server.
+          installationKontaktProvider.overrideWith((ref) async => kontakt),
         ],
       ),
     );
     await tester.pumpAndSettle();
   }
+
+  testWidgets('die Kontaktzeile des Betreibers steht da, wenn es eine gibt', (
+    tester,
+  ) async {
+    await pumpLogin(tester, kontakt: 'Mail an kdm@example.org');
+    expect(
+      find.text('Deine Wehr ist noch nicht dabei? Mail an kdm@example.org'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('ohne Kontaktzeile auf dem Server steht dort nichts', (
+    tester,
+  ) async {
+    await pumpLogin(tester);
+    expect(find.textContaining('noch nicht dabei'), findsNothing);
+  });
 
   testWidgets('das Auge macht das Passwort sichtbar', (tester) async {
     await pumpLogin(tester);

@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show TextInput;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:fwapp/features/betrieb/presentation/providers/betrieb_providers.dart';
 import 'package:fwapp/core/branding/fw_marke.dart';
 import 'package:fwapp/core/logging/app_logger.dart';
 import 'package:fwapp/core/sync/auth_utils.dart';
@@ -572,6 +573,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         textAlign: TextAlign.center,
         style: TextStyle(fontSize: 12, color: Colors.grey),
       ),
+      // Der einzige Weg für eine Wehr, die noch gar nicht auf diesem Server
+      // ist (Issue #101: kein Antragsformular). Fehlt die Zeile auf dem
+      // Server, steht hier nichts.
+      if (ref.watch(installationKontaktProvider).value case final kontakt?)
+        Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: SelectableText(
+            'Deine Wehr ist noch nicht dabei? $kontakt',
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 12, color: Colors.grey),
+          ),
+        ),
       TextButton(
         onPressed: () => context.push('/server-settings'),
         child: const Text('Servereinstellungen'),

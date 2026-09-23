@@ -20,6 +20,7 @@ import 'package:fwapp/features/settings/presentation/screens/server_settings_scr
 import 'package:fwapp/features/home/presentation/screens/home_screen.dart';
 import 'package:fwapp/features/home/presentation/screens/more_screen.dart';
 import 'package:fwapp/features/vehicle/presentation/screens/vehicle_list_screen.dart';
+import 'package:fwapp/features/betrieb/presentation/screens/betrieb_screen.dart';
 import 'package:fwapp/features/knowledge/presentation/screens/wissensdatenbank_screen.dart';
 import 'package:fwapp/features/lerngruppe/presentation/screens/lerngruppe_detail_screen.dart';
 import 'package:fwapp/features/lerngruppe/presentation/screens/lerngruppen_screen.dart';
@@ -410,6 +411,10 @@ final _routes = [
         builder: (_, _) => const ImageLibraryScreen(),
       ),
       GoRoute(path: '/settings', builder: (_, _) => const SettingsScreen()),
+      // Konsole des KreisDatenMeisters (Issue #101). Kein Reiter, kein Link
+      // für andere — den Eintrag zeigen die Einstellungen nur dem Betreiber,
+      // und der Server prüft jede Aktion selbst.
+      GoRoute(path: '/betrieb', builder: (_, _) => const BetriebScreen()),
       GoRoute(path: '/changelog', builder: (_, _) => const ChangelogScreen()),
     ],
   ),

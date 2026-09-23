@@ -1,12 +1,15 @@
-"""test_fwapp_sicherung.py – Die Regeln der vollständigen Sicherung ohne Docker.
+"""test_fwapp_sicherung.py – Die Regeln der Sicherung (#247, #248) ohne Docker.
 
 Dass Sicherung und automatisches Zurückspielen wirklich funktionieren —
 Datenbank, Fotos samt Inhaltstyp, Schlüssel —, beweist der Docker-Nachweis
-in docs/INSTALLATION.md. Hier steht, WAS gesichert wird: Fehlt ein Volume in
-der Liste, fällt das erst beim Zurückspielen auf, also dann, wenn es zu
-spät ist.
+in docs/INSTALLATION.md. Hier steht, WAS gesichert wird (fehlt ein Volume in
+der Liste, fällt das erst beim Zurückspielen auf, also zu spät), wie viele
+Sicherungen bleiben und woran die Sicherungsplatte erkannt wird.
 """
+import os
+import tempfile
 import unittest
+from unittest import mock
 
 import fwapp_install as inst
 import fwapp_sicherung as s
@@ -72,42 +75,98 @@ class Ziele(unittest.TestCase):
         ohne_db = [z for z in ziele if z.pfad != "/var/lib/postgresql/data"]
         self.assertEqual(s.fehlende_pflicht(ohne_db), ["/var/lib/postgresql/data"])
 
-    def test_namen_sind_dateinamen_und_eindeutig(self):
-        namen = [z.name for z in s.ziele_aus_inspect(self.INSPECT)]
-        self.assertEqual(len(namen), len(set(namen)))
-        self.assertIn("supabase_db_var_lib_postgresql_data", namen)
-        for n in namen:
-            self.assertRegex(n, r"^[A-Za-z0-9_]+$")
-
     def test_geteiltes_volume_nur_einmal(self):
-        inspect = [
-            container("a", vol("v", "/x")),
-            container("b", vol("v", "/y")),
-        ]
+        inspect = [container("a", vol("v", "/x")), container("b", vol("v", "/y"))]
         self.assertEqual(len(s.ziele_aus_inspect(inspect)), 1)
 
 
 class Werkzeug(unittest.TestCase):
-    def test_helfer_ist_das_edge_runtime_image_des_buendels(self):
-        """GNU tar mit --xattrs — busybox-tar (fast alle anderen Images)
-        verlöre den Inhaltstyp jedes Fotos."""
+    def test_borg_steht_gepinnt_im_buendel(self):
         text = (inst.HIER / "docker-compose.yml").read_text()
-        self.assertIn("edge-runtime", s.helfer_image([text]))
+        image = s.borg_image([text])
+        self.assertIn("borg", image)
+        self.assertRegex(image, r":\d{8}_\d{6}$", "datierter Tag, kein latest")
 
-    def test_ohne_helfer_keine_sicherung(self):
+    def test_das_werkzeug_startet_nie_mit_dem_stack(self):
+        text = (inst.HIER / "docker-compose.yml").read_text()
+        block = text[text.index("  borg:"):]
+        self.assertIn("profiles:", block.split("\n\n")[0])
+
+    def test_ohne_werkzeug_keine_sicherung(self):
         with self.assertRaises(inst.Abbruch):
-            s.helfer_image(["services:\n  web:\n    image: nginx:1\n"])
+            s.borg_image(["services:\n  web:\n    image: nginx:1\n"])
 
-    def test_xattrs_sind_dabei(self):
-        self.assertIn("--xattrs", s.GNU_TAR)
-        self.assertIn("--xattrs-include=*", s.GNU_TAR)
+
+class Kommentar(unittest.TestCase):
+    def test_klammern_verdoppelt_und_nach_borg_wieder_json(self):
+        daten = {"version": "v1.64.0", "ziele": [{"pfad": "/var/lib/storage"}]}
+        k = s.borg_kommentar(daten)
+        self.assertNotRegex(k.replace("{{", "").replace("}}", ""), r"[{}]")
+        # Borg macht aus {{ wieder { — was `borg list` zurückgibt, ist JSON.
+        import json
+
+        self.assertEqual(json.loads(k.replace("{{", "{").replace("}}", "}")), daten)
+
+
+class Aufbewahrung(unittest.TestCase):
+    def test_namen_tragen_zeit_und_anlass(self):
+        name = s.archiv_name("vor-v1.64.0", jetzt=0)
+        self.assertRegex(name, r"^\d{8}-\d{6}-vor-v1\.64\.0$")
+        self.assertEqual(s.anlass_von(name), "vor")
+        self.assertEqual(s.anlass_von("20260927-023000-woche"), "woche")
+        self.assertEqual(s.anlass_von("20260927-023000-von-hand"), "von-hand")
+
+    def test_vier_wochen_zwei_vor_updates(self):
+        """Marcus 2026-09-23: vier Wochensicherungen behalten (#248)."""
+        wochen = [f"2026090{i}-023000-woche" for i in range(1, 7)]
+        vor = [f"2026091{i}-030000-vor-v1.6{i}.0" for i in range(1, 4)]
+        weg = s.zu_loeschen(wochen + vor)
+        self.assertEqual(weg, sorted(wochen[:2] + vor[:1]))
+
+    def test_anlaesse_verdraengen_sich_nicht(self):
+        # Viele Updates in einer Woche dürfen keine Wochensicherung löschen.
+        namen = ["20260901-023000-woche"] + [f"2026090{i}-030000-vor-v1.{i}.0" for i in range(2, 9)]
+        self.assertNotIn("20260901-023000-woche", s.zu_loeschen(namen))
 
 
 class Platz(unittest.TestCase):
-    def test_sicherung_plus_luft(self):
-        gib = 1024**3
-        self.assertTrue(s.platz_reicht(5 * gib, 3 * gib))
-        self.assertFalse(s.platz_reicht(3 * gib + 1, 3 * gib))
+    GIB = 1024**3
+
+    def test_neues_archiv_braucht_die_daten_einmal(self):
+        self.assertFalse(s.platz_reicht(3 * self.GIB, 3 * self.GIB, archiv_neu=True))
+        self.assertTrue(s.platz_reicht(5 * self.GIB, 3 * self.GIB, archiv_neu=True))
+
+    def test_bestehendes_nur_die_aenderungen(self):
+        """Das ist der Gewinn von Borg: vier Wochen kosten nicht viermal."""
+        self.assertTrue(s.platz_reicht(2 * self.GIB, 30 * self.GIB, archiv_neu=False))
+
+
+class Sicherungsplatte(unittest.TestCase):
+    def test_fehlt_das_verzeichnis(self):
+        with tempfile.TemporaryDirectory() as data:
+            grund = s.externes_ziel("/gibt/es/nicht", data)
+            self.assertIn("nicht angeschlossen", grund)
+
+    def test_nicht_eingehaengt_heisst_gleicher_datentraeger(self):
+        """Ohne Platte ist der Einhängepunkt ein leerer Ordner auf der SSD.
+        Eine Sicherung dorthin schützte vor nichts."""
+        with tempfile.TemporaryDirectory() as data:
+            ziel = os.path.join(data, "usb")
+            os.mkdir(ziel)
+            self.assertIn("nicht eingehängt", s.externes_ziel(ziel, data))
+
+    def test_anderer_datentraeger_ist_gut(self):
+        with tempfile.TemporaryDirectory() as data, tempfile.TemporaryDirectory() as ziel:
+            echt = os.stat
+
+            def stat(pfad, *a, **k):
+                r = echt(pfad, *a, **k)
+                if pfad == ziel:
+                    return os.stat_result((*r[:2], r.st_dev + 1, *r[3:]))
+                return r
+
+            with mock.patch("os.stat", stat):
+                self.assertIsNone(s.externes_ziel(ziel, data))
 
 
 if __name__ == "__main__":

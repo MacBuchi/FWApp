@@ -1,86 +1,89 @@
 """fwapp_sicherung.py – Vollständige Sicherung und Wiederherstellung eines
-FWApp-Servers (Marcus, 2026-09-23: „bei jedem Update ein vollständiges
-Backup, das automatisch eingespielt werden kann, falls etwas schiefgeht").
+FWApp-Servers mit BorgBackup (#247, #248).
 
-Wie andere selbst gehostete Pakete das machen, und was davon hier gilt:
+Zwei Anlässe, ein Mechanismus:
 
-- **Nextcloud AIO / Home Assistant:** Vor dem Update eine vollständige
-  Sicherung, Container dafür angehalten, Wiederherstellung als ein Schritt.
-  → Genau das Muster hier.
-- **A/B-Partitionen (RAUC, Mender, Rugix):** tauschen das ganze
-  Betriebssystem. Unsere Updates fassen das Betriebssystem nicht an — nur
-  den Stack. Ein Abbild der ganzen Karte wäre groß, ließe sich im Betrieb
-  nicht konsistent ziehen und sicherte vor allem, was sich nie ändert.
-- **Dateisystem-Schnappschüsse (btrfs, ZFS, LVM):** schnell, aber nur mit
-  einem Dateisystem, das der Installer nicht voraussetzen kann (Pi OS ist
-  ext4), und Postgres auf Copy-on-Write gilt als Fehlerquelle.
+- **Vor jedem Update** (Marcus, 2026-09-23: „ein vollständiges Backup, das
+  automatisch eingespielt werden kann") — immer ins LOKALE Archiv unter
+  `DATA_DIR/sicherungen/borg`. Es muss da sein, auch wenn keine Platte
+  steckt: Ohne Sicherung kein Update. Die letzten zwei bleiben.
+- **Wöchentlich, optional** (#248: sonntags nachts, vier behalten) — nach
+  `SICHERUNG_ZIEL`: leer = aus, `lokal` = ins lokale Archiv, ein Pfad =
+  auf eine externe Platte. Nur die schützt vor einer toten SSD.
 
-**Was gesichert wird: alles, was ein Container beschreiben kann**, und
-zwar bei ANGEHALTENEM Stack — eine Datei-Kopie einer laufenden Datenbank
-ist keine. Die Liste kommt aus den Containern selbst (`docker inspect`),
-nicht aus einer Aufzählung hier: Ein neuer Dienst mit eigenem Volume ist
-damit automatisch dabei. Dazu die Dateien des Installers (`server/` mit den
-Schlüsseln, `web/`, `kopplung/`) und die Liste der Images samt Digest.
+**Warum Borg** (Marcus, 2026-09-23, nach Vergleich mit rsync und restic):
+Borg zerlegt die Daten in Stücke und legt jedes Stück nur einmal ab — vier
+Wochensicherungen kosten etwa einmal die Daten plus die Änderungen, nicht
+viermal die Daten. Dazu verschlüsselt (`repokey-blake2`) und komprimiert.
+Dasselbe Werkzeug nutzt Nextcloud AIO für genau diesen Zweck; wir nehmen
+dessen Image (Alpine, Borg 1.4, amd64 + arm64, datierte Tags) als
+Werkzeug-Container — auf dem Rechner muss nichts installiert werden.
 
-⚠️ **Die erweiterten Dateiattribute müssen mit.** Storage legt den
-Inhaltstyp jedes Fotos NICHT in der Datenbank ab, sondern als xattr an der
-Datei. Ein tar ohne `--xattrs` stellt Fotos wieder her, die der Browser
-nicht mehr als Bild erkennt. Das busybox-tar in den meisten Images kann das
-nicht; GNU tar steckt im edge-runtime-Image, das auf jedem FWApp-Server
-ohnehin liegt — kein zusätzliches Image, kein Werkzeug auf dem Rechner.
+**Wie andere es machen**, und warum nicht so: A/B-Partitionen (RAUC,
+Mender) tauschen das Betriebssystem, das unsere Updates nie anfassen;
+Dateisystem-Schnappschüsse (btrfs, ZFS) setzen ein Dateisystem voraus, das
+Pi OS nicht hat. Einzelheiten in docs/INSTALLATION.md.
 
-⚠️ **Wiederherstellen ersetzt den INHALT, nie das Verzeichnis** — derselbe
-Grund wie in `Server._ersetze`: Ein Bind-Mount hängt am Verzeichnis selbst.
+**Was gesichert wird: alles, was ein Container beschreiben kann**, bei
+ANGEHALTENEM Stack — eine Datei-Kopie einer laufenden Datenbank ist keine.
+Die Liste kommt aus `docker inspect`, ein neuer Dienst mit Volume ist also
+automatisch dabei. Dazu `server/` (Schlüssel, Compose-Dateien), `web/`,
+`kopplung/`; Stand und Images stehen im Kommentar des Archivs.
 
 ⚠️ **Der Helfer hängt die Daten per `--volumes-from` ein, nie über den
-Pfad aus `docker inspect`.** Docker Desktop meldet dort `/host_mnt/…`, einen
-Pfad, den es auf dem Rechner gar nicht gibt — die erste Fassung hielt die
-Datenbank deshalb für eine Datei und übersprang sie STILL. Aufgefallen ist
-es erst beim Zurückspielen im Nachweis. Seitdem gilt zusätzlich
-`PFLICHT`: Fehlen Datenbank oder Fotos in einer Sicherung, gibt es keine.
+Pfad aus `docker inspect`.** Docker Desktop meldet dort `/host_mnt/…`; die
+erste Fassung übersprang deshalb die Datenbank STILL. Seitdem `PFLICHT`:
+ohne Datenbank und Fotos keine Sicherung.
+
+⚠️ **Erweiterte Dateiattribute:** Storage legt den Inhaltstyp jedes Fotos
+als xattr an der Datei ab. Borg sichert sie unter Linux von sich aus — der
+Nachweis prüft es an einem echten PNG.
+
+⚠️ **Erst lesen, dann löschen:** Vor dem Zurückspielen liest
+`borg extract --dry-run` das ganze Archiv und prüft jedes Stück. Ein
+beschädigtes Archiv fällt so auf, BEVOR die laufenden Daten weg sind.
+
+⚠️ **Wiederherstellen ersetzt den INHALT, nie das Verzeichnis** — ein
+Bind-Mount hängt am Verzeichnis selbst (siehe `Server._ersetze`).
 """
 from __future__ import annotations
 
-import hashlib
 import json
+import os
 import re
 import shutil
-import tarfile
 import time
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
 from fwapp_install import Abbruch, Server, lies_env
 
-# Verzeichnisse, die der Installer schreibt und die Container nur lesen.
 INSTALLER_ORDNER = ("server", "web", "kopplung")
-SICHERUNGEN_BEHALTEN = 2
-GNU_TAR = ["--xattrs", "--xattrs-include=*", "--numeric-owner"]
 # Ohne diese beiden ist eine Sicherung keine: Datenbank und Fotos.
 PFLICHT = ("/var/lib/postgresql/data", "/var/lib/storage")
-# Exit-Code des Helfers für „das ist eine Datei, kein Verzeichnis".
 KEIN_VERZEICHNIS = 3
+# Aufbewahrung je Anlass (#248: vier Wochensicherungen).
+BEHALTEN = {"vor": 2, "woche": 4, "von-hand": 2}
+BORG_FEHLT = "fehlt"
 
 
 @dataclass
 class Ziel:
     """Ein Verzeichnis, das ein Container beschreiben kann."""
 
-    name: str  # Dateiname der Sicherung
     container: str  # über ihn hängt der Helfer die Daten ein (--volumes-from)
-    pfad: str  # Pfad im Container
+    pfad: str  # Pfad im Container — und im Archiv
 
 
 # ── Reine Logik ───────────────────────────────────────────────────────────
 
 
 def ziele_aus_inspect(container: list[dict]) -> list[Ziel]:
-    """Aus `docker inspect` der Container: jedes beschreibbare Volume und
-    jeder beschreibbare Bind-Mount, jede Quelle nur einmal. Nur lesend
-    eingehängte Pfade (Konfiguration, Web-App) sichert der Installer-Teil.
-    Ob ein Bind-Mount eine Datei ist, entscheidet erst der Helfer — nur er
-    sieht, was der Container sieht."""
+    """Aus `docker inspect`: jedes beschreibbare Volume und jeder
+    beschreibbare Bind-Mount, jede Quelle nur einmal. Ob ein Bind-Mount eine
+    Datei ist, entscheidet erst der Helfer — nur er sieht, was der Container
+    sieht."""
     ziele: dict[str, Ziel] = {}
     for c in container:
         cname = c.get("Name", "").lstrip("/")
@@ -88,11 +91,9 @@ def ziele_aus_inspect(container: list[dict]) -> list[Ziel]:
             if not m.get("RW") or m.get("Type") not in ("volume", "bind"):
                 continue
             quelle = m.get("Name") or m["Source"]
-            if quelle in ziele:
-                continue
-            ziel_name = re.sub(r"[^A-Za-z0-9]+", "_", f"{cname}{m['Destination']}").strip("_")
-            ziele[quelle] = Ziel(ziel_name, cname, m["Destination"])
-    return sorted(ziele.values(), key=lambda z: z.name)
+            if quelle not in ziele:
+                ziele[quelle] = Ziel(cname, m["Destination"])
+    return sorted(ziele.values(), key=lambda z: (z.container, z.pfad))
 
 
 def fehlende_pflicht(ziele: list[Ziel]) -> list[str]:
@@ -100,38 +101,84 @@ def fehlende_pflicht(ziele: list[Ziel]) -> list[str]:
     return [p for p in PFLICHT if p not in pfade]
 
 
-def helfer_image(compose_texte: list[str]) -> str:
+def borg_image(compose_texte: list[str]) -> str:
+    """Das Werkzeug steht als Dienst mit Profil in docker-compose.yml: So
+    ist es mit dem Release gepinnt und wird vom Updater mitgezogen, ohne je
+    zu starten."""
     for text in compose_texte:
-        m = re.search(r"^\s*image:\s*(\S*edge-runtime\S*)", text, re.M)
+        m = re.search(r"^\s*image:\s*(\S*borg\S*)", text, re.M)
         if m:
             return m.group(1)
-    raise Abbruch("Kein edge-runtime-Image in den Compose-Dateien — ohne GNU tar keine Sicherung.")
+    raise Abbruch("Kein Borg-Image in den Compose-Dateien — ohne Werkzeug keine Sicherung.")
 
 
-def platz_reicht(frei: int, bedarf: int) -> bool:
-    """Die Sicherung plus Luft für Images und Postgres (1 GiB)."""
-    return frei >= bedarf + 1024**3
+def borg_kommentar(daten: dict) -> str:
+    """⚠️ Borg setzt im Kommentar Platzhalter ein ({now}, {hostname}) — und
+    ein JSON-Kommentar besteht aus geschweiften Klammern. Unverdoppelt bricht
+    `borg create` mit „Invalid placeholder" ab; gefunden im Nachweis, nachdem
+    der erste Probe-Aufruf ohne Kommentar durchgelaufen war."""
+    return json.dumps(daten, separators=(",", ":")).replace("{", "{{").replace("}", "}}")
 
 
-def sha256(pfad: Path) -> str:
-    h = hashlib.sha256()
-    with pfad.open("rb") as f:
-        for block in iter(lambda: f.read(1 << 20), b""):
-            h.update(block)
-    return h.hexdigest()
+def archiv_name(anlass: str, jetzt: Optional[float] = None) -> str:
+    return time.strftime("%Y%m%d-%H%M%S", time.localtime(jetzt)) + f"-{anlass}"
+
+
+def anlass_von(name: str) -> str:
+    """20260923-030000-vor-v1.64.0 → vor; …-woche → woche."""
+    rest = name.split("-", 2)[2] if name.count("-") >= 2 else name
+    for anlass in BEHALTEN:
+        if rest == anlass or rest.startswith(anlass + "-"):
+            return anlass
+    return rest
+
+
+def zu_loeschen(namen: list[str]) -> list[str]:
+    """Was nach der Aufbewahrungsregel weg kann — je Anlass die neuesten
+    `BEHALTEN[anlass]`. Namen beginnen mit einem sortierbaren Zeitstempel."""
+    weg = []
+    for anlass, anzahl in BEHALTEN.items():
+        eigene = sorted(n for n in namen if anlass_von(n) == anlass)
+        weg += eigene[:-anzahl] if anzahl else eigene
+    return sorted(weg)
+
+
+def platz_reicht(frei: int, daten: int, archiv_neu: bool) -> bool:
+    """Ein neues Archiv braucht die Daten einmal ganz (komprimiert meist
+    weniger, das ist der sichere Fall), ein bestehendes nur die Änderungen.
+    Dazu 1 GiB Luft für Borgs Arbeitsdateien und Postgres."""
+    return frei >= (daten if archiv_neu else 0) + 1024**3
+
+
+def externes_ziel(ziel: str, data_dir: str) -> Optional[str]:
+    """None, wenn das Ziel benutzbar ist, sonst der Grund.
+
+    ⚠️ „Verzeichnis existiert" reicht nicht: Ist die USB-Platte nicht
+    eingehängt, gibt es den Einhängepunkt trotzdem — als leeren Ordner auf
+    der SSD. Eine Sicherung dorthin läge auf demselben Datenträger wie die
+    Daten und schützte vor nichts. Deshalb: anderer Datenträger (st_dev)."""
+    if not os.path.isdir(ziel):
+        return f"{ziel} gibt es nicht — Platte nicht angeschlossen?"
+    if os.stat(ziel).st_dev == os.stat(data_dir).st_dev:
+        return f"{ziel} liegt auf derselben Platte wie die Daten — Sicherungsplatte nicht eingehängt?"
+    return None
 
 
 # ── Mit Docker ────────────────────────────────────────────────────────────
 
 
 class Sicherung:
-    def __init__(self, server: Server):
+    """Ein Borg-Archiv. Ohne `repo` das lokale unter DATA_DIR/sicherungen."""
+
+    def __init__(self, server: Server, repo: Optional[Path] = None):
         self.server = server
         self.data = server.data
-        self.ordner = self.data / "sicherungen"
+        self.basis = self.data / "sicherungen"
+        self.repo = repo or self.basis / "borg"
+        self.cache = self.basis / "cache"
+        self.env_datei = self.basis / "borg.env"
 
-    def _docker(self, *args: str, eingabe: Optional[str] = None) -> str:
-        return self.server.lauf(*self.server.docker, *args, eingabe=eingabe)
+    # Werkzeug
 
     def _compose_texte(self) -> list[str]:
         env = lies_env((self.server.server / ".env").read_text())
@@ -141,168 +188,210 @@ class Sicherung:
             if (self.server.server / d).exists()
         ]
 
+    def _env_schreiben(self) -> None:
+        # Nach einem Totalausfall steht auf dem NEUEN Rechner ein anderes
+        # Passwort in der .env als das des Archivs auf der Platte — dann
+        # kommt es aus der Umgebung (siehe docs/INSTALLATION.md).
+        passwort = os.environ.get("SICHERUNG_PASSWORT") or lies_env(
+            (self.server.server / ".env").read_text()
+        ).get("SICHERUNG_PASSWORT")
+        if not passwort:
+            raise Abbruch("SICHERUNG_PASSWORT fehlt in server/.env — Installer erneut laufen lassen.")
+        self.basis.mkdir(parents=True, exist_ok=True)
+        self.env_datei.write_text(
+            f"BORG_PASSPHRASE={passwort}\n"
+            "BORG_REPO=/repo\n"
+            "BORG_BASE_DIR=/cache\n"
+            # Borg sperrt das Archiv unter dem Rechnernamen. Ein Container
+            # hieße jedes Mal anders, und eine liegengebliebene Sperre ließe
+            # sich nie als „die eigene" erkennen.
+            "BORG_HOST_ID=fwapp-sicherung\n"
+            # Dasselbe Archiv ist mal unter /repo, mal (Platte) woanders
+            # eingehängt gewesen — für Borg sähe das wie ein Umzug aus.
+            "BORG_RELOCATED_REPO_ACCESS_IS_OK=yes\n"
+        )
+        self.env_datei.chmod(0o600)
+
+    def _borg(self, *args: str, skript: Optional[str] = None, von: tuple[str, ...] = (),
+              nur_lesen: bool = True, installer: str = "") -> tuple[int, str]:
+        """Borg im Werkzeug-Container. `von`: Container, deren Volumes
+        eingehängt werden; `installer`: "ro"/"rw" hängt server/, web/,
+        kopplung/ unter /fwapp ein."""
+        self._env_schreiben()
+        self.repo.mkdir(parents=True, exist_ok=True)
+        self.cache.mkdir(parents=True, exist_ok=True)
+        befehl = [
+            *self.server.docker, "run", "--rm", "--hostname", "fwapp-sicherung",
+            "--env-file", str(self.env_datei),
+            "-v", f"{self.repo}:/repo", "-v", f"{self.cache}:/cache",
+        ]
+        if installer:
+            for name in INSTALLER_ORDNER:
+                (self.data / name).mkdir(exist_ok=True)
+                befehl += ["-v", f"{self.data / name}:/fwapp/{name}:{installer}"]
+        for c in von:
+            befehl += ["--volumes-from", f"{c}:ro" if nur_lesen else c]
+        image = borg_image(self._compose_texte())
+        if skript is not None:
+            befehl += ["--entrypoint", "sh", image, "-c", skript]
+        else:
+            befehl += ["--entrypoint", "borg", image, *args]
+        return self.server.versuch(*befehl)
+
+    def _borg_ok(self, *args: str, **kw) -> str:
+        rc, aus = self._borg(*args, **kw)
+        if rc != 0:
+            # Borgs Meldung steht VORN; das Ende ist oft nur das Echo langer
+            # Argumente (der Kommentar) — so ging die erste Ursache verloren.
+            raise Abbruch(f"borg {args[0] if args else ''}: {aus.strip()[:400]}")
+        return aus
+
+    def vorhanden(self) -> bool:
+        return (self.repo / "config").exists()
+
+    # Was gesichert wird
+
     def ziele(self) -> list[Ziel]:
-        ids = self._docker("compose", "ps", "-a", "-q").split()
+        ids = self.server.lauf(*self.server.docker, "compose", "ps", "-a", "-q").split()
         if not ids:
             raise Abbruch("Keine Container gefunden — nichts zu sichern.")
-        container = json.loads(self._docker("inspect", *ids))
+        container = json.loads(self.server.lauf(*self.server.docker, "inspect", *ids))
         return ziele_aus_inspect(container)
 
-    def _helfer(self, z: Ziel, helfer: str, skript: str, *extra: str,
-                nur_lesen: bool = True) -> tuple[int, str]:
-        return self.server.versuch(
-            *self.server.docker, "run", "--rm", "--entrypoint", "sh",
-            "--volumes-from", f"{z.container}{':ro' if nur_lesen else ''}", *extra,
-            helfer, "-c", skript,
-        )
-
-    def _verzeichnisse(self, ziele: list[Ziel], helfer: str) -> tuple[list[Ziel], int]:
+    def _verzeichnisse(self, ziele: list[Ziel]) -> tuple[list[Ziel], int]:
         """Die Ziele, die im Container Verzeichnisse sind, und ihre Größe."""
         bleiben, summe = [], 0
         for z in ziele:
-            rc, aus = self._helfer(
-                z, helfer, f'[ -d "{z.pfad}" ] || exit {KEIN_VERZEICHNIS}; du -sb "{z.pfad}"'
+            rc, aus = self._borg(
+                skript=f'[ -d "{z.pfad}" ] || exit {KEIN_VERZEICHNIS}; du -sk "{z.pfad}"',
+                von=(z.container,),
             )
             if rc == KEIN_VERZEICHNIS:
                 continue
-            if rc != 0:
-                raise Abbruch(f"Größe von {z.pfad} ({z.container}) nicht lesbar: {aus.strip()}")
             m = re.search(rf"^(\d+)\s+{re.escape(z.pfad)}$", aus, re.M)
-            if not m:
-                raise Abbruch(f"Größe von {z.pfad} ({z.container}) nicht lesbar: {aus.strip()}")
+            if rc != 0 or not m:
+                raise Abbruch(f"Größe von {z.pfad} ({z.container}) nicht lesbar: {aus.strip()[-300:]}")
             bleiben.append(z)
-            summe += int(m.group(1))
+            summe += int(m.group(1)) * 1024
         return bleiben, summe
 
     def _groesse_installer(self) -> int:
-        summe = 0
-        for name in INSTALLER_ORDNER:
-            for p in (self.data / name).rglob("*"):
-                if p.is_file():
-                    summe += p.stat().st_size
-        return summe
+        return sum(
+            p.stat().st_size
+            for name in INSTALLER_ORDNER
+            for p in (self.data / name).rglob("*")
+            if p.is_file()
+        )
 
     def images(self) -> list[dict]:
         liste = []
         for text in self._compose_texte():
             for image in re.findall(r"^\s*image:\s*(\S+)", text, re.M):
-                r = self.server.lauf(
-                    *self.server.docker, "image", "inspect", "-f", "{{json .RepoDigests}}", image,
-                    pruefen=False,
+                rc, aus = self.server.versuch(
+                    *self.server.docker, "image", "inspect", "-f", "{{json .RepoDigests}}", image
                 )
-                digests = json.loads(r) if r.strip().startswith("[") else []
+                digests = json.loads(aus) if rc == 0 and aus.strip().startswith("[") else []
                 liste.append({"image": image, "digest": digests[0] if digests else ""})
         return liste
 
-    def erstellen(self, anlass: str, version: str) -> Path:
+    # Die drei Handgriffe
+
+    def erstellen(self, anlass: str, version: str) -> str:
         """Hält den Stack an, sichert, und lässt ihn ANGEHALTEN zurück — der
         Aufrufer entscheidet, womit es weitergeht (neuer Stand oder
-        `starten()`)."""
-        helfer = helfer_image(self._compose_texte())
-        ziele, bedarf = self._verzeichnisse(self.ziele(), helfer)
+        `starten()`). Gibt den Namen des Archivs zurück."""
+        ziele, daten = self._verzeichnisse(self.ziele())
         fehlt = fehlende_pflicht(ziele)
         if fehlt:
             raise Abbruch(f"Die Sicherung erfasst {', '.join(fehlt)} nicht — keine halbe Sicherung.")
-        bedarf += self._groesse_installer()
-        self.ordner.mkdir(exist_ok=True)
-        frei = shutil.disk_usage(self.ordner).free
-        if not platz_reicht(frei, bedarf):
+        daten += self._groesse_installer()
+        self.repo.mkdir(parents=True, exist_ok=True)
+        frei = shutil.disk_usage(self.repo).free
+        if not platz_reicht(frei, daten, not self.vorhanden()):
             raise Abbruch(
-                f"Zu wenig Platz für eine vollständige Sicherung: {bedarf // 2**20} MB "
-                f"nötig, {frei // 2**20} MB frei. Kein Update ohne Sicherung."
+                f"Zu wenig Platz für die Sicherung in {self.repo}: {frei // 2**20} MB frei, "
+                f"Daten {daten // 2**20} MB."
             )
-        stempel = time.strftime("%Y%m%d-%H%M%S")
-        ziel_ordner = self.ordner / f"{stempel}-{anlass}"
-        ziel_ordner.mkdir()
-        images = self.images()
-        self._docker("compose", "stop")
-        try:
-            for z in ziele:
-                rc, aus = self._helfer(
-                    z, helfer,
-                    f'tar {" ".join(GNU_TAR)} -cpf "/sicherung/{z.name}.tar" -C "{z.pfad}" .',
-                    "-v", f"{ziel_ordner}:/sicherung",
-                )
-                if rc != 0:
-                    raise Abbruch(f"Sichern von {z.pfad} ({z.container}): {aus.strip()[-300:]}")
-            for name in INSTALLER_ORDNER:
-                with tarfile.open(ziel_ordner / f"installer_{name}.tar", "w") as tar:
-                    tar.add(self.data / name, arcname=".")
-        except Exception:
-            shutil.rmtree(ziel_ordner, ignore_errors=True)
-            raise
-        manifest = {
-            "version": version,
-            "anlass": anlass,
-            "erstellt": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
-            "helfer": helfer,
-            "ziele": [asdict(z) for z in ziele],
-            "images": images,
-            "dateien": {p.name: sha256(p) for p in sorted(ziel_ordner.glob("*.tar"))},
-        }
-        (ziel_ordner / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
-        return ziel_ordner
+        if not self.vorhanden():
+            self._borg_ok("init", "--encryption=repokey-blake2", "/repo")
+        name = archiv_name(anlass)
+        kommentar = borg_kommentar(
+            {"version": version, "anlass": anlass, "images": self.images(),
+             "ziele": [{"container": z.container, "pfad": z.pfad} for z in ziele]}
+        )
+        self.server.lauf(*self.server.docker, "compose", "stop")
+        self._borg_ok(
+            "create", "--numeric-ids", "--compression", "zstd,3", "--comment", kommentar,
+            f"::{name}", *[z.pfad for z in ziele], "/fwapp",
+            von=tuple(sorted({z.container for z in ziele})), installer="ro",
+        )
+        return name
 
     def starten(self) -> None:
-        self._docker("compose", "up", "-d", "--remove-orphans")
+        self.server.lauf(*self.server.docker, "compose", "up", "-d", "--remove-orphans")
 
-    def liste(self) -> list[Path]:
-        if not self.ordner.exists():
+    def liste(self) -> list[dict]:
+        """Älteste zuerst: Name, Stand, Anlass, Images, Ziele."""
+        if not self.vorhanden():
             return []
-        return sorted(p for p in self.ordner.iterdir() if (p / "manifest.json").exists())
+        aus = self._borg_ok("list", "--format", "{archive}{TAB}{comment}{NL}")
+        archive = []
+        for zeile in aus.splitlines():
+            name, _, kommentar = zeile.partition("\t")
+            if not re.match(r"^\d{8}-\d{6}-", name):
+                continue
+            try:
+                info = json.loads(kommentar)
+            except json.JSONDecodeError:
+                info = {}
+            archive.append({"name": name, **info})
+        return sorted(archive, key=lambda a: a["name"])
 
-    def pruefen(self, ordner: Path) -> dict:
-        """Integrität vor dem Einspielen: Eine halbe Sicherung über die Daten
-        zu legen wäre schlimmer als gar keine."""
-        manifest = json.loads((ordner / "manifest.json").read_text())
-        for name, erwartet in manifest["dateien"].items():
-            if not (ordner / name).exists() or sha256(ordner / name) != erwartet:
-                raise Abbruch(f"Sicherung {ordner.name} beschädigt: {name}")
-        return manifest
+    def einspielen(self, name: str) -> dict:
+        """Stellt den Stand eines Archivs wieder her und startet ihn.
 
-    def einspielen(self, ordner: Path) -> dict:
-        """Stellt den Stand der Sicherung wieder her und startet ihn.
+        Reihenfolge mit Grund: ERST das Archiv komplett zur Probe lesen
+        (beschädigt → nichts angefasst). DANN die Dateien des Installers
+        zurück, damit `server/` wieder die alten Compose-Dateien und die alte
+        .env trägt; die Container nach dieser alten Beschreibung neu anlegen,
+        ohne sie zu starten, und erst in DEREN Volumes die Daten
+        zurückspielen — so landen sie genau dort, wo der alte Stand sie
+        sucht."""
+        info = next((a for a in self.liste() if a["name"] == name), None)
+        if info is None or "ziele" not in info:
+            raise Abbruch(f"Keine Sicherung {name} in {self.repo}")
+        self._borg_ok("extract", "--dry-run", f"::{name}")
+        self.server.lauf(*self.server.docker, "compose", "stop")
 
-        Reihenfolge mit Grund: ERST die Dateien des Installers (damit
-        `server/` wieder die alten Compose-Dateien und die alte .env trägt),
-        DANN die Container nach dieser alten Beschreibung neu anlegen, ohne
-        sie zu starten, und erst in DEREN Volumes die Daten zurückspielen —
-        so landen sie genau dort, wo der alte Stand sie sucht, auch wenn der
-        neue ein Volume anders genannt hätte."""
-        manifest = self.pruefen(ordner)
-        self._docker("compose", "stop")
-        for name in INSTALLER_ORDNER:
-            ziel = self.data / name
-            ziel.mkdir(exist_ok=True)
-            for alt in ziel.iterdir():
-                shutil.rmtree(alt) if alt.is_dir() and not alt.is_symlink() else alt.unlink()
-            with tarfile.open(ordner / f"installer_{name}.tar") as tar:
-                tar.extractall(ziel, **({"filter": "tar"} if hasattr(tarfile, "tar_filter") else {}))
-        # server/ ist jetzt der alte Stand — Compose-Dateien, .env, Images.
-        self._docker("compose", "create", "--force-recreate", "--remove-orphans")
-        helfer = manifest["helfer"]
-        for z in (Ziel(**d) for d in manifest["ziele"]):
-            rc, aus = self._helfer(
-                z, helfer,
-                f'find "{z.pfad}" -mindepth 1 -delete && '
-                f'tar {" ".join(GNU_TAR)} -xpf "/sicherung/{z.name}.tar" -C "{z.pfad}"',
-                "-v", f"{ordner}:/sicherung:ro", nur_lesen=False,
-            )
-            if rc != 0:
-                raise Abbruch(f"Zurückspielen von {z.pfad} ({z.container}): {aus.strip()[-300:]}")
+        loeschen = " && ".join(f'find "/fwapp/{n}" -mindepth 1 -delete' for n in INSTALLER_ORDNER)
+        pfade = " ".join(f"fwapp/{n}" for n in INSTALLER_ORDNER)
+        self._borg_ok(
+            skript=f"{loeschen} && cd / && borg extract --numeric-ids ::{name} {pfade}",
+            installer="rw",
+        )
+        self.server.lauf(
+            *self.server.docker, "compose", "create", "--force-recreate", "--remove-orphans"
+        )
+        ziele = [Ziel(**z) for z in info["ziele"]]
+        loeschen = " && ".join(f'find "{z.pfad}" -mindepth 1 -delete' for z in ziele)
+        pfade = " ".join(f'"{z.pfad.lstrip("/")}"' for z in ziele)
+        self._borg_ok(
+            skript=f"{loeschen} && cd / && borg extract --numeric-ids ::{name} {pfade}",
+            von=tuple(sorted({z.container for z in ziele})), nur_lesen=False,
+        )
         self.starten()
-        return manifest
+        return info
 
-    def aufraeumen(self, behalten: int = SICHERUNGEN_BEHALTEN) -> list[str]:
-        """Löscht alte Sicherungen und gibt die Images zurück, die eine der
-        verbliebenen noch braucht (die darf der Updater nicht löschen)."""
-        alle = self.liste()
-        for alt in alle[:-behalten] if behalten else alle:
-            shutil.rmtree(alt, ignore_errors=True)
-        noetig = []
-        for s in self.liste():
-            noetig += [i["image"] for i in json.loads((s / "manifest.json").read_text())["images"]]
-        return noetig
+    def aufraeumen(self) -> list[str]:
+        """Löscht nach der Aufbewahrungsregel und gibt die Images zurück, die
+        ein verbliebenes Archiv braucht — die darf der Updater nicht löschen,
+        sonst ließe sich die Sicherung nicht mehr starten."""
+        for name in zu_loeschen([a["name"] for a in self.liste()]):
+            self._borg_ok("delete", f"::{name}")
+        if self.vorhanden():
+            self._borg_ok("compact")
+        return [i["image"] for a in self.liste() for i in a.get("images", [])]
+
 
 
 def gesund(server: Server, sekunden: int = 180) -> Optional[str]:

@@ -201,5 +201,15 @@ services:
       # Verzeichnis, nicht Datei (siehe tool/vm/fwapp-web-nginx.conf).
       - ${DATA_DIR}/kopplung:/etc/fwapp:ro
 
+  # Werkzeug für die Sicherung (fwapp_sicherung.py, #248) — startet NIE mit
+  # dem Stack (Profil), steht aber hier, damit es mit dem Release gepinnt ist
+  # und der Updater es mitzieht. BorgBackup im Image von Nextcloud AIO:
+  # Alpine, Borg 1.4, amd64 + arm64, datierte Tags; Nextcloud nutzt es für
+  # genau diesen Zweck. Einziges Image hier von Docker Hub — public.ecr.aws
+  # führt keins mit Borg.
+  borg:
+    image: nextcloud/aio-borgbackup:20260916_075031
+    profiles: ["werkzeug"]
+
 volumes:
   db-config:

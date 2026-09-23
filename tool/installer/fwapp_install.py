@@ -44,7 +44,9 @@ from pathlib import Path
 from typing import Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from fwapp_check import lies_conf  # noqa: E402
+from email.message import EmailMessage  # noqa: E402
+
+from fwapp_check import _smtp_oeffnen, lies_conf  # noqa: E402
 
 HIER = Path(__file__).resolve().parent
 REPO = HIER.parent.parent
@@ -247,7 +249,79 @@ def update_units(server: Path) -> dict[str, str]:
             "[Install]\n"
             "WantedBy=timers.target\n"
         ),
+        # #248: wöchentlich, sonntags vor dem Update-Fenster. Ob gesichert
+        # wird, entscheidet SICHERUNG_ZIEL — ist es leer, tut der Lauf nichts.
+        "fwapp-sicherung.service": (
+            "[Unit]\n"
+            "Description=FWApp: wöchentliche Sicherung (#248)\n"
+            "After=docker.service\n\n"
+            "[Service]\n"
+            "Type=oneshot\n"
+            f"ExecStart=/usr/bin/env python3 {server}/fwapp_update.py --conf {server}/fwapp.conf --woche\n"
+        ),
+        "fwapp-sicherung.timer": (
+            "[Unit]\n"
+            "Description=FWApp: wöchentliche Sicherung\n\n"
+            "[Timer]\n"
+            "OnCalendar=Sun *-*-* 02:30\n"
+            "Persistent=true\n\n"
+            "[Install]\n"
+            "WantedBy=timers.target\n"
+        ),
     }
+
+
+def sicherungs_passwort(alte_env: Optional[str]) -> tuple[str, bool]:
+    """Das Passwort des Borg-Archivs (#248) — und ob es neu ist.
+
+    ⚠️ Getrennt von `geheimnisse_behalten`: Dort heißt „ein Schlüssel fehlt"
+    „alle neu erzeugen". Ein Server von vor #248 hat dieses Passwort noch
+    nicht — mit derselben Regel bekäme er beim Update neue Schlüssel, und
+    jedes Handy müsste neu gekoppelt werden. Und ein neues Passwort für ein
+    bestehendes Archiv machte alle Sicherungen darin unlesbar."""
+    if alte_env:
+        alt = lies_env(alte_env).get("SICHERUNG_PASSWORT")
+        if alt:
+            return alt, False
+    return zufall(32), True
+
+
+def sicherungs_mail(conf: dict[str, str], passwort: str) -> EmailMessage:
+    """Marcus, 2026-09-23: Passwort erzeugen, anzeigen UND per Mail an den
+    KreisDatenMeister — wer es nach einem Totalausfall der SSD nicht hat,
+    kann die Sicherungsplatte nicht lesen."""
+    m = EmailMessage()
+    m["From"] = conf.get("MAIL_ABSENDER", "")
+    m["To"] = conf.get("KDM_EMAIL", "")
+    m["Subject"] = f"FWApp: Passwort der Sicherungen von {conf.get('NAME') or conf.get('DOMAIN', '')}"
+    m.set_content(
+        "Die Sicherungen dieses FWApp-Servers sind verschlüsselt (BorgBackup).\n\n"
+        f"Passwort: {passwort}\n\n"
+        "Bitte außerhalb des Servers aufbewahren — ausgedruckt im Gerätehaus oder\n"
+        "in einem Passwort-Manager. Ohne dieses Passwort lässt sich nach einem\n"
+        "Ausfall des Servers keine Sicherung mehr lesen, auch nicht die auf der\n"
+        "externen Platte. Danach kann diese Mail gelöscht werden.\n\n"
+        f"Server: {basis_url(conf)}\n"
+    )
+    return m
+
+
+def sende_mail(conf: dict[str, str], testmodus: bool, nachricht: EmailMessage) -> Optional[str]:
+    """None heißt verschickt, sonst der Grund. Im Testmodus sitzt Mailpit im
+    Docker-Netz; von diesem Rechner aus über den Testport."""
+    host = conf.get("SMTP_HOST", "")
+    port = int(conf.get("SMTP_PORT") or 587)
+    if testmodus:
+        host, port = "127.0.0.1", 54325
+    try:
+        s = _smtp_oeffnen(host, port)
+        if conf.get("SMTP_USER") and not testmodus:
+            s.login(conf["SMTP_USER"], conf.get("SMTP_PASS", ""))
+        s.send_message(nachricht)
+        s.quit()
+        return None
+    except Exception as e:  # noqa: BLE001 — der Aufrufer meldet es; eine Mail darf nichts abbrechen
+        return str(e)
 
 
 def offene_migrationen(dateien: list[str], angewandt: set[str]) -> list[str]:
@@ -270,6 +344,7 @@ class Server:
         self.data = Path(conf["DATA_DIR"])
         self.server = self.data / "server"
         self.docker = os.environ.get("DOCKER", "docker").split()
+        self.neues_sicherungs_passwort: Optional[str] = None
 
     def lauf(self, *befehl: str, eingabe: Optional[str] = None, pruefen: bool = True) -> str:
         r = subprocess.run(
@@ -347,7 +422,11 @@ class Server:
         pfad = self.server / ".env"
         alt = pfad.read_text() if pfad.exists() else None
         geheim = geheimnisse_behalten(alt, self.testmodus)
-        pfad.write_text(env_inhalt(self.conf, geheim, self.testmodus))
+        passwort, neu = sicherungs_passwort(alt)
+        self.neues_sicherungs_passwort = passwort if neu else None
+        pfad.write_text(
+            env_inhalt(self.conf, {**geheim, "SICHERUNG_PASSWORT": passwort}, self.testmodus)
+        )
         pfad.chmod(0o600)
         return geheim
 
@@ -464,8 +543,9 @@ class Server:
         for name, inhalt in update_units(self.server).items():
             Path("/etc/systemd/system", name).write_text(inhalt)
         self.lauf("systemctl", "daemon-reload")
-        self.lauf("systemctl", "enable", "--now", "fwapp-update.timer")
-        return "Timer aktiv: jede Nacht gegen 3 Uhr."
+        self.lauf("systemctl", "enable", "--now", "fwapp-update.timer", "fwapp-sicherung.timer")
+        woche = "sonntags 2:30 Sicherung" if self.conf.get("SICHERUNG_ZIEL") else "wöchentliche Sicherung aus"
+        return f"Timer aktiv: jede Nacht gegen 3 Uhr Update, {woche}."
 
 
 # ── Ablauf ────────────────────────────────────────────────────────────────
@@ -520,6 +600,11 @@ def main(argv: Optional[list[str]] = None) -> int:
         server.kopplung()
         schritt("KreisDatenMeister")
         passwort = server.kreisdatenmeister(geheim)
+        if server.neues_sicherungs_passwort:
+            schritt("Passwort der Sicherungen")
+            grund = sende_mail(conf, a.testmodus,
+                               sicherungs_mail(conf, server.neues_sicherungs_passwort))
+            print(f"   {'per Mail an ' + conf['KDM_EMAIL'] if grund is None else 'Mail NICHT verschickt: ' + grund}")
         schritt("Nächtliches Update")
         print(f"   {server.update_timer()}")
         server.installation_merken(buendel_version(REPO))
@@ -533,6 +618,9 @@ def main(argv: Optional[list[str]] = None) -> int:
     if passwort:
         print(f"   KreisDatenMeister:  {conf['KDM_EMAIL']}")
         print(f"   Startpasswort:      {passwort}   ← jetzt notieren, es erscheint nicht wieder")
+    if server.neues_sicherungs_passwort:
+        print(f"   Sicherungs-Passwort: {server.neues_sicherungs_passwort}")
+        print("      ← außerhalb des Servers aufbewahren: Ohne es ist keine Sicherung lesbar.")
     print(
         "\n   Weiter: In der Web-App anmelden (das Passwort wird dabei geändert),\n"
         "   Einstellungen → KreisDatenMeister → „Wehr anlegen\". Der erste\n"

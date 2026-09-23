@@ -111,7 +111,8 @@ class Images(unittest.TestCase):
     def test_passt_zum_echten_buendel(self):
         text = (inst.HIER / "docker-compose.yml").read_text()
         images = u.images_aus_compose([text])
-        self.assertEqual(len(images), 7)
+        # sieben Dienste und das Sicherungswerkzeug (Profil, startet nie)
+        self.assertEqual(len(images), 8)
         self.assertTrue(all(":" in i for i in images))
 
 
@@ -157,6 +158,41 @@ class Installer(unittest.TestCase):
             "/srv/fwapp/server/fwapp_update.py --conf /srv/fwapp/server/fwapp.conf",
             units["fwapp-update.service"],
         )
+
+    def test_woechentlicher_timer_sonntags_vor_dem_update(self):
+        from pathlib import Path
+
+        units = inst.update_units(Path("/srv/fwapp/server"))
+        self.assertIn("OnCalendar=Sun *-*-* 02:30", units["fwapp-sicherung.timer"])
+        self.assertIn("--woche", units["fwapp-sicherung.service"])
+
+    def test_sicherungs_passwort_bleibt(self):
+        """⚠️ Ein neues Passwort machte jede Sicherung im Archiv unlesbar."""
+        pw, neu = inst.sicherungs_passwort(None)
+        self.assertTrue(neu)
+        self.assertGreaterEqual(len(pw), 32)
+        env = inst.env_inhalt(
+            {"ERREICHBARKEIT": "lan", "DOMAIN": "x", "DATA_DIR": "/d"},
+            {**inst.neue_geheimnisse(False, 1), "SICHERUNG_PASSWORT": pw}, False,
+        )
+        self.assertEqual(inst.sicherungs_passwort(env), (pw, False))
+
+    def test_server_von_vor_248_behaelt_seine_schluessel(self):
+        """Ein Server ohne SICHERUNG_PASSWORT bekommt eins dazu — aber die
+        übrigen Schlüssel bleiben, sonst müsste jedes Handy neu koppeln."""
+        conf = {"ERREICHBARKEIT": "lan", "DOMAIN": "x", "DATA_DIR": "/d"}
+        alt = inst.env_inhalt(conf, inst.neue_geheimnisse(False, 1), False)
+        self.assertEqual(inst.geheimnisse_behalten(alt, False)["ANON_KEY"],
+                         inst.lies_env(alt)["ANON_KEY"])
+        self.assertTrue(inst.sicherungs_passwort(alt)[1])
+
+    def test_passwort_mail_sagt_warum(self):
+        m = inst.sicherungs_mail(
+            {"KDM_EMAIL": "kdm@x.de", "MAIL_ABSENDER": "a@x.de", "DOMAIN": "x.de",
+             "ERREICHBARKEIT": "caddy"}, "GEHEIM123")
+        self.assertEqual(m["To"], "kdm@x.de")
+        self.assertIn("GEHEIM123", m.get_content())
+        self.assertIn("außerhalb des Servers", m.get_content())
 
     def test_abgelegte_conf_liest_sich_gleich(self):
         """Der Updater liest server/fwapp.conf wieder ein — auch Werte mit

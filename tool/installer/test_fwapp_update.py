@@ -166,6 +166,14 @@ class Installer(unittest.TestCase):
         self.assertIn("OnCalendar=Sun *-*-* 02:30", units["fwapp-sicherung.timer"])
         self.assertIn("--woche", units["fwapp-sicherung.service"])
 
+    def test_wochenbericht_nach_sicherung_und_update(self):
+        from pathlib import Path
+
+        units = inst.update_units(Path("/srv/fwapp/server"))
+        self.assertIn("OnCalendar=Sun *-*-* 05:00", units["fwapp-bericht.timer"])
+        self.assertIn("fwapp_bericht.py --conf /srv/fwapp/server/fwapp.conf",
+                      units["fwapp-bericht.service"])
+
     def test_sicherungs_passwort_bleibt(self):
         """⚠️ Ein neues Passwort machte jede Sicherung im Archiv unlesbar."""
         pw, neu = inst.sicherungs_passwort(None)

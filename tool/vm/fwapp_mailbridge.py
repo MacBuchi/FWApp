@@ -25,6 +25,7 @@ angenehmen Nebeneffekt, dass der Schlüssel den Host nie verlässt.
 Installation: siehe docs/SERVER-SETUP.md (Abschnitt Mail-Brücke).
 """
 
+import base64
 import email.parser
 import email.policy
 import email.utils
@@ -76,8 +77,20 @@ class BrevoHandler:
             sender["name"] = name
 
         text = html = None
+        anhaenge = []
         for part in msg.walk():
             if part.get_content_maintype() == "multipart":
+                continue
+            # Anhänge gehen als Anhang weiter (Wochenbericht: Logs als ZIP,
+            # Einrichtungsdokument: PDF). Bis 2026-09-24 fielen sie hier
+            # STILL weg — und ein Anhang vom Typ text/plain wäre sogar zum
+            # Mailtext geworden.
+            if part.get_content_disposition() == "attachment":
+                daten = part.get_payload(decode=True) or b""
+                anhaenge.append({
+                    "name": part.get_filename() or "anhang",
+                    "content": base64.b64encode(daten).decode("ascii"),
+                })
                 continue
             ct = part.get_content_type()
             if ct == "text/plain" and text is None:
@@ -97,6 +110,8 @@ class BrevoHandler:
         if not (html or text):
             # Brevo verlangt mindestens einen Inhalt — leer ist keine Option.
             payload["textContent"] = "(kein Inhalt)"
+        if anhaenge:
+            payload["attachment"] = anhaenge
 
         req = urllib.request.Request(
             API_URL,

@@ -159,6 +159,11 @@ services:
       KONG_DECLARATIVE_CONFIG: /home/kong/kong.yml
       KONG_DNS_ORDER: LAST,A,CNAME
       KONG_PLUGINS: request-transformer,cors,key-auth,acl
+      # Ohne Vorgabe startet Kong einen nginx-Arbeitsprozess je CPU-Kern
+      # (nginx_worker_processes = auto) — gefunden über den Wochenbericht:
+      # 799 MB am Mac mit 10 Kernen, auf einem Pi 5 wären es ≈ 320 MB. Für
+      # den Verkehr einer Wehr reichen zwei.
+      KONG_NGINX_WORKER_PROCESSES: "2"
       KONG_NGINX_PROXY_PROXY_BUFFER_SIZE: 160k
       KONG_NGINX_PROXY_PROXY_BUFFERS: 64 160k
       SUPABASE_ANON_KEY: ${ANON_KEY}

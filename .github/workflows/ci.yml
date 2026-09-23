@@ -134,6 +134,11 @@ jobs:
       - name: Installer checks (Python)
         run: python3 -m unittest discover -s tool/installer -p 'test_*.py'
 
+      # Die Skripte unserer VM (Mail-Brücke): ohne aiosmtpd lauffähig, die
+      # Tests hängen eine Attrappe davor.
+      - name: VM tools checks (Python)
+        run: python3 -m unittest discover -s tool/vm -p 'test_*.py'
+
       - name: Analyze
         run: flutter analyze
 

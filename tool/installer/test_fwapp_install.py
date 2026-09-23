@@ -161,7 +161,7 @@ class ReleaseBuendel(unittest.TestCase):
             for pfad in (
                 "docker-compose.yml", "kong.yml", "Caddyfile", "fwapp_check.py",
                 "fwapp_install.py", "fwapp_update.py", "fwapp_sicherung.py", "fwapp_dokument.py",
-                "fwapp_pdf.py", "fwapp_qr.py", "db/roles.sql", "db/jwt.sql",
+                "fwapp_pdf.py", "fwapp_qr.py", "fwapp_bericht.py", "db/roles.sql", "db/jwt.sql",
                 "compose/lan.yml", "compose/caddy.yml", "compose/tunnel.yml", "compose/test.yml",
             ):
                 self.assertTrue((installer / pfad).is_file(), pfad)

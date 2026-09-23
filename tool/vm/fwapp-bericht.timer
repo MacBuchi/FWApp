@@ -1,0 +1,11 @@
+# fwapp-bericht.timer – sonntags 5 Uhr, nach Backup (03:15) und vzdump (So 03:45).
+[Unit]
+Description=FWApp Wochenbericht
+
+[Timer]
+OnCalendar=Sun *-*-* 05:00
+RandomizedDelaySec=20min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

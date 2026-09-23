@@ -432,6 +432,22 @@ def _txt(name: str) -> Optional[list[str]]:
 LOKAL = ("127.0.0.1", "localhost", "::1")
 
 
+def _ist_lokal(host: str) -> bool:
+    """Gehört die Adresse DIESEM Rechner? Dann verlässt unverschlüsseltes
+    SMTP ihn nicht. Außer localhost gilt das für eine Brücke auf dem
+    Gateway eines Docker-Netzes (unsere VM: 172.18.0.1, docs/SERVER-SETUP.md)
+    — geprüft, indem man sich an die Adresse zu binden versucht: Das geht
+    nur mit einer Adresse, die ein eigenes Netzwerkgerät trägt."""
+    if host in LOKAL:
+        return True
+    try:
+        with socket.socket(socket.AF_INET6 if ":" in host else socket.AF_INET) as s:
+            s.bind((host, 0))
+        return True
+    except OSError:
+        return False
+
+
 def _smtp_oeffnen(host: str, port: int):
     if port == 465:
         return smtplib.SMTP_SSL(host, port, timeout=15, context=ssl.create_default_context())
@@ -440,7 +456,7 @@ def _smtp_oeffnen(host: str, port: int):
     if s.has_extn("starttls"):
         s.starttls(context=ssl.create_default_context())
         s.ehlo()
-    elif host not in LOKAL:
+    elif not _ist_lokal(host):
         # Unverschlüsselt nur auf demselben Rechner — dort sitzt z. B. unsere
         # Mail-Brücke (SMTP → Brevo-API, SERVER-SETUP.md), die kein STARTTLS
         # kann und keins braucht. Über das Netz wäre das Passwort im Klartext.

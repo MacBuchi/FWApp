@@ -1,0 +1,32 @@
+# fwapp-bericht.conf – Wochenbericht auf UNSERER VM (docs/SERVER-SETUP.md).
+#
+# Die VM ist nicht mit dem Installer aufgesetzt; ihre Pfade stehen deshalb
+# hier statt in den Vorgaben von fwapp_bericht.py. Auf der VM als
+# ~/fwapp-bericht.conf (chmod 600), eingerichtet von fwapp_bericht_einrichten.sh.
+
+NAME=FWApp-Server
+# Öffentliche Adresse (Cloudflare Tunnel) — für die Zertifikatsprüfung.
+DOMAIN=<öffentliche Domain>
+ERREICHBARKEIT=tunnel
+
+# Die VM hat noch keinen KreisDatenMeister (Betreiber-Markierung vertagt),
+# deshalb ein eigener Empfänger.
+BERICHT_AN=<Adresse>
+MAIL_ABSENDER=noreply-fwapp@mcbuchi.de
+# Die Mail-Brücke auf dem Gateway des Supabase-Netzes (unverschlüsselt, aber
+# auf diesem Rechner — fwapp_check._ist_lokal lässt das genau deshalb zu).
+SMTP_HOST=172.18.0.1
+SMTP_PORT=2500
+
+# Die Compose-Projekte, deren Container der Bericht prüft. Trägt
+# fwapp_bericht_einrichten.sh aus den LAUFENDEN Containern ein. ⚠️ Leer hieße
+# „alle Container des Rechners" — dann meldete jeder alte, beendete
+# Einmal-Container jede Woche ein Problem.
+BERICHT_PROJEKTE=<wird beim Einrichten ermittelt>
+BERICHT_DB_CONTAINER=supabase-db
+BERICHT_PLATTEN=/
+BERICHT_VERSION_DATEI=~/fwapp-web/html/version.json
+BERICHT_SPERRDATEIEN=~/autodeploy.blocked
+BERICHT_LOGDATEIEN=~/autodeploy.log,~/backups/backup.log
+# pg_dump von ~/bin/fwapp_backup.sh, täglich 03:15 — älter als 2 Tage = Problem.
+BERICHT_DUMP_ORDNER=~/backups

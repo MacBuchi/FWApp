@@ -165,7 +165,7 @@ des Einsenders (braucht dessen GitHub-Konto, keinen Token).
 | ① | Mitgliedschaften + expliziter Feuerwehrkommandant + Anzeigenamen. Backfill: bestehende Admins werden Kommandanten ihrer Gesamtwehr (Ist-Verhalten bleibt; Zurückstufen geht danach in der App) | **Umgesetzt (v1.11.0)** |
 | ② | Gerätetypen auf Gesamtwehr-Ebene mit eigenem Sync (der größte Brocken) | **Umgesetzt (v1.15.0)** |
 | ③ | Einladungen per Mail, temporäre Rechte, Anzeigename + Avatar | **Umgesetzt** (Einladungen v1.17.0, temporäre Rechte v1.19.0, Anzeigename + Avatar v1.20.0) |
-| ④ | KreisDatenMeister-Konsole + Anlegen neuer Gesamtwehren. **Geändert 2026-09-23 (#101):** kein Antragsformular — die Wehr meldet sich per Mail/Telefon, der KDM legt an und lädt den ersten Kommandanten ein; Abteilungs-Admins ohne Gesamtwehr dürfen weiter selbst gründen; dazu Notfall-Kommandant und Stilllegen | **Server umgesetzt** (Migration 20260923160000), App-Konsole folgt |
+| ④ | KreisDatenMeister-Konsole + Anlegen neuer Gesamtwehren. **Geändert 2026-09-23 (#101):** kein Antragsformular — die Wehr meldet sich per Mail/Telefon, der KDM legt an und lädt den ersten Kommandanten ein; Abteilungs-Admins ohne Gesamtwehr dürfen weiter selbst gründen; dazu Notfall-Kommandant und Stilllegen | **Umgesetzt (v1.62.0)** — Server 20260923160000 (#235), Konsole unter Einstellungen → KreisDatenMeister (#236). Aktiv erst, wenn der Betreiber auf dem Server gesetzt ist (`tool/vm/fwapp_betreiber.sh`) |
 
 Daneben, unabhängig und klein: Katalog-Picker im Geräteformular,
 Vorschlag-Flow (§5).

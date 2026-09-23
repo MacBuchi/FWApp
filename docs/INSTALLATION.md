@@ -20,8 +20,8 @@ Server ohne eigene App finden. Das Wort dafür war „Plug and Play".
 | Mail | **Pflicht**, vor dem Weitermachen mit einem Test-Code geprüft (#240). |
 | Hardware | **Raspberry Pi 5 mit 8 GB oder VM mit 4 GB** — nach Messung, siehe unten (#239). |
 
-Bausteine: #238 Kopplung (fertig), #239 Messung (dieses Dokument), #240
-Vorab-Prüfung, #241 Installer-Bündel.
+Bausteine: #238 Kopplung (fertig), #239 Messung (fertig), #240
+Vorab-Prüfung (fertig), #241 Installer-Bündel.
 
 ## Messung: was der Stack wirklich braucht (#239)
 
@@ -103,8 +103,39 @@ Das schlanke Set braucht unter Last unter 1 GB, das ganze System etwa
 1,5 GB. **Ein Pi 4 mit 4 GB dürfte ebenfalls reichen** — gemessen ist das
 nicht, und versprochen wird es deshalb nicht.
 
+## Vorab-Prüfung (#240)
+
+`tool/installer/fwapp_check.py` — nur Python-Standardbibliothek, läuft auf
+einem frischen Pi oder einer frischen VM. Konfiguration aus
+`fwapp.conf` (Vorlage: `tool/installer/fwapp.conf.example`); das
+SMTP-Passwort darf als Umgebungsvariable kommen statt in die Datei.
+
+```bash
+./fwapp_check.py --conf fwapp.conf --vorher   # vor der Installation
+./fwapp_check.py --conf fwapp.conf            # laufende Installation, jederzeit
+```
+
+| Bereich | Geprüft | Blockiert (❌) wenn |
+|---|---|---|
+| Rechner | Architektur, Arbeitsspeicher, freier Platz unter `DATA_DIR`, SD-Karte, Zeitsynchronisation | 32-Bit-System, < 3,5 GB RAM, < 16 GB frei |
+| Domain | DNS; nach der Installation auch HTTPS mit gültigem Zertifikat, `/.well-known/fwapp.json` und ob der Server hinter der Adresse antwortet | Domain löst nicht auf, HTTPS/Zertifikat kaputt, Server antwortet nicht |
+| Mail | Anmeldung am SMTP-Server, **Testmail mit Code, den man zurücktippt**, SPF, DMARC, DKIM (mit Selector) | Anmeldung scheitert, Code nicht bestätigt |
+
+⚠️ **Warum der Code:** „Der Server hat die Mail angenommen" beweist nichts —
+genau so sah es aus, als Brevo eine Einladung wegen DKIM verwarf (#121).
+Erst der zurückgetippte Code zeigt, dass eine Einladung ankommt.
+
+Unverschlüsseltes SMTP ist nur für `localhost` erlaubt (etwa die
+Mail-Brücke auf demselben Rechner); über das Netz wäre das Passwort im
+Klartext unterwegs.
+
+Nachgewiesen am 2026-09-23: echte Läufe gegen DNS, HTTPS und
+DNS-over-HTTPS, und der ganze Mailweg gegen Mailpit — richtiger Code ✅
+(Exit 0), dreimal falsch ❌ (Exit 1). Die Regeln prüft
+`tool/installer/test_fwapp_check.py` in CI.
+
 ## Offen
 
 - Zahlen von der Produktions-VM nachtragen (echte Daten, Laufzeit).
 - Speicherbedarf des Autodeploy-Probelaufs messen.
-- Vorab-Prüfung (#240) und Installer (#241).
+- Installer (#241).

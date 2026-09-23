@@ -1,0 +1,118 @@
+# kong.yml – API-Einstieg einer FWApp-Installation (#241), für Kong 2.8.
+#
+# Gekürzt auf die vier Wege, die die App benutzt: Auth, REST, Storage,
+# Functions. Aufbau nach dem Produktionsmuster von Supabase self-hosted
+# (Apache-2.0): Schlüsselprüfung per key-auth, Rollen per acl. Die
+# Platzhalter $SUPABASE_ANON_KEY / $SUPABASE_SERVICE_KEY setzt der
+# Einstiegsbefehl in docker-compose.yml beim Start ein.
+#
+# ⚠️ Keine doppelten Anführungszeichen, keine Backticks, kein $ außer den
+# beiden Schlüsseln: Der Einstiegsbefehl schickt die Datei durch
+# eval und echo, und das frisst genau diese Zeichen. Aus der Zeichenkette
+# 1.1 in doppelten Anführungszeichen wurde so die Zahl 1.1, und Kong
+# startete nie (_format_version: expected a string).
+_format_version: '1.1'
+
+consumers:
+  - username: anon
+    keyauth_credentials:
+      - key: $SUPABASE_ANON_KEY
+  - username: service_role
+    keyauth_credentials:
+      - key: $SUPABASE_SERVICE_KEY
+
+acls:
+  - consumer: anon
+    group: anon
+  - consumer: service_role
+    group: admin
+
+services:
+  # Offene Auth-Wege (Bestätigung, Rückruf) — ohne Schlüssel erreichbar.
+  - name: auth-v1-open
+    url: http://auth:9999/verify
+    routes:
+      - name: auth-v1-open
+        strip_path: true
+        paths:
+          - /auth/v1/verify
+    plugins:
+      - name: cors
+  - name: auth-v1-open-callback
+    url: http://auth:9999/callback
+    routes:
+      - name: auth-v1-open-callback
+        strip_path: true
+        paths:
+          - /auth/v1/callback
+    plugins:
+      - name: cors
+  - name: auth-v1-open-authorize
+    url: http://auth:9999/authorize
+    routes:
+      - name: auth-v1-open-authorize
+        strip_path: true
+        paths:
+          - /auth/v1/authorize
+    plugins:
+      - name: cors
+
+  - name: auth-v1
+    url: http://auth:9999/
+    routes:
+      - name: auth-v1-all
+        strip_path: true
+        paths:
+          - /auth/v1/
+    plugins:
+      - name: cors
+      - name: key-auth
+        config:
+          hide_credentials: false
+      - name: acl
+        config:
+          hide_groups_header: true
+          allow:
+            - admin
+            - anon
+
+  - name: rest-v1
+    url: http://rest:3000/
+    routes:
+      - name: rest-v1-all
+        strip_path: true
+        paths:
+          - /rest/v1/
+    plugins:
+      - name: cors
+      - name: key-auth
+        config:
+          hide_credentials: true
+      - name: acl
+        config:
+          hide_groups_header: true
+          allow:
+            - admin
+            - anon
+
+  # Storage prüft Schlüssel und Rechte selbst (RLS auf storage.objects).
+  - name: storage-v1
+    url: http://storage:5000/
+    routes:
+      - name: storage-v1-all
+        strip_path: true
+        paths:
+          - /storage/v1/
+    plugins:
+      - name: cors
+
+  - name: functions-v1
+    url: http://functions:9000/
+    read_timeout: 150000
+    routes:
+      - name: functions-v1-all
+        strip_path: true
+        paths:
+          - /functions/v1/
+    plugins:
+      - name: cors

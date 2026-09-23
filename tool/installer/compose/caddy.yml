@@ -1,0 +1,21 @@
+# compose/caddy.yml – Eigene Domain mit Portfreigabe 80/443, Zertifikat von
+# Let's Encrypt automatisch über Caddy (#241).
+services:
+  caddy:
+    container_name: fwapp-caddy
+    image: public.ecr.aws/docker/library/caddy:2.11.4-alpine
+    restart: unless-stopped
+    depends_on:
+      - web
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+volumes:
+  caddy-data:
+  caddy-config:

@@ -1,0 +1,205 @@
+# docker-compose.yml – Der Server einer FWApp-Installation (Issue #241).
+#
+# Genau die sechs Dienste, die die App braucht (gemessen in #239, alle 191
+# E2E-Tests grün NUR mit diesen) plus nginx für Web-App und API-Einstieg.
+# Realtime, Studio, Logging und Bildumwandlung fehlen mit Absicht.
+#
+# Die Container heißen wie auf unserer VM (supabase-kong, fwapp-web, …):
+# So passen tool/vm/fwapp-web-nginx.conf und die Mailvorlagen-URLs
+# (http://fwapp-web/mail/…) unverändert — eine Kopie mit anderen Namen wäre
+# die nächste Stelle, die still auseinanderläuft.
+#
+# Images aus der öffentlichen AWS-Registry (public.ecr.aws), nicht von
+# Docker Hub: Es sind dieselben, die die Supabase-CLI zieht — also genau die,
+# gegen die unsere E2E-Tests laufen. Und Docker Hub drosselt anonyme Pulls
+# (etwa 100 je 6 Stunden und IP); ein Pi hinter einem geteilten Anschluss
+# bliebe beim Update daran hängen.
+#
+# ⚠️ IMAGE-VERSIONEN SIND GEPINNT (#241, Marcus 2026-09-23). Sie stehen hier
+# und nirgends sonst; ein Release bringt sie mit, das Update zieht sie. Es
+# sind die Versionen, gegen die unsere E2E-Tests laufen. Postgres wechselt
+# nie still die Hauptversion — das bräuchte pg_upgrade.
+#
+# Werte kommen aus .env (vom Installer erzeugt, chmod 600). Welche
+# Zusatzdatei aus compose/ dazukommt (lan/caddy/tunnel/test), steht dort in
+# COMPOSE_FILE.
+
+name: fwapp
+
+services:
+  db:
+    container_name: supabase-db
+    image: public.ecr.aws/supabase/postgres:17.6.1.143
+    restart: unless-stopped
+    volumes:
+      - ./db/roles.sql:/docker-entrypoint-initdb.d/init-scripts/99-roles.sql:ro
+      - ./db/jwt.sql:/docker-entrypoint-initdb.d/init-scripts/99-jwt.sql:ro
+      - ${DATA_DIR}/db:/var/lib/postgresql/data
+      - db-config:/etc/postgresql-custom
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    environment:
+      POSTGRES_HOST: /var/run/postgresql
+      PGPORT: 5432
+      POSTGRES_PORT: 5432
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: postgres
+      POSTGRES_DB: postgres
+      JWT_EXP: 3600
+    command:
+      ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf", "-c", "log_min_messages=fatal"]
+
+  auth:
+    container_name: supabase-auth
+    image: public.ecr.aws/supabase/gotrue:v2.192.0
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:9999/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    environment:
+      GOTRUE_API_HOST: 0.0.0.0
+      GOTRUE_API_PORT: 9999
+      API_EXTERNAL_URL: ${API_EXTERNAL_URL}
+      GOTRUE_DB_DRIVER: postgres
+      GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:${POSTGRES_PASSWORD}@db:5432/postgres
+      GOTRUE_SITE_URL: ${SITE_URL}
+      GOTRUE_URI_ALLOW_LIST: ${SITE_URL}
+      # Konten entstehen nur über Einladungen und die Admin-API (NUTZERKONZEPT).
+      GOTRUE_DISABLE_SIGNUP: "true"
+      GOTRUE_JWT_ADMIN_ROLES: service_role
+      GOTRUE_JWT_AUD: authenticated
+      GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
+      GOTRUE_JWT_EXP: 3600
+      GOTRUE_JWT_SECRET: ${JWT_SECRET}
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+      GOTRUE_MAILER_AUTOCONFIRM: "false"
+      GOTRUE_SMTP_ADMIN_EMAIL: ${MAIL_ABSENDER}
+      GOTRUE_SMTP_HOST: ${SMTP_HOST}
+      GOTRUE_SMTP_PORT: ${SMTP_PORT}
+      GOTRUE_SMTP_USER: ${SMTP_USER}
+      GOTRUE_SMTP_PASS: ${SMTP_PASS}
+      GOTRUE_SMTP_SENDER_NAME: ${NAME}
+      # Deutsche Vorlagen mit Code statt Link (SERVER-SETUP.md). Werte wie
+      # deploy/auth_env.json — dieselben Dateien, derselbe Weg.
+      GOTRUE_MAILER_TEMPLATES_RECOVERY: http://fwapp-web/mail/recovery.html
+      GOTRUE_MAILER_SUBJECTS_RECOVERY: "FWApp: Passwort zurücksetzen"
+      GOTRUE_MAILER_TEMPLATES_INVITE: http://fwapp-web/mail/invite.html
+      GOTRUE_MAILER_SUBJECTS_INVITE: "{{ .Data.titel }}: Einladung"
+      GOTRUE_MFA_TOTP_ENROLL_ENABLED: "true"
+      GOTRUE_MFA_TOTP_VERIFY_ENABLED: "true"
+
+  rest:
+    container_name: supabase-rest
+    image: public.ecr.aws/supabase/postgrest:v14.14
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGRST_DB_URI: postgres://authenticator:${POSTGRES_PASSWORD}@db:5432/postgres
+      PGRST_DB_SCHEMAS: public,graphql_public
+      PGRST_DB_EXTRA_SEARCH_PATH: public,extensions
+      PGRST_DB_MAX_ROWS: 1000
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_JWT_SECRET: ${JWT_SECRET}
+      PGRST_DB_USE_LEGACY_GUCS: "false"
+      PGRST_APP_SETTINGS_JWT_SECRET: ${JWT_SECRET}
+      PGRST_APP_SETTINGS_JWT_EXP: 3600
+    command: ["postgrest"]
+
+  storage:
+    container_name: supabase-storage
+    image: public.ecr.aws/supabase/storage-api:v1.62.5
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      rest:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:5000/status"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    environment:
+      ANON_KEY: ${ANON_KEY}
+      SERVICE_KEY: ${SERVICE_ROLE_KEY}
+      POSTGREST_URL: http://rest:3000
+      AUTH_JWT_SECRET: ${JWT_SECRET}
+      PGRST_JWT_SECRET: ${JWT_SECRET}
+      DATABASE_URL: postgres://supabase_storage_admin:${POSTGRES_PASSWORD}@db:5432/postgres
+      FILE_SIZE_LIMIT: 52428800
+      STORAGE_BACKEND: file
+      FILE_STORAGE_BACKEND_PATH: /var/lib/storage
+      TENANT_ID: stub
+      REGION: local
+      GLOBAL_S3_BUCKET: stub
+      ENABLE_IMAGE_TRANSFORMATION: "false"
+    volumes:
+      - ${DATA_DIR}/storage:/var/lib/storage
+
+  kong:
+    container_name: supabase-kong
+    image: public.ecr.aws/supabase/kong:2.8.1
+    restart: unless-stopped
+    depends_on:
+      auth:
+        condition: service_healthy
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /home/kong/kong.yml
+      KONG_DNS_ORDER: LAST,A,CNAME
+      KONG_PLUGINS: request-transformer,cors,key-auth,acl
+      KONG_NGINX_PROXY_PROXY_BUFFER_SIZE: 160k
+      KONG_NGINX_PROXY_PROXY_BUFFERS: 64 160k
+      SUPABASE_ANON_KEY: ${ANON_KEY}
+      SUPABASE_SERVICE_KEY: ${SERVICE_ROLE_KEY}
+    volumes:
+      - ./kong.yml:/home/kong/temp.yml:ro
+    # Die Schlüssel werden beim Start in die Konfiguration eingesetzt —
+    # derselbe Kniff wie in Supabase self-hosted für Kong 2.8.
+    entrypoint: bash -c 'eval "echo \"$$(cat ~/temp.yml)\"" > ~/kong.yml && /docker-entrypoint.sh kong docker-start'
+
+  functions:
+    container_name: supabase-edge-functions
+    image: public.ecr.aws/supabase/edge-runtime:v1.74.2
+    restart: unless-stopped
+    depends_on:
+      kong:
+        condition: service_started
+    volumes:
+      - ${DATA_DIR}/functions:/home/deno/functions
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      SUPABASE_URL: http://kong:8000
+      SUPABASE_ANON_KEY: ${ANON_KEY}
+      SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
+      SUPABASE_DB_URL: postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/postgres
+      # Die Functions prüfen Identität und Rolle selbst (admin-users); der
+      # Dispatcher supabase/functions/main kommt ohne externe Imports aus.
+      VERIFY_JWT: "false"
+    command: ["start", "--main-service", "/home/deno/functions/main"]
+
+  web:
+    container_name: fwapp-web
+    image: public.ecr.aws/nginx/nginx:stable-alpine3.24
+    restart: unless-stopped
+    depends_on:
+      - kong
+    volumes:
+      - ${DATA_DIR}/web:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      # Verzeichnis, nicht Datei (siehe tool/vm/fwapp-web-nginx.conf).
+      - ${DATA_DIR}/kopplung:/etc/fwapp:ro
+
+volumes:
+  db-config:

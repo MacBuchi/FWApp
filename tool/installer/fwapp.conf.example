@@ -7,14 +7,34 @@
 #
 # ⚠️ fwapp.conf enthält das SMTP-Passwort. Nie ins Repo, chmod 600.
 
+# Wie der Server erreichbar ist (#241):
+#   caddy  – eigene Domain, Portfreigabe 80/443 am Router, Zertifikat automatisch
+#   tunnel – Cloudflare Tunnel, keine Portfreigabe (TUNNEL_TOKEN nötig)
+#   lan    – nur im Netz des Gerätehauses, ohne HTTPS
+ERREICHBARKEIT=caddy
+
 # Die Adresse, unter der die Wehr die App erreicht (Web-App + API).
+# Bei lan: die IP-Adresse des Rechners, ggf. mit Port (192.168.1.20:8080).
 DOMAIN=app.feuerwehr-musterstadt.de
+
+# Nur bei lan: Port der Web-App auf diesem Rechner.
+LAN_PORT=80
+
+# Nur bei tunnel: Token aus dem Cloudflare-Dashboard (Zero Trust → Tunnels).
+TUNNEL_TOKEN=
 
 # Anzeigename der Installation (erscheint im Einrichtungs-QR).
 NAME=Feuerwehr Musterstadt
 
 # Wohin der Installer Daten, Fotos und Backups legt. Muss auf der SSD liegen.
 DATA_DIR=/srv/fwapp
+
+# ── KreisDatenMeister (#101) ─────────────────────────────────────────────
+# Das Konto, das der Installer anlegt. Es bekommt ein Startpasswort, das beim
+# ersten Anmelden geändert werden muss.
+KDM_EMAIL=
+# Öffentliche Zeile auf der Anmeldeseite („Deine Wehr ist noch nicht dabei?").
+KDM_KONTAKT=
 
 # ── Mail (Pflicht: Einladungen und Passwort-Reset laufen darüber) ──────────
 MAIL_ABSENDER=app@feuerwehr-musterstadt.de

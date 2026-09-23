@@ -1,0 +1,6 @@
+# compose/lan.yml – Nur im Netz des Gerätehauses erreichbar (#241).
+# Die Web-App liegt direkt auf dem Port des Rechners, ohne HTTPS.
+services:
+  web:
+    ports:
+      - "${LAN_PORT:-80}:80"

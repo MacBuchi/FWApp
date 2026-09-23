@@ -6,6 +6,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:fwapp/features/lerngruppe/presentation/widgets/lerngruppen_karte.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/widgets/abteilung_switcher.dart';
 import 'package:fwapp/features/home/presentation/providers/dashboard_providers.dart';
@@ -48,6 +49,7 @@ class HomeScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
                 _WeekGoalCard(stats: stats),
                 const SizedBox(height: 12),
+                const LerngruppenKarte(),
                 if (stats.suggestion != null)
                   _SuggestionCard(suggestion: stats.suggestion!),
                 if (isAdmin) const _InspectionsCard(),

@@ -9,6 +9,7 @@ import 'dart:ui' show PlatformDispatcher;
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fwapp/features/lerngruppe/presentation/providers/lerngruppe_providers.dart';
 import 'package:fwapp/features/inventory/presentation/providers/tag_providers.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/anhang_providers.dart';
 import 'package:fwapp/core/app_version.dart';
@@ -254,6 +255,10 @@ class _FWAppState extends ConsumerState<FWApp> {
 
   @override
   Widget build(BuildContext context) {
+    // Hält den Melder der Lerngruppen am Leben (Issue #136): Nach jeder
+    // gespeicherten Runde geht der Wochenwert nach oben. `listen` statt
+    // `watch`, damit die App-Wurzel dabei nicht neu baut.
+    ref.listen(lerngruppenAutoMeldungProvider, (_, _) {});
     final themeModeAsync = ref.watch(themeModeProvider);
     // Palette erst nach dem Laden der Preferences bekannt; bis dahin die
     // Standardfarbe, damit der erste Frame nicht farblos aufblitzt.

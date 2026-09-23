@@ -1030,6 +1030,11 @@ class QuizDao extends DatabaseAccessor<AppDatabase> with _$QuizDaoMixin {
 
   Future<int> insertResult(QuizResultsCompanion r) =>
       into(quizResults).insert(r);
+
+  /// Alle Runden ab [seit] — für den Wochenwert der Lerngruppen (#136).
+  Future<List<QuizResultData>> getSeit(DateTime seit) =>
+      (select(quizResults)
+        ..where((t) => t.playedAt.isBiggerOrEqualValue(seit))).get();
 }
 
 @DriftAccessor(tables: [InventorySessions, InventoryChecks])

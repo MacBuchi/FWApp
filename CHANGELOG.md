@@ -12,6 +12,40 @@ Diese Datei wird als Asset mitgeliefert und in der App gerendert. Wer sie
 ändert, ändert damit auch den Text auf den Geräten — siehe AGENTS.md,
 Abschnitt „Workflow".
 
+## [1.61.0] – 2026-09-23
+
+### Neu
+
+- **Lerngruppen haben jetzt eine Wochenaufgabe und eine Rangliste.** Jede
+  Woche (Montag bis Sonntag) ist ein Lernmodus dran — Fach-Quiz,
+  Bild-Erkennung, „Wo liegt's?" oder Drag & Drop, reihum. In der Gruppe
+  steht, welcher es diese Woche ist, mit einem Knopf „Jetzt spielen".
+
+  Gewertet wird der **Schnitt deiner letzten zwei Runden** der Woche in
+  diesem Modus, als Trefferquote in Prozent. Wer sich verbessert, steigt;
+  eine einzelne Glücksrunde allein reicht nicht, und wie lange jemand spielt,
+  zählt gar nicht. Weil jeder am Bestand seiner eigenen Abteilung spielt,
+  zählt die Quote und nicht die Zahl der Treffer.
+
+  Die Rangliste zeigt die laufende Woche und eine **Gesamtwertung** (die
+  Summe der Wochenwerte — jede Woche, in der du dabei warst, zählt).
+  Solange eine Gruppe läuft, steht auf der Startseite eine Karte mit der
+  Wochenaufgabe und deinem Platz.
+
+  **Was dafür geteilt wird — und was nicht:** Zum ersten Mal verlässt ein
+  Lernergebnis dein Handy. Es ist genau **eine Zahl pro Woche**: dein Wert
+  im Modus der Wochenaufgabe. Nicht, welche Fragen du falsch hattest, nicht,
+  welche Geräte du nicht kennst, nicht, wie oft du gespielt hast, und nichts
+  aus den anderen Modi. Sehen können diese Zahl nur die Mitglieder deiner
+  Gruppe. Wer die Gruppe verlässt, nimmt seine Werte mit. Die Karteikarten
+  sind nie Wochenaufgabe, weil man dort selbst einschätzt, ob man es wusste.
+
+### Geändert
+
+- **Lerngruppen enden immer an einem Sonntag.** „8 Wochen" heißt jetzt acht
+  Kalenderwochen, die angefangene Woche der Gründung mitgezählt — sonst
+  hätte die letzte Woche mitten im Dienstrhythmus aufgehört.
+
 ## [1.60.0] – 2026-09-23
 
 ### Neu

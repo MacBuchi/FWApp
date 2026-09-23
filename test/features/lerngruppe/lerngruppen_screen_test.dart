@@ -13,6 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fwapp/core/sync/gesamtwehr_providers.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/features/lerngruppe/domain/lerngruppe.dart';
+import 'package:fwapp/features/lerngruppe/domain/wertung.dart';
 import 'package:fwapp/features/lerngruppe/presentation/providers/lerngruppe_providers.dart';
 import 'package:fwapp/features/lerngruppe/presentation/screens/lerngruppe_detail_screen.dart';
 import 'package:fwapp/features/lerngruppe/presentation/screens/lerngruppen_screen.dart';
@@ -68,6 +69,13 @@ class _FakeService extends LerngruppeService {
     return gruppen.first;
   }
 
+  /// Kein Netz im Widget-Test: Das Melden beim Öffnen zählt nur mit.
+  @override
+  Future<int> meldeWochenwerte() async {
+    aufrufe.add('melde');
+    return 0;
+  }
+
   @override
   Future<void> verlasse(String gruppeId) async {
     aufrufe.add('verlasse $gruppeId');
@@ -116,6 +124,8 @@ void main() {
     MeineOrganisation? org = _verbunden,
     List<Lerngruppe>? gruppen,
     List<LerngruppenMitglied> mitglieder = const [],
+    Wochenaufgabe? aufgabe,
+    List<Wertung> wertungen = const [],
     String start = '/lerngruppen',
   }) {
     final liste = gruppen ?? <Lerngruppe>[];
@@ -148,6 +158,8 @@ void main() {
         lerngruppenMitgliederProvider.overrideWith(
           (ref, _) async => mitglieder,
         ),
+        lerngruppeWochenaufgabeProvider.overrideWith((ref, _) async => aufgabe),
+        lerngruppenWertungenProvider.overrideWith((ref, _) async => wertungen),
         lerngruppeServiceProvider.overrideWith(
           (ref) => _FakeService(ref, liste, aufrufe, fehler),
         ),
@@ -228,7 +240,7 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Gründen').last);
     await tester.pumpAndSettle();
 
-    expect(aufrufe, ['gruende G Atemschutz 8']);
+    expect(aufrufe.where((a) => a != 'melde'), ['gruende G Atemschutz 8']);
     expect(find.text('314 159'), findsOneWidget);
     expect(find.text('Code weitergeben'), findsOneWidget);
   });
@@ -251,7 +263,7 @@ void main() {
     await tester.tap(knopf);
     await tester.pumpAndSettle();
 
-    expect(aufrufe, ['bei 042137']);
+    expect(aufrufe.where((a) => a != 'melde'), ['bei 042137']);
     expect(find.text('042 137'), findsOneWidget);
   });
 
@@ -311,6 +323,64 @@ void main() {
       expect(find.text('Brigitte'), findsOneWidget);
     });
 
+    testWidgets('Wochenaufgabe und Rangliste, und beim Öffnen wird gemeldet', (
+      tester,
+    ) async {
+      final heute = DateTime.now();
+      final montag = DateTime(
+        heute.year,
+        heute.month,
+        heute.day,
+      ).subtract(Duration(days: heute.weekday - 1));
+      await tester.pumpWidget(
+        host(
+          gruppen: [_laufend()],
+          mitglieder: mitglieder,
+          aufgabe: Wochenaufgabe(woche: montag, modus: Lernmodus.woLiegts),
+          wertungen: [
+            Wertung(userId: 'u2', woche: montag, wert: 90),
+            Wertung(userId: kFakeUserId, woche: montag, wert: 70),
+            // Vorwoche: zählt nur in der Gesamtwertung.
+            Wertung(
+              userId: kFakeUserId,
+              woche: montag.subtract(const Duration(days: 7)),
+              wert: 50,
+            ),
+          ],
+          start: '/lerngruppen/L1',
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(aufrufe, contains('melde'));
+      expect(find.text('Wo liegt\'s?'), findsOneWidget);
+      expect(
+        find.textContaining('Dein Wert diese Woche: 70 %'),
+        findsOneWidget,
+      );
+      expect(find.text('Jetzt spielen'), findsOneWidget);
+
+      // Diese Woche: Brigitte vorn. Gesamt: 70 + 50 = 120, Marcus vorn.
+      expect(find.text('90 %'), findsOneWidget);
+      expect(find.text('70 %'), findsOneWidget);
+      // Die Gesamtwertung liegt unterhalb des Testfensters — die Liste baut
+      // nur, was sichtbar ist.
+      await tester.scrollUntilVisible(
+        find.text('120 Pkt.'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.text('120 Pkt.'), findsOneWidget);
+      expect(find.text('90 Pkt.'), findsOneWidget);
+      // Und ausgesprochen, was geteilt wird.
+      await tester.scrollUntilVisible(
+        find.textContaining('nur diese eine'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.textContaining('nur diese eine'), findsOneWidget);
+    });
+
     testWidgets('verlassen fragt nach und führt zurück zur Liste', (
       tester,
     ) async {
@@ -325,14 +395,14 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Abbrechen'));
       await tester.pumpAndSettle();
-      expect(aufrufe, isEmpty);
+      expect(aufrufe.where((a) => a != 'melde'), isEmpty);
 
       await tester.tap(find.byTooltip('Gruppe verlassen'));
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(FilledButton, 'Verlassen'));
       await tester.pumpAndSettle();
 
-      expect(aufrufe, ['verlasse L1']);
+      expect(aufrufe.where((a) => a != 'melde'), ['verlasse L1']);
       expect(find.text('Mit Code beitreten'), findsOneWidget);
     });
   });

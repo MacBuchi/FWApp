@@ -117,6 +117,27 @@ class Migrationen(unittest.TestCase):
         self.assertEqual(i.offene_migrationen(["a.sql"], {"a.sql"}), [])
 
 
+class Ersetzen(unittest.TestCase):
+    def test_das_verzeichnis_bleibt_dasselbe(self):
+        """Der Bind-Mount eines laufenden Containers hängt am Verzeichnis
+        selbst; ein neu angelegtes sähe er nie."""
+        import os
+        import tempfile
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as tmp:
+            quelle, ziel = Path(tmp, "neu"), Path(tmp, "ziel")
+            (quelle / "admin-users").mkdir(parents=True)
+            (quelle / "admin-users/index.ts").write_text("neu")
+            (ziel / "weg").mkdir(parents=True)
+            (ziel / "alt.txt").write_text("alt")
+            inode = os.stat(ziel).st_ino
+            i.Server._ersetze(quelle, ziel)
+            self.assertEqual(os.stat(ziel).st_ino, inode)
+            self.assertEqual(sorted(p.name for p in ziel.iterdir()), ["admin-users"])
+            self.assertEqual((ziel / "admin-users/index.ts").read_text(), "neu")
+
+
 class Buendel(unittest.TestCase):
     def test_images_sind_gepinnt(self):
         """Marcus 2026-09-23: Server-Images je Release fest — kein `latest`,
@@ -128,6 +149,19 @@ class Buendel(unittest.TestCase):
             for image in re.findall(r"image:\s*(\S+)", datei.read_text()):
                 self.assertIn(":", image, f"{datei.name}: {image} ohne Version")
                 self.assertNotRegex(image, r":(latest|stable|alpine)$", f"{datei.name}: {image}")
+
+    def test_kong_yml_uebersteht_das_eval(self):
+        """Der Einstieg von Kong setzt die Schlüssel per eval und echo ein.
+        Ein doppeltes Anführungszeichen darin machte aus '1.1' die Zahl 1.1
+        (Kong startet nicht), ein Backtick führte Befehle aus."""
+        text = (i.HIER / "kong.yml").read_text()
+        for zeichen in ('"', "`", "$("):
+            self.assertNotIn(zeichen, text)
+        import re
+
+        self.assertEqual(
+            set(re.findall(r"\$\w+", text)), {"$SUPABASE_ANON_KEY", "$SUPABASE_SERVICE_KEY"}
+        )
 
     def test_postgres_bleibt_bei_17(self):
         text = (i.HIER / "docker-compose.yml").read_text()

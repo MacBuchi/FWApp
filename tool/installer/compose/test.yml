@@ -8,8 +8,18 @@ services:
   kong:
     ports:
       - "54321:8000"
+  # Docker Desktop reicht Verzeichnisse vom Mac ohne erweiterte
+  # Dateiattribute durch; Storage speichert darin den Inhaltstyp und
+  # scheitert mit „does not support extended attributes". Auf ext4 (Pi, VM)
+  # gibt es das nicht — nur der Nachweis am Mac braucht ein Docker-Volume.
+  storage:
+    volumes:
+      - storage-test:/var/lib/storage
   mailpit:
     container_name: fwapp-mailpit
     image: public.ecr.aws/supabase/mailpit:v1.30.2
     ports:
       - "54324:8025"
+
+volumes:
+  storage-test:

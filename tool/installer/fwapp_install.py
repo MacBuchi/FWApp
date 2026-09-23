@@ -257,9 +257,17 @@ class Server:
 
     @staticmethod
     def _ersetze(quelle: Path, ziel: Path) -> None:
-        if ziel.exists():
-            shutil.rmtree(ziel)
-        shutil.copytree(quelle, ziel)
+        """Ersetzt den INHALT, nie das Verzeichnis selbst: Ein laufender
+        Container hängt per Bind-Mount am Verzeichnis. Neu angelegt, sähe er
+        weiter das alte, gelöschte — beim ersten Update waren Web-App und
+        Functions darin leer (`function "admin-users" not available`)."""
+        ziel.mkdir(parents=True, exist_ok=True)
+        for alt in ziel.iterdir():
+            if alt.is_dir() and not alt.is_symlink():
+                shutil.rmtree(alt)
+            else:
+                alt.unlink()
+        shutil.copytree(quelle, ziel, dirs_exist_ok=True)
 
     # Schritt 2: Schlüssel
     def env(self) -> dict[str, str]:
@@ -273,6 +281,9 @@ class Server:
     # Schritt 3: Dienste
     def starten(self) -> None:
         self.lauf(*self.docker, "compose", "up", "-d", "--remove-orphans")
+        # up startet einen unveränderten Container nicht neu — die Edge
+        # Runtime hielte dann den Code des alten Stands.
+        self.lauf(*self.docker, "compose", "restart", "functions")
         for dienst in ("supabase-db", "supabase-auth", "supabase-storage"):
             self._warte_gesund(dienst)
 

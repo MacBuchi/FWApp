@@ -5,7 +5,13 @@
 # (Apache-2.0): Schlüsselprüfung per key-auth, Rollen per acl. Die
 # Platzhalter $SUPABASE_ANON_KEY / $SUPABASE_SERVICE_KEY setzt der
 # Einstiegsbefehl in docker-compose.yml beim Start ein.
-_format_version: "1.1"
+#
+# ⚠️ Keine doppelten Anführungszeichen, keine Backticks, kein $ außer den
+# beiden Schlüsseln: Der Einstiegsbefehl schickt die Datei durch
+# eval und echo, und das frisst genau diese Zeichen. Aus der Zeichenkette
+# 1.1 in doppelten Anführungszeichen wurde so die Zahl 1.1, und Kong
+# startete nie (_format_version: expected a string).
+_format_version: '1.1'
 
 consumers:
   - username: anon

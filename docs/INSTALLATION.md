@@ -176,6 +176,27 @@ Einrichtungs-QR. `test_fwapp_install.py` hält das fest.
 **Server-Images sind gepinnt** (kein `latest`, Postgres bleibt bei 17) —
 auch das prüft ein Test.
 
+**Nachgewiesen am 2026-09-23:** Installer im Testmodus (`--testmodus`
+legt den Server auf die Ports des lokalen Stacks und nimmt dessen
+Demo-Schlüssel), gleich danach ein zweiter Lauf als Update, dann
+`tool/setup_local_supabase.sh` und **alle 191 E2E-Tests grün** gegen
+diesen Server. Der zweite Lauf spielte 0 Migrationen ein, ließ die `.env`
+unverändert und legte kein zweites KreisDatenMeister-Konto an.
+
+```bash
+python3 tool/installer/fwapp_install.py --conf <test.conf> --web build/web \
+  --ohne-pruefung --testmodus      # test.conf: ERREICHBARKEIT=lan, LAN_PORT frei
+bash tool/setup_local_supabase.sh
+flutter test test/integration --concurrency=1
+```
+
+Was der Nachweis gefunden hat, steht als ⚠️ an der jeweiligen Stelle:
+`db/roles.sql` (eine fehlende Rolle bricht die Einrichtung des Images ab),
+`kong.yml` (keine doppelten Anführungszeichen), `Server._ersetze` (Inhalt
+ersetzen, nie das Verzeichnis — sonst sieht ein laufender Container nach
+dem Update ein leeres) und `compose/test.yml` (Storage braucht am Mac ein
+Docker-Volume).
+
 ### Update-Pfad (entschieden 2026-09-23, gebaut im zweiten Teil von #241)
 
 | | Fremde Installationen | Unser Server |

@@ -114,6 +114,14 @@ Future<void> main() async {
         await prefs.setString('supabase_url', url);
         await prefs.setString('supabase_key', key);
         await prefs.setString(kServerQuellePref, ServerQuelle.web.name);
+        // Der Name gehört dazu, sonst zeigt der Einrichtungs-QR nur den Host
+        // (beim Durchklick von #238 gefunden).
+        final name = wahl.name;
+        if (name == null) {
+          await prefs.remove(kServerNamePref);
+        } else {
+          await prefs.setString(kServerNamePref, name);
+        }
         if (wahl.einschalten) await prefs.setBool('sync_enabled', true);
       }
     }

@@ -199,6 +199,8 @@ void main() {
             hatEingebauteVorgabe: true,
           )!;
       expect(w.url, 'https://api.musterstadt.de');
+      // Der Name reist mit — der Einrichtungs-QR zeigt ihn weiter.
+      expect(w.name, 'Feuerwehr Musterstadt');
       // ⚠️ Unser Bündel hat eine Vorgabe: Der Sync wird NICHT eingeschaltet
       // — wer die Web-App im Lokalmodus nutzt, bekommt keinen Anmeldezwang.
       expect(w.einschalten, isFalse);

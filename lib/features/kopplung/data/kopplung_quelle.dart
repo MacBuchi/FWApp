@@ -126,7 +126,7 @@ Future<void> speichereKopplung(
 /// Unser eigenes Bündel hat eine — dort ändert diese Funktion nur, WOHIN
 /// verbunden wird, nicht OB; niemand, der die Web-App heute im Lokalmodus
 /// nutzt, steht morgen vor einem Anmeldezwang.
-({String url, String key, bool einschalten})? waehleWebServer({
+({String url, String key, String? name, bool einschalten})? waehleWebServer({
   required ServerKopplung? eigeneInstallation,
   required String? gespeicherteUrl,
   required String? gespeicherteQuelle,
@@ -139,6 +139,7 @@ Future<void> speichereKopplung(
   return (
     url: eigeneInstallation.url,
     key: eigeneInstallation.anonKey,
+    name: eigeneInstallation.name,
     einschalten: !hatEingebauteVorgabe,
   );
 }

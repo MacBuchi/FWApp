@@ -77,7 +77,7 @@ jobs:
           # the stack really boots at the base state. First hit: PR #77.
           rm -rf supabase/migrations
           git checkout "${{ steps.classify.outputs.base }}" -- supabase/migrations
-          supabase start
+          bash tool/ci_supabase_start.sh
 
       # pg_dump runs INSIDE the db container: the runner's client may be
       # older than the stack's Postgres and refuse the connection.

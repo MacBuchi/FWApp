@@ -175,7 +175,7 @@ jobs:
           version: 2.116.0
 
       - name: Start local Supabase stack
-        run: supabase start
+        run: bash tool/ci_supabase_start.sh
 
       # Liest nach, was der Stack den Rollen tatsächlich gegeben hat — die
       # Frage aus #185, die sich aus Release Notes nicht beantworten lässt.

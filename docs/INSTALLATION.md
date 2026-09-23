@@ -220,7 +220,7 @@ Docker-Volume).
 | Folgt | jedem **freigegebenen** Release (`UPDATE_KANAL=stabil`); Option `vorab`, oder `aus` | `main` (Testfeld) |
 | Wann | automatisch nachts (systemd-Timer, gegen 3 Uhr, holt verpasste Läufe nach) | bei jedem Merge (Autodeploy) |
 | Wie | `tool/installer/fwapp_update.py` | `tool/vm/fwapp_autodeploy.sh` |
-| Bei Fehler | alter Stand bleibt, Mail an den KreisDatenMeister, Updates angehalten | Autodeploy blockiert |
+| Bei Fehler | **vollständige Sicherung wird automatisch eingespielt**, Mail an den KreisDatenMeister, Updates angehalten | Autodeploy blockiert |
 
 **Release-Seite** (`release.yml`, Job *Build installer bundles*): Jedes
 Release trägt `fwapp-server-<tag>.tar.gz` (aus
@@ -238,9 +238,10 @@ Server-Adresse bekommt.
 | 1. Release wählen (GitHub-API) | Netz weg → nächste Nacht |
 | 2. Bündel laden, Prüfsummen | Netz weg / Summe falsch → nächste Nacht |
 | 3. Images des Release ziehen | Netz weg → nächste Nacht |
-| 4. Dump als Rückfallpunkt (`backups/`, die letzten 7) | blockieren + Mail |
+| 4. Dump der Datenbank (`backups/`, die letzten 7; Grundlage des Probelaufs) | blockieren + Mail |
 | 5. Probelauf der neuen Migrationen in einer Wegwerf-Datenbank | blockieren + Mail — **nichts eingespielt** |
-| 6. Installer des neuen Bündels | Installer des **alten** Bündels läuft noch einmal, dann blockieren + Mail |
+| 6. **Vollständige Sicherung** bei angehaltenem Stack (siehe unten) | alter Stand startet wieder, blockieren + Mail — **kein Update ohne Sicherung** |
+| 7. Installer des neuen Bündels, dann Gesundheitsprüfung | **Sicherung aus 6 automatisch einspielen**, erneut prüfen, blockieren + Mail |
 
 Bis Schritt 5 ist am laufenden Server nichts verändert. Blockiert heißt:
 `DATA_DIR/update.blocked` liegt da, jeder weitere Lauf tut nichts, bis sie
@@ -249,16 +250,80 @@ ist. Nach Erfolg räumt der Updater die Images weg, die nur der alte Stand
 brauchte (die Platte ist auf dem Pi der Engpass).
 
 ```bash
-sudo python3 /srv/fwapp/server/fwapp_update.py --conf /srv/fwapp/server/fwapp.conf --pruefen  # nur nachsehen
-sudo python3 /srv/fwapp/server/fwapp_update.py --conf /srv/fwapp/server/fwapp.conf            # jetzt aktualisieren
+U="sudo python3 /srv/fwapp/server/fwapp_update.py --conf /srv/fwapp/server/fwapp.conf"
+$U --pruefen                  # nur nachsehen
+$U                            # jetzt aktualisieren
+$U --sichern                  # vollständige Sicherung jetzt
+$U --sicherungen              # vorhandene Sicherungen
+$U --zuruecksetzen <name>     # diesen Stand zurückholen (hält danach die Updates an)
 ```
+
+### Vollständige Sicherung vor jedem Update (Marcus, 2026-09-23)
+
+> „Bei jedem Update sollte ein vollständiges Backup erstellt werden. Falls
+> irgendwas schief geht, kann das automatisch eingespielt werden."
+
+**Wie andere es machen** (recherchiert am 2026-09-23):
+
+| Ansatz | Wer | Passt hier? |
+|---|---|---|
+| Vollständige Sicherung der Container-Daten vor dem Update, Container dafür angehalten, Wiederherstellung in einem Schritt | [Nextcloud AIO](https://github.com/nextcloud/all-in-one) (BorgBackup, täglich + vor Container-Updates), [Home Assistant](https://www.home-assistant.io/faq/do-updates-break-things/) (Sicherung vor jedem Update) | **Ja — das ist der Weg hier.** |
+| A/B-Partitionen: neues System in die zweite Partition, bei Fehlstart zurück | RAUC, Mender, Rugix ([Bootlin zum Pi 5](https://bootlin.com/blog/safe-updates-using-rauc-on-raspberry-pi-5/), [Vergleich](https://rugix.org/blog/2026-02-28-ota-update-engines-compared/)) | Nein: tauscht das **Betriebssystem**; unsere Updates fassen nur den Stack an. Setzte ein eigenes OS-Abbild voraus. |
+| Dateisystem-Schnappschuss (btrfs, ZFS, LVM) | Snapper, [buttervolume](https://github.com/ccomb/buttervolume) | Nein: Pi OS ist ext4, und [Postgres auf Copy-on-Write](https://helmundwalter.de/en/blog/next-gen-backup-with-btrfs-snapshots-for-root-fs-and-databases) gilt als Fehlerquelle. |
+
+**Was gesichert wird** (`tool/installer/fwapp_sicherung.py`): alles, was ein
+Container beschreiben kann — die Liste kommt aus `docker inspect`, nicht
+aus einer Aufzählung, ein neuer Dienst mit Volume ist also automatisch
+dabei. Heute: Postgres-Dateien, `db-config` (pgsodium-Schlüssel!), Fotos,
+Functions, bei Caddy die Zertifikate. Dazu `server/` (Schlüssel,
+Compose-Dateien), `web/`, `kopplung/` und die Images samt Digest.
+Aufbewahrt werden die letzten **zwei** Sicherungen; ihre Images löscht der
+Updater nicht, sonst ließe sich eine Sicherung nicht mehr starten.
+
+- **Bei angehaltenem Stack:** eine Datei-Kopie einer laufenden Datenbank
+  ist keine. Gemessen: ≈ 6 Sekunden Stillstand für die Sicherung, das ganze
+  Update ≈ 20 Sekunden.
+- ⚠️ **Mit erweiterten Dateiattributen:** Storage legt den Inhaltstyp jedes
+  Fotos als xattr an der Datei ab, nicht in der Datenbank (so auch die
+  [Anleitung für selbst gehostetes Supabase](https://simplebackups.com/blog/backup-self-hosted-supabase)).
+  Das busybox-tar der meisten Images verliert ihn; GNU tar steckt im
+  edge-runtime-Image, das ohnehin auf jedem Server liegt.
+- ⚠️ **Über `--volumes-from`, nie über den Pfad aus `docker inspect`:**
+  Docker Desktop meldet dort `/host_mnt/…`. Die erste Fassung übersprang
+  deshalb die Datenbank STILL — gefunden hat es erst das Zurückspielen im
+  Nachweis. Seitdem gilt eine Pflichtliste: ohne Datenbank und Fotos keine
+  Sicherung.
+- **Integrität:** Jede Datei der Sicherung hat eine Prüfsumme im Manifest;
+  vor dem Einspielen wird geprüft — eine halbe Sicherung über die Daten zu
+  legen wäre schlimmer als keine.
+- **Gesundheitsprüfung** nach dem Update, von innen über das Docker-Netz:
+  Datenbank/Anmeldung/Storage gesund, Kong → Anmeldung, Kong → PostgREST →
+  Datenbank mit einem echten RPC, Edge Functions nicht 502/503, Web-App und
+  Einrichtungs-Datei. „Container läuft" allein beweist nichts.
+
+**Nachgewiesen am 2026-09-23:** `v0.0.1` installiert, eine Kontaktzeile in
+die Datenbank und ein PNG in Storage gelegt. Update auf `v0.0.2`, dessen
+Migration im Probelauf UND echt durchläuft, aber den RPC der
+Gesundheitsprüfung löscht und die Kontaktzeile überschreibt. Ergebnis:
+Gesundheitsprüfung schlägt an, Sicherung automatisch eingespielt — RPC
+wieder da, Kontaktzeile wieder „vor dem Update", die Migration auch aus der
+Buchführung verschwunden, das Foto byte-gleich und weiter `image/png`,
+Mail in Mailpit. Danach Update auf `v0.0.3` erfolgreich, von Hand auf die
+Sicherung davor zurückgesetzt, von Hand gesichert, und **alle 191
+E2E-Tests grün** gegen diesen Server.
+
+⚠️ **Die Sicherung liegt auf demselben Datenträger wie die Daten.** Sie
+schützt vor einem missglückten Update, nicht vor einer toten SSD, Diebstahl
+oder Brand im Gerätehaus. Dafür braucht es eine Kopie außer Haus (siehe
+„Offen").
 
 ⚠️ Der Updater braucht **IPv4 zu GitHub** (api.github.com und die
 Download-Server sind IPv4-only). Ein Anschluss im Gerätehaus hat das in der
 Regel; unsere VM hat es nicht — ein Grund mehr, warum sie beim Autodeploy
 bleibt.
 
-**Nachgewiesen am 2026-09-23** mit echten Bündeln aus
+**Updater nachgewiesen am 2026-09-23** (vor der vollständigen Sicherung)
+mit echten Bündeln aus
 `fwapp_buendel.py` und einer nachgebauten Release-API (`UPDATE_API` in der
 Konfiguration zeigt auf einen lokalen Webserver):
 
@@ -269,12 +334,20 @@ Konfiguration zeigt auf einen lokalen Webserver):
    eingespielt, Server weiter auf `v0.0.2`, Mail in Mailpit, der nächste
    Lauf übersprungen.
 4. `v0.0.4` mit kaputter Compose-Datei: Installer scheitert, `v0.0.2`
-   zurückgeholt, alle Container laufen, Mail in Mailpit.
+   zurückgeholt, alle Container laufen, Mail in Mailpit. (Damals über das
+   alte Bündel; heute über die vollständige Sicherung, siehe oben.)
 5. Danach **alle 191 E2E-Tests grün** gegen den so behandelten Server.
 
 ## Offen
 
 - Zahlen von der Produktions-VM nachtragen (echte Daten, Laufzeit).
 - Speicherbedarf des Autodeploy-Probelaufs messen.
+- **Kopie außer Haus** (3-2-1-Regel): Die Sicherung liegt heute auf
+  demselben Datenträger. Denkbar: USB-Platte, zweiter Rechner, oder ein
+  verschlüsseltes Borg-Repository wie bei Nextcloud AIO. Braucht eine
+  Entscheidung (wohin, wer hält den Schlüssel).
+- **Tägliche Sicherung** unabhängig vom Update (Nextcloud AIO macht beides):
+  Heute entsteht eine vollständige Sicherung nur vor einem Update oder von
+  Hand.
 - Das erste echte Release mit Bündeln (nächster Merge mit Versions-Bump)
   einmal von Hand herunterladen und prüfen.

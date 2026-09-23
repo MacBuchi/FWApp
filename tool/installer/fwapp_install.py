@@ -286,26 +286,6 @@ def sicherungs_passwort(alte_env: Optional[str]) -> tuple[str, bool]:
     return zufall(32), True
 
 
-def sicherungs_mail(conf: dict[str, str], passwort: str) -> EmailMessage:
-    """Marcus, 2026-09-23: Passwort erzeugen, anzeigen UND per Mail an den
-    KreisDatenMeister — wer es nach einem Totalausfall der SSD nicht hat,
-    kann die Sicherungsplatte nicht lesen."""
-    m = EmailMessage()
-    m["From"] = conf.get("MAIL_ABSENDER", "")
-    m["To"] = conf.get("KDM_EMAIL", "")
-    m["Subject"] = f"FWApp: Passwort der Sicherungen von {conf.get('NAME') or conf.get('DOMAIN', '')}"
-    m.set_content(
-        "Die Sicherungen dieses FWApp-Servers sind verschlüsselt (BorgBackup).\n\n"
-        f"Passwort: {passwort}\n\n"
-        "Bitte außerhalb des Servers aufbewahren — ausgedruckt im Gerätehaus oder\n"
-        "in einem Passwort-Manager. Ohne dieses Passwort lässt sich nach einem\n"
-        "Ausfall des Servers keine Sicherung mehr lesen, auch nicht die auf der\n"
-        "externen Platte. Danach kann diese Mail gelöscht werden.\n\n"
-        f"Server: {basis_url(conf)}\n"
-    )
-    return m
-
-
 def sende_mail(conf: dict[str, str], testmodus: bool, nachricht: EmailMessage) -> Optional[str]:
     """None heißt verschickt, sonst der Grund. Im Testmodus sitzt Mailpit im
     Docker-Netz; von diesem Rechner aus über den Testport."""
@@ -375,6 +355,7 @@ class Server:
         for name in (
             "docker-compose.yml", "kong.yml", "Caddyfile",
             "fwapp_check.py", "fwapp_install.py", "fwapp_update.py", "fwapp_sicherung.py",
+            "fwapp_dokument.py", "fwapp_pdf.py", "fwapp_qr.py",
         ):
             shutil.copy2(HIER / name, self.server / name)
         for sub in ("compose", "db"):
@@ -531,7 +512,23 @@ class Server:
         return passwort
 
 
-    # Schritt 7: nächtliches Update
+    # Schritt 7: Einrichtungsdokument (#249)
+    def dokument(self, version: str, startpasswort: Optional[str] = None) -> tuple[Path, Optional[str]]:
+        """Baut das Dokument, legt es neben die Schlüssel (chmod 600 — es
+        enthält Passwörter) und schickt es an den KreisDatenMeister. Gibt
+        den Pfad und den Grund zurück, falls die Mail nicht rausging."""
+        from fwapp_dokument import aus_server, dokument_mail
+
+        env = lies_env((self.server / ".env").read_text())
+        pdf = aus_server(self.conf, env, version, startpasswort)
+        pfad = self.server / "einrichtung.pdf"
+        pfad.write_bytes(pdf)
+        pfad.chmod(0o600)
+        grund = sende_mail(self.conf, self.testmodus,
+                           dokument_mail(self.conf, pdf, neu_eingerichtet=startpasswort is not None))
+        return pfad, grund
+
+    # Schritt 8: nächtliches Update
     def update_timer(self) -> str:
         """Richtet den Timer ein, wo das geht, und sagt sonst, wie."""
         if self.testmodus:
@@ -600,11 +597,15 @@ def main(argv: Optional[list[str]] = None) -> int:
         server.kopplung()
         schritt("KreisDatenMeister")
         passwort = server.kreisdatenmeister(geheim)
-        if server.neues_sicherungs_passwort:
-            schritt("Passwort der Sicherungen")
-            grund = sende_mail(conf, a.testmodus,
-                               sicherungs_mail(conf, server.neues_sicherungs_passwort))
+        # Marcus, 2026-09-24: nach dem Einrichten ein Dokument mit allen
+        # Angaben und Passwörtern an den KreisDatenMeister. Nur wenn etwas
+        # Neues darin steht — der nächtliche Update-Lauf ist derselbe
+        # Installer und darf nicht jede Nacht eine Mail schicken.
+        if passwort or server.neues_sicherungs_passwort:
+            schritt("Einrichtungsdokument")
+            dokument, grund = server.dokument(buendel_version(REPO), passwort)
             print(f"   {'per Mail an ' + conf['KDM_EMAIL'] if grund is None else 'Mail NICHT verschickt: ' + grund}")
+            print(f"   liegt auch unter {dokument}")
         schritt("Nächtliches Update")
         print(f"   {server.update_timer()}")
         server.installation_merken(buendel_version(REPO))
@@ -623,9 +624,9 @@ def main(argv: Optional[list[str]] = None) -> int:
         print("      ← außerhalb des Servers aufbewahren: Ohne es ist keine Sicherung lesbar.")
     print(
         "\n   Weiter: In der Web-App anmelden (das Passwort wird dabei geändert),\n"
-        "   Einstellungen → KreisDatenMeister → „Wehr anlegen\". Der erste\n"
+        "   Mehr → Einstellungen → „KreisDatenMeister\" → „Wehr anlegen\". Der erste\n"
         "   Feuerwehrkommandant bekommt eine Einladung per Mail. Handys verbinden\n"
-        "   sich über Einstellungen → „Weiteres Gerät verbinden\".\n"
+        "   sich mit dem Einrichtungs-Code aus dem Einrichtungsdokument.\n"
         f"   Prüfen, jederzeit: python3 {server.server}/fwapp_check.py --conf {Path(a.conf).resolve()}"
     )
     return 0

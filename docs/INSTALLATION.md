@@ -155,7 +155,8 @@ sudo python3 server/tool/installer/fwapp_install.py --conf fwapp.conf --web web
 ```
 
 Mit `sudo`, damit der Installer den Timer für das nächtliche Update
-einrichten kann. Das Web-Bündel ist **neutral** gebaut — ohne unsere
+einrichten kann. Am Ende geht das **Einrichtungsdokument** an den
+KreisDatenMeister (siehe unten). Das Web-Bündel ist **neutral** gebaut — ohne unsere
 Server-Adresse; es findet seinen Server über `/.well-known/fwapp.json`
 (#238).
 
@@ -257,6 +258,7 @@ $U --sichern                  # vollständige Sicherung jetzt
 $U --sicherungen              # vorhandene Sicherungen
 $U --zuruecksetzen <name>     # diesen Stand zurückholen (hält danach die Updates an)
 $U --woche                    # wöchentliche Sicherung jetzt (sonst sonntags 2:30)
+$U --dokument                 # Einrichtungsdokument neu erzeugen und schicken
 ```
 
 ### Vollständige Sicherung vor jedem Update (Marcus, 2026-09-23)
@@ -290,8 +292,8 @@ dem Rechner wird nichts installiert.
 | Bleiben | 2 | **4** |
 | Fehlt die Platte | — | Mail an den KreisDatenMeister, nichts blockiert |
 
-**Passwort:** erzeugt der Installer einmal, zeigt es an und schickt es an
-`KDM_EMAIL` (Marcus: „erzeugt + angezeigt"). Es wird nie neu erzeugt — ein
+**Passwort:** erzeugt der Installer einmal, zeigt es an und schickt es im
+Einrichtungsdokument an `KDM_EMAIL` (Marcus: „erzeugt + angezeigt"). Es wird nie neu erzeugt — ein
 neues machte jede Sicherung im Archiv unlesbar. ⚠️ Ohne dieses Passwort
 ist nach einem Totalausfall auch die Platte wertlos.
 
@@ -336,8 +338,10 @@ Sicherungen löscht der Updater nicht.
 ```bash
 # 1. Neu installieren wie oben, dieselbe fwapp.conf (SICHERUNG_ZIEL = die Platte)
 # 2. Platte einhängen, dann mit dem ALTEN Passwort (aus der Mail / vom Ausdruck):
-SICHERUNG_PASSWORT=<altes Passwort> $U --sicherungen
-SICHERUNG_PASSWORT=<altes Passwort> $U --zuruecksetzen <name>
+# ⚠️ Das Passwort NACH sudo — sudo verwirft die Umgebung des Aufrufers:
+P="sudo SICHERUNG_PASSWORT=<altes Passwort> python3 /srv/fwapp/server/fwapp_update.py --conf /srv/fwapp/server/fwapp.conf"
+$P --sicherungen
+$P --zuruecksetzen <name>
 # 3. Updates wieder freigeben, wenn alles stimmt:
 sudo rm /srv/fwapp/update.blocked
 ```
@@ -382,6 +386,53 @@ Konfiguration zeigt auf einen lokalen Webserver):
    alte Bündel; heute über die vollständige Sicherung, siehe oben.)
 5. Danach **alle 191 E2E-Tests grün** gegen den so behandelten Server.
 
+## Einrichtungsdokument (#249)
+
+> Marcus, 2026-09-24: „Nach dem Einrichten eine Anleitung (PDF oder so) an
+> das Mail-Konto, mit allen Informationen und auch Passwörtern."
+
+Nach der Einrichtung — und immer, wenn ein neues Passwort entstanden ist,
+nie beim nächtlichen Update — baut der Installer ein PDF und schickt es an
+`KDM_EMAIL`; eine Kopie liegt unter `server/einrichtung.pdf` (chmod 600).
+`fwapp_update.py --dokument` erzeugt es jederzeit neu (dann ohne
+Startpasswort, das ist längst geändert).
+
+Inhalt, drei Seiten A4: Zugangsdaten mit Startpasswort und
+Sicherungs-Passwort, der **Kopplungs-QR** zum Aushängen, die ersten
+Schritte in der App (mit den echten Menüwegen), was der Server von selbst
+tut, die Notfall-Befehle mit den Pfaden dieser Installation, der
+Totalausfall Schritt für Schritt, Hilfe und Kontakt.
+
+Nur Standardbibliothek: `fwapp_pdf.py` (ein kleiner PDF-Schreiber mit den
+Standardschriften, WinAnsi) und `fwapp_qr.py` (QR-Encoder, Stufe M,
+Versionen 1–20).
+
+- ⚠️ **Passwörter stehen im Dokument — gewollt.** Ein passwortgeschütztes
+  PDF gäbe es ohne Fremdpakete nur mit RC4, und das wäre falsche
+  Sicherheit. Stattdessen oben ein Kasten: ausdrucken, sicher ablegen, Mail
+  löschen.
+- ⚠️ **Der QR-Code ist doppelt geprüft:** 281 Codes über alle Versionen
+  Modul für Modul identisch mit der Referenz-Implementierung (qrcodegen,
+  Nayuki), und der QR AUS der gerenderten PDF-Seite vom QR-Erkenner von
+  macOS exakt zurückgelesen. segno taugt nicht als Referenz — es hängt an
+  einer Byte-Grenze ein zusätzliches Null-Byte an.
+- ⚠️ **Die Anleitung zitiert Knöpfe beim Namen**, und
+  `test_fwapp_dokument.py` prüft, dass jede Beschriftung in `lib/` steht.
+  Wer einen Knopf umbenennt, sieht es in der CI, nicht der
+  KreisDatenMeister vor dem Bildschirm.
+- ⚠️ **`sudo SICHERUNG_PASSWORT=… python3 …`, nicht umgekehrt:** sudo
+  verwirft die Umgebung des Aufrufers. Die erste Fassung (auch hier in der
+  Doku) hatte die Variable vor `sudo` — die Wiederherstellung nach einem
+  Totalausfall wäre am „falschen" Passwort gescheitert.
+- Befehle im Dokument werden nur an Leerzeichen umbrochen (mit ` \`), damit
+  sie abgetippt gültig bleiben.
+
+**Nachgewiesen am 2026-09-24:** Installation im Testmodus → Mail mit PDF
+in Mailpit; der QR aus der gerenderten Seite = `/.well-known/fwapp.json`
+des Servers; das Sicherungs-Passwort = das in `.env`; Anmeldung mit dem
+Startpasswort aus dem PDF klappt. Zweiter Installer-Lauf: keine Mail.
+`--dokument`: neue Mail.
+
 ## Offen
 
 - Zahlen von der Produktions-VM nachtragen (echte Daten, Laufzeit).
@@ -389,7 +440,5 @@ Konfiguration zeigt auf einen lokalen Webserver):
 - **Kopie außer Haus im engeren Sinn:** Die externe Platte (#248) steht
   meist im selben Gerätehaus — gegen Brand oder Diebstahl hilft nur eine
   Platte, die wechselt, oder ein entferntes Borg-Repository.
-- **Einrichtungs-Dokument** mit allen Angaben und Passwörtern an den
-  KreisDatenMeister (#249).
 - Das erste echte Release mit Bündeln (nächster Merge mit Versions-Bump)
   einmal von Hand herunterladen und prüfen.

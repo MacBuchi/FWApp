@@ -121,12 +121,20 @@ des Einsenders (braucht dessen GitHub-Konto, keinen Token).
 
 ## 6. Abläufe
 
-- **Neue Gesamtwehr:** Anfrage → Mail an den KreisDatenMeister **und**
-  Eintrag in seiner Konsole (rollengeschützte Route in der normalen App,
-  ohne Navigations-Link — der Schutz ist der Router-Guard, nicht das
-  Verstecken). Genehmigt wird ausschließlich angemeldet in der Konsole;
-  die Mail nennt Details und verlinkt dorthin. Nach der Genehmigung geht
-  die Einladung an den künftigen Feuerwehrkommandanten.
+- **Neue Gesamtwehr** (geändert 2026-09-23, #101): **kein Antragsformular.**
+  Die Wehr meldet sich per Mail oder Telefon beim KreisDatenMeister — die
+  Login-Seite zeigt dafür seine öffentliche Kontaktzeile. Er legt die
+  Gesamtwehr samt erster Abteilung in seiner Konsole an (rollengeschützte
+  Route in der normalen App, ohne Navigations-Link — der Schutz ist die
+  Prüfung in der Datenbank, nicht das Verstecken) und lädt den künftigen
+  Feuerwehrkommandanten ein. So gibt es keinen anonymen Schreibweg auf den
+  Server. Ein Formular oder eine Registrierungsseite (#234) kann später
+  andocken. Daneben bleibt der alte Weg: Ein Abteilungs-Admin ohne
+  Gesamtwehr gründet selbst eine.
+- **Notfall und Stilllegen:** Der KreisDatenMeister kann ein vorhandenes
+  Konto direkt zum Feuerwehrkommandanten machen (Aussperr-Schutz) und eine
+  Wehr stilllegen — das sperrt Schreiben, nie Lesen, damit kein Abgleich die
+  Daten auf den Handys für gelöscht hält.
 - **Abteilungen** entstehen nur durch den Feuerwehrkommandanten. Die
   Selbstregistrierung (`pending`-Abteilungen aus #57 Phase 1) entfällt
   ersatzlos.
@@ -157,7 +165,7 @@ des Einsenders (braucht dessen GitHub-Konto, keinen Token).
 | ① | Mitgliedschaften + expliziter Feuerwehrkommandant + Anzeigenamen. Backfill: bestehende Admins werden Kommandanten ihrer Gesamtwehr (Ist-Verhalten bleibt; Zurückstufen geht danach in der App) | **Umgesetzt (v1.11.0)** |
 | ② | Gerätetypen auf Gesamtwehr-Ebene mit eigenem Sync (der größte Brocken) | **Umgesetzt (v1.15.0)** |
 | ③ | Einladungen per Mail, temporäre Rechte, Anzeigename + Avatar | **Umgesetzt** (Einladungen v1.17.0, temporäre Rechte v1.19.0, Anzeigename + Avatar v1.20.0) |
-| ④ | KreisDatenMeister-Konsole + Freigabe neuer Gesamtwehren — erst, wenn eine zweite Wehr real absehbar ist; das Schema aus ① trägt sie schon | Zielbild |
+| ④ | KreisDatenMeister-Konsole + Anlegen neuer Gesamtwehren. **Geändert 2026-09-23 (#101):** kein Antragsformular — die Wehr meldet sich per Mail/Telefon, der KDM legt an und lädt den ersten Kommandanten ein; Abteilungs-Admins ohne Gesamtwehr dürfen weiter selbst gründen; dazu Notfall-Kommandant und Stilllegen | **Server umgesetzt** (Migration 20260923160000), App-Konsole folgt |
 
 Daneben, unabhängig und klein: Katalog-Picker im Geräteformular,
 Vorschlag-Flow (§5).

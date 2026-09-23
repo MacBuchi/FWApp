@@ -2,7 +2,9 @@
 // Mitgliedschaften seit Nutzerkonzept Stufe 1, Issue #98).
 //
 // Aufrufen darf, wer VERWALTER ist: Feuerwehrkommandant (Zeile in
-// gesamtwehr_kommandanten) oder Abteilungskommandant (admin-Mitgliedschaft).
+// gesamtwehr_kommandanten), Abteilungskommandant (admin-Mitgliedschaft)
+// oder der KreisDatenMeister (Zeile in betreiber, Issue #101 — er kommt
+// praktisch nur mit den invite*-Aktionen weiter, siehe `Caller`).
 // Die Prüfung läuft über das mitgeschickte Nutzer-JWT gegen PostgREST
 // (RLS „eigene Zeilen"). Alle privilegierten Operationen nutzen den
 // Service-Role-Key, der NUR hier auf dem Server lebt.
@@ -91,7 +93,15 @@ const EMAIL_DOMAIN = "fw.local";
 const ROLES = ["admin", "geraetewart", "member"];
 
 type Membership = { abteilung_id: string; role: string };
-type Caller = { id: string; memberships: Membership[]; kommandant: string[] };
+type Caller = {
+  id: string;
+  memberships: Membership[];
+  kommandant: string[];
+  /// KreisDatenMeister (Issue #101). Kommt nur über die invite*-Aktionen
+  /// weiter — deren Recht prüft die Datenbank; alle übrigen Aktionen fragen
+  /// Mitgliedschaft oder Kommando ab und lassen ihn damit ohnehin nicht zu.
+  betreiber: boolean;
+};
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -146,7 +156,7 @@ async function callerInfo(req: Request): Promise<Caller | null> {
   const auth = req.headers.get("Authorization") ?? "";
   if (!auth.startsWith("Bearer ")) return null;
   const userHeaders = { apikey: ANON_KEY, Authorization: auth };
-  const [profResp, memResp, komResp] = await Promise.all([
+  const [profResp, memResp, komResp, betrResp] = await Promise.all([
     fetch(`${SUPABASE_URL}/rest/v1/profiles?select=id`, {
       headers: userHeaders,
     }),
@@ -156,6 +166,12 @@ async function callerInfo(req: Request): Promise<Caller | null> {
     fetch(`${SUPABASE_URL}/rest/v1/gesamtwehr_kommandanten?select=gesamtwehr_id`, {
       headers: userHeaders,
     }),
+    // Die Lese-Policy gibt nur die EIGENE Zeile heraus — eine Zeile heisst
+    // „ich bin es". Ein Server ohne die Tabelle (vor #101) antwortet mit
+    // einem Fehler; das ist dann schlicht „nein", kein Abbruch.
+    fetch(`${SUPABASE_URL}/rest/v1/betreiber?select=user_id`, {
+      headers: userHeaders,
+    }),
   ]);
   if (!profResp.ok || !memResp.ok || !komResp.ok) return null;
   const rows = await profResp.json();
@@ -163,11 +179,13 @@ async function callerInfo(req: Request): Promise<Caller | null> {
   const memberships = await memResp.json() as Membership[];
   const kommandant = (await komResp.json() as { gesamtwehr_id: string }[])
     .map((k) => k.gesamtwehr_id);
-  return { id: rows[0].id as string, memberships, kommandant };
+  const betreiber = betrResp.ok &&
+    (await betrResp.json() as unknown[]).length > 0;
+  return { id: rows[0].id as string, memberships, kommandant, betreiber };
 }
 
 function istVerwalter(caller: Caller): boolean {
-  return caller.kommandant.length > 0 ||
+  return caller.betreiber || caller.kommandant.length > 0 ||
     caller.memberships.some((m) => m.role === "admin");
 }
 

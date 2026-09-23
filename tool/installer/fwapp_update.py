@@ -431,6 +431,8 @@ def main(argv: Optional[list[str]] = None) -> int:
     p.add_argument("--sichern", action="store_true", help="vollständige Sicherung jetzt")
     p.add_argument("--sicherungen", action="store_true", help="vorhandene Sicherungen zeigen")
     p.add_argument("--zuruecksetzen", metavar="NAME", help="diese Sicherung einspielen")
+    p.add_argument("--dokument", action="store_true",
+                   help="Einrichtungsdokument neu erzeugen und an den KreisDatenMeister schicken")
     p.add_argument("--woche", action="store_true",
                    help="wöchentliche Sicherung nach SICHERUNG_ZIEL (Timer, sonntags)")
     a = p.parse_args(argv)
@@ -447,6 +449,11 @@ def main(argv: Optional[list[str]] = None) -> int:
         return 0
     if a.woche:
         return woche(u)
+    if a.dokument:
+        pfad, grund = u.server.dokument(u.installiert)
+        print(f"✅ {pfad}" + (f"\n   per Mail an {u.conf.get('KDM_EMAIL')}" if grund is None
+                              else f"\n❌ Mail NICHT verschickt: {grund}"))
+        return 0 if grund is None else 1
     if a.sichern or a.zuruecksetzen:
         return von_hand(u, sicherung, a.sichern, a.zuruecksetzen)
 

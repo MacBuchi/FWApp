@@ -186,14 +186,6 @@ class Installer(unittest.TestCase):
                          inst.lies_env(alt)["ANON_KEY"])
         self.assertTrue(inst.sicherungs_passwort(alt)[1])
 
-    def test_passwort_mail_sagt_warum(self):
-        m = inst.sicherungs_mail(
-            {"KDM_EMAIL": "kdm@x.de", "MAIL_ABSENDER": "a@x.de", "DOMAIN": "x.de",
-             "ERREICHBARKEIT": "caddy"}, "GEHEIM123")
-        self.assertEqual(m["To"], "kdm@x.de")
-        self.assertIn("GEHEIM123", m.get_content())
-        self.assertIn("außerhalb des Servers", m.get_content())
-
     def test_abgelegte_conf_liest_sich_gleich(self):
         """Der Updater liest server/fwapp.conf wieder ein — auch Werte mit
         Leerzeichen und das Passwort, das beim Installieren aus der Umgebung

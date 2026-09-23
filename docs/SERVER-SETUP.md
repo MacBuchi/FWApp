@@ -650,6 +650,35 @@ Ende-zu-Ende getestet am 2026-08-01: Direkt-SMTP an die Brücke **und** eine
 echte GoTrue-Invite-Mail kamen beim Empfänger an; Fehlversand meldet die
 Brücke als SMTP 451 an GoTrue zurück (kein stilles Schlucken).
 
+### KreisDatenMeister (Betreiber, Issue #101)
+
+Der KreisDatenMeister ist das Konto, das in der App-Konsole neue
+Gesamtwehren anlegt, ihren ersten Feuerwehrkommandanten einlädt, im Notfall
+einen Kommandanten ernennt und eine Wehr stilllegt. Er ist **kein**
+Über-Kommandant: In den Wehren selbst hat er keine Rechte (Umbenennen,
+Branding, Mitgliederverwaltung bleiben bei deren Kommandanten).
+
+Gesetzt wird er **nur hier auf dem Server**, nie aus der App:
+
+```bash
+scp tool/vm/fwapp_betreiber.sh fwapp@<vm>:bin/
+ssh fwapp@<vm>
+bin/fwapp_betreiber.sh setzen <mail> "Neue Wehr? Mail an <funktionsadresse>"
+bin/fwapp_betreiber.sh liste
+bin/fwapp_betreiber.sh kontakt <mail> "<neue Zeile>"   # nur die Kontaktzeile
+bin/fwapp_betreiber.sh entfernen <mail>
+```
+
+- Das Konto muss **schon existieren** (bestätigte Adresse) — das Skript legt
+  keins an, damit kein Passwort durch die Shell-History geht.
+- Die **Kontaktzeile ist öffentlich**: Sie steht auf der Login-Seite jeder
+  App, die mit diesem Server spricht („Deine Wehr ist noch nicht dabei?").
+  Eine Funktionsadresse ist besser als die private.
+- **Stilllegen sperrt Schreiben, nicht Lesen** (Veröffentlichen, Anhänge,
+  Codes, Gerätetypen, Wissensdatenbank, Einladungen). Eine Wehr, die gar
+  nichts mehr sähe, verlöre beim nächsten Abgleich ihre Daten auf den
+  Handys. Rückgängig in der Konsole.
+
 ### Zwei-Faktor-Anmeldung (TOTP, seit v1.9.0)
 
 ⚠️ **GoTrue hat TOTP standardmäßig ausgeschaltet.** Ohne die beiden Schalter

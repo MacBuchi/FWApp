@@ -118,6 +118,20 @@ class Sicherungsziel(unittest.TestCase):
         self.assertIn("kaputten SSD", self.pruefe("lokal").hinweis)
 
 
+class UnverschluesseltNurLokal(unittest.TestCase):
+    """Unsere VM schickt über die Mail-Brücke auf dem Docker-Gateway
+    (172.18.0.1) — unverschlüsselt, aber der Rechner selbst. Über ein
+    fremdes Netz bliebe das Passwort im Klartext unterwegs."""
+
+    def test_eigene_adressen(self):
+        self.assertTrue(c._ist_lokal("127.0.0.1"))
+        self.assertTrue(c._ist_lokal("localhost"))
+
+    def test_fremde_adressen(self):
+        self.assertFalse(c._ist_lokal("192.0.2.10"))  # Dokumentationsnetz, nie eigenes
+        self.assertFalse(c._ist_lokal("smtp.example.org"))
+
+
 class DomainUndHttps(unittest.TestCase):
     def test_dns(self):
         self.assertEqual(c.pruefe_dns("a.de", lambda d: ["1.2.3.4"]).stufe, c.OK)

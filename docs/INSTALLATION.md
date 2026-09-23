@@ -386,6 +386,55 @@ Konfiguration zeigt auf einen lokalen Webserver):
    alte Bündel; heute über die vollständige Sicherung, siehe oben.)
 5. Danach **alle 191 E2E-Tests grün** gegen den so behandelten Server.
 
+## Wochenbericht
+
+> Marcus, 2026-09-24: „Bekommt der KreisDatenMeister schon wöchentlich
+> einen Error- und Health-Report? (Links zu Logfiles, Auffälligkeiten,
+> Auslastung)" — bis dahin nur Mails, wenn etwas scheiterte.
+
+Sonntags 5 Uhr (nach Sicherung und Update-Fenster) schickt
+`tool/installer/fwapp_bericht.py` einen Bericht an `KDM_EMAIL`. Der Betreff
+trägt die Ampel („✅ alles in Ordnung" / „⚠️ 2 Hinweise" / „❌ 1 Problem"),
+oben steht nur, was auffällt, darunter:
+
+| Abschnitt | Inhalt |
+|---|---|
+| Stand und Updates | Version, angehaltene Updates mit Grund, Update-Ereignisse der Woche |
+| Sicherungen | vor Updates, Wochensicherungen (Alter, Anzahl), Platte da? |
+| Auslastung | freier Platz (SSD, Sicherungsplatte), Speicher, Last, Temperatur (Pi), wartender Neustart |
+| Dienste | Zustand, Gesundheit, Absturz-Neustarts, Speicher je Container |
+| Auffälligkeiten | Fehlerzeilen der Woche je Dienst, gleiche Meldungen zusammengefasst, die häufigsten mit Beispiel |
+| Erreichbarkeit | Restlaufzeit des Zertifikats |
+| Nutzung | Wehren, Konten, aktiv in 7 Tagen, Fotos, Datenbankgröße |
+
+Die Logs der Woche hängen als ZIP an (höchstens 3 MB; das Neueste bleibt,
+gekürzt wird vorn). **Keine Links zu Logdateien:** Dafür müsste der Server
+seine Logs über eine Webseite ausliefern — eine neue Angriffsfläche.
+
+- ⚠️ **Der Bericht ist selbst das Lebenszeichen.** Fällt der Mailversand
+  aus, kommen auch keine Fehlermails mehr; ein Bericht, der ausbleibt, fällt
+  dagegen auf. Das steht deshalb am Ende jedes Berichts.
+- ⚠️ **Fehler eng fassen.** Was jede Woche harmlos auftaucht (Kong beim
+  Anhalten für die Sicherung: „process exiting"), steht in einer
+  Ausschlussliste — ein Bericht mit Dauer-Auffälligkeiten liest niemand.
+- **Gefunden über den ersten Bericht:** Kong startete einen
+  nginx-Arbeitsprozess je CPU-Kern (799 MB am Mac mit 10 Kernen, auf dem
+  Pi 5 ≈ 320 MB). Jetzt `KONG_NGINX_WORKER_PROCESSES=2`: 176 MB, unter der
+  Last aller 191 E2E-Tests 192 MB.
+
+```bash
+sudo python3 /srv/fwapp/server/fwapp_bericht.py --conf /srv/fwapp/server/fwapp.conf --ansehen  # nur zeigen
+sudo python3 /srv/fwapp/server/fwapp_bericht.py --conf /srv/fwapp/server/fwapp.conf            # schicken
+```
+
+Auf unserer VM läuft derselbe Bericht mit eigener Konfiguration
+(`tool/vm/fwapp-bericht.conf.example`, docs/SERVER-SETUP.md).
+
+**Nachgewiesen am 2026-09-24:** Installation im Testmodus, Wochensicherung,
+Bericht verschickt — Mail in Mailpit mit ZIP (alle Dienste und update.log).
+Gegenprobe mit VM-Konfiguration: Update-Sperre, zu alter Dump und ein
+angehaltener Dienst ergaben genau „❌ 3 Probleme".
+
 ## Einrichtungsdokument (#249)
 
 > Marcus, 2026-09-24: „Nach dem Einrichten eine Anleitung (PDF oder so) an

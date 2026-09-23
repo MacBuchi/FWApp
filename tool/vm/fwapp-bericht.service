@@ -1,0 +1,14 @@
+# fwapp-bericht.service – Wochenbericht unserer VM (tool/installer/fwapp_bericht.py).
+# Einrichtung: tool/vm/fwapp_bericht_einrichten.sh
+[Unit]
+Description=FWApp: Wochenbericht
+After=docker.service network-online.target
+
+[Service]
+Type=oneshot
+User=fwapp
+# fwapp ist nicht in der docker-Gruppe; der Autodeploy nimmt ebenfalls sudo.
+Environment=DOCKER=sudo docker
+ExecStart=/usr/bin/python3 /home/fwapp/bin/fwapp-bericht/fwapp_bericht.py --conf /home/fwapp/fwapp-bericht.conf
+StandardOutput=journal
+StandardError=journal

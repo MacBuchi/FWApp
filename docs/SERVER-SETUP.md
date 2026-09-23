@@ -671,6 +671,35 @@ Ende-zu-Ende getestet am 2026-08-01: Direkt-SMTP an die Brücke **und** eine
 echte GoTrue-Invite-Mail kamen beim Empfänger an; Fehlversand meldet die
 Brücke als SMTP 451 an GoTrue zurück (kein stilles Schlucken).
 
+### Wochenbericht (seit 2026-09-24)
+
+Sonntags 5 Uhr ein Bericht per Mail: Stand, Autodeploy-Sperre, Dumps,
+Platte/Speicher/Last, Container, Fehler der Woche aus den Logs, Zertifikat,
+Nutzung — mit den Logs als ZIP. Derselbe Bericht wie auf
+Installer-Installationen (`tool/installer/fwapp_bericht.py`, Beschreibung in
+docs/INSTALLATION.md), hier mit den Pfaden der VM.
+
+Einrichten und aktualisieren, vom Mac im Heimnetz oder per WireGuard:
+
+```bash
+tool/vm/fwapp_bericht_einrichten.sh <empfänger@adresse> <öffentliche-domain>
+```
+
+Das Skript legt `fwapp_bericht.py` samt `fwapp_check.py`/`fwapp_install.py`
+unter `~/bin/fwapp-bericht/` ab, schreibt beim ersten Mal
+`~/fwapp-bericht.conf` (Vorlage `tool/vm/fwapp-bericht.conf.example`;
+die Compose-Projekte ermittelt es aus den laufenden Containern), aktiviert
+`fwapp-bericht.timer`, zeigt einen Bericht und verschickt einen echten.
+
+⚠️ **Es spielt auch die Mail-Brücke neu auf:** Bis 2026-09-24 verwarf sie
+Anhänge still (und ein `text/plain`-Anhang wäre zum Mailtext geworden) —
+der Bericht wäre ohne Logs angekommen. Die alte Fassung bleibt als
+`fwapp_mailbridge.py.vor-anhaengen` liegen. `tool/vm/test_fwapp_mailbridge.py`
+prüft den Weg in CI.
+
+Ansehen, ohne zu schicken: `DOCKER="sudo docker" python3
+~/bin/fwapp-bericht/fwapp_bericht.py --conf ~/fwapp-bericht.conf --ansehen`.
+
 ### KreisDatenMeister (Betreiber, Issue #101)
 
 Der KreisDatenMeister ist das Konto, das in der App-Konsole neue

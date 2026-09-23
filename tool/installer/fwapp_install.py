@@ -259,6 +259,26 @@ def update_units(server: Path) -> dict[str, str]:
             "Type=oneshot\n"
             f"ExecStart=/usr/bin/env python3 {server}/fwapp_update.py --conf {server}/fwapp.conf --woche\n"
         ),
+        # Wochenbericht an den KreisDatenMeister — nach Sicherung (2:30) und
+        # Update-Fenster (3:00–3:45), damit er über beide berichtet.
+        "fwapp-bericht.service": (
+            "[Unit]\n"
+            "Description=FWApp: Wochenbericht an den KreisDatenMeister\n"
+            "After=docker.service network-online.target\n\n"
+            "[Service]\n"
+            "Type=oneshot\n"
+            f"ExecStart=/usr/bin/env python3 {server}/fwapp_bericht.py --conf {server}/fwapp.conf\n"
+        ),
+        "fwapp-bericht.timer": (
+            "[Unit]\n"
+            "Description=FWApp: Wochenbericht\n\n"
+            "[Timer]\n"
+            "OnCalendar=Sun *-*-* 05:00\n"
+            "RandomizedDelaySec=20min\n"
+            "Persistent=true\n\n"
+            "[Install]\n"
+            "WantedBy=timers.target\n"
+        ),
         "fwapp-sicherung.timer": (
             "[Unit]\n"
             "Description=FWApp: wöchentliche Sicherung\n\n"
@@ -355,7 +375,7 @@ class Server:
         for name in (
             "docker-compose.yml", "kong.yml", "Caddyfile",
             "fwapp_check.py", "fwapp_install.py", "fwapp_update.py", "fwapp_sicherung.py",
-            "fwapp_dokument.py", "fwapp_pdf.py", "fwapp_qr.py",
+            "fwapp_dokument.py", "fwapp_pdf.py", "fwapp_qr.py", "fwapp_bericht.py",
         ):
             shutil.copy2(HIER / name, self.server / name)
         for sub in ("compose", "db"):
@@ -540,9 +560,10 @@ class Server:
         for name, inhalt in update_units(self.server).items():
             Path("/etc/systemd/system", name).write_text(inhalt)
         self.lauf("systemctl", "daemon-reload")
-        self.lauf("systemctl", "enable", "--now", "fwapp-update.timer", "fwapp-sicherung.timer")
+        self.lauf("systemctl", "enable", "--now", "fwapp-update.timer", "fwapp-sicherung.timer",
+                  "fwapp-bericht.timer")
         woche = "sonntags 2:30 Sicherung" if self.conf.get("SICHERUNG_ZIEL") else "wöchentliche Sicherung aus"
-        return f"Timer aktiv: jede Nacht gegen 3 Uhr Update, {woche}."
+        return f"Timer aktiv: jede Nacht gegen 3 Uhr Update, {woche}, sonntags 5 Uhr Wochenbericht."
 
 
 # ── Ablauf ────────────────────────────────────────────────────────────────

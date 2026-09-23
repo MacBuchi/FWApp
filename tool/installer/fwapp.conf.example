@@ -1,0 +1,29 @@
+# fwapp.conf – Konfiguration einer FWApp-Installation (Issue #234).
+#
+# Kopieren nach fwapp.conf, ausfüllen. Gelesen von fwapp_check.py (#240)
+# und später vom Installer (#241). Format: SCHLUESSEL=wert, eine Zeile je
+# Eintrag, # leitet einen Kommentar ein. Umgebungsvariablen gleichen Namens
+# haben Vorrang — so muss ein Passwort nicht in der Datei stehen.
+#
+# ⚠️ fwapp.conf enthält das SMTP-Passwort. Nie ins Repo, chmod 600.
+
+# Die Adresse, unter der die Wehr die App erreicht (Web-App + API).
+DOMAIN=app.feuerwehr-musterstadt.de
+
+# Anzeigename der Installation (erscheint im Einrichtungs-QR).
+NAME=Feuerwehr Musterstadt
+
+# Wohin der Installer Daten, Fotos und Backups legt. Muss auf der SSD liegen.
+DATA_DIR=/srv/fwapp
+
+# ── Mail (Pflicht: Einladungen und Passwort-Reset laufen darüber) ──────────
+MAIL_ABSENDER=app@feuerwehr-musterstadt.de
+SMTP_HOST=smtp-relay.brevo.com
+SMTP_PORT=587
+SMTP_USER=
+# Besser als Umgebungsvariable: SMTP_PASS=… ./fwapp_check.py
+SMTP_PASS=
+# An diese Adresse geht die Prüfmail mit dem Code.
+TEST_EMPFAENGER=
+# DKIM-Selector des Mail-Anbieters (z. B. "brevo1"), leer = nicht prüfen.
+DKIM_SELECTOR=

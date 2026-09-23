@@ -128,6 +128,12 @@ jobs:
       - name: Verify deploy manifest is up to date
         run: python3 tool/generate_deploy_manifest.py --check
 
+      # Die Vorab-Prüfung einer Installation (#240) läuft auf dem Pi bzw. der
+      # VM, nicht in der App — ihre Regeln (Schwellen, Mail-Code) sind
+      # trotzdem Code, der ohne Test still kaputtgehen kann.
+      - name: Installer checks (Python)
+        run: python3 -m unittest discover -s tool/installer -p 'test_*.py'
+
       - name: Analyze
         run: flutter analyze
 

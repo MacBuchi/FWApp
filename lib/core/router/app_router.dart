@@ -21,6 +21,8 @@ import 'package:fwapp/features/home/presentation/screens/home_screen.dart';
 import 'package:fwapp/features/home/presentation/screens/more_screen.dart';
 import 'package:fwapp/features/vehicle/presentation/screens/vehicle_list_screen.dart';
 import 'package:fwapp/features/betrieb/presentation/screens/betrieb_screen.dart';
+import 'package:fwapp/features/kopplung/presentation/screens/server_einrichten_screen.dart';
+import 'package:fwapp/features/kopplung/presentation/screens/server_qr_screen.dart';
 import 'package:fwapp/features/knowledge/presentation/screens/wissensdatenbank_screen.dart';
 import 'package:fwapp/features/lerngruppe/presentation/screens/lerngruppe_detail_screen.dart';
 import 'package:fwapp/features/lerngruppe/presentation/screens/lerngruppen_screen.dart';
@@ -68,7 +70,9 @@ final _editRoutePattern = RegExp(
 /// den man Server-URL und Schlüssel korrigiert. Ohne diese Hintertür säße
 /// jemand mit falscher Serveradresse in einer App fest, in die er sich nicht
 /// anmelden kann und deren Adresse er nicht mehr ändern darf.
-const _publicPaths = {'/login', '/server-settings'};
+// `/server-einrichten` (#238) gehört dazu wie die Servereinstellungen: Wer
+// mit dem Server einer fremden Installation startet, hat dort kein Konto.
+const _publicPaths = {'/login', '/server-settings', '/server-einrichten'};
 
 /// Seiten, die es nur mit Serververbindung gibt.
 const _authPaths = {'/login', '/change-password', '/zwei-faktor'};
@@ -214,6 +218,10 @@ final _routes = [
   GoRoute(
     path: '/server-settings',
     builder: (_, _) => const ServerSettingsScreen(),
+  ),
+  GoRoute(
+    path: '/server-einrichten',
+    builder: (_, _) => const ServerEinrichtenScreen(),
   ),
   ShellRoute(
     builder:
@@ -415,6 +423,7 @@ final _routes = [
       // für andere — den Eintrag zeigen die Einstellungen nur dem Betreiber,
       // und der Server prüft jede Aktion selbst.
       GoRoute(path: '/betrieb', builder: (_, _) => const BetriebScreen()),
+      GoRoute(path: '/server-qr', builder: (_, _) => const ServerQrScreen()),
       GoRoute(path: '/changelog', builder: (_, _) => const ChangelogScreen()),
     ],
   ),

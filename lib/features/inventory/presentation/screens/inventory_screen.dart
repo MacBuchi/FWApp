@@ -12,7 +12,7 @@ import 'package:fwapp/features/compartment/domain/entities/compartment.dart';
 import 'package:fwapp/features/compartment/presentation/providers/compartment_providers.dart';
 import 'package:fwapp/features/inventory/presentation/providers/inventory_providers.dart';
 import 'package:fwapp/features/inventory/data/nfc_dienst.dart';
-import 'package:fwapp/features/inventory/presentation/screens/code_scannen_screen.dart';
+import 'package:fwapp/core/scanner/code_scannen_screen.dart';
 import 'package:fwapp/features/inventory/presentation/screens/nfc_lesen_screen.dart';
 import 'package:fwapp/features/inventory/presentation/widgets/status_darstellung.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/vehicle_providers.dart';

@@ -19,7 +19,7 @@ import 'package:fwapp/core/database/app_database.dart';
 import 'package:fwapp/features/inventory/data/nfc_dienst.dart';
 import 'package:fwapp/features/inventory/presentation/providers/tag_providers.dart';
 import 'package:fwapp/features/inventory/presentation/screens/nfc_lesen_screen.dart';
-import 'package:fwapp/features/inventory/presentation/screens/code_scannen_screen.dart';
+import 'package:fwapp/core/scanner/code_scannen_screen.dart';
 import 'package:fwapp/features/inventory/presentation/widgets/code_anzeigen.dart';
 
 class TagAbschnitt extends ConsumerWidget {

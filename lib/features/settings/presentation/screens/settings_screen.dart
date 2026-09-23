@@ -112,6 +112,15 @@ class SettingsScreen extends ConsumerWidget {
           if (ref.watch(supabaseReadyProvider)) ...[
             const ServerHealthTile(),
             const _ConnectionSection(),
+            // Jedes Mitglied darf den Einrichtungs-QR zeigen (#238) —
+            // Begründung im Kopf von server_qr_screen.dart.
+            ListTile(
+              leading: const Icon(Icons.qr_code_2),
+              title: const Text('Weiteres Gerät verbinden'),
+              subtitle: const Text('Einrichtungs-Code für ein neues Handy'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push('/server-qr'),
+            ),
             const BetriebEintrag(),
           ],
 

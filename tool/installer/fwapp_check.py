@@ -163,8 +163,10 @@ def pruefe_uhr(ntp_synchron: Optional[bool]) -> Ergebnis:
 def pruefe_dns(domain: str, aufloesen: Callable[[str], list[str]]) -> Ergebnis:
     if not domain:
         return Ergebnis(FEHLER, "Domain: nicht eingetragen", "DOMAIN in fwapp.conf setzen.")
+    # „192.168.1.20:8080" im LAN: aufgelöst wird der Rechner, nicht der Port.
+    host = domain.rsplit(":", 1)[0] if domain.count(":") == 1 else domain
     try:
-        adressen = aufloesen(domain)
+        adressen = aufloesen(host)
     except OSError:
         adressen = []
     if not adressen:
@@ -178,11 +180,12 @@ def pruefe_dns(domain: str, aufloesen: Callable[[str], list[str]]) -> Ergebnis:
 
 
 def pruefe_https(
-    domain: str, holen: Callable[[str], tuple[int, str]]
+    domain: str, holen: Callable[[str], tuple[int, str]], schema: str = "https"
 ) -> list[Ergebnis]:
     """Nach der Installation: HTTPS, die Einrichtungs-Datei (#238) und ob
-    der Server hinter der darin genannten Adresse antwortet."""
-    basis = f"https://{domain}"
+    der Server hinter der darin genannten Adresse antwortet. Im reinen LAN
+    (ERREICHBARKEIT=lan) ohne Zertifikat über http."""
+    basis = f"{schema}://{domain}"
     try:
         status, text = holen(f"{basis}/.well-known/fwapp.json")
     except ssl.SSLError as e:
@@ -195,7 +198,11 @@ def pruefe_https(
                 f"{basis} antwortet nicht ({e}). Tunnel bzw. Portfreigabe prüfen.",
             )
         ]
-    ergebnisse = [Ergebnis(OK, "HTTPS: erreichbar, Zertifikat gültig")]
+    ergebnisse = [
+        Ergebnis(OK, "HTTPS: erreichbar, Zertifikat gültig")
+        if schema == "https"
+        else Ergebnis(HINWEIS, "Nur im LAN erreichbar (http, ohne Zertifikat)")
+    ]
     if status != 200:
         ergebnisse.append(
             Ergebnis(
@@ -478,7 +485,8 @@ def alle_pruefungen(conf: dict[str, str], vorher: bool, mit_code: bool) -> list[
 
     netz = [pruefe_dns(domain, _aufloesen)]
     if not vorher and netz[0].stufe != FEHLER:
-        netz += pruefe_https(domain, _holen)
+        schema = "http" if conf.get("ERREICHBARKEIT") == "lan" else "https"
+        netz += pruefe_https(domain, _holen, schema)
 
     mail_domain = conf.get("MAIL_ABSENDER", "@").split("@")[-1]
     mail: list[Ergebnis] = []

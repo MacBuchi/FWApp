@@ -54,3 +54,6 @@ docs/private/
 # Release-Signierung (lokal; CI schreibt sie aus Actions-Secrets)
 android/key.properties
 android/fwapp-release.jks
+
+# Python (tool/)
+__pycache__/

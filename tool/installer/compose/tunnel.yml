@@ -1,0 +1,13 @@
+# compose/tunnel.yml – Cloudflare Tunnel wie auf unserer VM (#241): keine
+# Portfreigabe, der Tunnel baut nur ausgehend auf. Im Cloudflare-Dashboard
+# den öffentlichen Hostnamen auf http://fwapp-web:80 zeigen lassen.
+services:
+  tunnel:
+    container_name: fwapp-tunnel
+    image: cloudflare/cloudflared:2026.9.1
+    restart: unless-stopped
+    depends_on:
+      - web
+    command: ["tunnel", "--no-autoupdate", "run"]
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN}

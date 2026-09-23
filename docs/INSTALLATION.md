@@ -134,8 +134,62 @@ DNS-over-HTTPS, und der ganze Mailweg gegen Mailpit — richtiger Code ✅
 (Exit 0), dreimal falsch ❌ (Exit 1). Die Regeln prüft
 `tool/installer/test_fwapp_check.py` in CI.
 
+## Installer (#241)
+
+`tool/installer/fwapp_install.py` — Python-Standardbibliothek plus Docker
+mit Compose-Plugin. Konfiguration in derselben `fwapp.conf` wie die
+Vorab-Prüfung.
+
+```bash
+./fwapp_install.py --conf fwapp.conf --web <Web-Bündel>
+```
+
+Ablauf: Vorab-Prüfung → Dateien → Schlüssel → Dienste starten →
+Migrationen → Einrichtungs-Datei (`/.well-known/fwapp.json`) →
+KreisDatenMeister-Konto (Startpasswort, beim ersten Anmelden zu ändern).
+Danach legt der KreisDatenMeister in der App die erste Wehr an und lädt
+ihren Kommandanten ein (#101).
+
+**Auf dem Rechner** liegt alles unter `DATA_DIR`: `server/` (Compose-Dateien,
+`.env` mit den Schlüsseln, chmod 600), `db/`, `storage/`, `web/`,
+`functions/`, `kopplung/`, `backups/`.
+
+**Dienste**: genau die sechs aus der Messung plus nginx
+(`tool/installer/docker-compose.yml`). Die Container heißen wie auf unserer
+VM, damit `tool/vm/fwapp-web-nginx.conf` und die Mailvorlagen-URLs ohne
+Kopie passen. Kong 2.8 mit einer gekürzten `kong.yml` (vier Routen,
+Schlüsselprüfung per `key-auth`/`acl`).
+
+**Erreichbarkeit** über eine Zusatzdatei je Art (`compose/lan.yml`,
+`caddy.yml`, `tunnel.yml`), in `.env` als `COMPOSE_FILE` festgehalten — ein
+späteres `docker compose up -d` startet dieselbe Zusammenstellung.
+
+**Idempotent**: Ein zweiter Lauf behält Schlüssel und Daten, spielt nur
+neue Migrationen ein (dieselbe Buchführung wie der Autodeploy,
+`deploy.applied_migrations`) und ersetzt Web-App, Functions und
+Konfiguration. Genau das ist der Kern des Updates.
+
+⚠️ **Die Schlüssel werden nie neu erzeugt**, wenn es sie schon gibt: Das
+Postgres-Passwort steckt in der Datenbank, der Anon-Key in jeder App und im
+Einrichtungs-QR. `test_fwapp_install.py` hält das fest.
+
+**Server-Images sind gepinnt** (kein `latest`, Postgres bleibt bei 17) —
+auch das prüft ein Test.
+
+### Update-Pfad (entschieden 2026-09-23, gebaut im zweiten Teil von #241)
+
+| | Fremde Installationen | Unser Server |
+|---|---|---|
+| Folgt | jedem **freigegebenen** Release; Option: auch Vorabversionen | `main` (Testfeld) |
+| Wann | automatisch nachts | bei jedem Merge (Autodeploy) |
+| Ablauf | Sicherung → Probelauf der Migrationen → einspielen → Images des Release ziehen | wie bisher |
+| Bei Fehler | alter Stand bleibt, Mail an den KreisDatenMeister | Autodeploy blockiert |
+
+Dafür hängt die Release-Pipeline künftig ein **neutrales Web-Bündel** (ohne
+unsere Server-Adresse) und das **Server-Bündel** an jedes Release.
+
 ## Offen
 
 - Zahlen von der Produktions-VM nachtragen (echte Daten, Laufzeit).
 - Speicherbedarf des Autodeploy-Probelaufs messen.
-- Installer (#241).
+- Release-Bündel und Updater (#241, zweiter Teil).

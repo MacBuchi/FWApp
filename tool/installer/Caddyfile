@@ -1,0 +1,4 @@
+# Caddyfile – HTTPS mit Let's Encrypt vor der Web-App (#241).
+{$DOMAIN} {
+	reverse_proxy fwapp-web:80
+}

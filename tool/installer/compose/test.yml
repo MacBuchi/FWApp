@@ -1,0 +1,15 @@
+# compose/test.yml – NUR für den Nachweis in der Entwicklung (#241).
+#
+# Legt den vom Installer gebauten Server auf die Ports des lokalen
+# Supabase-Stacks (API 54321, Mailpit 54324) — dann laufen alle E2E-Tests
+# aus test/integration/ unverändert gegen ihn. Der Installer schreibt dafür
+# die Demo-Schlüssel des lokalen Stacks in die .env. Nie produktiv benutzen.
+services:
+  kong:
+    ports:
+      - "54321:8000"
+  mailpit:
+    container_name: fwapp-mailpit
+    image: public.ecr.aws/supabase/mailpit:v1.30.2
+    ports:
+      - "54324:8025"

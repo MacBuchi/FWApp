@@ -6,6 +6,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:fwapp/features/betrieb/presentation/widgets/stillgelegt_hinweis.dart';
 import 'package:fwapp/features/lerngruppe/presentation/widgets/lerngruppen_karte.dart';
 import 'package:fwapp/core/sync/sync_providers.dart';
 import 'package:fwapp/core/widgets/abteilung_switcher.dart';
@@ -36,6 +37,7 @@ class HomeScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(16),
               children: [
                 const GesamtwehrHeader(),
+                const StillgelegtHinweis(),
                 const HomeBanners(),
                 const _GeraeteSucheCard(),
                 const SizedBox(height: 12),

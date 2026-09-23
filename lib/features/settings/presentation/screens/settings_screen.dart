@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:fwapp/features/betrieb/presentation/widgets/betrieb_eintrag.dart';
 import 'package:fwapp/features/inventory/presentation/providers/tag_providers.dart';
 import 'package:fwapp/features/vehicle/presentation/providers/anhang_providers.dart';
 import 'package:fwapp/core/sync/abteilung_providers.dart';
@@ -111,6 +112,7 @@ class SettingsScreen extends ConsumerWidget {
           if (ref.watch(supabaseReadyProvider)) ...[
             const ServerHealthTile(),
             const _ConnectionSection(),
+            const BetriebEintrag(),
           ],
 
           // ─── Bibliothek ───────────────────────────────────────

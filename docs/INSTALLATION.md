@@ -140,9 +140,24 @@ DNS-over-HTTPS, und der ganze Mailweg gegen Mailpit — richtiger Code ✅
 mit Compose-Plugin. Konfiguration in derselben `fwapp.conf` wie die
 Vorab-Prüfung.
 
+Ab dem ersten Release nach #241 hängen an jedem Release zwei Bündel. So
+richtet eine Wehr ihren Server ein (`<tag>` z. B. `v1.64.0`):
+
 ```bash
-./fwapp_install.py --conf fwapp.conf --web <Web-Bündel>
+mkdir -p ~/fwapp/server ~/fwapp/web && cd ~/fwapp
+# fwapp-server-<tag>.tar.gz, fwapp-web-<tag>.tar.gz und SHA256SUMS
+# von der Release-Seite laden, dann:
+sha256sum -c --ignore-missing SHA256SUMS
+tar -xzf fwapp-server-<tag>.tar.gz -C server
+tar -xzf fwapp-web-<tag>.tar.gz -C web
+cp server/tool/installer/fwapp.conf.example fwapp.conf   # ausfüllen
+sudo python3 server/tool/installer/fwapp_install.py --conf fwapp.conf --web web
 ```
+
+Mit `sudo`, damit der Installer den Timer für das nächtliche Update
+einrichten kann. Das Web-Bündel ist **neutral** gebaut — ohne unsere
+Server-Adresse; es findet seinen Server über `/.well-known/fwapp.json`
+(#238).
 
 Ablauf: Vorab-Prüfung → Dateien → Schlüssel → Dienste starten →
 Migrationen → Einrichtungs-Datei (`/.well-known/fwapp.json`) →
@@ -151,8 +166,9 @@ Danach legt der KreisDatenMeister in der App die erste Wehr an und lädt
 ihren Kommandanten ein (#101).
 
 **Auf dem Rechner** liegt alles unter `DATA_DIR`: `server/` (Compose-Dateien,
-`.env` mit den Schlüsseln, chmod 600), `db/`, `storage/`, `web/`,
-`functions/`, `kopplung/`, `backups/`.
+`.env` mit den Schlüsseln und `fwapp.conf`, beide chmod 600, dazu
+`installation.json` mit dem eingerichteten Stand), `db/`, `storage/`,
+`web/`, `functions/`, `kopplung/`, `backups/`, `releases/`.
 
 **Dienste**: genau die sechs aus der Messung plus nginx
 (`tool/installer/docker-compose.yml`). Die Container heißen wie auf unserer
@@ -197,20 +213,68 @@ ersetzen, nie das Verzeichnis — sonst sieht ein laufender Container nach
 dem Update ein leeres) und `compose/test.yml` (Storage braucht am Mac ein
 Docker-Volume).
 
-### Update-Pfad (entschieden 2026-09-23, gebaut im zweiten Teil von #241)
+### Update-Pfad (entschieden 2026-09-23)
 
 | | Fremde Installationen | Unser Server |
 |---|---|---|
-| Folgt | jedem **freigegebenen** Release; Option: auch Vorabversionen | `main` (Testfeld) |
-| Wann | automatisch nachts | bei jedem Merge (Autodeploy) |
-| Ablauf | Sicherung → Probelauf der Migrationen → einspielen → Images des Release ziehen | wie bisher |
-| Bei Fehler | alter Stand bleibt, Mail an den KreisDatenMeister | Autodeploy blockiert |
+| Folgt | jedem **freigegebenen** Release (`UPDATE_KANAL=stabil`); Option `vorab`, oder `aus` | `main` (Testfeld) |
+| Wann | automatisch nachts (systemd-Timer, gegen 3 Uhr, holt verpasste Läufe nach) | bei jedem Merge (Autodeploy) |
+| Wie | `tool/installer/fwapp_update.py` | `tool/vm/fwapp_autodeploy.sh` |
+| Bei Fehler | alter Stand bleibt, Mail an den KreisDatenMeister, Updates angehalten | Autodeploy blockiert |
 
-Dafür hängt die Release-Pipeline künftig ein **neutrales Web-Bündel** (ohne
-unsere Server-Adresse) und das **Server-Bündel** an jedes Release.
+**Release-Seite** (`release.yml`, Job *Build installer bundles*): Jedes
+Release trägt `fwapp-server-<tag>.tar.gz` (aus
+`tool/installer/fwapp_buendel.py`: Installer, Compose-Dateien,
+Migrationen, Functions — im Aufbau des Repos), `fwapp-web-<tag>.tar.gz`
+(neutral gebaut) und `SHA256SUMS`. Ein Release ohne diese drei Anhänge
+kommt für den Updater nicht in Frage — so sieht jedes Release vor #241 aus.
+`test/release_workflow_test.dart` hält fest, dass das neutrale Bündel keine
+Server-Adresse bekommt.
+
+**Ein Lauf des Updaters:**
+
+| Schritt | Scheitert es … |
+|---|---|
+| 1. Release wählen (GitHub-API) | Netz weg → nächste Nacht |
+| 2. Bündel laden, Prüfsummen | Netz weg / Summe falsch → nächste Nacht |
+| 3. Images des Release ziehen | Netz weg → nächste Nacht |
+| 4. Dump als Rückfallpunkt (`backups/`, die letzten 7) | blockieren + Mail |
+| 5. Probelauf der neuen Migrationen in einer Wegwerf-Datenbank | blockieren + Mail — **nichts eingespielt** |
+| 6. Installer des neuen Bündels | Installer des **alten** Bündels läuft noch einmal, dann blockieren + Mail |
+
+Bis Schritt 5 ist am laufenden Server nichts verändert. Blockiert heißt:
+`DATA_DIR/update.blocked` liegt da, jeder weitere Lauf tut nichts, bis sie
+gelöscht ist — dasselbe Muster wie im Autodeploy. Die Mail sagt, was zu tun
+ist. Nach Erfolg räumt der Updater die Images weg, die nur der alte Stand
+brauchte (die Platte ist auf dem Pi der Engpass).
+
+```bash
+sudo python3 /srv/fwapp/server/fwapp_update.py --conf /srv/fwapp/server/fwapp.conf --pruefen  # nur nachsehen
+sudo python3 /srv/fwapp/server/fwapp_update.py --conf /srv/fwapp/server/fwapp.conf            # jetzt aktualisieren
+```
+
+⚠️ Der Updater braucht **IPv4 zu GitHub** (api.github.com und die
+Download-Server sind IPv4-only). Ein Anschluss im Gerätehaus hat das in der
+Regel; unsere VM hat es nicht — ein Grund mehr, warum sie beim Autodeploy
+bleibt.
+
+**Nachgewiesen am 2026-09-23** mit echten Bündeln aus
+`fwapp_buendel.py` und einer nachgebauten Release-API (`UPDATE_API` in der
+Konfiguration zeigt auf einen lokalen Webserver):
+
+1. `v0.0.1` aus dem ausgepackten Bündel installiert (`--testmodus`).
+2. Update auf `v0.0.2` mit einer neuen Migration: Dump, Probelauf,
+   eingespielt, Probe-Datenbank wieder weg.
+3. `v0.0.3` mit kaputter Migration: im Probelauf abgefangen, **nicht**
+   eingespielt, Server weiter auf `v0.0.2`, Mail in Mailpit, der nächste
+   Lauf übersprungen.
+4. `v0.0.4` mit kaputter Compose-Datei: Installer scheitert, `v0.0.2`
+   zurückgeholt, alle Container laufen, Mail in Mailpit.
+5. Danach **alle 191 E2E-Tests grün** gegen den so behandelten Server.
 
 ## Offen
 
 - Zahlen von der Produktions-VM nachtragen (echte Daten, Laufzeit).
 - Speicherbedarf des Autodeploy-Probelaufs messen.
-- Release-Bündel und Updater (#241, zweiter Teil).
+- Das erste echte Release mit Bündeln (nächster Merge mit Versions-Bump)
+  einmal von Hand herunterladen und prüfen.

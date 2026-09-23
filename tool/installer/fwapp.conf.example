@@ -47,3 +47,10 @@ SMTP_PASS=
 TEST_EMPFAENGER=
 # DKIM-Selector des Mail-Anbieters (z. B. "brevo1"), leer = nicht prüfen.
 DKIM_SELECTOR=
+
+# ── Updates (#241) ───────────────────────────────────────────────────────
+# Der Installer richtet ein nächtliches Update ein (gegen 3 Uhr):
+#   stabil – jedes freigegebene Release (Standard)
+#   vorab  – auch Vorabversionen; sie sind neuer, aber noch nicht erprobt
+#   aus    – keine automatischen Updates
+UPDATE_KANAL=stabil

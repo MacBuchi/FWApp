@@ -129,4 +129,38 @@ void main() {
       },
     );
   });
+
+  group('Bündel für fremde Installationen (#241)', () {
+    /// Der Rumpf eines Jobs, bis zum nächsten Job.
+    String job(String name) {
+      final start = release.indexOf('\n  $name:\n');
+      expect(start, isNot(-1), reason: 'Job $name fehlt in release.yml');
+      final ende = release.indexOf(RegExp(r'\n  [a-z-]+:\n'), start + 1);
+      return release.substring(start, ende == -1 ? null : ende);
+    }
+
+    test('das Web-Bündel für fremde Server trägt KEINE Server-Adresse', () {
+      expect(
+        job('build-installer'),
+        isNot(contains('FWAPP_SUPABASE_URL')),
+        reason:
+            'Mit eingebackener Adresse spräche die Web-App auf dem Server '
+            'einer fremden Wehr mit UNSEREM Server. Neutral findet sie ihren '
+            'eigenen über /.well-known/fwapp.json (#238).',
+      );
+    });
+
+    test('das Release trägt Bündel und Prüfsummen', () {
+      final r = job('release');
+      expect(r, contains('build-installer'));
+      expect(r, contains('fwapp-*.tar.gz'));
+      expect(
+        r,
+        contains('SHA256SUMS'),
+        reason:
+            'fwapp_update.py lädt genau diese Datei zuerst; ohne sie kommt '
+            'ein Release für die Updater draußen gar nicht in Frage.',
+      );
+    });
+  });
 }

@@ -201,9 +201,49 @@ jobs:
               commit -m "web bundle ${{ needs.version.outputs.tag }}"
           git push --force origin web-dist
 
+  # ── Bündel für fremde Installationen (Issue #241) ─────────────────────
+  # Eine Wehr mit eigenem Server holt sich jedes Release über
+  # tool/installer/fwapp_update.py. Sie braucht zwei Dinge, die es sonst
+  # nirgends gibt:
+  #  - ein NEUTRALES Web-Bündel: ohne unsere Server-Adresse. Es findet
+  #    seinen Server über /.well-known/fwapp.json der eigenen Domain (#238).
+  #    Das Bündel oben trägt unsere Adresse und würde auf einem fremden
+  #    Server mit UNSEREM sprechen.
+  #  - das Server-Bündel: Installer, Compose-Dateien, Migrationen, Functions
+  #    (tool/installer/fwapp_buendel.py).
+  build-installer:
+    name: Build installer bundles
+    needs: version
+    if: needs.version.outputs.release == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          channel: stable
+          flutter-version: 3.47.5
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Build neutral web bundle (no server baked in)
+        run: |
+          flutter build web --release
+          tar -C build/web -czf "fwapp-web-${{ needs.version.outputs.tag }}.tar.gz" .
+
+      - name: Build server bundle
+        run: python3 tool/installer/fwapp_buendel.py --version "${{ needs.version.outputs.tag }}" --aus .
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: installer-bundles
+          path: fwapp-*-${{ needs.version.outputs.tag }}.tar.gz
+
   release:
     name: Create GitHub Release
-    needs: [version, build-android]
+    needs: [version, build-android, build-installer]
     if: needs.version.outputs.release == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -211,6 +251,11 @@ jobs:
       - uses: actions/download-artifact@v8
         with:
           merge-multiple: true
+      # Der Updater einer fremden Installation lädt diese Datei zuerst und
+      # prüft jedes Bündel dagegen (fwapp_update.py). Der Name steht dort
+      # fest — ohne SHA256SUMS kommt ein Release für ihn nicht in Frage.
+      - name: Checksums
+        run: sha256sum fwapp-* > SHA256SUMS
       # ── Zwei Kanäle (Issue #154) ────────────────────────────────────
       # Jeder Merge mit Bump veröffentlicht ein **Prerelease**. Die App
       # fragt in `lib/core/update/update_check.dart` den Endpunkt
@@ -236,4 +281,7 @@ jobs:
           generate_release_notes: true
           prerelease: true
           make_latest: false
-          files: fwapp-*.apk
+          files: |
+            fwapp-*.apk
+            fwapp-*.tar.gz
+            SHA256SUMS

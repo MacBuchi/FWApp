@@ -86,8 +86,8 @@ Installiert nach dem offiziellen Docker-Setup (`supabase/supabase` → Ordner
 | Eigenschaft | Wert |
 | --- | --- |
 | API-URL (Kong) | `http://<server-ip>:8000` |
-| Studio/Dashboard | gleiche URL, Login: siehe Secrets |
-| Container | 11 Stück (db, kong, auth, rest, realtime, storage, imgproxy, meta, studio, pooler, edge-functions) |
+| Studio/Dashboard | aus, nur auf Abruf (siehe [Schlanker Stack](#schlanker-stack-seit-2026-10-25)); Login: siehe Secrets |
+| Container | 6 Stück (db, kong, auth, rest, storage, edge-functions); realtime, imgproxy, meta, studio und pooler liegen im Profil `off` |
 | Konfiguration | `~/supabase/.env` (chmod 600) |
 
 ### Secrets
@@ -779,7 +779,7 @@ erzeugt daraus öffentliche Issues (Label `enhancement`/`bug`) und stempelt
 
 ### Healthcheck-Intervalle (Idle-CPU, seit 2026-07-19)
 
-Die Standard-Compose-Datei prüft 11 Container **alle 5 Sekunden** — auf einer
+Die Standard-Compose-Datei prüft ihre 11 Container **alle 5 Sekunden** — auf einer
 kleinen VM kostet allein dieses Dauerfeuer ~15–20 % CPU im Leerlauf (~130
 Prozessstarts pro Minute, darunter zwei komplette Node-Interpreter; in
 `docker stats` unsichtbar, weil die Prozesse zu kurz leben — messbar nur per
@@ -796,6 +796,46 @@ Leerlauf bei ~2–5 % statt ~19 %. Zwei Stolperfallen:
   unhealthy Container nicht neu); er dient nur der Anzeige in `docker ps`
   und der Startreihenfolge (`depends_on: service_healthy`). Ein langes
   Intervall verliert also keine Funktionalität.
+
+### Schlanker Stack (seit 2026-10-25)
+
+Die App braucht nur sechs der elf Supabase-Dienste (Nachweis in
+[INSTALLATION.md](INSTALLATION.md#welche-dienste-die-app-braucht)). Die
+übrigen fünf — `studio`, `meta`, `realtime`, `supavisor` (Pooler) und
+`imgproxy` — stehen in `~/supabase/docker-compose.override.yml` im Profil
+`off`, das nie aktiviert wird (#257). Das spart auf der VM **rund 780 MB**
+(`free -m`: 1840 → 1057 MB belegt).
+
+Dazu gehören drei weitere Zeilen im Override, ohne die der schlanke Stack
+nicht startet:
+
+- `kong: depends_on: !reset []` — Upstream lässt Kong auf Studio warten.
+- `storage: depends_on: !override` nur noch mit `db` (healthy) und `rest`
+  (started) — Upstream wartet auch auf imgproxy.
+- `storage`: `ENABLE_IMAGE_TRANSFORMATION: "false"`, `IMGPROXY_URL: !reset
+  null`.
+
+`kong.yml` bleibt bewusst unverändert. Die Routen `/realtime/v1`, `/pg` und
+`/` (Dashboard) antworten ohne ihren Dienst mit 503 bzw. 401/403; öffentlich
+reicht `fwapp-web` ohnehin nur `auth|rest|storage|functions` an Kong durch.
+Der Vorteil: Wer Studio startet, erreicht es ohne weiteren Umbau.
+
+Admin-Oberfläche für eine Debug-Sitzung:
+
+```bash
+cd ~/supabase
+docker compose --profile off up -d studio meta
+# ... danach wieder weg:
+docker compose --profile off stop studio meta
+docker compose --profile off rm -f studio meta
+```
+
+⚠️ `docker compose up -d --remove-orphans` räumt Dienste eines inaktiven
+Profils **nicht** weg — sie gelten nicht als verwaist. Gestoppt werden sie
+mit `--profile off stop`, entfernt mit `--profile off rm -f`.
+
+Rückbau: `docker-compose.override.yml.bak-257-20261025` zurückkopieren,
+dann `docker compose up -d`.
 
 Die VM startet automatisch mit dem Host nicht – falls gewünscht, auf dem Host
 `qm set <vm-id> --onboot 1` setzen. Docker-Container haben Restart-Policys aus dem

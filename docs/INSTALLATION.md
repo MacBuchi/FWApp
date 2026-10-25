@@ -31,9 +31,10 @@ aus `tool/seed_demo_wehr.py`. Last: alle 191 E2E-Tests
 (`test/integration/`) nacheinander — sie legen Wehren an, veröffentlichen,
 ziehen, laden hoch, laden ein.
 
-⚠️ Die Produktions-VM war zum Zeitpunkt der Messung nicht erreichbar. Ihre
-Zahlen (echte Datenmenge, Laufzeit über Wochen) fehlen noch und gehören
-hier ergänzt.
+Die Produktions-VM (amd64, Debian 12, echte Daten) ist am 2026-10-25
+nachgemessen, mit `docker stats --no-stream` einige Stunden nach einem
+Neustart. Seitdem läuft auch dort nur noch der schlanke Stack (#257): Die
+Zahlen in der Tabelle unten sind die Spalte **Produktion**.
 
 ### Welche Dienste die App braucht
 
@@ -42,15 +43,19 @@ Die App nutzt **kein Realtime** (kein `.stream()`, kein `channel()`) und
 gelesen, sondern bewiesen: **Alle 191 E2E-Tests laufen grün mit
 ausschließlich diesen sechs Diensten.**
 
-| Dienst | Wofür | Leerlauf | Spitze unter Last |
-|---|---|---:|---:|
-| `db` (Postgres 17) | Daten, RLS, RPCs | 138 MB | 183 MB |
-| `storage` | Fotos, Anhänge | 242 MB | 242 MB |
-| `rest` (PostgREST) | Tabellen und RPCs | 122 MB | 140 MB |
-| `kong` | API-Einstieg | 94 MB | 108 MB |
-| `edge_runtime` | Edge Function `admin-users` (Nutzerverwaltung, Einladungen) | 24 MB | 47 MB |
-| `auth` (GoTrue) | Anmeldung, Einladungs- und Reset-Mails | 14 MB | 19 MB |
-| **Summe** | | **≈ 630 MB** | **≈ 740 MB** |
+| Dienst | Wofür | Leerlauf | Spitze unter Last | Produktion |
+|---|---|---:|---:|---:|
+| `db` (Postgres 17) | Daten, RLS, RPCs | 138 MB | 183 MB | 106 MB |
+| `storage` | Fotos, Anhänge | 242 MB | 242 MB | 158 MB |
+| `rest` (PostgREST) | Tabellen und RPCs | 122 MB | 140 MB | 27 MB |
+| `kong` | API-Einstieg | 94 MB | 108 MB | 134 MB |
+| `edge_runtime` | Edge Function `admin-users` (Nutzerverwaltung, Einladungen) | 24 MB | 47 MB | 38 MB |
+| `auth` (GoTrue) | Anmeldung, Einladungs- und Reset-Mails | 14 MB | 19 MB | 9 MB |
+| **Summe** | | **≈ 630 MB** | **≈ 740 MB** | **≈ 470 MB** |
+
+Auf der Produktion kommen `fwapp-web` (nginx, 6 MB) und der
+Cloudflare-Tunnel (34 MB) dazu. Die ganze VM belegt danach laut `free -m`
+**1057 MB** (vorher mit allen elf Diensten 1840 MB).
 
 **Weglassen kann der Installer** (zusammen ≈ 1,5 GB im Leerlauf):
 
@@ -61,7 +66,8 @@ ausschließlich diesen sechs Diensten.**
 | `vector` | 241 MB | Log-Transport für analytics |
 | `realtime` | 236 MB | von der App nicht genutzt |
 | `pg_meta` | 131 MB | nur für Studio |
-| `imgproxy` | — | Bildumwandlung, nicht genutzt |
+| `supavisor` (Pooler) | 210 MB (Produktion) | alle Dienste verbinden sich direkt mit `db` |
+| `imgproxy` | 76 MB (Produktion) | Bildumwandlung, nicht genutzt |
 
 Voller Stack im Leerlauf zum Vergleich: **≈ 2,4 GB**.
 

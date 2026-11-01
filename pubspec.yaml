@@ -27,16 +27,16 @@ dependencies:
   # von selbst erledigt — der Zwang ist jetzt umgekehrt, freezed 4 und
   # drift_dev 2.34.0 sind unvereinbar. Der Caret-Bereich reicht wieder, weil
   # pub das Paar von sich aus zusammenhaelt.
-  drift: ^2.35.0
+  drift: ^2.35.3
   # sqlite3 3.x liefert die nativen SQLite-Libs selbst ueber Build-Hooks.
   # sqlite3_flutter_libs ist damit hinfaellig (0.6.0+eol ist eine leere
   # Huelle) und wurde bewusst entfernt, nicht hochgezogen.
-  sqlite3: ^3.6.0
+  sqlite3: ^3.8.0
   path_provider: ^2.1.5
   path: ^1.9.1
 
   # Navigation
-  go_router: ^18.0.1
+  go_router: ^18.1.2
 
   # Domain models
   freezed_annotation: ^3.0.0
@@ -48,12 +48,12 @@ dependencies:
   # `url_launcher` kann das auf Android nicht: Ein file://-URI wird seit
   # Android 7 abgelehnt, es braucht einen FileProvider — und genau den
   # bringt dieses Paket mit.
-  open_filex: ^4.7.0
-  image_picker: ^1.1.2
-  cached_network_image: ^4.0.0
+  open_filex: ^5.0.0
+  image_picker: ^1.2.4
+  cached_network_image: ^4.0.6
   # Nur wegen ImageRenderMethodForWeb (Issue #114): Die Aufzaehlung wird von
   # cached_network_image nicht re-exportiert, der Import braucht sie direkt.
-  cached_network_image_platform_interface: ^5.0.0
+  cached_network_image_platform_interface: ^5.0.3
   flutter_cache_manager: ^3.4.1
   image: ^4.3.0
   cross_file: ^0.3.4
@@ -74,7 +74,7 @@ dependencies:
   excel: ^4.0.6
 
   # Cloud sync (optional)
-  supabase_flutter: ^2.17.2
+  supabase_flutter: ^2.18.3
 
   # Localisation
   intl: ^0.20.2
@@ -84,16 +84,16 @@ dependencies:
   # In-App-Update: lädt das Release-APK und öffnet den Android-Installer.
   ota_update: ^7.0.0
   uuid: ^4.5.1
-  shared_preferences: ^2.3.5
+  shared_preferences: ^2.5.6
   # Gekoppelt an file_picker ueber win32: 10.x verlangt win32 ^6, den
   # file_picker erst ab 12 liefert. Seit #199 sind beide dort, stabil und
   # ohne Beta. Die Kopplung bleibt bestehen — kuenftige Majors dieser
   # beiden gehoeren weiter zusammen angehoben.
-  package_info_plus: ^10.2.1
-  url_launcher: ^6.3.1
+  package_info_plus: ^10.2.2
+  url_launcher: ^6.3.3
   # Teilen-Blatt des Systems (Issue #165): Zugangsdaten wandern damit in
   # WhatsApp, Signal oder SMS, statt abgetippt zu werden.
-  share_plus: ^13.3.0
+  share_plus: ^13.3.1
   csv: ^8.0.0
   nfc_manager: ^4.2.1
   ndef_record: ^1.5.0
@@ -102,7 +102,7 @@ dev_dependencies:
   # (HMAC-SHA1 nach RFC 6238), um die Zwei-Faktor-Anmeldung gegen den
   # echten Stack durchzuspielen. In der App wird nichts davon benutzt —
   # die Codes kommen dort aus der Authenticator-App des Nutzers.
-  crypto: ^3.0.6
+  crypto: ^3.0.8
   flutter_test:
     sdk: flutter
   # Geräte-Tests ("Test-API" statt Screenshot-Steuerung):
@@ -111,18 +111,18 @@ dev_dependencies:
     sdk: flutter
   # Nur für den Override-Typ im Test-Harness (riverpod/misc.dart).
   riverpod: ^3.0.0
-  build_runner: ^2.4.14
+  build_runner: ^2.16.2
   # Siehe die Begruendung bei `drift` oben — nur zusammen mit der
   # drift-Laufzeitversion anheben, sonst bricht der Migrationstest.
-  drift_dev: ^2.35.0
+  drift_dev: ^2.35.2
   riverpod_generator: ^4.0.0
   # Bis #199 loeste das hier auf eine VORABVERSION auf (3.2.6-dev.1), weil
   # stabiles freezed 3.2.5 analyzer <11 deckelte und riverpod_generator
   # analyzer ^12 verlangte — es gab keine stabile Kombination. freezed 4
   # (analyzer ^14) macht die Kette wieder stabil; das war der eigentliche
   # Gewinn des Toolchain-Sprungs, nicht nur ein Versionssprung.
-  freezed: ^4.0.2
-  json_serializable: ^6.8.0
+  freezed: ^4.0.3
+  json_serializable: ^6.15.2
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.3
 
